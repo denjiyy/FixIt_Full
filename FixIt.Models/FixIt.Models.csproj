@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.Identity.Mongo" Version="10.1.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Analytics/" />
+    <Folder Include="Auditing/" />
+    <Folder Include="Common/" />
+    <Folder Include="Engagement/" />
+    <Folder Include="Enums/" />
+    <Folder Include="Infrastructure/" />
+    <Folder Include="Issues/" />
+    <Folder Include="Locations/" />
+    <Folder Include="Media/" />
+    <Folder Include="Moderation/" />
+    <Folder Include="Notifications/" />
+    <Folder Include="Users/" />
+  </ItemGroup>
+
+</Project>
