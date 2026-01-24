@@ -15,9 +15,9 @@ public class Issue
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
 
-    public HashSet<string> Tags { get; set; } = new HashSet<string>();
+    [BsonRepresentation(BsonType.ObjectId)]
+    public HashSet<string> TagIds { get; set; } = new HashSet<string>();
 
-    // CHANGED: Use GeographicCoordinates for accurate 2dsphere calculations
     public GeoJsonPoint<GeoJson2DGeographicCoordinates> Location { get; set; } = null!;
 
     public string? Address { get; set; }
@@ -28,12 +28,10 @@ public class Issue
     [BsonRepresentation(BsonType.ObjectId)]
     public string NeighborhoodId { get; set; } = null!;
 
-    // CHANGED: Denormalized Reporter info for fast feed loading
     public UserSummary Reporter { get; set; } = null!;
 
     public IssueStatus Status { get; set; } = IssueStatus.New;
     
-    // CHANGED: Embedded history to track status changes without extra queries
     public List<IssueStatusHistory> StatusHistory { get; set; } = new();
 
     public IssuePriority Priority { get; set; } = IssuePriority.Medium;
@@ -41,12 +39,26 @@ public class Issue
     public int Upvotes { get; set; }
     public int Downvotes { get; set; }
 
+    public int Version { get; set; } = 1;
+
     [BsonRepresentation(BsonType.ObjectId)]
     public HashSet<string> MediaIds { get; set; } = new HashSet<string>();
+
+    public int CommentCount { get; set; } = 0;
+
+    public int ViewCount { get; set; } = 0;
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime LastActivityAt { get; set; } = DateTime.UtcNow;
 
     public bool IsPinned { get; set; }
     public bool IsDeleted { get; set; }
 
+    public bool IsLocked { get; set; } = false;
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
