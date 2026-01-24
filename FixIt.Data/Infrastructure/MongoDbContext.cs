@@ -16,12 +16,11 @@ public class MongoDbContext
 
     // Identity and User Management
     public IMongoCollection<ApplicationUser> Users => Database.GetCollection<ApplicationUser>("AspNetUsers");
-    public IMongoCollection<UserReputation> UserReputations => Database.GetCollection<UserReputation>("user_reputations");
     public IMongoCollection<RateLimitEntry> RateLimits => Database.GetCollection<RateLimitEntry>("rate_limits");
 
     // Issue Management
     public IMongoCollection<Issue> Issues => Database.GetCollection<Issue>("issues");
-    public IMongoCollection<Tag> Tags => Database.GetCollection<Tag>("tags");
+    public IMongoCollection<FixIt.Models.Issues.Tag> Tags => Database.GetCollection<FixIt.Models.Issues.Tag>("tags");
     public IMongoCollection<OfficialResponse> OfficialResponses => Database.GetCollection<OfficialResponse>("official_responses");
 
     // Engagement

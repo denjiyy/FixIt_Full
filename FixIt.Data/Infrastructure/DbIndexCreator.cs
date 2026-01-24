@@ -14,7 +14,6 @@ public static class DbIndexCreator
     public static void EnsureIndexesAndValidators(IMongoDatabase db)
     {
         CreateIdentityIndexes(db);
-        CreateUserReputationIndexes(db);
         CreateRateLimitIndexes(db);
         CreateIssueIndexes(db);
         CreateTagIndexes(db);
@@ -58,29 +57,6 @@ public static class DbIndexCreator
         users.Indexes.CreateOne(new CreateIndexModel<ApplicationUser>(
             Builders<ApplicationUser>.IndexKeys.Ascending(u => u.IsDeleted),
             new CreateIndexOptions { Name = "ix_users_isdeleted" }
-        ));
-    }
-
-    static void CreateUserReputationIndexes(IMongoDatabase db)
-    {
-        var reputations = db.GetCollection<UserReputation>("user_reputations");
-
-        // One reputation document per user - enforce uniqueness
-        reputations.Indexes.CreateOne(new CreateIndexModel<UserReputation>(
-            Builders<UserReputation>.IndexKeys.Ascending(r => r.UserId),
-            new CreateIndexOptions { Unique = true, Name = "ux_reputations_userid" }
-        ));
-
-        // For finding top contributors
-        reputations.Indexes.CreateOne(new CreateIndexModel<UserReputation>(
-            Builders<UserReputation>.IndexKeys.Descending(r => r.ReputationScore),
-            new CreateIndexOptions { Name = "ix_reputations_score" }
-        ));
-
-        // For identifying users who need moderation attention
-        reputations.Indexes.CreateOne(new CreateIndexModel<UserReputation>(
-            Builders<UserReputation>.IndexKeys.Descending(r => r.AbuseReportsReceived),
-            new CreateIndexOptions { Name = "ix_reputations_abuse_reports" }
         ));
     }
 
@@ -189,30 +165,30 @@ public static class DbIndexCreator
 
     static void CreateTagIndexes(IMongoDatabase db)
     {
-        var tags = db.GetCollection<Tag>("tags");
+        var tags = db.GetCollection<FixIt.Models.Issues.Tag>("tags");
 
         // Unique tag names prevent duplicates
-        tags.Indexes.CreateOne(new CreateIndexModel<Tag>(
-            Builders<Tag>.IndexKeys.Ascending(t => t.Name),
+        tags.Indexes.CreateOne(new CreateIndexModel<FixIt.Models.Issues.Tag>(
+            Builders<FixIt.Models.Issues.Tag>.IndexKeys.Ascending(t => t.Name),
             new CreateIndexOptions { Unique = true, Name = "ux_tags_name" }
         ));
 
         // For autocomplete: find tags starting with "pot..."
         // Text index would work, but a simple ascending index is faster for prefix matching
-        tags.Indexes.CreateOne(new CreateIndexModel<Tag>(
-            Builders<Tag>.IndexKeys.Ascending(t => t.Name),
+        tags.Indexes.CreateOne(new CreateIndexModel<FixIt.Models.Issues.Tag>(
+            Builders<FixIt.Models.Issues.Tag>.IndexKeys.Ascending(t => t.Name),
             new CreateIndexOptions { Name = "ix_tags_name_prefix" }
         ));
 
         // For showing popular tags
-        tags.Indexes.CreateOne(new CreateIndexModel<Tag>(
-            Builders<Tag>.IndexKeys.Descending(t => t.UsageCount),
+        tags.Indexes.CreateOne(new CreateIndexModel<FixIt.Models.Issues.Tag>(
+            Builders<FixIt.Models.Issues.Tag>.IndexKeys.Descending(t => t.UsageCount),
             new CreateIndexOptions { Name = "ix_tags_usage" }
         ));
 
         // For finding tags by category
-        tags.Indexes.CreateOne(new CreateIndexModel<Tag>(
-            Builders<Tag>.IndexKeys.Ascending(t => t.Category),
+        tags.Indexes.CreateOne(new CreateIndexModel<FixIt.Models.Issues.Tag>(
+            Builders<FixIt.Models.Issues.Tag>.IndexKeys.Ascending(t => t.Category),
             new CreateIndexOptions { Name = "ix_tags_category" }
         ));
     }

@@ -17,7 +17,6 @@
     <Folder Include="Common/" />
     <Folder Include="Engagement/" />
     <Folder Include="Enums/" />
-    <Folder Include="Infrastructure/" />
     <Folder Include="Issues/" />
     <Folder Include="Locations/" />
     <Folder Include="Media/" />
