@@ -1,22 +1,35 @@
 using MongoDB.Driver;
 using FixIt.Data.Configuration.Contracts;
-using FixIt.Models.Engagement;
+using FixIt.Models.Locations;
 
 namespace FixIt.Data.Configuration;
 
-public class VoteConfiguration : ICollectionConfigurator
+public class CityConfiguration : ICollectionConfigurator
 {
     public async Task ConfigureAsync(IMongoDatabase db)
     {
-        var votes = db.GetCollection<Vote>("votes");
+        var cities = db.GetCollection<City>("cities");
 
-        // One vote per user per issue
-        var uniqueIndex = new CreateIndexModel<Vote>(
-            Builders<Vote>.IndexKeys
-                .Ascending(v => v.IssueId)
-                .Ascending(v => v.UserId),
-            new CreateIndexOptions { Unique = true, Name = "ux_votes_issue_user" }
+        // Index for city lookup
+        var nameIndex = new CreateIndexModel<City>(
+            Builders<City>.IndexKeys.Ascending(c => c.Name),
+            new CreateIndexOptions { Name = "ix_cities_name" }
         );
-        await votes.Indexes.CreateOneAsync(uniqueIndex);
+        await cities.Indexes.CreateOneAsync(nameIndex);
+
+        // Seed initial cities
+        var seedCities = new[]
+        {
+            new City { Name = "Sofia", Country = "Bulgaria" },
+            new City { Name = "Plovdiv", Country = "Bulgaria" },
+            new City { Name = "Varna", Country = "Bulgaria" }
+        };
+
+        foreach (var city in seedCities)
+        {
+            var filter = Builders<City>.Filter.Eq(c => c.Name, city.Name);
+            var options = new ReplaceOptions { IsUpsert = true };
+            await cities.ReplaceOneAsync(filter, city, options);
+        }
     }
 }

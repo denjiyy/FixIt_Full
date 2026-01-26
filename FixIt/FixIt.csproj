@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="../FixIt.Data/FixIt.Data.csproj" />
     <ProjectReference Include="../FixIt.Models/FixIt.Models.csproj" />
+    <ProjectReference Include="../FixIt.Services/FixIt.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
