@@ -12,8 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Analytics/" />
-    <Folder Include="Auditing/" />
     <Folder Include="Common/" />
     <Folder Include="Engagement/" />
     <Folder Include="Enums/" />
@@ -21,7 +19,6 @@
     <Folder Include="Locations/" />
     <Folder Include="Media/" />
     <Folder Include="Moderation/" />
-    <Folder Include="Notifications/" />
     <Folder Include="Users/" />
   </ItemGroup>
 
