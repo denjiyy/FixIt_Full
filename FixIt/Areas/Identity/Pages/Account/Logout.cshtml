@@ -1,0 +1,13 @@
+@page
+@model FixIt.Areas.Identity.Pages.Account.LogoutModel
+@{
+    ViewData["Title"] = "Log out";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="alert alert-info">
+    <p>You have been successfully logged out.</p>
+    <p><a asp-page="./Login">Log in again</a></p>
+    <p><a asp-page="/">Return to home</a></p>
+</div>

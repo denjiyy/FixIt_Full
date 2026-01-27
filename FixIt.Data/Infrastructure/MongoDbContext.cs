@@ -4,6 +4,7 @@ using FixIt.Models.Issues;
 using FixIt.Models.Engagement;
 using FixIt.Models.Locations;
 using FixIt.Models.Moderation;
+using TagModel = FixIt.Models.Issues.Tag;
 
 namespace FixIt.Models.Infrastructure;
 
@@ -16,7 +17,7 @@ public class MongoDbContext
 
     // Issue Management
     public IMongoCollection<Issue> Issues => Database.GetCollection<Issue>("issues");
-    public IMongoCollection<Tag> Tags => Database.GetCollection<Tag>("tags");
+    public IMongoCollection<TagModel> Tags => Database.GetCollection<TagModel>("tags");
     public IMongoCollection<OfficialResponse> OfficialResponses => Database.GetCollection<OfficialResponse>("official_responses");
 
     // Engagement

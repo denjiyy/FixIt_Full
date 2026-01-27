@@ -10,11 +10,13 @@
     <ProjectReference Include="../FixIt.Data/FixIt.Data.csproj" />
     <ProjectReference Include="../FixIt.Models/FixIt.Models.csproj" />
     <ProjectReference Include="../FixIt.Services/FixIt.Services.csproj" />
+    <ProjectReference Include="../FixIt.ViewModels/FixIt.ViewModels.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.Identity.Mongo" Version="10.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
 </Project>
