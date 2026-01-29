@@ -25,9 +25,6 @@ public class Issue
     [BsonRepresentation(BsonType.ObjectId)]
     public string CityId { get; set; } = null!;
 
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string NeighborhoodId { get; set; } = null!;
-
     public UserSummary Reporter { get; set; } = null!;
 
     public IssueStatus Status { get; set; } = IssueStatus.New;

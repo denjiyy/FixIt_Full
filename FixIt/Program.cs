@@ -59,8 +59,36 @@ mongo =>
     mongo.ConnectionString = mongoConnectionString;
 });
 
-// Register generic repository
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// Register repositories with correct collection names
+builder.Services.AddScoped<IRepository<FixIt.Models.Locations.City>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Locations.City>(db, "cities");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Locations.Neighborhood>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Locations.Neighborhood>(db, "neighborhoods");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Issues.Tag>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Issues.Tag>(db, "tags");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Issues.Issue>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Issues.Issue>(db, "issues");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Engagement.Vote>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Engagement.Vote>(db, "votes");
+});
 
 // Register services (business logic layer)
 builder.Services.AddScoped<IIssueService, IssueService>();

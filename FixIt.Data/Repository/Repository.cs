@@ -9,9 +9,10 @@ namespace FixIt.Data.Repository
     {
         private readonly IMongoCollection<T> _collection;
 
-        public Repository(IMongoDatabase db, string collectionName = null!)
+        public Repository(IMongoDatabase db, string? collectionName = null)
         {
-            _collection = db.GetCollection<T>(collectionName ?? typeof(T).Name.ToLowerInvariant() + "s");
+            var finalCollectionName = collectionName ?? typeof(T).Name.ToLowerInvariant() + "s";
+            _collection = db.GetCollection<T>(finalCollectionName);
         }
 
         public async Task<T?> GetByIdAsync(string id)

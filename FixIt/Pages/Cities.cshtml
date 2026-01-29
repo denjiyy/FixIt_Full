@@ -1,0 +1,405 @@
+@page
+@using FixIt.Models.Issues
+@model CitiesModel
+@{
+    ViewData["Title"] = "Explore Cities - FixIt";
+}
+
+<style>
+    .city-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .city-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .city-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .city-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .city-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .city-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #1a202c;
+    }
+
+    .city-description {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+
+    .city-issues-count {
+        display: inline-block;
+        background: #f0f4ff;
+        color: #667eea;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .country-selector {
+        margin-bottom: 2rem;
+    }
+
+    .country-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .country-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .country-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .country-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .selected-city-section {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .issues-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .issue-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .issue-card.critical {
+        border-left-color: #e53e3e;
+    }
+
+    .issue-card.high {
+        border-left-color: #f6ad55;
+    }
+
+    .issue-card.medium {
+        border-left-color: #ecc94b;
+    }
+
+    .issue-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 0.5rem;
+    }
+
+    .issue-description {
+        color: #666;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .issue-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: #999;
+    }
+
+    .issue-votes {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        background: white;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .page-link.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .page-link.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        color: #999;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #999;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .hero-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .hero-banner h1 {
+        margin-bottom: 1rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .hero-banner p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+</style>
+
+<div class="container mt-4">
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+        <h1><i class="bi bi-geo-alt"></i> Explore Cities & Issues</h1>
+        <p>Select a country and browse cities affected by infrastructure issues reported by the community.</p>
+    </div>
+
+    <!-- Country Selector -->
+    <div class="country-selector">
+        <h3>Select Country</h3>
+        <div class="country-tabs">
+            @foreach (var country in Model.Countries)
+            {
+                <a asp-page="Cities" 
+                   asp-route-selectedCountry="@country"
+                   asp-route-selectedCity=""
+                   asp-route-currentPage="1"
+                   class="country-btn @(Model.SelectedCountry == country ? "active" : "")">
+                    @country
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Cities Grid -->
+    <div>
+        <h2>@Model.SelectedCountry (@Model.TotalCities cities)</h2>
+        
+        @if (Model.Cities.Any())
+        {
+            <div class="city-grid">
+                @foreach (var city in Model.Cities)
+                {
+                    <a asp-page="Cities" 
+                       asp-route-selectedCountry="@Model.SelectedCountry"
+                       asp-route-selectedCity="@city.Name"
+                       asp-route-currentPage="1"
+                       class="city-card">
+                        @if (!string.IsNullOrEmpty(city.PhotoUrl))
+                        {
+                            <img src="@city.PhotoUrl" alt="@city.Name" class="city-image" onerror="this.src='https://via.placeholder.com/600x400?text=@Uri.EscapeDataString(city.Name)'">
+                        }
+                        else
+                        {
+                            <div class="city-image"></div>
+                        }
+                        <div class="city-content">
+                            <h3 class="city-name">@city.Name</h3>
+                            @if (!string.IsNullOrEmpty(city.Description))
+                            {
+                                <p class="city-description">@city.Description</p>
+                            }
+                        </div>
+                    </a>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination-container">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a asp-page="Cities"
+                           asp-route-selectedCountry="@Model.SelectedCountry"
+                           asp-route-selectedCity="@Model.SelectedCity"
+                           asp-route-currentPage="@(Model.CurrentPage - 1)"
+                           class="page-link">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-link disabled">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </span>
+                    }
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == Model.CurrentPage)
+                        {
+                            <span class="page-link active">@i</span>
+                        }
+                        else
+                        {
+                            <a asp-page="Cities"
+                               asp-route-selectedCountry="@Model.SelectedCountry"
+                               asp-route-selectedCity="@Model.SelectedCity"
+                               asp-route-currentPage="@i"
+                               class="page-link">@i</a>
+                        }
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a asp-page="Cities"
+                           asp-route-selectedCountry="@Model.SelectedCountry"
+                           asp-route-selectedCity="@Model.SelectedCity"
+                           asp-route-currentPage="@(Model.CurrentPage + 1)"
+                           class="page-link">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-link disabled">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </span>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
+                <h3>No cities found</h3>
+                <p>Please select a different country.</p>
+            </div>
+        }
+    </div>
+
+    <!-- Selected City Issues -->
+    @if (!string.IsNullOrEmpty(Model.SelectedCity) && Model.CityIssues.Any())
+    {
+        <div class="selected-city-section">
+            <h2><i class="bi bi-exclamation-triangle"></i> Issues in @Model.SelectedCity</h2>
+            <p class="text-muted">@Model.CityIssues.Count issue(s) reported in this city</p>
+
+            <div class="issues-grid">
+                @foreach (var issue in Model.CityIssues.Take(12))
+                {
+                    <div class="issue-card @issue.Priority.ToString().ToLower()">
+                        <div class="issue-title">@issue.Title</div>
+                        <div class="issue-description">@issue.Description</div>
+                        
+                        <div class="issue-meta">
+                            <span><i class="bi bi-calendar"></i> @issue.CreatedAt.ToString("MMM dd, yyyy")</span>
+                            <span><i class="bi bi-tag"></i> @issue.Status</span>
+                            <div class="issue-votes">
+                                <span><i class="bi bi-hand-thumbs-up"></i> @issue.Upvotes</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.CityIssues.Count > 12)
+            {
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a asp-page="/Issues/Index" class="btn btn-primary">
+                        View all @Model.CityIssues.Count issues
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.SelectedCity) && !Model.CityIssues.Any())
+    {
+        <div class="selected-city-section">
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-check-circle"></i></div>
+                <h3>No issues reported in @Model.SelectedCity</h3>
+                <p>Great news! This city has no reported infrastructure issues at the moment.</p>
+                <a asp-page="/Issues/Create" class="btn btn-primary mt-3">Report an issue</a>
+            </div>
+        </div>
+    }
+</div>

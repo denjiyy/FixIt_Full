@@ -4,47 +4,56 @@
     ViewData["Title"] = "Report an Issue";
 }
 
-<div class="container mt-5 mb-5">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             <!-- Header -->
-            <div class="mb-4">
-                <h1 class="h2">
-                    <i class="bi bi-exclamation-circle"></i> Report a New Issue
-                </h1>
+            <div class="text-center mb-5">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-circle text-gradient" style="font-size: 3.5rem;"></i>
+                </div>
+                <h1 class="h2 mb-2">Report a New Issue</h1>
                 <p class="lead text-muted">Help improve your community by reporting civic problems</p>
             </div>
 
             <!-- Form -->
-            <form method="post" enctype="multipart/form-data" class="needs-validation">
+            <form method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
 
-                <!-- Title -->
-                <div class="mb-3">
-                    <label asp-for="Input.Title" class="form-label">Issue Title *</label>
-                    <input asp-for="Input.Title" class="form-control form-control-lg" 
-                           placeholder="e.g., Pothole on Main Street" />
-                    <span asp-validation-for="Input.Title" class="text-danger small"></span>
-                    <small class="text-muted">Be specific and descriptive (3-200 characters)</small>
+                <!-- Basic Info Card -->
+                <div class="card mb-4" style="border: none;">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Basic Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Input.Title" class="form-label">Issue Title *</label>
+                            <input asp-for="Input.Title" class="form-control form-control-lg" 
+                                   placeholder="e.g., Pothole on Main Street near the library" />
+                            <span asp-validation-for="Input.Title" class="text-danger small"></span>
+                            <small class="text-muted">Be specific and descriptive (3-200 characters)</small>
+                        </div>
+
+                        <div class="mb-0">
+                            <label asp-for="Input.Description" class="form-label">Description *</label>
+                            <textarea asp-for="Input.Description" class="form-control" rows="6" id="descriptionInput"
+                                      placeholder="Provide details about the issue, when you noticed it, severity, and any relevant information..."
+                                      maxlength="5000"></textarea>
+                            <span asp-validation-for="Input.Description" class="text-danger small"></span>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">10-5000 characters</small>
+                                <small class="text-muted"><span id="descriptionCount">0</span>/5000</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Description -->
-                <div class="mb-3">
-                    <label asp-for="Input.Description" class="form-label">Description *</label>
-                    <textarea asp-for="Input.Description" class="form-control" rows="5"
-                              placeholder="Provide details about the issue, when you noticed it, and any relevant information..."
-                              maxlength="5000"></textarea>
-                    <span asp-validation-for="Input.Description" class="text-danger small"></span>
-                    <small class="text-muted">10-5000 characters | <span id="descriptionCount">0</span>/5000</small>
-                </div>
-
-                <!-- Location Section -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
+                <!-- Location Card -->
+                <div class="card mb-4" style="border: none;">
+                    <div class="card-header">
                         <h6 class="mb-0"><i class="bi bi-geo-alt"></i> Location</h6>
                     </div>
                     <div class="card-body">
-                        <!-- Address -->
                         <div class="mb-3">
                             <label asp-for="Input.Address" class="form-label">Address (Optional)</label>
                             <input asp-for="Input.Address" class="form-control" 
@@ -52,79 +61,74 @@
                             <small class="text-muted">Help others locate the exact spot</small>
                         </div>
 
-                        <!-- Map -->
                         <div class="mb-3">
                             <label class="form-label">Select Location on Map *</label>
-                            <div id="map" style="height: 400px; border: 1px solid #dee2e6; border-radius: 0.375rem; margin-bottom: 10px;"></div>
+                            <div id="map" style="height: 400px; border: 2px solid var(--gray-300); border-radius: 0.75rem;"></div>
                             <input type="hidden" asp-for="Input.Latitude" id="latitude" />
                             <input type="hidden" asp-for="Input.Longitude" id="longitude" />
-                            <small class="text-muted d-block mt-2">
-                                Coordinates: <span id="coordsDisplay">Click on the map</span>
-                            </small>
+                            <div class="mt-2 p-2" style="background: var(--gray-100); border-radius: 0.5rem;">
+                                <small class="text-muted">
+                                    <i class="bi bi-cursor"></i> Coordinates: <span id="coordsDisplay" class="text-primary fw-bold">Click on the map</span>
+                                </small>
+                            </div>
                         </div>
 
-                        <!-- City & Neighborhood -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Input.CityId" class="form-label">City *</label>
-                                <select asp-for="Input.CityId" class="form-select" id="citySelect">
-                                    <option value="">Select a city...</option>
-                                    @* Populated by JavaScript *@
-                                </select>
-                                <span asp-validation-for="Input.CityId" class="text-danger small"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Input.NeighborhoodId" class="form-label">Neighborhood *</label>
-                                <select asp-for="Input.NeighborhoodId" class="form-select" id="neighborhoodSelect">
-                                    <option value="">Select a neighborhood...</option>
-                                    @* Populated by JavaScript *@
-                                </select>
-                                <span asp-validation-for="Input.NeighborhoodId" class="text-danger small"></span>
-                            </div>
+                        <div class="mb-3">
+                            <label asp-for="Input.CityId" class="form-label">City *</label>
+                            <select asp-for="Input.CityId" asp-items="Model.Cities" class="form-select" id="citySelect">
+                                <option value="">Select a city...</option>
+                            </select>
+                            <span asp-validation-for="Input.CityId" class="text-danger small"></span>
+                            <small class="text-muted">Select the city where the issue is located</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Photos Section -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
+                <!-- Photos Card -->
+                <div class="card mb-4" style="border: none;">
+                    <div class="card-header">
                         <h6 class="mb-0"><i class="bi bi-image"></i> Photos (Optional)</h6>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Upload Photos</label>
-                            <div class="upload-area border-2 border-dashed rounded p-4 text-center cursor-pointer" 
-                                 id="uploadArea" style="border-color: #dee2e6; cursor: pointer; transition: all 0.3s;">
-                                <i class="bi bi-cloud-upload" style="font-size: 2rem; color: #6c757d;"></i>
-                                <p class="mb-0 text-muted">Drag and drop photos here or click to select</p>
-                                <small class="text-muted">Max 5 photos, 5MB each (JPG, PNG)</small>
-                                <input type="file" id="photoInput" multiple accept="image/*" style="display: none;" />
-                            </div>
-                            <div id="photoPreview" class="row mt-3"></div>
+                        <div class="upload-area p-5 text-center" id="uploadArea" 
+                             style="border: 2px dashed var(--gray-400); border-radius: 0.75rem; cursor: pointer; transition: all 0.3s;">
+                            <i class="bi bi-cloud-upload" style="font-size: 3rem; color: var(--primary);"></i>
+                            <p class="mb-2 fw-bold">Drag and drop photos here or click to select</p>
+                            <small class="text-muted">Max 5 photos, 5MB each (JPG, PNG)</small>
+                            <input type="file" id="photoInput" multiple accept="image/*" style="display: none;" />
                         </div>
+                        <div id="photoPreview" class="row mt-3"></div>
                     </div>
                 </div>
 
-                <!-- Tags Section -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
+                <!-- Tags Card -->
+                <div class="card mb-4" style="border: none;">
+                    <div class="card-header">
                         <h6 class="mb-0"><i class="bi bi-tags"></i> Categories (Optional)</h6>
                     </div>
                     <div class="card-body">
-                        <label class="form-label">Select relevant categories</label>
-                        <div id="tagsContainer" class="mb-3">
-                            @* Populated by JavaScript *@
-                        </div>
-                        <small class="text-muted">Help others find similar issues</small>
+                        <label class="form-label">Select relevant categories to help others find similar issues</label>
+                        <div id="tagsContainer" class="d-flex flex-wrap gap-2"></div>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-check-circle"></i> Report Issue
-                    </button>
-                    <a href="/issues" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                <div class="card" style="border: none; background: var(--gray-100);">
+                    <div class="card-body">
+                        <div class="d-flex gap-3 justify-content-between align-items-center flex-wrap">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i> Your report will be visible to the public and city officials
+                            </small>
+                            <div class="d-flex gap-2">
+                                <a href="/issues" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-check-circle"></i> Report Issue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -132,19 +136,19 @@
 </div>
 
 @section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // Initialize map
-        let map;
-        let markerLayer;
-        let selectedLat = 40.7128;
-        let selectedLng = -74.0060;
+        let map, markerLayer;
+        let selectedLat = 42.6977, selectedLng = 23.3219; // Default to Sofia
 
         document.addEventListener('DOMContentLoaded', function() {
             // Map initialization
             map = L.map('map').setView([selectedLat, selectedLng], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
 
             map.on('click', function(e) {
                 selectedLat = e.latlng.lat;
@@ -153,7 +157,7 @@
             });
 
             // Character counter
-            const descInput = document.getElementById('Input_Description');
+            const descInput = document.getElementById('descriptionInput');
             if (descInput) {
                 descInput.addEventListener('input', function() {
                     document.getElementById('descriptionCount').textContent = this.value.length;
@@ -163,12 +167,15 @@
             // Photo upload
             setupPhotoUpload();
             setupTags();
+            
+            // Initial marker
+            updateMarker();
         });
 
         function updateMarker() {
             document.getElementById('latitude').value = selectedLat;
             document.getElementById('longitude').value = selectedLng;
-            document.getElementById('coordsDisplay').textContent = `${selectedLat.toFixed(4)}, ${selectedLng.toFixed(4)}`;
+            document.getElementById('coordsDisplay').textContent = `${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
 
             if (markerLayer) {
                 map.removeLayer(markerLayer);
@@ -179,18 +186,24 @@
         function setupPhotoUpload() {
             const uploadArea = document.getElementById('uploadArea');
             const photoInput = document.getElementById('photoInput');
-            const photoPreview = document.getElementById('photoPreview');
 
             uploadArea.addEventListener('click', () => photoInput.click());
+            
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                uploadArea.style.backgroundColor = '#f8f9fa';
+                uploadArea.style.borderColor = 'var(--primary)';
+                uploadArea.style.backgroundColor = 'var(--primary-light)';
             });
+            
             uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = 'var(--gray-400)';
                 uploadArea.style.backgroundColor = 'transparent';
             });
+            
             uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
+                uploadArea.style.borderColor = 'var(--gray-400)';
+                uploadArea.style.backgroundColor = 'transparent';
                 photoInput.files = e.dataTransfer.files;
                 displayPhotos();
             });
@@ -210,9 +223,12 @@
                     col.className = 'col-6 col-md-4 mb-3';
                     col.innerHTML = `
                         <div class="position-relative">
-                            <img src="${e.target.result}" class="img-fluid rounded" alt="Photo">
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" 
-                                    onclick="removePhoto(${index})">×</button>
+                            <img src="${e.target.result}" class="img-fluid rounded shadow-sm" 
+                                 style="width: 100%; height: 200px; object-fit: cover;">
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2" 
+                                    onclick="removePhoto(${index})" style="padding: 0.25rem 0.5rem;">
+                                <i class="bi bi-x"></i>
+                            </button>
                         </div>
                     `;
                     photoPreview.appendChild(col);
@@ -223,34 +239,31 @@
 
         function removePhoto(index) {
             const photoInput = document.getElementById('photoInput');
-            const files = Array.from(photoInput.files);
-            files.splice(index, 1);
-            // Note: Can't directly modify FileList, would need to reselect
             const dataTransfer = new DataTransfer();
-            files.forEach(file => dataTransfer.items.add(file));
+            Array.from(photoInput.files).forEach((file, i) => {
+                if (i !== index) dataTransfer.items.add(file);
+            });
             photoInput.files = dataTransfer.files;
             displayPhotos();
         }
 
         function setupTags() {
-            // TODO: Fetch tags from API and populate
             const tagsContainer = document.getElementById('tagsContainer');
-            const tags = ['Infrastructure', 'Safety', 'Environment', 'Traffic', 'Maintenance'];
+            const tags = ['Infrastructure', 'Safety', 'Environment', 'Traffic', 'Maintenance', 'Lighting', 'Parks'];
             
             tags.forEach(tag => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'btn btn-outline-primary btn-sm me-2 mb-2';
+                btn.className = 'btn btn-outline-primary';
                 btn.textContent = tag;
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     btn.classList.toggle('active');
                     btn.classList.toggle('btn-primary');
+                    btn.classList.toggle('btn-outline-primary');
                 });
                 tagsContainer.appendChild(btn);
             });
         }
     </script>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 }

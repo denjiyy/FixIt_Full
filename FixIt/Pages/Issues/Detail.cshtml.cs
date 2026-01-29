@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Services.Contracts;
+using FixIt.Models.Issues;
 
 namespace FixIt.Pages.Issues;
 
@@ -13,7 +14,7 @@ public class IssueDetailModel : PageModel
         _issueService = issueService;
     }
 
-    public dynamic? Issue { get; set; }
+    public Issue? Issue { get; set; }
     public List<dynamic>? Comments { get; set; } = new();
     public int? IssueCount { get; set; }
     
@@ -21,10 +22,9 @@ public class IssueDetailModel : PageModel
     {
         get
         {
-            var issue = Issue as dynamic;
-            if (issue?.StatusHistory == null) return new List<dynamic>();
+            if (Issue?.StatusHistory == null) return new List<dynamic>();
             
-            var statusHistory = issue.StatusHistory as IEnumerable<dynamic> ?? new List<dynamic>();
+            var statusHistory = Issue.StatusHistory as IEnumerable<dynamic> ?? new List<dynamic>();
             return statusHistory.OrderByDescending(h => ((dynamic)h).ChangedAt).ToList();
         }
     }
@@ -33,7 +33,14 @@ public class IssueDetailModel : PageModel
     {
         try
         {
-            // TODO: Load issue and comments from service
+            // Load issue from service
+            Issue = await _issueService.GetIssueByIdAsync(id);
+            
+            if (Issue == null)
+            {
+                ModelState.AddModelError("", "Issue not found");
+            }
+            
             Comments = new List<dynamic>();
         }
         catch (Exception ex)

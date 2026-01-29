@@ -13,7 +13,6 @@ public interface IIssueService
         double longitude,
         double latitude,
         string cityId,
-        string neighborhoodId,
         UserSummary reporter,
         IEnumerable<string>? tagNames = null);
 
@@ -47,10 +46,20 @@ public interface IIssueService
     Task AddVoteAsync(string issueId, string userId, VoteType voteType);
 
     Task RemoveVoteAsync(string issueId, string userId);
-
     Task DeleteIssueAsync(string issueId);
 
     Task SoftDeleteIssueAsync(string issueId);
 
     Task RestoreIssueAsync(string issueId);
+
+    Task<List<Issue>> GetIssuesByCityAsync(string cityId);
+
+    Task<int> GetIssueCountByCityAsync(string cityId);
+
+    Task<PagedResult<Issue>> GetAllIssuesAsync(
+        string? searchQuery = null,
+        IssueStatus? status = null,
+        IssuePriority? priority = null,
+        int page = 1,
+        int pageSize = 20);
 }

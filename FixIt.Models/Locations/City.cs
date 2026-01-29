@@ -12,5 +12,10 @@ public class City
     public string Name { get; set; } = null!;
     public string Country { get; set; } = null!;
 
+    public string? PhotoUrl { get; set; }
+
+    public string? Description { get; set; }
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

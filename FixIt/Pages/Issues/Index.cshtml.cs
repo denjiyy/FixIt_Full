@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Services.Contracts;
+using FixIt.Models.Issues;
 using FixIt.Models.Enums;
 
 namespace FixIt.Pages.Issues;
@@ -13,7 +14,7 @@ public class IssueListModel : PageModel
         _issueService = issueService;
     }
 
-    public List<dynamic> Issues { get; set; } = new();
+    public List<Issue> Issues { get; set; } = new();
     public int CurrentPage { get; set; } = 1;
     public int PageSize { get; set; } = 12;
     public int TotalPages { get; set; } = 1;
@@ -30,15 +31,44 @@ public class IssueListModel : PageModel
 
         try
         {
-            // TODO: Call service to get issues
-            // For now, return empty list
-            Issues = new List<dynamic>();
-            TotalPages = 1;
+            // Parse status enum
+            IssueStatus? issueStatus = null;
+            if (status >= 0 && Enum.IsDefined(typeof(IssueStatus), status))
+            {
+                issueStatus = (IssueStatus)status;
+            }
+
+            // Parse priority enum
+            IssuePriority? issuePriority = null;
+            if (priority >= 0 && Enum.IsDefined(typeof(IssuePriority), priority))
+            {
+                issuePriority = (IssuePriority)priority;
+            }
+
+            // Get issues with filtering
+            var result = await _issueService.GetAllIssuesAsync(
+                searchQuery: searchQuery,
+                status: issueStatus,
+                priority: issuePriority,
+                page: CurrentPage,
+                pageSize: PageSize
+            );
+
+            Issues = result.Items.ToList();
+            TotalPages = (int)Math.Ceiling(result.Total / (double)PageSize);
+
+            // Validate page number
+            if (CurrentPage > TotalPages && TotalPages > 0)
+            {
+                CurrentPage = TotalPages;
+            }
         }
         catch (Exception ex)
         {
             // Log error
             ModelState.AddModelError("", "Failed to load issues. Please try again.");
+            Issues = new List<Issue>();
+            TotalPages = 1;
         }
     }
 }

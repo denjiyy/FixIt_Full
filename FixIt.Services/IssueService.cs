@@ -30,7 +30,6 @@ public class IssueService : IIssueService
         double longitude,
         double latitude,
         string cityId,
-        string neighborhoodId,
         UserSummary reporter,
         IEnumerable<string>? tagNames = null)
     {
@@ -50,7 +49,6 @@ public class IssueService : IIssueService
             Description = description.Trim(),
             Location = GeoJson.Point(GeoJson.Geographic(longitude, latitude)),
             CityId = cityId,
-            NeighborhoodId = neighborhoodId,
             Reporter = reporter,
             Status = IssueStatus.New,
             Priority = IssuePriority.Medium,
@@ -375,5 +373,95 @@ public class IssueService : IIssueService
         issue.UpdatedAt = DateTime.UtcNow;
 
         await _issueRepo.ReplaceAsync(issueId, issue);
+    }
+
+    /// <summary>
+    /// Get all issues for a specific city
+    /// </summary>
+    public async Task<List<Issue>> GetIssuesByCityAsync(string cityId)
+    {
+        var issues = await _issueRepo.FindAsync(i => 
+            i.CityId == cityId && !i.IsDeleted);
+        
+        return issues
+            .OrderByDescending(i => i.CreatedAt)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Get count of issues for a specific city
+    /// </summary>
+    public async Task<int> GetIssueCountByCityAsync(string cityId)
+    {
+        var issues = await _issueRepo.FindAsync(i => 
+            i.CityId == cityId && !i.IsDeleted);
+        
+        return issues.Count();
+    }
+
+    /// <summary>
+    /// Get all issues with optional filtering and pagination
+    /// </summary>
+    public async Task<PagedResult<Issue>> GetAllIssuesAsync(
+        string? searchQuery = null,
+        IssueStatus? status = null,
+        IssuePriority? priority = null,
+        int page = 1,
+        int pageSize = 20)
+    {
+        ValidatePagination(ref page, ref pageSize);
+        var skip = (page - 1) * pageSize;
+
+        // Build filters
+        var filters = new List<System.Linq.Expressions.Expression<System.Func<Issue, bool>>>
+        {
+            i => !i.IsDeleted
+        };
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var lowerQuery = searchQuery.ToLowerInvariant();
+            filters.Add(i => i.Title.ToLower().Contains(lowerQuery) || i.Description.ToLower().Contains(lowerQuery));
+        }
+
+        if (status.HasValue)
+        {
+            filters.Add(i => i.Status == status.Value);
+        }
+
+        if (priority.HasValue)
+        {
+            filters.Add(i => i.Priority == priority.Value);
+        }
+
+        // Combine filters
+        System.Linq.Expressions.Expression<System.Func<Issue, bool>> combinedFilter = filters[0];
+        foreach (var filter in filters.Skip(1))
+        {
+            var parameter = System.Linq.Expressions.Expression.Parameter(typeof(Issue));
+            var combined = System.Linq.Expressions.Expression.AndAlso(
+                System.Linq.Expressions.Expression.Invoke(combinedFilter, parameter),
+                System.Linq.Expressions.Expression.Invoke(filter, parameter));
+            combinedFilter = System.Linq.Expressions.Expression.Lambda<System.Func<Issue, bool>>(
+                combined, parameter);
+        }
+
+        // Get total count
+        var allIssues = await _issueRepo.FindAsync(combinedFilter);
+        var totalCount = allIssues.Count();
+        var totalPages = Math.Ceiling(totalCount / (double)pageSize);
+
+        // Get paginated results
+        var issues = allIssues
+            .OrderByDescending(i => i.CreatedAt)
+            .Skip(skip)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResult<Issue>
+        {
+            Items = issues,
+            Total = totalCount
+        };
     }
 }

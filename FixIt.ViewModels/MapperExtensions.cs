@@ -37,7 +37,6 @@ public static class MapperExtensions
             Title = issue.Title,
             Description = issue.Description,
             CityId = issue.CityId,
-            NeighborhoodId = issue.NeighborhoodId,
             Address = issue.Address,
             Longitude = 0,  // Default values - these should be extracted from Location in services
             Latitude = 0,

@@ -81,7 +81,6 @@ public class IssuesController : ControllerBase
                 request.Longitude,
                 request.Latitude,
                 request.CityId,
-                request.NeighborhoodId,
                 reporter,
                 tagNames
             );
@@ -278,7 +277,7 @@ public class IssuesController : ControllerBase
                 return NotFound(ApiResponse<object>.CreateError("Issue not found"));
             }
 
-            _logger.LogInformation("Issue {IssueId} status updated to {Status} by user {UserId}", 
+            _logger.LogInformation("Issue {IssueId} status updated to {Status} by user {UserId}",
                 id, request.NewStatus, userId);
 
             return Ok(ApiResponse<IssueDetailResponse>.CreateSuccess(
@@ -324,7 +323,7 @@ public class IssuesController : ControllerBase
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("Issue {IssueId} priority updated to {Priority} by user {UserId}", 
+            _logger.LogInformation("Issue {IssueId} priority updated to {Priority} by user {UserId}",
                 id, request.Priority, userId);
 
             return Ok(ApiResponse<IssueDetailResponse>.CreateSuccess(
@@ -470,4 +469,51 @@ public class IssuesController : ControllerBase
             return BadRequest(ApiResponse<object>.CreateError("Failed to delete issue"));
         }
     }
+
+    /// <summary>
+    /// Get issues by city
+    /// </summary>
+    /// <param name="cityId">The city ID</param>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Items per page (default: 20, max: 100)</param>
+    /// <returns>Paginated list of issues for the city</returns>
+    [HttpGet("by-city/{cityId}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> GetIssuesByCity(
+        string cityId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            // Validate parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 1;
+            if (pageSize > 100) pageSize = 100;
+
+            var issues = await _issueService.GetIssuesByCityAsync(cityId);
+            var total = await _issueService.GetIssueCountByCityAsync(cityId);
+
+            var response = new
+            {
+                issues = issues,
+                pagination = new
+                {
+                    currentPage = page,
+                    pageSize = pageSize,
+                    totalItems = total,
+                    totalPages = (int)Math.Ceiling((double)total / pageSize)
+                }
+            };
+
+            return Ok(ApiResponse<object>.CreateSuccess(response, "Issues retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting issues for city {CityId}", cityId);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to retrieve issues"));
+        }
+    }
 }
+

@@ -27,9 +27,6 @@ public class CreateIssueRequest
     [Required(ErrorMessage = "City ID is required")]
     public string CityId { get; set; } = null!;
 
-    [Required(ErrorMessage = "Neighborhood ID is required")]
-    public string NeighborhoodId { get; set; } = null!;
-
     public string? Address { get; set; }
 
     [StringLength(5000, ErrorMessage = "Tags must not exceed 5000 characters")]
@@ -97,7 +94,6 @@ public class IssueDetailResponse
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     public string CityId { get; set; } = null!;
-    public string NeighborhoodId { get; set; } = null!;
     public string? Address { get; set; }
     public double Longitude { get; set; }
     public double Latitude { get; set; }

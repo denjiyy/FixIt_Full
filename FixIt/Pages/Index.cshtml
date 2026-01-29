@@ -5,37 +5,39 @@
 }
 
 <!-- Hero Section -->
-<section class="py-5 px-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; margin-bottom: 60px;">
-    <div class="container">
+<section class="hero">
+    <div class="container position-relative" style="z-index: 1;">
         <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <h1 class="display-3 fw-bold mb-3" style="line-height: 1.2;">Report & Fix Community Issues</h1>
-                <p class="lead mb-4" style="font-size: 1.2rem; opacity: 0.95;">
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <h1>Report & Fix Community Issues</h1>
+                <p class="lead mb-4">
                     FixIt is a community-powered platform where citizens report infrastructure problems—from potholes to streetlight failures—and track their resolution in real-time.
                 </p>
-                <div class="d-flex gap-3">
+                <div class="d-flex gap-3 flex-wrap">
                     @if (User?.Identity?.IsAuthenticated ?? false)
                     {
-                        <a asp-area="" asp-page="/Issues/Index" class="btn btn-light btn-lg fw-bold">
+                        <a asp-area="" asp-page="/Issues/Index" class="btn btn-accent btn-lg">
                             <i class="bi bi-list-check"></i> Browse Issues
                         </a>
-                        <a asp-area="" asp-page="/Issues/Create" class="btn btn-outline-light btn-lg fw-bold">
+                        <a asp-area="" asp-page="/Issues/Create" class="btn btn-outline-primary btn-lg" 
+                           style="background: rgba(255,255,255,0.2); border-color: white; color: white;">
                             <i class="bi bi-plus-circle"></i> Report New
                         </a>
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-light btn-lg fw-bold">
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-accent btn-lg">
                             <i class="bi bi-box-arrow-in-right"></i> Get Started
                         </a>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-light btn-lg fw-bold">
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg"
+                           style="background: rgba(255,255,255,0.2); border-color: white; color: white;">
                             <i class="bi bi-person-plus"></i> Create Account
                         </a>
                     }
                 </div>
             </div>
-            <div class="col-lg-6 text-center">
-                <div style="font-size: 6rem; opacity: 0.9;">
+            <div class="col-lg-5 text-center">
+                <div style="font-size: 10rem; opacity: 0.2;">
                     <i class="bi bi-tools"></i>
                 </div>
             </div>
@@ -43,86 +45,78 @@
     </div>
 </section>
 
-<!-- Core Features -->
-<section class="py-5 mb-5">
+<!-- Features Grid -->
+<section class="mb-5">
     <div class="container">
-        <h2 class="text-center mb-5 fw-bold" style="font-size: 2.2rem;">
-            How FixIt Works
-        </h2>
+        <div class="text-center mb-5">
+            <h2 class="mb-3">How FixIt Works</h2>
+            <p class="text-muted lead">A simple, transparent process for reporting and resolving community issues</p>
+        </div>
+        
         <div class="row g-4">
-            <!-- Feature 1: Report -->
             <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
-                    <div class="card-body text-center p-4">
-                        <div style="font-size: 3rem; color: #0d6efd; margin-bottom: 1rem;">
-                            <i class="bi bi-camera"></i>
-                        </div>
-                        <h5 class="card-title fw-bold mb-3">Report Issues</h5>
-                        <p class="card-text text-muted">
-                            Spot a problem? Take photos, pinpoint the location on a map, and submit a detailed report in seconds.
-                        </p>
+                <div class="feature-card stagger-1" style="animation: fadeInUp 0.6s ease-out both;">
+                    <div class="feature-icon">
+                        <i class="bi bi-camera"></i>
                     </div>
+                    <h5 class="fw-bold mb-3">Report Issues</h5>
+                    <p class="text-muted mb-0">
+                        Spot a problem? Take photos, pinpoint the location on a map, and submit a detailed report in seconds.
+                    </p>
                 </div>
             </div>
 
-            <!-- Feature 2: Track -->
             <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
-                    <div class="card-body text-center p-4">
-                        <div style="font-size: 3rem; color: #198754; margin-bottom: 1rem;">
-                            <i class="bi bi-graph-up"></i>
-                        </div>
-                        <h5 class="card-title fw-bold mb-3">Real-Time Tracking</h5>
-                        <p class="card-text text-muted">
-                            Watch as issues progress from reported to resolved. See status updates and timelines in real-time.
-                        </p>
+                <div class="feature-card stagger-2" style="animation: fadeInUp 0.6s ease-out both;">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        <i class="bi bi-graph-up"></i>
                     </div>
+                    <h5 class="fw-bold mb-3">Real-Time Tracking</h5>
+                    <p class="text-muted mb-0">
+                        Watch as issues progress from reported to resolved. See status updates and timelines in real-time.
+                    </p>
                 </div>
             </div>
 
-            <!-- Feature 3: Engage -->
             <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
-                    <div class="card-body text-center p-4">
-                        <div style="font-size: 3rem; color: #ffc107; margin-bottom: 1rem;">
-                            <i class="bi bi-chat-dots"></i>
-                        </div>
-                        <h5 class="card-title fw-bold mb-3">Community Engagement</h5>
-                        <p class="card-text text-muted">
-                            Comment on issues, upvote important problems, and collaborate with neighbors to prioritize solutions.
-                        </p>
+                <div class="feature-card stagger-3" style="animation: fadeInUp 0.6s ease-out both;">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        <i class="bi bi-chat-dots"></i>
                     </div>
+                    <h5 class="fw-bold mb-3">Community Engagement</h5>
+                    <p class="text-muted mb-0">
+                        Comment on issues, upvote important problems, and collaborate with neighbors to prioritize solutions.
+                    </p>
                 </div>
             </div>
 
-            <!-- Feature 4: Solve -->
             <div class="col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
-                    <div class="card-body text-center p-4">
-                        <div style="font-size: 3rem; color: #dc3545; margin-bottom: 1rem;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                        <h5 class="card-title fw-bold mb-3">Get Results</h5>
-                        <p class="card-text text-muted">
-                            When issues are resolved, receive updates and see the impact your reports had on your community.
-                        </p>
+                <div class="feature-card stagger-4" style="animation: fadeInUp 0.6s ease-out both;">
+                    <div class="feature-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        <i class="bi bi-check-circle"></i>
                     </div>
+                    <h5 class="fw-bold mb-3">Get Results</h5>
+                    <p class="text-muted mb-0">
+                        When issues are resolved, receive updates and see the impact your reports had on your community.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Key Benefits -->
-<section class="py-5 mb-5" style="background-color: #f8f9fa; border-radius: 12px; padding: 60px 0;">
-    <div class="container">
-        <h2 class="text-center mb-5 fw-bold" style="font-size: 2.2rem;">
-            Why FixIt Matters
-        </h2>
+<!-- Why FixIt Matters -->
+<section class="py-5 mb-5" style="background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h2 class="mb-3">Why FixIt Matters</h2>
+            <p class="text-muted lead">Building stronger communities through transparency and collaboration</p>
+        </div>
+        
         <div class="row g-5">
             <div class="col-md-6">
                 <div class="d-flex gap-3">
-                    <div style="font-size: 2rem; color: #0d6efd; flex-shrink: 0;">
+                    <div style="font-size: 2.5rem; color: var(--primary); flex-shrink: 0;">
                         <i class="bi bi-shield-check"></i>
                     </div>
                     <div>
@@ -133,9 +127,10 @@
                     </div>
                 </div>
             </div>
+            
             <div class="col-md-6">
                 <div class="d-flex gap-3">
-                    <div style="font-size: 2rem; color: #198754; flex-shrink: 0;">
+                    <div style="font-size: 2.5rem; color: var(--success); flex-shrink: 0;">
                         <i class="bi bi-lightning"></i>
                     </div>
                     <div>
@@ -146,9 +141,10 @@
                     </div>
                 </div>
             </div>
+            
             <div class="col-md-6">
                 <div class="d-flex gap-3">
-                    <div style="font-size: 2rem; color: #ffc107; flex-shrink: 0;">
+                    <div style="font-size: 2.5rem; color: var(--warning); flex-shrink: 0;">
                         <i class="bi bi-people"></i>
                     </div>
                     <div>
@@ -159,9 +155,10 @@
                     </div>
                 </div>
             </div>
+            
             <div class="col-md-6">
                 <div class="d-flex gap-3">
-                    <div style="font-size: 2rem; color: #dc3545; flex-shrink: 0;">
+                    <div style="font-size: 2.5rem; color: var(--accent); flex-shrink: 0;">
                         <i class="bi bi-bar-chart"></i>
                     </div>
                     <div>
@@ -177,64 +174,36 @@
 </section>
 
 <!-- Call to Action -->
-<section class="py-5 mb-5">
+<section class="mb-5">
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
-                <h2 class="fw-bold mb-3" style="font-size: 2rem;">
-                    Ready to Make a Difference?
-                </h2>
-                <p class="lead text-muted mb-4">
-                    Join thousands of citizens using FixIt to improve their communities. Every report matters.
-                </p>
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    @if (User?.Identity?.IsAuthenticated ?? false)
-                    {
-                        <a asp-area="" asp-page="/Issues/Create" class="btn btn-primary btn-lg fw-bold">
-                            <i class="bi bi-plus-circle"></i> Report an Issue Now
-                        </a>
-                    }
-                    else
-                    {
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg fw-bold">
-                            <i class="bi bi-person-plus"></i> Create Free Account
-                        </a>
-                    }
-                    <a asp-area="" asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg fw-bold">
-                        <i class="bi bi-list-check"></i> Browse Issues
-                    </a>
+                <div class="card" style="border: none; background: linear-gradient(135deg, var(--primary-light), var(--white));">
+                    <div class="card-body p-5">
+                        <h2 class="fw-bold mb-3">Ready to Make a Difference?</h2>
+                        <p class="lead text-muted mb-4">
+                            Join thousands of citizens using FixIt to improve their communities. Every report matters.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            @if (User?.Identity?.IsAuthenticated ?? false)
+                            {
+                                <a asp-area="" asp-page="/Issues/Create" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-plus-circle"></i> Report an Issue Now
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-person-plus"></i> Create Free Account
+                                </a>
+                            }
+                            <a asp-area="" asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-list-check"></i> Browse Issues
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
-<!-- Footer Enhancement -->
-<style>
-    footer {
-        margin-top: auto;
-        background-color: #f8f9fa;
-        padding: 40px 0 20px;
-    }
-    
-    footer a {
-        color: #0d6efd;
-        text-decoration: none;
-    }
-    
-    footer a:hover {
-        text-decoration: underline;
-    }
-    
-    .navbar {
-        transition: all 0.3s ease;
-    }
-    
-    .navbar-brand {
-        transition: color 0.3s ease;
-    }
-    
-    .navbar-brand:hover {
-        color: #0a58ca !important;
-    }
-</style>
