@@ -49,4 +49,8 @@ public interface IIssueService
     Task RemoveVoteAsync(string issueId, string userId);
 
     Task DeleteIssueAsync(string issueId);
+
+    Task SoftDeleteIssueAsync(string issueId);
+
+    Task RestoreIssueAsync(string issueId);
 }

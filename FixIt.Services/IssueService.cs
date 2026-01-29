@@ -346,4 +346,34 @@ public class IssueService : IIssueService
         if (pageSize < 1) pageSize = 20;
         if (pageSize > 100) pageSize = 100; // Max page size
     }
+
+    /// <summary>
+    /// Soft delete an issue - marks it as deleted but keeps data for recovery
+    /// </summary>
+    public async Task SoftDeleteIssueAsync(string issueId)
+    {
+        var issue = await _issueRepo.GetByIdAsync(issueId);
+        if (issue == null)
+            throw new KeyNotFoundException($"Issue {issueId} not found");
+
+        issue.IsDeleted = true;
+        issue.UpdatedAt = DateTime.UtcNow;
+
+        await _issueRepo.ReplaceAsync(issueId, issue);
+    }
+
+    /// <summary>
+    /// Restore a soft-deleted issue
+    /// </summary>
+    public async Task RestoreIssueAsync(string issueId)
+    {
+        var issue = await _issueRepo.GetByIdAsync(issueId);
+        if (issue == null)
+            throw new KeyNotFoundException($"Issue {issueId} not found");
+
+        issue.IsDeleted = false;
+        issue.UpdatedAt = DateTime.UtcNow;
+
+        await _issueRepo.ReplaceAsync(issueId, issue);
+    }
 }
