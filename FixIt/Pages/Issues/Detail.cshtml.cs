@@ -2,19 +2,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Services.Contracts;
 using FixIt.Models.Issues;
+using FixIt.Models.AI;
+using FixIt.Services.AI;
 
 namespace FixIt.Pages.Issues;
 
 public class IssueDetailModel : PageModel
 {
     private readonly IIssueService _issueService;
+    private readonly IIssueAnalysisService _analysisService;
 
-    public IssueDetailModel(IIssueService issueService)
+    public IssueDetailModel(IIssueService issueService, IIssueAnalysisService analysisService)
     {
         _issueService = issueService;
+        _analysisService = analysisService;
     }
 
     public Issue? Issue { get; set; }
+    public IssueAnalysis? Analysis { get; set; }
     public List<dynamic>? Comments { get; set; } = new();
     public int? IssueCount { get; set; }
     
@@ -39,6 +44,11 @@ public class IssueDetailModel : PageModel
             if (Issue == null)
             {
                 ModelState.AddModelError("", "Issue not found");
+            }
+            else
+            {
+                // Load AI analysis if available
+                Analysis = await _analysisService.GetAnalysisAsync(id);
             }
             
             Comments = new List<dynamic>();

@@ -18,6 +18,46 @@
                         <p class="text-muted">Log in to continue reporting issues</p>
                     </div>
                     
+                    <!-- OAuth Providers Section -->
+                    @if (Model.ExternalLogins.Any())
+                    {
+                        <section class="mb-4">
+                            <h5 class="text-center text-muted mb-3">Sign in with</h5>
+                            <div class="d-grid gap-2">
+                                @foreach (var provider in Model.ExternalLogins)
+                                {
+                                    <form id="@provider.Name" method="post" action="@Url.Page("./ExternalLogin", new { handler = "Callback", returnUrl = Model.ReturnUrl })" style="display: none;">
+                                        <input type="hidden" name="provider" value="@provider.Name" />
+                                    </form>
+                                    <button type="button" class="btn btn-outline-secondary" 
+                                            onclick="document.getElementById('@provider.Name').submit();">
+                                        @{
+                                            var providerName = provider.Name;
+                                            if (providerName == "Google")
+                                            {
+                                                <text><i class="fab fa-google text-danger"></i> Continue with Google</text>
+                                            }
+                                            else if (providerName == "Microsoft")
+                                            {
+                                                <text><i class="fab fa-microsoft text-primary"></i> Continue with Microsoft</text>
+                                            }
+                                            else
+                                            {
+                                                <text><i class="bi bi-box-arrow-up-right"></i> @provider.DisplayName</text>
+                                            }
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </section>
+
+                        <div class="text-center mb-4">
+                            <div class="divider">
+                                <span class="divider-text">or</span>
+                            </div>
+                        </div>
+                    }
+
                     <section>
                         <form method="post">
                             <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -72,3 +112,34 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<style>
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.divider-text {
+    flex: 1;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: #e9ecef;
+}
+
+.divider::before {
+    margin-right: 10px;
+}
+
+.divider::after {
+    margin-left: 10px;
+}
+</style>

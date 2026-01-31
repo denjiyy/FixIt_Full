@@ -1,8 +1,21 @@
 using AspNetCore.Identity.Mongo.Model;
 using MongoDB.Bson.Serialization.Attributes;
 using FixIt.Models.Enums;
+using System.Collections.Generic;
 
 namespace FixIt.Models.Users;
+
+public class ExternalIdentity
+{
+    public string Provider { get; set; } = null!; // "Google", "GitHub", "Microsoft"
+    public string ProviderId { get; set; } = null!; // External provider's user ID
+    public string? ProviderUsername { get; set; }
+    public string? ProviderDisplayName { get; set; }
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime ConnectedAt { get; set; } = DateTime.UtcNow;
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? LastSignInAt { get; set; }
+}
 
 public class ApplicationUser : MongoUser
 {
@@ -14,6 +27,22 @@ public class ApplicationUser : MongoUser
 
     [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
     public string? PreferredCityId { get; set; }
+
+    /// <summary>
+    /// External identity providers linked to this account
+    /// Enables users to sign in via Google, GitHub, Microsoft, etc.
+    /// </summary>
+    public List<ExternalIdentity> ExternalIdentities { get; set; } = new();
+
+    /// <summary>
+    /// Whether the user created account via password or OAuth
+    /// </summary>
+    public bool HasPasswordAuth { get; set; } = true;
+
+    /// <summary>
+    /// Whether user can post anonymously
+    /// </summary>
+    public bool AnonymousReportingEnabled { get; set; } = true;
 
     /// <summary>
     /// The user's role in the system

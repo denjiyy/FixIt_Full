@@ -8,6 +8,12 @@ using FixIt.Data.Repository;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Services;
 using FixIt.Services.Contracts;
+using FixIt.Services.Authentication;
+using FixIt.Services.Gamification;
+using FixIt.Services.AI;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +65,34 @@ mongo =>
     mongo.ConnectionString = mongoConnectionString;
 });
 
+// Configure OAuth Authentication
+var authConfig = builder.Configuration.GetSection("Authentication");
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.AccessDeniedPath = "/access-denied";
+})
+.AddGoogle(options =>
+{
+    options.ClientId = authConfig["Google:ClientId"] ?? "";
+    options.ClientSecret = authConfig["Google:ClientSecret"] ?? "";
+    options.CallbackPath = "/signin-google";
+})
+.AddMicrosoftAccount(options =>
+{
+    options.ClientId = authConfig["Microsoft:ClientId"] ?? "";
+    options.ClientSecret = authConfig["Microsoft:ClientSecret"] ?? "";
+    options.CallbackPath = "/signin-microsoft";
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
+});
+
 // Register repositories with correct collection names
 builder.Services.AddScoped<IRepository<FixIt.Models.Locations.City>>(sp =>
 {
@@ -90,9 +124,40 @@ builder.Services.AddScoped<IRepository<FixIt.Models.Engagement.Vote>>(sp =>
     return new Repository<FixIt.Models.Engagement.Vote>(db, "votes");
 });
 
+// Gamification repositories
+builder.Services.AddScoped<IRepository<FixIt.Models.Gamification.UserReputation>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Gamification.UserReputation>(db, "userReputations");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Gamification.ReputationTransaction>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Gamification.ReputationTransaction>(db, "reputationTransactions");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Gamification.LeaderboardEntry>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Gamification.LeaderboardEntry>(db, "leaderboards");
+});
+
+// AI Analysis repositories
+builder.Services.AddScoped<IRepository<FixIt.Models.AI.IssueAnalysis>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.AI.IssueAnalysis>(db, "issueAnalyses");
+});
+
 // Register services (business logic layer)
 builder.Services.AddScoped<IIssueService, IssueService>();
 builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
+builder.Services.AddScoped<IReputationService, ReputationService>();
+
+// HTTP client for OpenAI
+builder.Services.AddHttpClient<IIssueAnalysisService, OpenAIIssueAnalysisService>();
 
 // Add CORS if needed for mobile app
 builder.Services.AddCors(options =>

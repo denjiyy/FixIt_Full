@@ -94,6 +94,111 @@
                 </div>
             </div>
 
+            <!-- AI Analysis -->
+            @if (Model.Analysis != null)
+            {
+                <div class="card mb-4" style="border: none; background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(111, 66, 193, 0.05)); border-left: 4px solid #0d6efd;">
+                    <div class="card-header" style="background: transparent; border-bottom: 1px solid rgba(13, 110, 253, 0.2);">
+                        <h6 class="mb-0"><i class="bi bi-lightbulb text-primary"></i> AI Analysis <span class="badge bg-primary ms-2">Automated</span></h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <!-- Category -->
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-tag-fill text-info" style="font-size: 1.5rem; margin-right: 0.75rem;"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Category</small>
+                                        <strong class="d-block">@Model.Analysis.Category</strong>
+                                        <small class="text-muted">@Model.Analysis.ConfidenceScore% confident</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Severity -->
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill @(
+                                        Model.Analysis.EstimatedSeverity >= 8 ? "text-danger" :
+                                        Model.Analysis.EstimatedSeverity >= 5 ? "text-warning" :
+                                        "text-success"
+                                    )" style="font-size: 1.5rem; margin-right: 0.75rem;"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Severity</small>
+                                        <strong class="d-block">@Model.Analysis.EstimatedSeverity / 10</strong>
+                                        <div class="progress" style="height: 4px; width: 100px;">
+                                            <div class="progress-bar @(
+                                                Model.Analysis.EstimatedSeverity >= 8 ? "bg-danger" :
+                                                Model.Analysis.EstimatedSeverity >= 5 ? "bg-warning" :
+                                                "bg-success"
+                                            )" role="progressbar" style="width: @(Model.Analysis.EstimatedSeverity * 10)%;" aria-valuenow="@Model.Analysis.EstimatedSeverity" aria-valuemin="0" aria-valuemax="10"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Keywords -->
+                        @if (Model.Analysis.Keywords?.Any() == true)
+                        {
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-2"><i class="bi bi-key-fill"></i> Keywords Identified</small>
+                                <div>
+                                    @foreach (var keyword in Model.Analysis.Keywords.Take(6))
+                                    {
+                                        <span class="badge bg-light text-dark me-1 mb-1" style="border: 1px solid var(--gray-300);">@keyword</span>
+                                    }
+                                    @if (Model.Analysis.Keywords.Count > 6)
+                                    {
+                                        <span class="badge bg-light text-dark" style="border: 1px solid var(--gray-300);">+@(Model.Analysis.Keywords.Count - 6) more</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Suggested Tags -->
+                        @if (Model.Analysis.SuggestedTags?.Any() == true)
+                        {
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-2"><i class="bi bi-tag-fill"></i> Suggested Tags</small>
+                                <div>
+                                    @foreach (var tag in Model.Analysis.SuggestedTags.Take(5))
+                                    {
+                                        <a href="/tags/@tag" class="badge bg-info text-white me-1 mb-1" style="text-decoration: none;">@tag</a>
+                                    }
+                                    @if (Model.Analysis.SuggestedTags.Count > 5)
+                                    {
+                                        <span class="badge bg-light text-dark" style="border: 1px solid var(--gray-300);">+@(Model.Analysis.SuggestedTags.Count - 5) more</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- AI Explanation -->
+                        @if (!string.IsNullOrEmpty(Model.Analysis.Reasoning))
+                        {
+                            <div class="p-3 rounded" style="background: white; border: 1px solid var(--gray-300);">
+                                <small class="text-muted d-block mb-2"><i class="bi bi-chat-right-text"></i> Analysis Notes</small>
+                                <p class="mb-0 small">@Model.Analysis.Reasoning</p>
+                            </div>
+                        }
+
+                        <small class="text-muted d-block mt-3 pt-3 border-top">
+                            <i class="bi bi-info-circle"></i> Analyzed on @Model.Analysis.AnalyzedAt.ToString("MMMM d, yyyy 'at' h:mm tt")
+                        </small>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card mb-4" style="border: none; background: var(--gray-100); opacity: 0.7;">
+                    <div class="card-body text-center py-3">
+                        <i class="bi bi-hourglass-split text-muted" style="font-size: 1.5rem;"></i>
+                        <p class="text-muted small mb-0 mt-2">AI analysis is being processed...</p>
+                    </div>
+                </div>
+            }
+
             <!-- Photos -->
             @if (Model.Issue.MediaIds?.Any() == true)
             {
@@ -223,20 +328,27 @@
                     <h6 class="mb-0">Reported By</h6>
                 </div>
                 <div class="card-body text-center">
-                    @if (!string.IsNullOrEmpty(Model.Issue.Reporter?.AvatarUrl))
-                    {
-                        <img src="@Model.Issue.Reporter.AvatarUrl" alt="Avatar" class="rounded-circle mb-2" 
-                             style="width: 60px; height: 60px; object-fit: cover;">
-                    }
-                    else
-                    {
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                             style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
-                            <i class="bi bi-person" style="font-size: 1.5rem; color: white;"></i>
-                        </div>
-                    }
-                    <h6 class="mb-1">@Model.Issue.Reporter?.DisplayName</h6>
-                    <p class="text-muted small mb-0">@(Model.IssueCount ?? 0) issues reported</p>
+                    <a href="/user/@Model.Issue.Reporter?.Id" style="text-decoration: none; color: inherit;">
+                        @if (!string.IsNullOrEmpty(Model.Issue.Reporter?.AvatarUrl))
+                        {
+                            <img src="@Model.Issue.Reporter.AvatarUrl" alt="Avatar" class="rounded-circle mb-2" 
+                                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; transition: transform 0.2s;" 
+                                 onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        }
+                        else
+                        {
+                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
+                                 style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); cursor: pointer; transition: transform 0.2s;"
+                                 onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="bi bi-person" style="font-size: 1.5rem; color: white;"></i>
+                            </div>
+                        }
+                        <h6 class="mb-1 text-primary">@Model.Issue.Reporter?.DisplayName</h6>
+                    </a>
+                    <p class="text-muted small mb-2">@(Model.IssueCount ?? 0) issues reported</p>
+                    <a href="/user/@Model.Issue.Reporter?.Id" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-person-fill"></i> View Profile
+                    </a>
                 </div>
             </div>
 

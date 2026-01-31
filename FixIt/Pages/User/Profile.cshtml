@@ -1,0 +1,268 @@
+@page "/user/{userId}"
+@model FixIt.Pages.User.ProfileModel
+@{
+    ViewData["Title"] = "User Profile";
+}
+
+<div class="container py-4">
+    @if (Model.UserReputation != null)
+    {
+        <!-- Profile Header -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="card-title">@Model.User.UserName</h1>
+                        <div class="profile-stats mt-3">
+                            <div class="stat-item d-inline-block me-4">
+                                <h5 class="text-primary">@Model.UserReputation.TotalPoints</h5>
+                                <span class="text-muted">Reputation Points</span>
+                            </div>
+                            <div class="stat-item d-inline-block me-4">
+                                <h5 class="text-info">@GetTrustLevelBadge(Model.UserReputation.TrustLevel)</h5>
+                                <span class="text-muted">Trust Level</span>
+                            </div>
+                            <div class="stat-item d-inline-block">
+                                <h5 class="text-success">@Model.UserReputation.Achievements.Count</h5>
+                                <span class="text-muted">Achievements</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="trust-level-badge">
+                            <span class="badge bg-@GetTrustLevelColor(Model.UserReputation.TrustLevel) fs-5 px-3 py-2">
+                                @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reputation Progress -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Reputation Progress</h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-2" style="height: 25px;">
+                    @{
+                        var maxPoints = Model.UserReputation.TrustLevel == 3 ? Model.UserReputation.TotalPoints : GetMaxPointsForLevel(Model.UserReputation.TrustLevel);
+                        var currentLevelMin = Model.UserReputation.TrustLevel == 0 ? 0 : 
+                                             Model.UserReputation.TrustLevel == 1 ? 11 : 
+                                             Model.UserReputation.TrustLevel == 2 ? 51 : 151;
+                        var progress = Model.UserReputation.TotalPoints - currentLevelMin;
+                        var nextLevel = Model.UserReputation.TrustLevel == 3 ? Model.UserReputation.TotalPoints : 
+                                       Model.UserReputation.TrustLevel == 0 ? 11 : 
+                                       Model.UserReputation.TrustLevel == 1 ? 51 : 151;
+                        var progressPercent = (progress / (nextLevel - currentLevelMin)) * 100;
+                    }
+                    <div class="progress-bar bg-success" role="progressbar" style="width: @progressPercent%" 
+                         aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="@(nextLevel - currentLevelMin)">
+                        @progress / @(nextLevel - currentLevelMin)
+                    </div>
+                </div>
+                <small class="text-muted">
+                    @Model.UserReputation.TotalPoints total points
+                    @if (Model.UserReputation.TrustLevel < 3)
+                    {
+                        <text> • @(GetMaxPointsForLevel(Model.UserReputation.TrustLevel) - Model.UserReputation.TotalPoints) points until next level</text>
+                    }
+                </small>
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Achievements (@Model.UserReputation.Achievements.Count)</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.UserReputation.Achievements.Any())
+                {
+                    <div class="achievements-grid">
+                        @foreach (var achievement in Model.UserReputation.Achievements)
+                        {
+                            <div class="achievement-badge text-center me-3 mb-3" title="@GetAchievementDescription(achievement.Type.ToString())">
+                                <div class="badge-icon mb-2">
+                                    <span style="font-size: 2rem;">@GetAchievementIcon(achievement.Type.ToString())</span>
+                                </div>
+                                <small class="d-block">@GetAchievementName(achievement.Type.ToString())</small>
+                                <small class="text-muted d-block">@achievement.EarnedAt.ToShortDateString()</small>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No achievements earned yet. Keep contributing to the community!</p>
+                }
+            </div>
+        </div>
+
+        <!-- Activity Stats -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Community Contribution</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>Issues Reported:</strong> @Model.UserReputation.IssuesReported
+                            </li>
+                            <li class="mb-2">
+                                <strong>Comments:</strong> @Model.UserReputation.CommentsPosted
+                            </li>
+                            <li class="mb-2">
+                                <strong>Issues Resolved:</strong> @Model.UserReputation.IssuesResolved
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Point Breakdown</h6>
+                        <div class="small">
+                            <div class="mb-2">
+                                <span>Issue Reports:</span>
+                                <span class="float-end">@(Model.UserReputation.IssuesReported * 5) pts</span>
+                            </div>
+                            <div class="mb-2">
+                                <span>Comments:</span>
+                                <span class="float-end">@(Model.UserReputation.CommentsPosted * 2) pts</span>
+                            </div>
+                            <div class="mb-2">
+                                <span>Resolved Issues:</span>
+                                <span class="float-end">@(Model.UserReputation.IssuesResolved * 10) pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <p>User not found or has no reputation record yet.</p>
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetTrustLevelLabel(int level) => level switch
+    {
+        0 => "New",
+        1 => "Active",
+        2 => "Trusted",
+        3 => "Leader",
+        _ => "Unknown"
+    };
+
+    private string GetTrustLevelColor(int level) => level switch
+    {
+        0 => "secondary",
+        1 => "info",
+        2 => "success",
+        3 => "primary",
+        _ => "secondary"
+    };
+
+    private string GetTrustLevelBadge(int level) => level switch
+    {
+        0 => "Level 0",
+        1 => "Level 1",
+        2 => "Level 2",
+        3 => "Level 3",
+        _ => "Unknown"
+    };
+
+    private int GetMaxPointsForLevel(int level) => level switch
+    {
+        0 => 10,
+        1 => 50,
+        2 => 150,
+        3 => int.MaxValue,
+        _ => 0
+    };
+
+    private string GetAchievementName(string type) => type switch
+    {
+        "FirstReporter" => "First Reporter",
+        "HelpfulCommenteer" => "Helpful Commenteer",
+        "CommunityHelper" => "Community Helper",
+        "IssueSolver" => "Issue Solver",
+        "CivicContributor" => "Civic Contributor",
+        "CommunityChampion" => "Community Champion",
+        "CivicLeader" => "Civic Leader",
+        "VerifiedCitizen" => "Verified Citizen",
+        "ConsistentParticipant" => "Consistent Participant",
+        "ImpactMaker" => "Impact Maker",
+        "TopContributor" => "Top Contributor",
+        _ => "Unknown Achievement"
+    };
+
+    private string GetAchievementIcon(string type) => type switch
+    {
+        "FirstReporter" => "🎯",
+        "HelpfulCommenteer" => "💬",
+        "CommunityHelper" => "🤝",
+        "IssueSolver" => "✅",
+        "CivicContributor" => "🏛️",
+        "CommunityChampion" => "🏆",
+        "CivicLeader" => "👑",
+        "VerifiedCitizen" => "✔️",
+        "ConsistentParticipant" => "📅",
+        "ImpactMaker" => "⭐",
+        "TopContributor" => "🥇",
+        _ => "🎖️"
+    };
+
+    private string GetAchievementDescription(string type) => type switch
+    {
+        "FirstReporter" => "Reported your first issue",
+        "HelpfulCommenteer" => "Posted a helpful comment",
+        "CommunityHelper" => "Helped the community grow",
+        "IssueSolver" => "Resolved an issue",
+        "CivicContributor" => "Made a civic contribution",
+        "CommunityChampion" => "Became a community champion",
+        "CivicLeader" => "Became a civic leader",
+        "VerifiedCitizen" => "Verified citizen status",
+        "ConsistentParticipant" => "Consistently participated",
+        "ImpactMaker" => "Made a positive impact",
+        "TopContributor" => "Top community contributor",
+        _ => "Achievement unlocked!"
+    };
+}
+
+<style>
+    .achievements-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .achievement-badge {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        min-width: 100px;
+    }
+
+    .achievement-badge:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-stats .stat-item {
+        text-align: center;
+    }
+
+    .trust-level-badge {
+        padding: 2rem 0;
+    }
+</style>

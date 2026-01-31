@@ -4,6 +4,8 @@ using FixIt.Models.Common;
 using FixIt.Models.Enums;
 using FixIt.Models.Engagement;
 using FixIt.Services.Contracts;
+using FixIt.Services.Gamification;
+using FixIt.Services.AI;
 using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace FixIt.Services;
@@ -13,15 +15,21 @@ public class IssueService : IIssueService
     private readonly IRepository<Issue> _issueRepo;
     private readonly IRepository<Tag> _tagRepo;
     private readonly IRepository<Vote> _voteRepo;
+    private readonly IReputationService _reputationService;
+    private readonly IIssueAnalysisService _analysisService;
 
     public IssueService(
         IRepository<Issue> issueRepo, 
         IRepository<Tag> tagRepo,
-        IRepository<Vote> voteRepo)
+        IRepository<Vote> voteRepo,
+        IReputationService reputationService,
+        IIssueAnalysisService analysisService)
     {
         _issueRepo = issueRepo;
         _tagRepo = tagRepo;
         _voteRepo = voteRepo;
+        _reputationService = reputationService;
+        _analysisService = analysisService;
     }
 
     public async Task<Issue> CreateIssueAsync(
@@ -86,6 +94,26 @@ public class IssueService : IIssueService
             UserId = reporter.Id,
             Value = VoteType.Up,
             CreatedAt = DateTime.UtcNow
+        });
+
+        // Award reputation points to the reporter
+        await _reputationService.AddPointsAsync(
+            reporter.Id,
+            5,
+            "issue_reported",
+            issueId: createdIssue.Id);
+
+        // Analyze issue with AI (asynchronous, don't await to avoid delays)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _analysisService.AnalyzeIssueAsync(createdIssue.Id);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"AI analysis failed: {ex.Message}");
+            }
         });
 
         return createdIssue;
@@ -230,6 +258,16 @@ public class IssueService : IIssueService
         issue.LastActivityAt = DateTime.UtcNow;
 
         await _issueRepo.ReplaceAsync(issueId, issue);
+
+        // Award reputation points to the user who fixed the issue
+        if (newStatus == IssueStatus.Fixed)
+        {
+            await _reputationService.AddPointsAsync(
+                changedByUserId,
+                10,
+                "issue_resolved",
+                issueId: issueId);
+        }
     }
 
     public async Task UpdateIssuePriorityAsync(string issueId, IssuePriority priority)
@@ -285,6 +323,16 @@ public class IssueService : IIssueService
             Value = voteType,
             CreatedAt = DateTime.UtcNow
         });
+
+        // Award reputation points to the issue reporter when they receive an upvote
+        if (voteType == VoteType.Up && issue.Reporter.Id != userId)
+        {
+            await _reputationService.AddPointsAsync(
+                issue.Reporter.Id,
+                2,
+                "received_upvote",
+                issueId: issueId);
+        }
     }
 
     public async Task RemoveVoteAsync(string issueId, string userId)
