@@ -87,6 +87,15 @@
         height: 20px;
         border-radius: 50%;
     }
+
+    /* Leaflet marker cursor styling */
+    .issue-marker {
+        cursor: pointer;
+    }
+
+    .leaflet-popup-content a.btn {
+        cursor: pointer !important;
+    }
 </style>
 
 <div class="container-fluid mt-4">
@@ -145,7 +154,7 @@
     // Initialize map centered on the selected city
     const cityLat = @Model.CityLatitude;
     const cityLng = @Model.CityLongitude;
-    const map = L.map('map').setView([cityLat, cityLng], 14);
+    const map = L.map('map').setView([cityLat, cityLng], 13);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -160,12 +169,14 @@
         'Critical': '#dc3545',
         'High': '#fd7e14',
         'Medium': '#ffc107',
-        'Low': '#198754'
+        'Low': '#198754',
+        'Unspecified': '#6c757d'
     };
 
     // Track issue statuses for stats
     let openCount = 0;
     let resolvedCount = 0;
+    const markerGroup = L.featureGroup();
 
     // Add markers to map
     markersData.forEach(marker => {
@@ -179,25 +190,50 @@
         }
         
         const circle = L.circleMarker([marker.latitude, marker.longitude], {
-            radius: 8,
+            radius: 10,
             fillColor: color,
             color: '#fff',
             weight: 2,
             opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map);
+            fillOpacity: 0.85,
+            className: 'issue-marker'
+        });
 
+        // Create popup content
         const popup = `
-            <div style="min-width: 200px;">
-                <h5>${marker.title}</h5>
-                <p><strong>Status:</strong> ${marker.status}</p>
-                <p><strong>Priority:</strong> ${marker.priority}</p>
-                <a href="/issues/${marker.issueId}" class="btn btn-sm btn-primary mt-2">View Details</a>
+            <div style="min-width: 220px;">
+                <h6 style="margin-bottom: 0.5rem; font-weight: 600;">${marker.title}</h6>
+                <div style="font-size: 0.85rem; margin: 0.5rem 0;">
+                    <p style="margin: 0.3rem 0;"><strong>Status:</strong> <span style="display: inline-block; padding: 2px 6px; border-radius: 3px; background: #e9ecef;">${marker.status}</span></p>
+                    <p style="margin: 0.3rem 0;"><strong>Priority:</strong> <span style="display: inline-block; padding: 2px 6px; border-radius: 3px; background: ${color}; color: white;">${marker.priority}</span></p>
+                </div>
+                <a href="/issues/${marker.issueId}" class="btn btn-sm btn-primary mt-2" style="width: 100%; text-align: center;">View Details</a>
             </div>
         `;
 
         circle.bindPopup(popup);
+        
+        // Add click event to navigate to issue details
+        circle.on('click', function() {
+            window.location.href = `/issues/${marker.issueId}`;
+        });
+
+        // Highlight on hover
+        circle.on('mouseover', function() {
+            this.setStyle({ weight: 3, radius: 12, fillOpacity: 1 });
+        });
+        circle.on('mouseout', function() {
+            this.setStyle({ weight: 2, radius: 10, fillOpacity: 0.85 });
+        });
+
+        circle.addTo(map);
+        markerGroup.addLayer(circle);
     });
+
+    // Fit map bounds to show all markers if they exist
+    if (markersData.length > 0) {
+        map.fitBounds(markerGroup.getBounds().pad(0.1));
+    }
 
     // Update statistics
     const totalCount = markersData.length;

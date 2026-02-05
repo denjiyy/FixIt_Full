@@ -176,6 +176,45 @@ public class IssuesController : ControllerBase
     }
 
     /// <summary>
+    /// DEBUG: Get raw issues data for city (unfiltered)
+    /// </summary>
+    [HttpGet("debug/city/{cityId}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<object>>> DebugGetIssuesForCity(string cityId)
+    {
+        try
+        {
+            var result = await _issueService.GetIssuesByCityAsync(cityId, null, 1, 100);
+            
+            var debugData = new
+            {
+                cityId,
+                totalFound = result.Total,
+                issues = result.Items.Select(i => new
+                {
+                    id = i.Id,
+                    title = i.Title,
+                    cityId = i.CityId,
+                    hasLocation = i.Location != null,
+                    hasCoordinates = i.Location?.Coordinates != null,
+                    latitude = i.Location?.Coordinates?.Latitude,
+                    longitude = i.Location?.Coordinates?.Longitude,
+                    status = i.Status.ToString(),
+                    priority = i.Priority.ToString(),
+                    createdAt = i.CreatedAt
+                }).ToList()
+            };
+
+            return Ok(ApiResponse<object>.CreateSuccess(debugData));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Debug error for city {CityId}", cityId);
+            return BadRequest(ApiResponse<object>.CreateError($"Debug error: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
     /// Search issues with advanced filtering
     /// </summary>
     /// <param name="cityId">City ID</param>

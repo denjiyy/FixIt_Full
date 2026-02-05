@@ -111,10 +111,11 @@ public class HeatmapService : IHeatmapService
         if (issues.Count == 0)
             return new List<HeatmapLocationPoint>();
         
+        // Group issues by location and create hotspots
         var hotspots = issues
             .GroupBy(i => new { 
-                Lat = Math.Round(i.Location.Coordinates.Latitude, 6), 
-                Lon = Math.Round(i.Location.Coordinates.Longitude, 6)
+                Lat = Math.Round(i.Location.Coordinates.Latitude, 5), 
+                Lon = Math.Round(i.Location.Coordinates.Longitude, 5)
             })
             .Select(g => new HeatmapLocationPoint
             {

@@ -3,6 +3,7 @@ using FixIt.Services.Analytics;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace FixIt.Pages.Heatmaps;
 
@@ -39,13 +40,9 @@ public class HeatmapsModel : PageModel
         CityLatitude = city.Latitude;
         CityLongitude = city.Longitude;
 
-        Console.WriteLine($"[Heatmaps] City: {city.Name}, Lat: {city.Latitude}, Lng: {city.Longitude}");
-
         // Get all issues for this city
         var issueRepo = HttpContext.RequestServices.GetRequiredService<IRepository<FixIt.Models.Issues.Issue>>();
         var allIssues = (await issueRepo.FindAsync(i => i.CityId == cityId)).ToList();
-
-        Console.WriteLine($"[Heatmaps] Found {allIssues.Count} issues for city {cityId}");
 
         // Calculate statistics
         TotalIssues = allIssues.Count;
@@ -59,30 +56,61 @@ public class HeatmapsModel : PageModel
         IssueMarkers = new List<IssueMarker>();
         foreach (var issue in allIssues)
         {
-            if (issue.Location?.Coordinates != null)
+            // GeoJsonPoint stores coordinates as Longitude, Latitude
+            if (issue.Location != null && issue.Location.Coordinates != null)
             {
-                Console.WriteLine($"[Heatmaps] Issue: {issue.Title}, Lat: {issue.Location.Coordinates.Latitude}, Lng: {issue.Location.Coordinates.Longitude}");
-                
-                IssueMarkers.Add(new IssueMarker
+                try
                 {
-                    IssueId = issue.Id,
-                    Latitude = issue.Location.Coordinates.Latitude,
-                    Longitude = issue.Location.Coordinates.Longitude,
-                    Title = issue.Title,
-                    Status = issue.Status.ToString(),
-                    Priority = issue.Priority.ToString()
-                });
-            }
-            else
-            {
-                Console.WriteLine($"[Heatmaps] Issue {issue.Title} has no location coordinates!");
+                    var coordinates = issue.Location.Coordinates;
+                    
+                    // Serialize the coordinates object to JSON to extract latitude/longitude
+                    var coordJson = JsonSerializer.Serialize(coordinates);
+                    
+                    // Parse the JSON to extract latitude/longitude
+                    using var jsonDoc = System.Text.Json.JsonDocument.Parse(coordJson);
+                    var root = jsonDoc.RootElement;
+                    
+                    double latitude = 0;
+                    double longitude = 0;
+                    
+                    // Try common property names
+                    if (root.TryGetProperty("latitude", out var latProp))
+                        latitude = latProp.GetDouble();
+                    if (root.TryGetProperty("Latitude", out latProp))
+                        latitude = latProp.GetDouble();
+                    
+                    if (root.TryGetProperty("longitude", out var lngProp))
+                        longitude = lngProp.GetDouble();
+                    if (root.TryGetProperty("Longitude", out lngProp))
+                        longitude = lngProp.GetDouble();
+                    
+                    if (latitude != 0 && longitude != 0)
+                    {
+                        IssueMarkers.Add(new IssueMarker
+                        {
+                            IssueId = issue.Id,
+                            Latitude = latitude,
+                            Longitude = longitude,
+                            Title = issue.Title,
+                            Status = issue.Status.ToString(),
+                            Priority = issue.Priority.ToString()
+                        });
+                    }
+                }
+                catch (Exception)
+                {
+                    // Silently fail - issue will not be shown on map
+                }
             }
         }
 
-        Console.WriteLine($"[Heatmaps] Created {IssueMarkers.Count} markers");
-
-        // Serialize markers for JavaScript
-        MarkersJson = JsonSerializer.Serialize(IssueMarkers);
+        // Serialize markers for JavaScript with camelCase property names
+        var options = new JsonSerializerOptions 
+        { 
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = false
+        };
+        MarkersJson = JsonSerializer.Serialize(IssueMarkers, options);
     }
 }
 
