@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Folder Include="Contracts/" />
+    <Folder Include="Storage/" />
   </ItemGroup>
 
 </Project>

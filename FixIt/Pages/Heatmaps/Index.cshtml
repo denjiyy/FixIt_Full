@@ -1,0 +1,196 @@
+@page "/Heatmaps/{cityId}"
+@using FixIt.Services.Analytics
+@model HeatmapsModel
+@{
+    ViewData["Title"] = "Issue Map - " + Model.CityName;
+}
+
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .map-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .map-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        opacity: 0.9;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+    }
+
+    .stat-card.open {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .stat-card.resolved {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .map-legend {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .legend-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>@Model.CityName - Issue Map</h1>
+            <p class="text-muted">Click on any marker to view the issue details</p>
+        </div>
+    </div>
+
+    <div class="map-container">
+        <h2 class="map-title">Active Issues</h2>
+        <div id="map"></div>
+        
+        <div class="map-legend">
+            <div class="legend-title">Map Legend</div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #dc3545;"></div>
+                <span>Critical Priority</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fd7e14;"></div>
+                <span>High Priority</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffc107;"></div>
+                <span>Medium Priority</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #198754;"></div>
+                <span>Low Priority</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card open">
+            <div class="stat-label">Open Issues</div>
+            <div class="stat-value" id="openCount">0</div>
+        </div>
+        <div class="stat-card resolved">
+            <div class="stat-label">Resolved Issues</div>
+            <div class="stat-value" id="resolvedCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Issues</div>
+            <div class="stat-value" id="totalCount">0</div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    // Initialize map centered on Bulgaria
+    const map = L.map('map').setView([42.7339, 25.4858], 8);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Parse markers from page data
+    const markersData = @Html.Raw(Model.MarkersJson);
+
+    // Color map for priorities
+    const priorityColors = {
+        'Critical': '#dc3545',
+        'High': '#fd7e14',
+        'Medium': '#ffc107',
+        'Low': '#198754'
+    };
+
+    // Add markers to map
+    markersData.forEach(marker => {
+        const color = priorityColors[marker.priority] || '#6c757d';
+        
+        const circle = L.circleMarker([marker.latitude, marker.longitude], {
+            radius: 8,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map);
+
+        const popup = `
+            <div style="min-width: 200px;">
+                <h5>${marker.title}</h5>
+                <p><strong>Status:</strong> ${marker.status}</p>
+                <p><strong>Priority:</strong> ${marker.priority}</p>
+                <a href="/issues/${marker.issueId}" class="btn btn-sm btn-primary mt-2">View Details</a>
+            </div>
+        `;
+
+        circle.bindPopup(popup);
+    });
+
+    // Update statistics
+    const openCount = markersData.length;
+    document.getElementById('openCount').textContent = openCount;
+    
+    // In a real scenario, you'd fetch these from the server, but for now:
+    document.getElementById('totalCount').textContent = openCount;
+    document.getElementById('resolvedCount').textContent = '0';
+</script>

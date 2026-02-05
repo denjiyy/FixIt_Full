@@ -74,6 +74,7 @@
             @foreach (var issue in Model.Issues)
             {
                 <div class="col-md-6 col-lg-4">
+                    <!-- FIXED: Use correct route -->
                     <a href="/issues/@issue.Id" class="card h-100 issue-card text-decoration-none">
                         <!-- Status Badge -->
                         <div class="position-absolute top-0 end-0 p-2">
@@ -175,6 +176,12 @@
         <div class="alert alert-info text-center py-5">
             <h5>No issues found</h5>
             <p>Be the first to report an issue in your city!</p>
+            @if (User?.Identity?.IsAuthenticated ?? false)
+            {
+                <a href="/issues/create" class="btn btn-primary mt-3">
+                    <i class="bi bi-plus-circle"></i> Report Issue
+                </a>
+            }
         </div>
     }
 </div>

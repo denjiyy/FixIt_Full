@@ -266,11 +266,7 @@
             <div class="city-grid">
                 @foreach (var city in Model.Cities)
                 {
-                    <a asp-page="Cities" 
-                       asp-route-selectedCountry="@Model.SelectedCountry"
-                       asp-route-selectedCity="@city.Name"
-                       asp-route-currentPage="1"
-                       class="city-card">
+                    <div class="city-card">
                         @if (!string.IsNullOrEmpty(city.PhotoUrl))
                         {
                             <img src="@city.PhotoUrl" alt="@city.Name" class="city-image" onerror="this.src='https://via.placeholder.com/600x400?text=@Uri.EscapeDataString(city.Name)'">
@@ -285,8 +281,16 @@
                             {
                                 <p class="city-description">@city.Description</p>
                             }
+                            <div style="display: flex; gap: 0.5rem; margin-top: auto;">
+                                <a href="/Heatmaps/@city.Id" class="btn btn-sm btn-primary" style="flex: 1; text-align: center;">
+                                    <i class="bi bi-map"></i> Heatmap
+                                </a>
+                                <a href="/HealthReports/@city.Id" class="btn btn-sm btn-info" style="flex: 1; text-align: center;">
+                                    <i class="bi bi-heart-pulse"></i> Health
+                                </a>
+                            </div>
                         </div>
-                    </a>
+                    </div>
                 }
             </div>
 

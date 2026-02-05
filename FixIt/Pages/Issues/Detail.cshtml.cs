@@ -10,16 +10,22 @@ namespace FixIt.Pages.Issues;
 public class IssueDetailModel : PageModel
 {
     private readonly IIssueService _issueService;
+    private readonly IMediaService _mediaService;
     private readonly IIssueAnalysisService _analysisService;
 
-    public IssueDetailModel(IIssueService issueService, IIssueAnalysisService analysisService)
+    public IssueDetailModel(
+        IIssueService issueService, 
+        IMediaService mediaService,
+        IIssueAnalysisService analysisService)
     {
         _issueService = issueService;
+        _mediaService = mediaService;
         _analysisService = analysisService;
     }
 
     public Issue? Issue { get; set; }
     public IssueAnalysis? Analysis { get; set; }
+    public List<FixIt.Models.Media.Media> MediaList { get; set; } = new();
     public List<dynamic>? Comments { get; set; } = new();
     public int? IssueCount { get; set; }
     
@@ -34,32 +40,47 @@ public class IssueDetailModel : PageModel
         }
     }
 
-    public async Task OnGetAsync(string id)
+    // IMPORTANT: Add route parameter binding
+    [BindProperty(SupportsGet = true)]
+    public string Id { get; set; } = null!;
+
+    public async Task<IActionResult> OnGetAsync()
     {
+        if (string.IsNullOrEmpty(Id))
+        {
+            return NotFound();
+        }
+
         try
         {
             // Load issue from service
-            Issue = await _issueService.GetIssueByIdAsync(id);
+            Issue = await _issueService.GetIssueByIdAsync(Id);
             
             if (Issue == null)
             {
-                ModelState.AddModelError("", "Issue not found");
+                return NotFound();
             }
-            else
-            {
-                // Load AI analysis if available
-                Analysis = await _analysisService.GetAnalysisAsync(id);
-            }
+
+            // Load AI analysis if available
+            Analysis = await _analysisService.GetAnalysisAsync(Id);
+            
+            // Load media files
+            MediaList = await _mediaService.GetMediaForReferenceAsync(
+                FixIt.Models.Enums.MediaReferenceType.Issue, 
+                Id
+            );
             
             Comments = new List<dynamic>();
+            
+            return Page();
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError("", "Failed to load issue");
+            return NotFound();
         }
     }
 
-    public async Task<IActionResult> OnPostAddCommentAsync(string id, string commentText)
+    public async Task<IActionResult> OnPostAddCommentAsync(string commentText)
     {
         if (string.IsNullOrWhiteSpace(commentText))
         {
@@ -70,7 +91,7 @@ public class IssueDetailModel : PageModel
         try
         {
             // TODO: Add comment via service
-            return RedirectToPage(new { id });
+            return RedirectToPage(new { id = Id });
         }
         catch (Exception ex)
         {

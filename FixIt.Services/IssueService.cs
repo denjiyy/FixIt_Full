@@ -512,4 +512,13 @@ public class IssueService : IIssueService
             Total = totalCount
         };
     }
+
+    public async Task UpdateIssueAsync(Issue issue)
+    {
+        if (issue == null)
+            throw new ArgumentNullException(nameof(issue));
+            
+        issue.UpdatedAt = DateTime.UtcNow;
+        await _issueRepo.ReplaceAsync(issue.Id, issue);
+    }
 }

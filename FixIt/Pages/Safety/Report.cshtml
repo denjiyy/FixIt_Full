@@ -1,0 +1,122 @@
+@page "/safety/report"
+@model FixIt.Pages.Safety.ReportModel
+@{
+    ViewData["Title"] = "Report Safety Hazard";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">Report a Safety Hazard</h1>
+            <p class="text-muted mb-4">Help keep your community safe by reporting hazards like accidents, construction zones, potholes, and other issues that affect citizen safety.</p>
+
+            <form method="post" class="needs-validation">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="hazardType" class="form-label">Hazard Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="hazardType" name="HazardType" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="0">Accident</option>
+                            <option value="1">Construction</option>
+                            <option value="2">Pothole</option>
+                            <option value="3">Flooding</option>
+                            <option value="4">Damaged Infrastructure</option>
+                            <option value="5">Street Light Issue</option>
+                            <option value="6">Debris</option>
+                            <option value="7">Traffic Congestion</option>
+                            <option value="8">Crime</option>
+                            <option value="9">Other</option>
+                        </select>
+                        <span asp-validation-for="HazardType" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="severity" class="form-label">Severity <span class="text-danger">*</span></label>
+                        <select class="form-control" id="severity" name="Severity" required>
+                            <option value="">-- Select Severity --</option>
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                            <option value="3">Critical</option>
+                        </select>
+                        <span asp-validation-for="Severity" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="title" name="Title" placeholder="Brief description" required maxlength="200">
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="description" name="Description" rows="4" placeholder="Detailed description of the hazard" required maxlength="2000"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="latitude" class="form-label">Latitude <span class="text-danger">*</span></label>
+                        <input type="number" step="0.000001" class="form-control" id="latitude" name="Latitude" required>
+                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="longitude" class="form-label">Longitude <span class="text-danger">*</span></label>
+                        <input type="number" step="0.000001" class="form-control" id="longitude" name="Longitude" required>
+                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address (Optional)</label>
+                    <input type="text" class="form-control" id="address" name="Address" placeholder="Street address or location description" maxlength="300">
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="anonymous" name="IsAnonymous">
+                        <label class="form-check-label" for="anonymous">
+                            Report anonymously (name won't be displayed)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Privacy Notice:</strong> If you choose anonymous reporting, your name won't be publicly visible. However, authorities and administrators will still be able to contact you if needed.
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Report Hazard
+                    </button>
+                    <a href="/cities" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Interactive map integration (using Leaflet)
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize map to allow users to click and set coordinates
+        const map = L.map('map', { attributionControl: false }).setView([42.7339, 25.4858], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Click to set coordinates
+        map.on('click', function (e) {
+            document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+            document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+        });
+    });
+</script>
+
+<style>
+    #map {
+        height: 300px;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+</style>

@@ -6,6 +6,7 @@ using FixIt.Services.Contracts;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using FixIt.Models.Common;
+using FixIt.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
@@ -15,14 +16,20 @@ namespace FixIt.Pages.Issues;
 public class CreateIssueModel : PageModel
 {
     private readonly IIssueService _issueService;
+    private readonly IMediaService _mediaService;
     private readonly IRepository<City> _cityRepo;
+    private readonly ILogger<CreateIssueModel> _logger;
 
     public CreateIssueModel(
         IIssueService issueService,
-        IRepository<City> cityRepo)
+        IMediaService mediaService,
+        IRepository<City> cityRepo,
+        ILogger<CreateIssueModel> logger)
     {
         _issueService = issueService;
+        _mediaService = mediaService;
         _cityRepo = cityRepo;
+        _logger = logger;
     }
 
     [BindProperty]
@@ -95,17 +102,51 @@ public class CreateIssueModel : PageModel
                 latitude: Input.Latitude,
                 cityId: Input.CityId,
                 reporter: reporter,
-                tagNames: null // TODO: Add tag support if needed
+                tagNames: null
             );
 
-            // TODO: Handle photo uploads if needed
+            _logger.LogInformation("Created issue {IssueId} by user {UserId}", issue.Id, userId);
 
-            return RedirectToPage("Detail", new { id = issue.Id });
+            // Handle photo uploads
+            if (Input.Photos != null && Input.Photos.Any())
+            {
+                try
+                {
+                    var uploadedMedia = await _mediaService.UploadFilesAsync(
+                        Input.Photos,
+                        userId,
+                        MediaReferenceType.Issue,
+                        issue.Id
+                    );
+
+                    // Update issue with media IDs
+                    foreach (var media in uploadedMedia)
+                    {
+                        issue.MediaIds.Add(media.Id);
+                    }
+
+                    // Save updated issue
+                    await _issueService.UpdateIssueAsync(issue);
+
+                    _logger.LogInformation("Uploaded {Count} photos for issue {IssueId}", uploadedMedia.Count, issue.Id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to upload photos for issue {IssueId}", issue.Id);
+                    TempData["Warning"] = "Issue created but some photos failed to upload.";
+                }
+            }
+
+            TempData["Success"] = "Issue reported successfully!";
+            
+            // FIXED: Use Redirect with the actual route path
+            return Redirect($"/issues/{issue.Id}");
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to create issue");
             await LoadCities();
-            ModelState.AddModelError("", "Failed to create issue. Please try again.");
+            ModelState.AddModelError("", $"Failed to create issue: {ex.Message}");
             return Page();
         }
     }
@@ -124,12 +165,14 @@ public class CreateIssueModel : PageModel
 
             if (!Cities.Any())
             {
-                ModelState.AddModelError("", "No cities available in Bulgaria. Please contact support.");
+                _logger.LogWarning("No cities found in Bulgaria");
+                ModelState.AddModelError("", "No cities available. Please contact support.");
             }
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError("", $"Failed to load cities: {ex.Message}");
+            _logger.LogError(ex, "Failed to load cities");
+            ModelState.AddModelError("", "Failed to load cities. Please try again.");
             Cities = new List<SelectListItem>();
         }
     }

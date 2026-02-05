@@ -79,8 +79,17 @@ public class AuthController : ControllerBase
             return Redirect("/login?error=user_creation_failed");
         }
 
-        // Sign in the user
-        await _signInManager.SignInAsync(user, isPersistent: true);
+        // Sign in the user with custom claims
+        var claims = new List<Claim>
+        {
+            new Claim("DisplayName", user.DisplayName),
+            new Claim(ClaimTypes.Email, user.Email ?? "")
+        };
+        
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var customPrincipal = new ClaimsPrincipal(identity);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, customPrincipal);
+        
         await _oauthService.UpdateLastSignInAsync(user, provider);
 
         _logger.LogInformation($"User {user.Email} signed in via {provider}");

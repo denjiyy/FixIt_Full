@@ -58,6 +58,26 @@ public class LoginModel : PageModel
             var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
             if (result.Succeeded)
             {
+                // Get the user to add DisplayName claim
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (user != null)
+                {
+                    // Create a new principal with DisplayName claim
+                    var claims = new List<System.Security.Claims.Claim>
+                    {
+                        new System.Security.Claims.Claim("DisplayName", user.DisplayName),
+                        new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, user.Email ?? "")
+                    };
+                    
+                    var identity = new System.Security.Claims.ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+                    var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+                    
+                    await HttpContext.SignInAsync(
+                        Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                        principal,
+                        new Microsoft.AspNetCore.Authentication.AuthenticationProperties { IsPersistent = Input.RememberMe });
+                }
+                
                 _logger.LogInformation("User logged in.");
                 return LocalRedirect(returnUrl);
             }

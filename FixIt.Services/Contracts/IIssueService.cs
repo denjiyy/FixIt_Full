@@ -62,4 +62,6 @@ public interface IIssueService
         IssuePriority? priority = null,
         int page = 1,
         int pageSize = 20);
+
+    Task UpdateIssueAsync(Issue issue);
 }

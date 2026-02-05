@@ -1,0 +1,180 @@
+@page "/safety/map"
+@model FixIt.Pages.Safety.MapModel
+@{
+    ViewData["Title"] = "Safety Hazard Map";
+}
+
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-exclamation-triangle text-warning"></i> Safety Hazard Map
+            </h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Map -->
+        <div class="col-lg-9">
+            <div id="map" style="height: 600px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Active Hazards</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="hazardList" style="max-height: 600px; overflow-y: auto;">
+                        @foreach (var hazard in Model.Hazards)
+                        {
+                            <div class="hazard-item p-3 border-bottom cursor-pointer" data-id="@hazard.Id" data-lat="@hazard.Location.Coordinates.Latitude" data-lng="@hazard.Location.Coordinates.Longitude">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">@hazard.Title</h6>
+                                        <small class="text-muted">@hazard.Type</small>
+                                    </div>
+                                    <span class="badge" style="background-color: @GetSeverityColor(hazard.Severity)">@hazard.Severity</span>
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-map-marker-alt"></i> @hazard.Address
+                                </small>
+                                <small class="text-success d-block mt-1">
+                                    <i class="fas fa-check-circle"></i> @hazard.Confirmations confirmations
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="/safety/report" class="btn btn-danger w-100">
+                    <i class="fas fa-plus"></i> Report Hazard
+                </a>
+            </div>
+
+            <!-- Legend -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Severity Levels</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-success">Low</span> Minor issues
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-warning">Medium</span> Requires attention
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-danger">High</span> Significant hazard
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-dark">Critical</span> Immediate danger
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    // Initialize map
+    const map = L.map('map', { attributionControl: false }).setView([42.7339, 25.4858], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    const hazards = @Html.Raw(Model.HazardsJson);
+    const markers = {};
+
+    // Color map for severity
+    const severityColors = {
+        'Low': '#198754',
+        'Medium': '#ffc107',
+        'High': '#dc3545',
+        'Critical': '#212529'
+    };
+
+    // Add markers for each hazard
+    hazards.forEach(hazard => {
+        const color = severityColors[hazard.severity] || '#6c757d';
+        const marker = L.circleMarker(
+            [hazard.latitude, hazard.longitude],
+            {
+                radius: 8,
+                fillColor: color,
+                color: color,
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.7
+            }
+        ).addTo(map);
+
+        const popup = `
+            <div class="card" style="min-width: 250px;">
+                <div class="card-body">
+                    <h6>${hazard.title}</h6>
+                    <p class="mb-2 small text-muted">${hazard.type}</p>
+                    <span class="badge bg-${getSeverityClass(hazard.severity)}">${hazard.severity}</span>
+                    <p class="mt-2 mb-0 small">${hazard.description}</p>
+                    <div class="mt-2">
+                        <small class="text-success"><i class="fas fa-check-circle"></i> ${hazard.confirmations} confirmations</small>
+                    </div>
+                    <a href="/safety/view?hazardId=${hazard.id}" class="btn btn-sm btn-primary mt-2">View Details</a>
+                </div>
+            </div>
+        `;
+
+        marker.bindPopup(popup);
+        markers[hazard.id] = marker;
+    });
+
+    // Click on list item to center map on hazard
+    document.querySelectorAll('.hazard-item').forEach(item => {
+        item.addEventListener('click', function () {
+            const id = this.getAttribute('data-id');
+            const lat = parseFloat(this.getAttribute('data-lat'));
+            const lng = parseFloat(this.getAttribute('data-lng'));
+            map.setView([lat, lng], 14);
+            markers[id].openPopup();
+        });
+    });
+
+    function getSeverityClass(severity) {
+        switch(severity) {
+            case 'Low': return 'success';
+            case 'Medium': return 'warning';
+            case 'High': return 'danger';
+            case 'Critical': return 'dark';
+            default: return 'secondary';
+        }
+    }
+</script>
+
+@functions {
+    private string GetSeverityColor(FixIt.Models.Safety.HazardSeverity severity)
+    {
+        return severity switch
+        {
+            FixIt.Models.Safety.HazardSeverity.Low => "#198754",
+            FixIt.Models.Safety.HazardSeverity.Medium => "#ffc107",
+            FixIt.Models.Safety.HazardSeverity.High => "#dc3545",
+            FixIt.Models.Safety.HazardSeverity.Critical => "#212529",
+            _ => "#6c757d"
+        };
+    }
+}
+
+<style>
+    .hazard-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .hazard-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>

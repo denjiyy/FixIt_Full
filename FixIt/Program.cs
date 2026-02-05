@@ -7,13 +7,18 @@ using FixIt.Data.Infrastructure;
 using FixIt.Data.Repository;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Services;
+using FixIt.Services.Storage;
 using FixIt.Services.Contracts;
 using FixIt.Services.Authentication;
 using FixIt.Services.Gamification;
 using FixIt.Services.AI;
+using FixIt.Services.Analytics;
+using FixIt.Services.Safety;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,6 +96,24 @@ builder.Services.AddAuthentication(options =>
     options.CallbackPath = "/signin-microsoft";
     options.Scope.Add("email");
     options.Scope.Add("profile");
+})
+.AddOAuth("GitHub", options =>
+{
+    options.ClientId = authConfig["GitHub:ClientId"] ?? "";
+    options.ClientSecret = authConfig["GitHub:ClientSecret"] ?? "";
+    options.CallbackPath = "/signin-github";
+    options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+    options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+    options.UserInformationEndpoint = "https://api.github.com/user";
+})
+.AddOAuth("Facebook", options =>
+{
+    options.ClientId = authConfig["Facebook:AppId"] ?? "";
+    options.ClientSecret = authConfig["Facebook:AppSecret"] ?? "";
+    options.CallbackPath = "/signin-facebook";
+    options.AuthorizationEndpoint = "https://www.facebook.com/v12.0/dialog/oauth";
+    options.TokenEndpoint = "https://graph.facebook.com/v12.0/oauth/access_token";
+    options.UserInformationEndpoint = "https://graph.facebook.com/me?fields=id,name,email,picture";
 });
 
 // Register repositories with correct collection names
@@ -143,6 +166,13 @@ builder.Services.AddScoped<IRepository<FixIt.Models.Gamification.LeaderboardEntr
     return new Repository<FixIt.Models.Gamification.LeaderboardEntry>(db, "leaderboards");
 });
 
+// Safety (Hazard) repositories
+builder.Services.AddScoped<IRepository<FixIt.Models.Safety.Hazard>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Safety.Hazard>(db, "hazards");
+});
+
 // AI Analysis repositories
 builder.Services.AddScoped<IRepository<FixIt.Models.AI.IssueAnalysis>>(sp =>
 {
@@ -150,25 +180,58 @@ builder.Services.AddScoped<IRepository<FixIt.Models.AI.IssueAnalysis>>(sp =>
     return new Repository<FixIt.Models.AI.IssueAnalysis>(db, "issueAnalyses");
 });
 
+// Media repositories
+builder.Services.AddScoped<IRepository<FixIt.Models.Media.Media>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Media.Media>(db, "media");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Media.MediaReference>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Media.MediaReference>(db, "mediaReferences");
+});
+
 // Register services (business logic layer)
 builder.Services.AddScoped<IIssueService, IssueService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IReputationService, ReputationService>();
+builder.Services.AddScoped<IIssueAnalysisService, OpenAIIssueAnalysisService>();
+builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
+builder.Services.AddScoped<IMediaService, MediaService>();
+builder.Services.AddScoped<IHeatmapService, HeatmapService>();
+builder.Services.AddScoped<IHealthReportService, HealthReportService>();
+builder.Services.AddScoped<IHazardService, HazardService>();
 
 // HTTP client for OpenAI
 builder.Services.AddHttpClient<IIssueAnalysisService, OpenAIIssueAnalysisService>();
 
-// Add CORS if needed for mobile app
+// Configure production-ready CORS
+var securityConfig = builder.Configuration.GetSection("Security");
+var corsOrigins = securityConfig.GetSection("CorsAllowedOrigins").Get<string[]>() 
+    ?? new[] { "http://localhost:3000", "http://localhost:5092" };
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("ProductionCors", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(corsOrigins)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
+
+// Add response compression
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
+// Add data protection
+builder.Services.AddDataProtection();
 
 // Add logging
 builder.Services.AddLogging(config =>
@@ -211,10 +274,36 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Security headers
+app.Use(async (context, next) =>
+{
+    // Prevent clickjacking
+    context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
+    // Prevent MIME type sniffing
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    // Enable XSS protection
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    // Referrer policy
+    context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+    // Content Security Policy
+    var csp = securityConfig.GetValue<string>("ContentSecurityPolicy");
+    if (!string.IsNullOrEmpty(csp))
+    {
+        context.Response.Headers.Add("Content-Security-Policy", csp);
+    }
+    await next();
+});
+
+app.UseResponseCompression();
+
+if (securityConfig.GetValue<bool>("RequireHttps"))
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 
-app.UseCors("AllowAll");
+app.UseCors("ProductionCors");
 
 app.UseRouting();
 
