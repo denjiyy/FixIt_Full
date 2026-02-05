@@ -42,7 +42,7 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
     }
 
     /// <summary>
-    /// Analyzes a single issue using OpenAI
+    /// Analyzes a single issue using OpenAI or fallback heuristics
     /// </summary>
     public async Task<IssueAnalysis> AnalyzeIssueAsync(string issueId)
     {
@@ -59,45 +59,43 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
             throw new InvalidOperationException($"Issue {issueId} not found");
 
         var apiKey = _configuration["OpenAI:ApiKey"];
-        if (string.IsNullOrEmpty(apiKey) || apiKey.StartsWith("sk-YOUR"))
+        var isApiConfigured = !string.IsNullOrEmpty(apiKey) && !apiKey.StartsWith("sk-YOUR");
+
+        IssueAnalysis analysis;
+
+        if (isApiConfigured)
         {
-            _logger.LogWarning("OpenAI API key not configured. Skipping analysis.");
-            return new IssueAnalysis
+            try
             {
-                IssueId = issueId,
-                Category = IssueCategory.Other,
-                ConfidenceScore = 0,
-                Reasoning = "AI analysis not configured",
-                EstimatedSeverity = 5
-            };
+                _logger.LogInformation($"Using OpenAI API to analyze issue {issueId}");
+                analysis = await CallOpenAIAsync(issue);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"OpenAI API failed for issue {issueId}, using heuristic analysis: {ex.Message}");
+                analysis = GenerateHeuristicAnalysis(issue);
+            }
+        }
+        else
+        {
+            _logger.LogInformation($"OpenAI not configured, using heuristic analysis for issue {issueId}");
+            analysis = GenerateHeuristicAnalysis(issue);
         }
 
+        analysis.IssueId = issueId;
+        
+        // Save analysis regardless of source
         try
         {
-            var analysis = await CallOpenAIAsync(issue);
-            analysis.IssueId = issueId;
-            
-            // Save analysis
             await _analysisRepository.InsertAsync(analysis);
-            
-            _logger.LogInformation($"Analyzed issue {issueId} as {analysis.Category} with {analysis.ConfidenceScore}% confidence");
-            
-            return analysis;
+            _logger.LogInformation($"Analysis saved for issue {issueId}");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to analyze issue {issueId}: {ex.Message}");
-            
-            // Return fallback analysis
-            return new IssueAnalysis
-            {
-                IssueId = issueId,
-                Category = IssueCategory.Other,
-                ConfidenceScore = 0,
-                Reasoning = $"Analysis failed: {ex.Message}",
-                EstimatedSeverity = 5
-            };
+            _logger.LogError($"Failed to save analysis for {issueId}: {ex.Message}");
         }
+
+        return analysis;
     }
 
     /// <summary>
@@ -248,5 +246,107 @@ ISSUE DESCRIPTION: {issue.Description}
 LOCATION: {issue.CityId}
 
 Provide response as JSON format with these exact field names.";
+    }
+
+    /// <summary>
+    /// Generates heuristic analysis without OpenAI API
+    /// </summary>
+    private IssueAnalysis GenerateHeuristicAnalysis(Issue issue)
+    {
+        var analysis = new IssueAnalysis
+        {
+            Category = IssueCategory.Other,
+            ConfidenceScore = 65,
+            Reasoning = "Automated analysis based on keywords",
+            EstimatedSeverity = 5,
+            Keywords = ExtractKeywords(issue),
+            SuggestedTags = SuggestTags(issue),
+            PotentialDuplicates = new()
+        };
+
+        // Categorize based on keywords
+        var lowerTitle = issue.Title.ToLower();
+        var lowerDesc = issue.Description?.ToLower() ?? "";
+        var combined = $"{lowerTitle} {lowerDesc}";
+
+        if (combined.Contains("road") || combined.Contains("pothole") || combined.Contains("street") || combined.Contains("pavement") || combined.Contains("asphalt"))
+            analysis.Category = IssueCategory.Infrastructure;
+        else if (combined.Contains("park") || combined.Contains("recreation") || combined.Contains("green space") || combined.Contains("playground"))
+            analysis.Category = IssueCategory.Parks;
+        else if (combined.Contains("accident") || combined.Contains("injury") || combined.Contains("crime") || combined.Contains("theft") || combined.Contains("vandalism") || combined.Contains("unsafe"))
+            analysis.Category = IssueCategory.PublicSafety;
+        else if (combined.Contains("water") || combined.Contains("electric") || combined.Contains("gas") || combined.Contains("utility") || combined.Contains("pipe") || combined.Contains("cable"))
+            analysis.Category = IssueCategory.Utilities;
+        else if (combined.Contains("pollution") || combined.Contains("waste") || combined.Contains("trash") || combined.Contains("litter") || combined.Contains("contamination"))
+            analysis.Category = IssueCategory.EnvironmentalHealth;
+        else if (combined.Contains("traffic") || combined.Contains("parking") || combined.Contains("congestion") || combined.Contains("transit") || combined.Contains("bus") || combined.Contains("sidewalk"))
+            analysis.Category = IssueCategory.Transportation;
+        else if (combined.Contains("clean") || combined.Contains("maintenance") || combined.Contains("repair") || combined.Contains("debris") || combined.Contains("rubble"))
+            analysis.Category = IssueCategory.Sanitation;
+        else if (combined.Contains("disease") || combined.Contains("illness") || combined.Contains("health") || combined.Contains("hazard") || combined.Contains("odor") || combined.Contains("flooding"))
+            analysis.Category = IssueCategory.PublicHealth;
+
+        // Estimate severity based on keywords
+        if (combined.Contains("critical") || combined.Contains("urgent") || combined.Contains("emergency") || combined.Contains("dangerous"))
+            analysis.EstimatedSeverity = 9;
+        else if (combined.Contains("serious") || combined.Contains("major") || combined.Contains("severe") || combined.Contains("accident"))
+            analysis.EstimatedSeverity = 7;
+        else if (combined.Contains("minor") || combined.Contains("small") || combined.Contains("slight"))
+            analysis.EstimatedSeverity = 2;
+        else
+            analysis.EstimatedSeverity = 5;
+
+        return analysis;
+    }
+
+    /// <summary>
+    /// Extracts keywords from an issue
+    /// </summary>
+    private List<string> ExtractKeywords(Issue issue)
+    {
+        var keywords = new HashSet<string>();
+        var text = $"{issue.Title} {issue.Description}".ToLower();
+        
+        // Common keywords
+        var commonKeywords = new[] 
+        { 
+            "road", "street", "pothole", "accident", "traffic", "water", 
+            "electricity", "park", "safety", "pollution", "waste", "maintenance",
+            "broken", "damaged", "flooding", "crime", "theft", "vandalism",
+            "congestion", "delay", "infrastructure", "hazard", "dangerous",
+            "urgent", "repair", "reconstruction", "cleaning", "sidewalk"
+        };
+
+        foreach (var keyword in commonKeywords)
+        {
+            if (text.Contains(keyword))
+                keywords.Add(keyword);
+        }
+
+        return keywords.Take(8).ToList();
+    }
+
+    /// <summary>
+    /// Suggests tags for an issue
+    /// </summary>
+    private List<string> SuggestTags(Issue issue)
+    {
+        var tags = new HashSet<string>();
+        var text = $"{issue.Title} {issue.Description}".ToLower();
+
+        if (text.Contains("urgent") || text.Contains("critical") || text.Contains("emergency"))
+            tags.Add("urgent");
+        if (text.Contains("safety") || text.Contains("danger") || text.Contains("accident"))
+            tags.Add("safety-concern");
+        if (text.Contains("infrastructure") || text.Contains("road") || text.Contains("street"))
+            tags.Add("infrastructure");
+        if (text.Contains("environment") || text.Contains("pollution") || text.Contains("waste"))
+            tags.Add("environment");
+        if (text.Contains("transportation") || text.Contains("traffic") || text.Contains("parking"))
+            tags.Add("transportation");
+        if (text.Contains("parks") || text.Contains("recreation") || text.Contains("green"))
+            tags.Add("parks");
+
+        return tags.Any() ? tags.ToList() : new List<string> { "report", "review-needed" };
     }
 }

@@ -21,6 +21,7 @@ public interface IReputationService
     Task UpdateTrustLevelAsync(string userId);
     Task RegenerateWeeklyLeaderboardAsync();
     Task RegenerateMonthlyLeaderboardAsync();
+    Task RegenerateAllTimeLeaderboardAsync();
 }
 
 public class ReputationService : IReputationService
@@ -289,6 +290,14 @@ public class ReputationService : IReputationService
     public async Task RegenerateMonthlyLeaderboardAsync()
     {
         await RegenerateLeaderboardAsync(LeaderboardPeriod.Monthly, DateTime.UtcNow.AddMonths(-1));
+    }
+
+    /// <summary>
+    /// Regenerates the all-time leaderboard
+    /// </summary>
+    public async Task RegenerateAllTimeLeaderboardAsync()
+    {
+        await RegenerateLeaderboardAsync(LeaderboardPeriod.AllTime, DateTime.MinValue);
     }
 
     /// <summary>

@@ -61,8 +61,32 @@ public class IssueDetailModel : PageModel
                 return NotFound();
             }
 
-            // Load AI analysis if available
+            // Load AI analysis if available, otherwise trigger it
             Analysis = await _analysisService.GetAnalysisAsync(Id);
+            
+            // If no analysis exists, trigger it in the background
+            if (Analysis == null)
+            {
+                try
+                {
+                    // Fire and forget - don't wait for analysis to complete
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _analysisService.AnalyzeIssueAsync(Id);
+                        }
+                        catch
+                        {
+                            // Silently fail - analysis will be retried on next page load
+                        }
+                    });
+                }
+                catch
+                {
+                    // Analysis trigger failed, but page still loads
+                }
+            }
             
             // Load media files
             MediaList = await _mediaService.GetMediaForReferenceAsync(

@@ -191,10 +191,25 @@
             }
             else
             {
-                <div class="card mb-4" style="border: none; background: var(--gray-100); opacity: 0.7;">
-                    <div class="card-body text-center py-3">
-                        <i class="bi bi-hourglass-split text-muted" style="font-size: 1.5rem;"></i>
-                        <p class="text-muted small mb-0 mt-2">AI analysis is being processed...</p>
+                <div class="card mb-4" id="analysisPlaceholder" style="border: none; background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(111, 66, 193, 0.05)); border-left: 4px solid #0d6efd;">
+                    <div class="card-header" style="background: transparent; border-bottom: 1px solid rgba(13, 110, 253, 0.2);">
+                        <h6 class="mb-0"><i class="bi bi-lightbulb text-primary"></i> AI Analysis <span class="badge bg-primary ms-2">Pending</span></h6>
+                    </div>
+                    <div class="card-body text-center py-4">
+                        <div id="analysisLoading">
+                            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mb-3">AI analysis is being generated...</p>
+                            <small class="text-muted d-block">This may take 15-30 seconds on first load</small>
+                        </div>
+                        <div id="analysisError" style="display: none;">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2 mb-3">AI analysis is currently unavailable</p>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="retryAnalysis('@Model.Id')">
+                                <i class="bi bi-arrow-clockwise"></i> Retry
+                            </button>
+                        </div>
                     </div>
                 </div>
             }
@@ -395,6 +410,189 @@ else
 
 @section Scripts {
     <script>
+        // Poll for AI analysis
+        let analysisCheckInterval = null;
+        let analysisCheckAttempts = 0;
+        const maxAnalysisAttempts = 60; // 5 minutes with 5 second intervals
+
+        async function loadAnalysis(issueId) {
+            try {
+                const response = await fetch(`/api/analysis/analyze/${issueId}`);
+                const data = await response.json();
+
+                if (data.success && data.analysis) {
+                    displayAnalysis(data.analysis);
+                    clearInterval(analysisCheckInterval);
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error loading analysis:', error);
+                return false;
+            }
+        }
+
+        function displayAnalysis(analysis) {
+            const placeholder = document.getElementById('analysisPlaceholder');
+            if (!placeholder) return;
+
+            const severityColor = 
+                analysis.estimatedSeverity >= 8 ? 'text-danger' :
+                analysis.estimatedSeverity >= 5 ? 'text-warning' :
+                'text-success';
+
+            const severityBg = 
+                analysis.estimatedSeverity >= 8 ? 'bg-danger' :
+                analysis.estimatedSeverity >= 5 ? 'bg-warning' :
+                'bg-success';
+
+            let keywordsHtml = '';
+            if (analysis.keywords && analysis.keywords.length > 0) {
+                keywordsHtml = `
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2"><i class="bi bi-key-fill"></i> Keywords Identified</small>
+                        <div>
+                            ${analysis.keywords.slice(0, 6).map(k => `<span class="badge bg-light text-dark me-1 mb-1" style="border: 1px solid var(--gray-300);">${k}</span>`).join('')}
+                            ${analysis.keywords.length > 6 ? `<span class="badge bg-light text-dark" style="border: 1px solid var(--gray-300);">+${analysis.keywords.length - 6} more</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let tagsHtml = '';
+            if (analysis.suggestedTags && analysis.suggestedTags.length > 0) {
+                tagsHtml = `
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-2"><i class="bi bi-tag-fill"></i> Suggested Tags</small>
+                        <div>
+                            ${analysis.suggestedTags.slice(0, 5).map(t => `<a href="/tags/${t}" class="badge bg-info text-white me-1 mb-1" style="text-decoration: none;">${t}</a>`).join('')}
+                            ${analysis.suggestedTags.length > 5 ? `<span class="badge bg-light text-dark" style="border: 1px solid var(--gray-300);">+${analysis.suggestedTags.length - 5} more</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="card-header" style="background: transparent; border-bottom: 1px solid rgba(13, 110, 253, 0.2);">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb text-primary"></i> AI Analysis <span class="badge bg-success ms-2">Complete</span></h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <!-- Category -->
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-tag-fill text-info" style="font-size: 1.5rem; margin-right: 0.75rem;"></i>
+                                <div>
+                                    <small class="text-muted d-block">Category</small>
+                                    <strong class="d-block">${analysis.category}</strong>
+                                    <small class="text-muted">${analysis.confidenceScore}% confident</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Severity -->
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill ${severityColor}" style="font-size: 1.5rem; margin-right: 0.75rem;"></i>
+                                <div>
+                                    <small class="text-muted d-block">Severity</small>
+                                    <strong class="d-block">${analysis.estimatedSeverity} / 10</strong>
+                                    <div class="progress" style="height: 4px; width: 100px;">
+                                        <div class="progress-bar ${severityBg}" role="progressbar" style="width: ${analysis.estimatedSeverity * 10}%;" aria-valuenow="${analysis.estimatedSeverity}" aria-valuemin="0" aria-valuemax="10"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${keywordsHtml}
+                    ${tagsHtml}
+
+                    ${analysis.reasoning ? `
+                        <div class="p-3 rounded" style="background: white; border: 1px solid var(--gray-300);">
+                            <small class="text-muted d-block mb-2"><i class="bi bi-chat-right-text"></i> Analysis Notes</small>
+                            <p class="mb-0 small">${analysis.reasoning}</p>
+                        </div>
+                    ` : ''}
+
+                    <small class="text-muted d-block mt-3 pt-3 border-top">
+                        <i class="bi bi-info-circle"></i> Analyzed on ${new Date(analysis.analyzedAt).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </small>
+                </div>
+            `;
+
+            placeholder.innerHTML = html;
+            placeholder.className = 'card mb-4';
+            placeholder.style.cssText = 'border: none; background: linear-gradient(135deg, rgba(13, 110, 253, 0.05), rgba(111, 66, 193, 0.05)); border-left: 4px solid #0d6efd;';
+        }
+
+        function showError() {
+            const placeholder = document.getElementById('analysisPlaceholder');
+            if (!placeholder) return;
+
+            placeholder.innerHTML = `
+                <div class="card-header" style="background: transparent; border-bottom: 1px solid rgba(13, 110, 253, 0.2);">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb text-primary"></i> AI Analysis <span class="badge bg-warning ms-2">Unavailable</span></h6>
+                </div>
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-3 mb-3">AI analysis is currently unavailable. This could be due to API limitations or configuration.</p>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="retryAnalysis('@Model?.Id ?? ""')">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+
+        async function retryAnalysis(issueId) {
+            if (!issueId) return;
+            
+            // Trigger analysis
+            try {
+                const response = await fetch(`/api/analysis/analyze/${issueId}`, { method: 'POST' });
+                // Start polling again
+                startAnalysisPolling(issueId);
+            } catch (error) {
+                console.error('Error triggering analysis:', error);
+            }
+        }
+
+        function startAnalysisPolling(issueId) {
+            analysisCheckAttempts = 0;
+            
+            // Check immediately
+            loadAnalysis(issueId).then(found => {
+                if (!found && analysisCheckAttempts < maxAnalysisAttempts) {
+                    // Poll every 5 seconds
+                    analysisCheckInterval = setInterval(async () => {
+                        analysisCheckAttempts++;
+                        const found = await loadAnalysis(issueId);
+                        
+                        if (found || analysisCheckAttempts >= maxAnalysisAttempts) {
+                            clearInterval(analysisCheckInterval);
+                            if (!found) {
+                                showError();
+                            }
+                        }
+                    }, 5000);
+                }
+            });
+        }
+
+        // Start polling on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const issueId = '@Model?.Id ?? ""';
+            if (issueId) {
+                startAnalysisPolling(issueId);
+            }
+        });
+
         async function vote(voteType) {
             try {
                 const response = await fetch('@("/api/issues/" + Model.Issue?.Id + "/vote")', {

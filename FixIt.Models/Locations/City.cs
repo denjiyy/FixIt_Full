@@ -16,6 +16,16 @@ public class City
 
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Latitude of city center (for map centering)
+    /// </summary>
+    public double Latitude { get; set; }
+
+    /// <summary>
+    /// Longitude of city center (for map centering)
+    /// </summary>
+    public double Longitude { get; set; }
+
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

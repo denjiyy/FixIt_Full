@@ -12,8 +12,13 @@ public class HeatmapsModel : PageModel
     private readonly IRepository<City> _cityRepo;
 
     public string CityName { get; set; } = string.Empty;
+    public double CityLatitude { get; set; }
+    public double CityLongitude { get; set; }
     public List<IssueMarker> IssueMarkers { get; set; } = new();
     public string MarkersJson { get; set; } = "[]";
+    public int TotalIssues { get; set; }
+    public int OpenIssues { get; set; }
+    public int ResolvedIssues { get; set; }
     
     public HeatmapsModel(IHeatmapService heatmapService, IRepository<City> cityRepo)
     {
@@ -31,19 +36,33 @@ public class HeatmapsModel : PageModel
         }
 
         CityName = city.Name;
+        CityLatitude = city.Latitude;
+        CityLongitude = city.Longitude;
 
-        // Get heatmap data
-        var heatmapData = await _heatmapService.GetCityHeatmapAsync(cityId);
+        Console.WriteLine($"[Heatmaps] City: {city.Name}, Lat: {city.Latitude}, Lng: {city.Longitude}");
 
-        // Convert hotspots to markers with issue IDs
+        // Get all issues for this city
         var issueRepo = HttpContext.RequestServices.GetRequiredService<IRepository<FixIt.Models.Issues.Issue>>();
         var allIssues = (await issueRepo.FindAsync(i => i.CityId == cityId)).ToList();
 
+        Console.WriteLine($"[Heatmaps] Found {allIssues.Count} issues for city {cityId}");
+
+        // Calculate statistics
+        TotalIssues = allIssues.Count;
+        OpenIssues = allIssues.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.New || 
+                                          i.Status == FixIt.Models.Enums.IssueStatus.InProgress ||
+                                          i.Status == FixIt.Models.Enums.IssueStatus.Confirmed);
+        ResolvedIssues = allIssues.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.Fixed ||
+                                             i.Status == FixIt.Models.Enums.IssueStatus.Rejected);
+
+        // Create markers for all issues
         IssueMarkers = new List<IssueMarker>();
         foreach (var issue in allIssues)
         {
             if (issue.Location?.Coordinates != null)
             {
+                Console.WriteLine($"[Heatmaps] Issue: {issue.Title}, Lat: {issue.Location.Coordinates.Latitude}, Lng: {issue.Location.Coordinates.Longitude}");
+                
                 IssueMarkers.Add(new IssueMarker
                 {
                     IssueId = issue.Id,
@@ -54,7 +73,13 @@ public class HeatmapsModel : PageModel
                     Priority = issue.Priority.ToString()
                 });
             }
+            else
+            {
+                Console.WriteLine($"[Heatmaps] Issue {issue.Title} has no location coordinates!");
+            }
         }
+
+        Console.WriteLine($"[Heatmaps] Created {IssueMarkers.Count} markers");
 
         // Serialize markers for JavaScript
         MarkersJson = JsonSerializer.Serialize(IssueMarkers);

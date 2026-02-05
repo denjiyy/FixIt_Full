@@ -142,8 +142,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
 <script>
-    // Initialize map centered on Bulgaria
-    const map = L.map('map').setView([42.7339, 25.4858], 8);
+    // Initialize map centered on the selected city
+    const cityLat = @Model.CityLatitude;
+    const cityLng = @Model.CityLongitude;
+    const map = L.map('map').setView([cityLat, cityLng], 14);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -161,9 +163,20 @@
         'Low': '#198754'
     };
 
+    // Track issue statuses for stats
+    let openCount = 0;
+    let resolvedCount = 0;
+
     // Add markers to map
     markersData.forEach(marker => {
         const color = priorityColors[marker.priority] || '#6c757d';
+        
+        // Track statistics
+        if (marker.status === 'Fixed' || marker.status === 'Rejected') {
+            resolvedCount++;
+        } else {
+            openCount++;
+        }
         
         const circle = L.circleMarker([marker.latitude, marker.longitude], {
             radius: 8,
@@ -187,10 +200,8 @@
     });
 
     // Update statistics
-    const openCount = markersData.length;
+    const totalCount = markersData.length;
     document.getElementById('openCount').textContent = openCount;
-    
-    // In a real scenario, you'd fetch these from the server, but for now:
-    document.getElementById('totalCount').textContent = openCount;
-    document.getElementById('resolvedCount').textContent = '0';
+    document.getElementById('totalCount').textContent = totalCount;
+    document.getElementById('resolvedCount').textContent = resolvedCount;
 </script>

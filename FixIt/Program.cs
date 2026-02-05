@@ -14,6 +14,7 @@ using FixIt.Services.Gamification;
 using FixIt.Services.AI;
 using FixIt.Services.Analytics;
 using FixIt.Services.Safety;
+using FixIt.Services.Background;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
@@ -208,6 +209,9 @@ builder.Services.AddScoped<IHazardService, HazardService>();
 // HTTP client for OpenAI
 builder.Services.AddHttpClient<IIssueAnalysisService, OpenAIIssueAnalysisService>();
 
+// Register background services
+builder.Services.AddHostedService<LeaderboardRegenerationService>();
+
 // Configure production-ready CORS
 var securityConfig = builder.Configuration.GetSection("Security");
 var corsOrigins = securityConfig.GetSection("CorsAllowedOrigins").Get<string[]>() 
@@ -249,6 +253,12 @@ try
     {
         var mongoContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
         await SeederRunner.RunAllConfiguratorsAsync(mongoContext.Database, scope.ServiceProvider);
+        
+        // Generate AllTime leaderboard on startup
+        var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
+        await reputationService.RegenerateAllTimeLeaderboardAsync();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("AllTime leaderboard generated on application startup");
     }
 }
 catch (Exception ex)
