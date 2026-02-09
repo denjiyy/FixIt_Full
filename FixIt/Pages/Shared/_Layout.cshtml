@@ -43,6 +43,30 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="safetyDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-exclamation-triangle"></i> Safety
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="safetyDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="/safety/hazard-mode">
+                                        <i class="bi bi-exclamation-triangle-fill text-danger"></i> Hazard Mode
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/safety/hazard-mode">
+                                        <i class="bi bi-map"></i> Hazard Mode
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="/settings/privacy">
+                                        <i class="bi bi-incognito"></i> Privacy Settings
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="analyticsDropdown" role="button" 
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-graph-up"></i> Analytics
@@ -82,6 +106,11 @@
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Settings/ConnectedAccounts">
                                             <i class="bi bi-link-45deg"></i> Connected Accounts
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/Settings/Privacy">
+                                            <i class="bi bi-shield-lock"></i> Privacy & Safety
                                         </a>
                                     </li>
                                     <li>

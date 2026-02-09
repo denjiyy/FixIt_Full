@@ -174,6 +174,13 @@ builder.Services.AddScoped<IRepository<FixIt.Models.Safety.Hazard>>(sp =>
     return new Repository<FixIt.Models.Safety.Hazard>(db, "hazards");
 });
 
+// User repository for dependency injection
+builder.Services.AddScoped<IRepository<FixIt.Models.Users.ApplicationUser>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Users.ApplicationUser>(db, "AspNetUsers");
+});
+
 // AI Analysis repositories
 builder.Services.AddScoped<IRepository<FixIt.Models.AI.IssueAnalysis>>(sp =>
 {

@@ -1,0 +1,355 @@
+@page "/settings/privacy"
+@model FixIt.Pages.Settings.PrivacyModel
+@{
+    ViewData["Title"] = "Privacy & Safety Settings";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="mb-4">Privacy & Safety Settings</h1>
+            <p class="text-muted mb-4">Manage your privacy preferences and safety features</p>
+
+            <div class="row">
+                <!-- Settings Navigation -->
+                <div class="col-md-3">
+                    <div class="list-group sticky-top" style="top: 1rem;">
+                        <a href="#anonymous-mode" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                            <i class="bi bi-incognito"></i> Anonymous Mode
+                        </a>
+                        <a href="#hazard-mode" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-exclamation-triangle"></i> Hazard Alerts
+                        </a>
+                        <a href="#profile-visibility" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-eye"></i> Profile Visibility
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="col-md-9">
+                    <div class="list-group-item-content">
+                        <!-- Anonymous Mode Section -->
+                        <div id="anonymous-mode" class="settings-section card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">
+                                    <i class="bi bi-incognito text-danger"></i> Anonymous Reporting Mode
+                                </h5>
+                                <p class="text-muted">Report hazards and issues without revealing your identity to the public. Your information is only visible to administrators.</p>
+
+                                <div class="card bg-light border-0 mb-4">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Enable Anonymous Reporting</h6>
+                                                <small class="text-muted">Report hazards and issues anonymously</small>
+                                            </div>
+                                            <div>
+                                                <form id="anonymousToggleForm" class="d-inline">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" id="anonymousSwitch" 
+                                                               @if(Model.CurrentUser?.AnonymousReportingEnabled == true) { <text>checked</text> }
+                                                               onchange="toggleAnonymousReporting()">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info mb-0">
+                                    <h6 class="mb-2">
+                                        <i class="bi bi-info-circle"></i> How Anonymous Mode Works
+                                    </h6>
+                                    <ul class="mb-0">
+                                        <li>Your name and profile will not be visible publicly</li>
+                                        <li>Your reports will show as "Anonymous" on the map and in lists</li>
+                                        <li>Administrators can contact you if they need more information</li>
+                                        <li>You can still earn reputation points for helpful reports</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hazard Alerts Section -->
+                        <div id="hazard-mode" class="settings-section card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">
+                                    <i class="bi bi-exclamation-triangle text-warning"></i> Hazard Alert Preferences
+                                </h5>
+                                <p class="text-muted">Customize how you receive hazard and safety notifications</p>
+
+                                <div class="mb-4">
+                                    <h6 class="mb-3">Alert Types</h6>
+                                    
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="crimeAlerts" 
+                                               @if(Model.AlertPreferences?.CrimeAlerts == true) { <text>checked</text> }
+                                               onchange="saveAlertPreference('crimeAlerts', this.checked)">
+                                        <label class="form-check-label" for="crimeAlerts">
+                                            <strong>Crime Incidents</strong>
+                                            <small class="d-block text-muted">Be notified of reported crimes in your area</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="accidentAlerts" 
+                                               @if(Model.AlertPreferences?.AccidentAlerts == true) { <text>checked</text> }
+                                               onchange="saveAlertPreference('accidentAlerts', this.checked)">
+                                        <label class="form-check-label" for="accidentAlerts">
+                                            <strong>Traffic Accidents</strong>
+                                            <small class="d-block text-muted">Be notified of accidents and traffic hazards</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="infrastructureAlerts" 
+                                               @if(Model.AlertPreferences?.InfrastructureAlerts == true) { <text>checked</text> }
+                                               onchange="saveAlertPreference('infrastructureAlerts', this.checked)">
+                                        <label class="form-check-label" for="infrastructureAlerts">
+                                            <strong>Infrastructure Issues</strong>
+                                            <small class="d-block text-muted">Be notified of potholes, broken lights, and damage</small>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="allHazards" 
+                                               @if(Model.AlertPreferences?.AllHazards == true) { <text>checked</text> }
+                                               onchange="saveAlertPreference('allHazards', this.checked)">
+                                        <label class="form-check-label" for="allHazards">
+                                            <strong>All Hazard Types</strong>
+                                            <small class="d-block text-muted">Receive notifications for all types of hazards</small>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="mb-3">Alert Radius</h6>
+                                    <div class="form-group">
+                                        <label for="alertRadius" class="form-label">
+                                            Distance from your location: 
+                                            <span class="badge bg-primary" id="radiusDisplay">
+                                                @(Model.AlertPreferences?.AlertRadiusKm ?? 5) km
+                                            </span>
+                                        </label>
+                                        <input type="range" class="form-range" id="alertRadius" 
+                                               min="1" max="20" step="1" 
+                                               value="@(Model.AlertPreferences?.AlertRadiusKm ?? 5)"
+                                               onchange="updateAlertRadius(this.value)">
+                                        <small class="form-text text-muted">
+                                            You'll receive alerts for hazards within this distance
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h6 class="mb-3">Severity Threshold</h6>
+                                    <select class="form-select" id="severityThreshold" 
+                                            onchange="saveSeverityThreshold(this.value)">
+                                        <option value="All">All Severity Levels</option>
+                                        <option value="High">High & Critical Only</option>
+                                        <option value="Critical">Critical Only</option>
+                                    </select>
+                                    <script>
+                                        document.getElementById('severityThreshold').value = '@(Model.AlertPreferences?.SeverityThreshold ?? "All")';
+                                    </script>
+                                    <small class="form-text text-muted d-block mt-2">
+                                        Only be notified of hazards at or above this severity level
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Visibility Section -->
+                        <div id="profile-visibility" class="settings-section card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">
+                                    <i class="bi bi-eye text-info"></i> Profile Visibility
+                                </h5>
+                                <p class="text-muted">Control who can see your profile and contributions</p>
+
+                                <div class="card bg-light border-0 mb-4">
+                                    <div class="card-body">
+                                        <h6 class="mb-3">Profile Visibility</h6>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="profileVisibility" 
+                                                   id="visibilityPublic" value="public"
+                                                   @if(Model.ProfileVisibility != "private") { <text>checked</text> }
+                                                   onchange="saveProfileVisibility('public')">
+                                            <label class="form-check-label" for="visibilityPublic">
+                                                <strong>Public</strong> - Anyone can view your profile and contributions
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="profileVisibility" 
+                                                   id="visibilityPrivate" value="private"
+                                                   @if(Model.ProfileVisibility == "private") { <text>checked</text> }
+                                                   onchange="saveProfileVisibility('private')">
+                                            <label class="form-check-label" for="visibilityPrivate">
+                                                <strong>Private</strong> - Only you and administrators can view your profile
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning mb-0">
+                                    <h6 class="mb-2">
+                                        <i class="bi bi-exclamation-triangle"></i> Note
+                                    </h6>
+                                    <p class="mb-0">Making your profile private doesn't affect your reputation or contributions to the community. It only affects who can see your profile page.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Toast for Feedback -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="settingsToast" class="toast" role="alert">
+        <div class="toast-header bg-success text-white">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong class="me-auto">Settings Updated</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Your settings have been saved successfully.
+        </div>
+    </div>
+</div>
+
+<script>
+    const apiBase = '/api/safety';
+
+    async function toggleAnonymousReporting() {
+        const enabled = document.getElementById('anonymousSwitch').checked;
+        try {
+            const response = await fetch(`${apiBase}/anonymous-reporting/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ enabled: enabled })
+            });
+
+            if (response.ok) {
+                showToast(`Anonymous reporting ${enabled ? 'enabled' : 'disabled'} successfully`);
+            } else {
+                showToast('Failed to update settings', 'error');
+                document.getElementById('anonymousSwitch').checked = !enabled;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error updating settings', 'error');
+            document.getElementById('anonymousSwitch').checked = !enabled;
+        }
+    }
+
+    function updateAlertRadius(value) {
+        document.getElementById('radiusDisplay').textContent = value + ' km';
+        saveAlertPreference('alertRadius', value);
+    }
+
+    async function saveAlertPreference(preference, value) {
+        try {
+            const response = await fetch(`${apiBase}/alert-preferences`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    [preference]: value
+                })
+            });
+
+            if (response.ok) {
+                showToast('Alert preference saved');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function saveSeverityThreshold(threshold) {
+        try {
+            const response = await fetch(`${apiBase}/alert-preferences/severity`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ threshold: threshold })
+            });
+
+            if (response.ok) {
+                showToast('Severity threshold updated');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function saveProfileVisibility(visibility) {
+        try {
+            const response = await fetch('/api/users/profile-visibility', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ visibility: visibility })
+            });
+
+            if (response.ok) {
+                showToast(`Profile visibility changed to ${visibility}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function showToast(message, type = 'success') {
+        const toastEl = document.getElementById('settingsToast');
+        const messageEl = document.getElementById('toastMessage');
+        const headerEl = toastEl.querySelector('.toast-header');
+        
+        messageEl.textContent = message;
+        
+        if (type === 'error') {
+            headerEl.className = 'toast-header bg-danger text-white';
+            headerEl.innerHTML = '<i class="bi bi-exclamation-circle me-2"></i><strong class="me-auto">Error</strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
+        } else {
+            headerEl.className = 'toast-header bg-success text-white';
+            headerEl.innerHTML = '<i class="bi bi-check-circle me-2"></i><strong class="me-auto">Success</strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
+        }
+        
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+</script>
+
+<style>
+    .settings-section {
+        border-left: 4px solid #007bff;
+        transition: all 0.3s ease;
+    }
+
+    .settings-section:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .list-group-item.active {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .form-range {
+        height: 0.5rem;
+    }
+
+    .alert {
+        border-radius: 0.5rem;
+    }
+</style>

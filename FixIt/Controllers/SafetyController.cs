@@ -1,0 +1,535 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using FixIt.Services.Safety;
+using FixIt.Models.Safety;
+using FixIt.ViewModels;
+using FixIt.Data.Repository.Contracts;
+using FixIt.Models.Users;
+using System.Text.Json.Serialization;
+
+namespace FixIt.Controllers;
+
+/// <summary>
+/// Safety controller - handles hazard mode and anonymous mode operations
+/// Provides APIs for real-time hazard reporting and safety features
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
+public class SafetyController : ControllerBase
+{
+    private readonly IHazardService _hazardService;
+    private readonly IRepository<Hazard> _hazardRepo;
+    private readonly IRepository<ApplicationUser> _userRepo;
+    private readonly ILogger<SafetyController> _logger;
+
+    public SafetyController(
+        IHazardService hazardService,
+        IRepository<Hazard> hazardRepo,
+        IRepository<ApplicationUser> userRepo,
+        ILogger<SafetyController> logger)
+    {
+        _hazardService = hazardService;
+        _hazardRepo = hazardRepo;
+        _userRepo = userRepo;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Get nearby hazards (Hazard Mode - Real-time safety alerts)
+    /// Returns all active hazards within specified radius
+    /// </summary>
+    /// <param name="cityId">City ID</param>
+    /// <param name="latitude">User's current latitude</param>
+    /// <param name="longitude">User's current longitude</param>
+    /// <param name="radiusKm">Search radius in kilometers (default: 5)</param>
+    /// <returns>List of nearby hazards with safety information</returns>
+    [HttpGet("nearby-hazards")]
+    [ProducesResponseType(typeof(ApiResponse<List<HazardAlertResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<List<HazardAlertResponse>>>> GetNearbyHazards(
+        [FromQuery] string cityId,
+        [FromQuery] double latitude,
+        [FromQuery] double longitude,
+        [FromQuery] double radiusKm = 5.0)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(cityId))
+                return BadRequest(ApiResponse<object>.CreateError("City ID is required"));
+
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
+                return BadRequest(ApiResponse<object>.CreateError("Invalid coordinates"));
+
+            var hazards = await _hazardService.GetNearbyHazardsAsync(cityId, latitude, longitude, radiusKm);
+            
+            var response = hazards.Select(h => new HazardAlertResponse
+            {
+                Id = h.Id,
+                Type = h.Type.ToString(),
+                Severity = h.Severity.ToString(),
+                Title = h.Title,
+                Description = h.Description,
+                Latitude = h.Location.Coordinates.Latitude,
+                Longitude = h.Location.Coordinates.Longitude,
+                Address = h.Address ?? "Unknown",
+                Confirmations = h.Confirmations,
+                IsResolved = h.IsResolved,
+                Distance = CalculateDistance(latitude, longitude, 
+                    h.Location.Coordinates.Latitude, 
+                    h.Location.Coordinates.Longitude),
+                CreatedAt = h.CreatedAt,
+                Reporter = h.IsAnonymous ? "Anonymous" : "Verified User"
+            }).OrderBy(h => h.Distance).ToList();
+
+            return Ok(ApiResponse<List<HazardAlertResponse>>.CreateSuccess(response, 
+                $"Found {response.Count} hazards nearby"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching nearby hazards");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch nearby hazards"));
+        }
+    }
+
+    /// <summary>
+    /// Get critical hazards in city (Safety Filter)
+    /// Returns only high and critical severity hazards
+    /// </summary>
+    /// <param name="cityId">City ID</param>
+    /// <returns>List of critical hazards</returns>
+    [HttpGet("critical-hazards")]
+    [ProducesResponseType(typeof(ApiResponse<List<HazardAlertResponse>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<HazardAlertResponse>>>> GetCriticalHazards(
+        [FromQuery] string cityId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(cityId))
+                return BadRequest(ApiResponse<object>.CreateError("City ID is required"));
+
+            var hazards = await _hazardService.GetActiveSafetyHazardsAsync(cityId);
+
+            var response = hazards.Select(h => new HazardAlertResponse
+            {
+                Id = h.Id,
+                Type = h.Type.ToString(),
+                Severity = h.Severity.ToString(),
+                Title = h.Title,
+                Description = h.Description,
+                Latitude = h.Location.Coordinates.Latitude,
+                Longitude = h.Location.Coordinates.Longitude,
+                Address = h.Address ?? "Unknown",
+                Confirmations = h.Confirmations,
+                IsResolved = h.IsResolved,
+                Distance = 0,
+                CreatedAt = h.CreatedAt,
+                Reporter = h.IsAnonymous ? "Anonymous" : "Verified User"
+            }).ToList();
+
+            return Ok(ApiResponse<List<HazardAlertResponse>>.CreateSuccess(response,
+                $"Found {response.Count} critical hazards"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching critical hazards");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch critical hazards"));
+        }
+    }
+
+    /// <summary>
+    /// Report a hazard (unified endpoint for both anonymous and authenticated reports)
+    /// Allows users to report hazards with option to keep identity private
+    /// </summary>
+    /// <param name="request">Hazard report details</param>
+    /// <returns>Created hazard information</returns>
+    [HttpPost("report")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ReportHazard(
+        [FromBody] AnonymousHazardReportRequest request)
+    {
+        try
+        {
+            // Validate request
+            if (request == null || string.IsNullOrEmpty(request.CityId))
+                return BadRequest(ApiResponse<object>.CreateError("City ID is required"));
+
+            if (string.IsNullOrEmpty(request.Title) || string.IsNullOrEmpty(request.Description))
+                return BadRequest(ApiResponse<object>.CreateError("Title and description are required"));
+
+            if (request.Latitude < -90 || request.Latitude > 90 || request.Longitude < -180 || request.Longitude > 180)
+                return BadRequest(ApiResponse<object>.CreateError("Invalid coordinates"));
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+
+            // Determine if report should be anonymous
+            bool isAnonymous = request.IsAnonymous;
+            if (isAnonymous)
+            {
+                // Check if user has anonymous reporting enabled
+                var user = await _userRepo.GetByIdAsync(userId);
+                if (user == null || !user.AnonymousReportingEnabled)
+                    return BadRequest(ApiResponse<object>.CreateError("Anonymous reporting is not enabled for your account. Please enable it in privacy settings first."));
+            }
+
+            var hazard = await _hazardService.CreateHazardAsync(
+                cityId: request.CityId,
+                type: request.Type,
+                severity: request.Severity,
+                title: request.Title,
+                description: request.Description,
+                latitude: request.Latitude,
+                longitude: request.Longitude,
+                address: request.Address ?? "",
+                userId: userId,
+                isAnonymous: isAnonymous
+            );
+
+            _logger.LogInformation(
+                isAnonymous ? "Anonymous hazard reported: {HazardId}" : "Hazard reported: {HazardId} by user {UserId}",
+                hazard.Id, userId);
+
+            return CreatedAtAction(
+                nameof(GetHazardById),
+                new { id = hazard.Id },
+                ApiResponse<HazardDetailResponse>.CreateSuccess(
+                    HazardToDetailResponse(hazard),
+                    isAnonymous ? "Hazard reported anonymously" : "Hazard reported successfully"
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reporting hazard: {Message}", ex.Message);
+            return BadRequest(ApiResponse<object>.CreateError($"Failed to report hazard: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// Report a hazard anonymously (legacy endpoint - redirects to unified report endpoint)
+    /// </summary>
+    [HttpPost("report-anonymous")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ReportHazardAnonymous(
+        [FromBody] AnonymousHazardReportRequest request)
+    {
+        request.IsAnonymous = true;
+        return await ReportHazard(request);
+    }
+
+    /// <summary>
+    /// Confirm/verify a hazard (Community Safety Feature)
+    /// Multiple users can confirm a hazard to increase its credibility
+    /// </summary>
+    /// <param name="hazardId">Hazard ID</param>
+    /// <returns>Updated confirmation count</returns>
+    [HttpPost("{hazardId}/confirm")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<HazardConfirmationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HazardConfirmationResponse>>> ConfirmHazard(string hazardId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+
+            var success = await _hazardService.ConfirmHazardAsync(hazardId, userId);
+            if (!success)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found or already resolved"));
+
+            var hazard = await _hazardService.GetHazardAsync(hazardId);
+            if (hazard == null)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            _logger.LogInformation("Hazard {HazardId} confirmed by user {UserId}", hazardId, userId);
+
+            return Ok(ApiResponse<HazardConfirmationResponse>.CreateSuccess(
+                new HazardConfirmationResponse
+                {
+                    HazardId = hazard.Id,
+                    Confirmations = hazard.Confirmations,
+                    IsResolved = hazard.IsResolved
+                },
+                "Hazard confirmed successfully"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error confirming hazard");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to confirm hazard"));
+        }
+    }
+
+    /// <summary>
+    /// Resolve a hazard (Administrator Feature)
+    /// Mark a hazard as resolved after it has been addressed
+    /// </summary>
+    /// <param name="hazardId">Hazard ID</param>
+    /// <param name="request">Resolution details</param>
+    /// <returns>Resolved hazard information</returns>
+    [HttpPost("{hazardId}/resolve")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ResolveHazard(
+        string hazardId,
+        [FromBody] ResolveHazardRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+
+            var success = await _hazardService.ResolveHazardAsync(hazardId, userId, request.Notes);
+            if (!success)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            var hazard = await _hazardService.GetHazardAsync(hazardId);
+            if (hazard == null)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            _logger.LogInformation("Hazard {HazardId} resolved by user {UserId}", hazardId, userId);
+
+            return Ok(ApiResponse<HazardDetailResponse>.CreateSuccess(
+                HazardToDetailResponse(hazard),
+                "Hazard resolved successfully"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resolving hazard");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to resolve hazard"));
+        }
+    }
+
+    /// <summary>
+    /// Get hazard by ID
+    /// </summary>
+    /// <param name="id">Hazard ID</param>
+    /// <returns>Hazard details</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> GetHazardById(string id)
+    {
+        try
+        {
+            var hazard = await _hazardService.GetHazardAsync(id);
+            if (hazard == null)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            return Ok(ApiResponse<HazardDetailResponse>.CreateSuccess(HazardToDetailResponse(hazard)));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching hazard {HazardId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch hazard"));
+        }
+    }
+
+    /// <summary>
+    /// Get hazard statistics for city (Safety Analytics)
+    /// </summary>
+    /// <param name="cityId">City ID</param>
+    /// <returns>Hazard statistics and breakdown</returns>
+    [HttpGet("city/{cityId}/statistics")]
+    [ProducesResponseType(typeof(ApiResponse<HazardStatisticsResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HazardStatisticsResponse>>> GetHazardStatistics(string cityId)
+    {
+        try
+        {
+            var hazards = await _hazardService.GetCityHazardsAsync(cityId, includeResolved: false);
+            var breakdown = await _hazardService.GetHazardBreakdownAsync(cityId);
+
+            var response = new HazardStatisticsResponse
+            {
+                TotalHazards = hazards.Count,
+                CriticalHazards = hazards.Count(h => h.Severity == HazardSeverity.Critical),
+                HighHazards = hazards.Count(h => h.Severity == HazardSeverity.High),
+                MediumHazards = hazards.Count(h => h.Severity == HazardSeverity.Medium),
+                LowHazards = hazards.Count(h => h.Severity == HazardSeverity.Low),
+                AverageConfirmations = hazards.Count > 0 ? hazards.Average(h => h.Confirmations) : 0,
+                HazardsByType = breakdown.ToDictionary(k => k.Key.ToString(), v => v.Value)
+            };
+
+            return Ok(ApiResponse<HazardStatisticsResponse>.CreateSuccess(response,
+                "Hazard statistics retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching hazard statistics");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch hazard statistics"));
+        }
+    }
+
+    /// <summary>
+    /// Enable/disable anonymous reporting for user
+    /// </summary>
+    /// <param name="request">Toggle request</param>
+    /// <returns>Updated anonymous reporting status</returns>
+    [HttpPost("anonymous-reporting/toggle")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<AnonymousReportingStatusResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<AnonymousReportingStatusResponse>>> ToggleAnonymousReporting(
+        [FromBody] ToggleAnonymousReportingRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+
+            var user = await _userRepo.GetByIdAsync(userId);
+            if (user == null)
+                return NotFound(ApiResponse<object>.CreateError("User not found"));
+
+            user.AnonymousReportingEnabled = request.Enabled;
+            await _userRepo.ReplaceAsync(userId, user);
+
+            _logger.LogInformation("User {UserId} toggled anonymous reporting: {Enabled}", userId, request.Enabled);
+
+            return Ok(ApiResponse<AnonymousReportingStatusResponse>.CreateSuccess(
+                new AnonymousReportingStatusResponse
+                {
+                    AnonymousReportingEnabled = user.AnonymousReportingEnabled
+                },
+                "Anonymous reporting setting updated"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error toggling anonymous reporting");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to update setting"));
+        }
+    }
+
+    // Helper methods
+    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371; // Earth radius in km
+        var dLat = (lat2 - lat1) * Math.PI / 180.0;
+        var dLon = (lon2 - lon1) * Math.PI / 180.0;
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(lat1 * Math.PI / 180.0) * Math.Cos(lat2 * Math.PI / 180.0) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private static HazardDetailResponse HazardToDetailResponse(Hazard hazard)
+    {
+        return new HazardDetailResponse
+        {
+            Id = hazard.Id,
+            Type = hazard.Type.ToString(),
+            Severity = hazard.Severity.ToString(),
+            Title = hazard.Title,
+            Description = hazard.Description,
+            Latitude = hazard.Location.Coordinates.Latitude,
+            Longitude = hazard.Location.Coordinates.Longitude,
+            Address = hazard.Address ?? "Unknown",
+            Confirmations = hazard.Confirmations,
+            IsResolved = hazard.IsResolved,
+            IsAnonymous = hazard.IsAnonymous,
+            CreatedAt = hazard.CreatedAt,
+            ResolvedAt = hazard.ResolvedAt,
+            ResolutionNotes = hazard.ResolutionNotes
+        };
+    }
+}
+
+// Request/Response DTOs
+public class AnonymousHazardReportRequest
+{
+    public string CityId { get; set; } = string.Empty;
+    
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public HazardType Type { get; set; }
+    
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public HazardSeverity Severity { get; set; }
+    
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string? Address { get; set; }
+    public bool IsAnonymous { get; set; } = false;
+}
+
+public class ResolveHazardRequest
+{
+    public string? Notes { get; set; }
+}
+
+public class HazardAlertResponse
+{
+    public string Id { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Severity { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string Address { get; set; } = string.Empty;
+    public int Confirmations { get; set; }
+    public bool IsResolved { get; set; }
+    public double Distance { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string Reporter { get; set; } = string.Empty;
+}
+
+public class HazardDetailResponse
+{
+    public string Id { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Severity { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string Address { get; set; } = string.Empty;
+    public int Confirmations { get; set; }
+    public bool IsResolved { get; set; }
+    public bool IsAnonymous { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime ResolvedAt { get; set; }
+    public string? ResolutionNotes { get; set; }
+}
+
+public class HazardConfirmationResponse
+{
+    public string HazardId { get; set; } = string.Empty;
+    public int Confirmations { get; set; }
+    public bool IsResolved { get; set; }
+}
+
+public class HazardStatisticsResponse
+{
+    public int TotalHazards { get; set; }
+    public int CriticalHazards { get; set; }
+    public int HighHazards { get; set; }
+    public int MediumHazards { get; set; }
+    public int LowHazards { get; set; }
+    public double AverageConfirmations { get; set; }
+    public Dictionary<string, int> HazardsByType { get; set; } = new();
+}
+
+public class ToggleAnonymousReportingRequest
+{
+    public bool Enabled { get; set; }
+}
+
+public class AnonymousReportingStatusResponse
+{
+    public bool AnonymousReportingEnabled { get; set; }
+}

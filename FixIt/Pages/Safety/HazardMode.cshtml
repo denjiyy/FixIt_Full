@@ -1,0 +1,751 @@
+@page "/safety/hazard-mode"
+@model FixIt.Pages.Safety.HazardModeModel
+@{
+    ViewData["Title"] = "Hazard Mode - Real-time Safety Alerts";
+}
+
+<div class="container-fluid" style="height: 100vh; padding: 0;">
+    <!-- Header -->
+    <div class="hazard-header">
+        <div class="header-content">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i> Hazard Mode
+            </h5>
+            <small class="text-muted">Real-time safety alerts for your area</small>
+        </div>
+        <div class="header-controls">
+            <button class="btn btn-sm btn-outline-primary" id="myLocationBtn">
+                <i class="bi bi-geo-alt-fill"></i> My Location
+            </button>
+            <small class="text-muted ms-2"><i class="bi bi-info-circle"></i> Click on map to report a hazard</small>
+        </div>
+    </div>
+
+    <div class="hazard-container">
+        <!-- Map -->
+        <div id="hazardMap" class="hazard-map"></div>
+
+        <!-- Sidebar - Hazard List -->
+        <div class="hazard-sidebar">
+            <div class="sidebar-header">
+                <h6 class="mb-3">Nearby Hazards</h6>
+                <div class="filter-controls">
+                    <input type="text" class="form-control form-control-sm mb-2" 
+                           id="hazardFilter" placeholder="Filter hazards..."
+                           onkeyup="filterHazards(this.value)">
+                    <select class="form-select form-select-sm mb-2" id="severityFilter" 
+                            onchange="filterBySeverity(this.value)">
+                        <option value="">All Severities</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                    <select class="form-select form-select-sm" id="typeFilter" 
+                            onchange="filterByType(this.value)">
+                        <option value="">All Types</option>
+                        <option value="Crime">Crime</option>
+                        <option value="Accident">Accident</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Pothole">Pothole</option>
+                        <option value="Flooding">Flooding</option>
+                        <option value="DamagedInfrastructure">Infrastructure Damage</option>
+                        <option value="StreetLight">Street Light</option>
+                        <option value="Debris">Debris</option>
+                        <option value="TrafficCongestion">Traffic</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sidebar-stats mb-3">
+                <div class="stat-pill">
+                    <span class="stat-value" id="totalHazardsCount">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-pill critical">
+                    <span class="stat-value" id="criticalCount">0</span>
+                    <span class="stat-label">Critical</span>
+                </div>
+                <div class="stat-pill high">
+                    <span class="stat-value" id="highCount">0</span>
+                    <span class="stat-label">High</span>
+                </div>
+            </div>
+
+            <div class="hazards-list" id="hazardsList">
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-hourglass-split"></i> Loading hazards...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hazard Detail Modal -->
+<div class="modal fade" id="hazardDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title" id="hazardModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="hazard-detail-content" id="hazardDetailContent">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-outline-primary" id="confirmBtn" onclick="confirmHazard()">
+                    <i class="bi bi-check-circle"></i> Confirm
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Hazard Modal -->
+<div class="modal fade" id="reportHazardModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-flag"></i> Report Hazard</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickReportForm">
+                    <div class="alert alert-info mb-3">
+                        <strong>Location Selected:</strong><br>
+                        <small id="reportLocationDisplay">Click on map to select location</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reportType" class="form-label">Hazard Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="reportType" required>
+                            <option value="">-- Select type --</option>
+                            <option value="Crime">Crime</option>
+                            <option value="Accident">Accident</option>
+                            <option value="Construction">Construction</option>
+                            <option value="Pothole">Pothole</option>
+                            <option value="Flooding">Flooding</option>
+                            <option value="DamagedInfrastructure">Infrastructure Damage</option>
+                            <option value="StreetLight">Street Light</option>
+                            <option value="Debris">Debris</option>
+                            <option value="TrafficCongestion">Traffic</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reportSeverity" class="form-label">Severity <span class="text-danger">*</span></label>
+                        <select class="form-select" id="reportSeverity" required>
+                            <option value="">-- Select severity --</option>
+                            <option value="Critical">🔴 Critical</option>
+                            <option value="High">🟠 High</option>
+                            <option value="Medium">🟡 Medium</option>
+                            <option value="Low">🟢 Low</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reportTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="reportTitle" required placeholder="Brief description of the hazard">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reportDescription" class="form-label">Details <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="reportDescription" rows="3" required placeholder="Additional details that would help others..."></textarea>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="reportAnonymous">
+                        <label class="form-check-label" for="reportAnonymous">
+                            <strong>Report anonymously</strong> (your identity will not be shown)
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="submitQuickReport()">
+                    <i class="bi bi-check-circle"></i> Submit Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hazard Detail Modal -->
+<div class="modal fade" id="hazardDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title" id="hazardModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="hazard-detail-content" id="hazardDetailContent">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-outline-primary" id="confirmBtn" onclick="confirmHazard()">
+                    <i class="bi bi-check-circle"></i> Confirm
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    let map;
+    let userMarker;
+    let hazardMarkers = {};
+    let currentCity = '@Model.CityId';
+    let selectedHazardId = null;
+    let reportLocationLat = null;
+    let reportLocationLng = null;
+    let userLocation = { lat: 42.7339, lng: 25.4858 }; // Default Sofia
+
+    const severityColors = {
+        'Critical': '#dc3545',
+        'High': '#fd7e14',
+        'Medium': '#ffc107',
+        'Low': '#198754'
+    };
+
+    const severityIcons = {
+        'Critical': '🚨',
+        'High': '⚠️',
+        'Medium': '⚡',
+        'Low': 'ℹ️'
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeMap();
+        loadNearbyHazards();
+        
+        // Request user location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                updateMapCenter();
+                loadNearbyHazards();
+            });
+        }
+    });
+
+    function initializeMap() {
+        map = L.map('hazardMap').setView([userLocation.lat, userLocation.lng], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // User location marker
+        userMarker = L.circleMarker([userLocation.lat, userLocation.lng], {
+            radius: 8,
+            fillColor: '#007bff',
+            color: '#0056b3',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        }).addTo(map);
+        userMarker.bindPopup('Your Location');
+
+        // Map click handler for reporting hazards
+        map.on('click', function (e) {
+            reportLocationLat = e.latlng.lat;
+            reportLocationLng = e.latlng.lng;
+            document.getElementById('reportLocationDisplay').textContent = 
+                `Latitude: ${reportLocationLat.toFixed(6)}, Longitude: ${reportLocationLng.toFixed(6)}`;
+            const modal = new bootstrap.Modal(document.getElementById('reportHazardModal'));
+            modal.show();
+        });
+    }
+
+    function updateMapCenter() {
+        if (map && userMarker) {
+            map.setView([userLocation.lat, userLocation.lng], 13);
+            userMarker.setLatLng([userLocation.lat, userLocation.lng]);
+        }
+    }
+
+    async function loadNearbyHazards() {
+        try {
+            const response = await fetch(
+                `/api/safety/nearby-hazards?cityId=${currentCity}&latitude=${userLocation.lat}&longitude=${userLocation.lng}&radiusKm=10`
+            );
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Hazards loaded:', data);
+
+            if (data.success && Array.isArray(data.data)) {
+                displayHazards(data.data);
+                updateStatistics(data.data);
+            } else {
+                console.error('Failed to load hazards:', data.message || 'Invalid response format');
+                document.getElementById('hazardsList').innerHTML = '<div class="alert alert-warning p-2"><small>No hazards in your area</small></div>';
+            }
+        } catch (error) {
+            console.error('Error loading hazards:', error);
+            document.getElementById('hazardsList').innerHTML = '<div class="alert alert-danger p-2"><small>Failed to load hazards. Please try again.</small></div>';
+        }
+    }
+
+    function displayHazards(hazards) {
+        // Clear existing markers
+        Object.values(hazardMarkers).forEach(marker => map.removeLayer(marker));
+        hazardMarkers = {};
+
+        // Update sidebar
+        const hazardsList = document.getElementById('hazardsList');
+        if (hazards.length === 0) {
+            hazardsList.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-check-circle"></i> No hazards nearby</div>';
+            return;
+        }
+
+        hazardsList.innerHTML = hazards.map(hazard => `
+            <div class="hazard-item severity-${hazard.severity.toLowerCase()}" onclick="selectHazard('${hazard.id}')">
+                <div class="hazard-item-header">
+                    <span class="hazard-icon">${severityIcons[hazard.severity]}</span>
+                    <div class="hazard-info">
+                        <h6 class="mb-0">${hazard.title}</h6>
+                        <small class="text-muted">${hazard.type} • ${hazard.distance.toFixed(1)} km away</small>
+                    </div>
+                </div>
+                <div class="hazard-item-footer">
+                    <span class="badge bg-${getSeverityBadgeClass(hazard.severity)}">${hazard.severity}</span>
+                    <span class="badge bg-light text-dark">${hazard.confirmations} confirmations</span>
+                </div>
+            </div>
+        `).join('');
+
+        // Add markers to map
+        hazards.forEach(hazard => {
+            const marker = L.circleMarker([hazard.latitude, hazard.longitude], {
+                radius: 10,
+                fillColor: severityColors[hazard.severity],
+                color: '#000',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <strong>${hazard.title}</strong><br/>
+                ${hazard.severity} • ${hazard.confirmations} confirmations<br/>
+                <button class="btn btn-sm btn-primary mt-2" onclick="showHazardDetail('${hazard.id}')">
+                    View Details
+                </button>
+            `);
+
+            hazardMarkers[hazard.id] = marker;
+
+            marker.on('click', function () {
+                selectHazard(hazard.id);
+            });
+        });
+    }
+
+    function updateStatistics(hazards) {
+        document.getElementById('totalHazardsCount').textContent = hazards.length;
+        document.getElementById('criticalCount').textContent = hazards.filter(h => h.severity === 'Critical').length;
+        document.getElementById('highCount').textContent = hazards.filter(h => h.severity === 'High').length;
+    }
+
+    function selectHazard(hazardId) {
+        selectedHazardId = hazardId;
+        if (hazardMarkers[hazardId]) {
+            hazardMarkers[hazardId].openPopup();
+        }
+    }
+
+    async function showHazardDetail(hazardId) {
+        try {
+            const response = await fetch(`/api/safety/${hazardId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const hazard = data.data;
+                document.getElementById('hazardModalTitle').textContent = hazard.title;
+                document.getElementById('hazardDetailContent').innerHTML = `
+                    <div class="hazard-detail">
+                        <div class="detail-row">
+                            <label>Type:</label>
+                            <span>${hazard.type}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Severity:</label>
+                            <span class="badge bg-${getSeverityBadgeClass(hazard.severity)}">${hazard.severity}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Description:</label>
+                            <p>${hazard.description}</p>
+                        </div>
+                        <div class="detail-row">
+                            <label>Location:</label>
+                            <span>${hazard.address}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Confirmations:</label>
+                            <span>${hazard.confirmations}</span>
+                        </div>
+                        <div class="detail-row">
+                            <label>Reported:</label>
+                            <span>${new Date(hazard.createdAt).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+                
+                selectedHazardId = hazardId;
+                const modal = new bootstrap.Modal(document.getElementById('hazardDetailModal'));
+                modal.show();
+            }
+        } catch (error) {
+            console.error('Error loading hazard detail:', error);
+        }
+    }
+
+    async function confirmHazard() {
+        if (!selectedHazardId) return;
+
+        try {
+            const response = await fetch(`/api/safety/${selectedHazardId}/confirm`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                alert('Hazard confirmed! Thank you for helping keep your community safe.');
+                bootstrap.Modal.getInstance(document.getElementById('hazardDetailModal')).hide();
+                loadNearbyHazards();
+            }
+        } catch (error) {
+            console.error('Error confirming hazard:', error);
+        }
+    }
+
+    async function submitQuickReport() {
+        const type = document.getElementById('reportType').value;
+        const severity = document.getElementById('reportSeverity').value;
+        const title = document.getElementById('reportTitle').value;
+        const description = document.getElementById('reportDescription').value;
+        const isAnonymous = document.getElementById('reportAnonymous').checked;
+
+        if (!type || !severity || !title || !description) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        if (reportLocationLat === null || reportLocationLng === null) {
+            alert('Please click on the map to select a location');
+            return;
+        }
+
+        // Map severity string to enum value
+        const severityMap = { 'Low': 0, 'Medium': 1, 'High': 2, 'Critical': 3 };
+        const severityValue = severityMap[severity];
+
+        try {
+            const response = await fetch('/api/safety/report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cityId: currentCity,
+                    type: type,
+                    severity: severity,
+                    title: title,
+                    description: description,
+                    latitude: reportLocationLat,
+                    longitude: reportLocationLng,
+                    address: '',
+                    isAnonymous: isAnonymous
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok || response.status === 201) {
+                alert('Thank you! Your report has been submitted and helps keep the community safe.');
+                bootstrap.Modal.getInstance(document.getElementById('reportHazardModal')).hide();
+                document.getElementById('quickReportForm').reset();
+                reportLocationLat = null;
+                reportLocationLng = null;
+                document.getElementById('reportLocationDisplay').textContent = 'Click on map to select location';
+                loadNearbyHazards();
+            } else {
+                const errorMsg = responseData?.message || 'Failed to submit report';
+                console.error('Report submission failed:', {
+                    status: response.status,
+                    error: errorMsg,
+                    fullResponse: responseData
+                });
+                alert('Error: ' + errorMsg);
+            }
+        } catch (error) {
+            console.error('Error submitting report:', error);
+            alert('Error submitting report: ' + error.message);
+        }
+    }
+
+    function filterHazards(searchTerm) {
+        const items = document.querySelectorAll('.hazard-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm.toLowerCase()) ? 'block' : 'none';
+        });
+    }
+
+    function filterBySeverity(severity) {
+        const items = document.querySelectorAll('.hazard-item');
+        items.forEach(item => {
+            if (!severity) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = item.classList.contains(`severity-${severity.toLowerCase()}`) ? 'block' : 'none';
+            }
+        });
+    }
+
+    function filterByType(type) {
+        // Implementation for type filtering
+        const items = document.querySelectorAll('.hazard-item');
+        items.forEach(item => {
+            if (!type) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = item.textContent.includes(type) ? 'block' : 'none';
+            }
+        });
+    }
+
+    function getSeverityBadgeClass(severity) {
+        const classes = {
+            'Critical': 'danger',
+            'High': 'warning',
+            'Medium': 'info',
+            'Low': 'success'
+        };
+        return classes[severity] || 'secondary';
+    }
+
+    document.getElementById('myLocationBtn').addEventListener('click', function () {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                updateMapCenter();
+                loadNearbyHazards();
+            });
+        }
+    });
+</script>
+
+<style>
+    .hazard-header {
+        background: white;
+        padding: 1rem;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+    }
+
+    .header-controls {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .hazard-container {
+        display: flex;
+        height: calc(100vh - 80px);
+    }
+
+    .hazard-map {
+        flex: 1;
+        min-height: 100%;
+    }
+
+    .hazard-sidebar {
+        width: 350px;
+        background: white;
+        border-left: 1px solid #ddd;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .sidebar-header {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .sidebar-stats {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0 1rem;
+    }
+
+    .stat-pill {
+        flex: 1;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+
+    .stat-pill.critical {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .stat-pill.high {
+        background: rgba(253, 126, 20, 0.1);
+        color: #fd7e14;
+    }
+
+    .stat-value {
+        display: block;
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        display: block;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    .hazards-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    .hazard-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .hazard-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transform: translateX(-2px);
+    }
+
+    .hazard-item.severity-critical {
+        border-left: 4px solid #dc3545;
+        background: rgba(220, 53, 69, 0.05);
+    }
+
+    .hazard-item.severity-high {
+        border-left: 4px solid #fd7e14;
+        background: rgba(253, 126, 20, 0.05);
+    }
+
+    .hazard-item.severity-medium {
+        border-left: 4px solid #ffc107;
+        background: rgba(255, 193, 7, 0.05);
+    }
+
+    .hazard-item.severity-low {
+        border-left: 4px solid #198754;
+        background: rgba(25, 135, 84, 0.05);
+    }
+
+    .hazard-item-header {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .hazard-icon {
+        font-size: 1.5rem;
+        min-width: 32px;
+        text-align: center;
+    }
+
+    .hazard-info {
+        flex: 1;
+    }
+
+    .hazard-item h6 {
+        margin-bottom: 0.25rem;
+    }
+
+    .hazard-item-footer {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .hazard-detail {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 1rem;
+    }
+
+    .detail-row label {
+        font-weight: 600;
+        color: #666;
+    }
+
+    .filter-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+</style>
+
+<style>
+    @@media (max-width: 768px) {
+        .hazard-sidebar {
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            border-left: none;
+            border-top: 1px solid #ddd;
+        }
+
+        .hazard-container {
+            height: auto;
+        }
+
+        .hazard-map {
+            height: 60vh;
+        }
+    }
+</style>

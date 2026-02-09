@@ -28,6 +28,17 @@ public interface IHazardService
     
     Task<List<Hazard>> SearchHazardsAsync(string cityId, HazardType? type = null, 
         HazardSeverity? severity = null, int limit = 100);
+
+    // New safety feature methods
+    Task<List<Hazard>> GetHazardsByTypeAsync(string cityId, HazardType type);
+    
+    Task<List<Hazard>> GetHazardsBySeverityAsync(string cityId, HazardSeverity severity);
+    
+    Task<List<Hazard>> GetRecentHazardsAsync(string cityId, int hoursPast = 24);
+    
+    Task<int> GetUnconfirmedHazardsCountAsync(string cityId);
+    
+    Task<Dictionary<string, int>> GetHazardSeverityDistributionAsync(string cityId);
 }
 
 public class HazardService : IHazardService
@@ -171,6 +182,68 @@ public class HazardService : IHazardService
         return hazards.OrderByDescending(h => h.UpdatedAt)
                      .Take(limit)
                      .ToList();
+    }
+
+    public async Task<List<Hazard>> GetHazardsByTypeAsync(string cityId, HazardType type)
+    {
+        var hazards = await _hazardRepo.FindAsync(h =>
+            h.CityId == cityId &&
+            h.Type == type &&
+            !h.IsResolved &&
+            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
+
+        return hazards.OrderByDescending(h => h.Confirmations)
+                     .ThenByDescending(h => h.UpdatedAt)
+                     .ToList();
+    }
+
+    public async Task<List<Hazard>> GetHazardsBySeverityAsync(string cityId, HazardSeverity severity)
+    {
+        var hazards = await _hazardRepo.FindAsync(h =>
+            h.CityId == cityId &&
+            h.Severity == severity &&
+            !h.IsResolved &&
+            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
+
+        return hazards.OrderByDescending(h => h.Confirmations)
+                     .ThenByDescending(h => h.UpdatedAt)
+                     .ToList();
+    }
+
+    public async Task<List<Hazard>> GetRecentHazardsAsync(string cityId, int hoursPast = 24)
+    {
+        var cutoffTime = DateTime.UtcNow.AddHours(-hoursPast);
+        var hazards = await _hazardRepo.FindAsync(h =>
+            h.CityId == cityId &&
+            h.CreatedAt >= cutoffTime &&
+            !h.IsResolved &&
+            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
+
+        return hazards.OrderByDescending(h => h.CreatedAt).ToList();
+    }
+
+    public async Task<int> GetUnconfirmedHazardsCountAsync(string cityId)
+    {
+        var hazards = await _hazardRepo.FindAsync(h =>
+            h.CityId == cityId &&
+            h.Confirmations == 0 &&
+            !h.IsResolved &&
+            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
+
+        return hazards.Count();
+    }
+
+    public async Task<Dictionary<string, int>> GetHazardSeverityDistributionAsync(string cityId)
+    {
+        var hazards = await GetCityHazardsAsync(cityId, includeResolved: false);
+
+        return new Dictionary<string, int>
+        {
+            { "Critical", hazards.Count(h => h.Severity == HazardSeverity.Critical) },
+            { "High", hazards.Count(h => h.Severity == HazardSeverity.High) },
+            { "Medium", hazards.Count(h => h.Severity == HazardSeverity.Medium) },
+            { "Low", hazards.Count(h => h.Severity == HazardSeverity.Low) }
+        };
     }
 
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
