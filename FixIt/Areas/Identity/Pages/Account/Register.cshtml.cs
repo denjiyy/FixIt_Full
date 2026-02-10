@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -27,16 +28,20 @@ public class RegisterModel : PageModel
     [BindProperty]
     public InputModel Input { get; set; } = default!;
 
+    public IList<AuthenticationScheme> ExternalLogins { get; set; } = default!;
+
     public string? ReturnUrl { get; set; }
 
     public async Task OnGetAsync(string? returnUrl = null)
     {
         ReturnUrl = returnUrl;
+        ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
     }
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         returnUrl ??= Url.Content("~/");
+        ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
         if (ModelState.IsValid)
         {
@@ -88,3 +93,4 @@ public class RegisterModel : PageModel
         public string ConfirmPassword { get; set; } = null!;
     }
 }
+

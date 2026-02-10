@@ -84,4 +84,12 @@ public class Hazard
     public DateTime? ExpiresAt { get; set; }
 
     public int Version { get; set; } = 1;
+
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? DeletedAt { get; set; }
+
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? DeletedByUserId { get; set; }
+
+    public bool IsDeleted { get; set; } = false;
 }

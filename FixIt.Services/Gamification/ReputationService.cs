@@ -107,6 +107,9 @@ public class ReputationService : IReputationService
             case "issue_reported":
                 reputation.IssuesReported++;
                 break;
+            case "issue_confirmed":
+                // Points awarded to reporter when issue is confirmed
+                break;
             case "comment_posted":
                 reputation.CommentsPosted++;
                 break;
@@ -116,16 +119,22 @@ public class ReputationService : IReputationService
             case "issue_resolved":
                 reputation.IssuesResolved++;
                 break;
+            case "hazard_confirmed":
+                // Points awarded to hazard reporter when confirmed
+                break;
         }
 
-        // Update trust level
-        await UpdateTrustLevelAsync(userId);
-
-        // Save updated reputation
+        // Save updated reputation FIRST (with new points)
         await _reputationRepository.ReplaceAsync(reputation.Id, reputation);
+
+        // THEN update trust level (so it sees the new TotalPoints)
+        await UpdateTrustLevelAsync(userId);
 
         // Check for new achievements
         await CheckAndAwardAchievementsAsync(userId);
+
+        // FINAL trust level update (achievements may have added more points)
+        await UpdateTrustLevelAsync(userId);
 
         _logger.LogInformation($"Added {points} points to user {userId} for: {reason}");
     }

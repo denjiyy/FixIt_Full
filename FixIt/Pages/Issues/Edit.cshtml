@@ -1,0 +1,154 @@
+@page "/issues/{id}/edit"
+@model EditIssueModel
+@{
+    ViewData["Title"] = "Edit Issue";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-5">
+                <a href="/issues/@Model.Id" class="text-decoration-none text-muted">
+                    <i class="bi bi-chevron-left"></i> Back to Issue
+                </a>
+                <h1 class="h2 fw-bold mt-2">Edit Issue</h1>
+                <p class="text-muted">Update the issue details below</p>
+            </div>
+
+            @if (Model.Issue != null)
+            {
+                <form method="post" class="needs-validation">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <!-- Title -->
+                            <div class="mb-4">
+                                <label for="Input_Title" class="form-label fw-semibold">
+                                    <i class="bi bi-pencil-square me-2"></i>Title
+                                </label>
+                                <input type="text" 
+                                       class="form-control @(ModelState.IsValid ? "" : "is-invalid")"
+                                       id="Input_Title"
+                                       asp-for="Input.Title"
+                                       placeholder="Brief title of the issue"
+                                       maxlength="200">
+                                <small class="text-muted d-block mt-1">
+                                    <span id="charCount">@Model.Input.Title?.Length ?? 0</span>/200 characters
+                                </small>
+                                <span asp-validation-for="Input.Title" class="invalid-feedback"></span>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="Input_Description" class="form-label fw-semibold">
+                                    <i class="bi bi-file-text me-2"></i>Description
+                                </label>
+                                <textarea class="form-control @(ModelState.IsValid ? "" : "is-invalid")"
+                                          id="Input_Description"
+                                          asp-for="Input.Description"
+                                          rows="6"
+                                          placeholder="Detailed description of the issue"
+                                          maxlength="5000"></textarea>
+                                <small class="text-muted d-block mt-1">
+                                    <span id="descCharCount">@Model.Input.Description?.Length ?? 0</span>/5000 characters
+                                </small>
+                                <span asp-validation-for="Input.Description" class="invalid-feedback"></span>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="mb-4">
+                                <label for="Input_Address" class="form-label fw-semibold">
+                                    <i class="bi bi-geo-alt me-2"></i>Address (Optional)
+                                </label>
+                                <input type="text" 
+                                       class="form-control"
+                                       id="Input_Address"
+                                       asp-for="Input.Address"
+                                       placeholder="Location or street address"
+                                       maxlength="300">
+                            </div>
+
+                            <!-- Original Info -->
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Issue Info:</strong> Created by @Model.Issue.Reporter.DisplayName on @Model.Issue.CreatedAt.ToString("MMMM d, yyyy")
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                                </button>
+                                <a href="/issues/@Model.Id" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                                <a href="/issues/@Model.Id/delete" class="btn btn-outline-danger ms-auto">
+                                    <i class="bi bi-trash me-2"></i>Delete Issue
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Issue not found or has been deleted.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Character counter for title
+        document.getElementById('Input_Title').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+
+        // Character counter for description
+        document.getElementById('Input_Description').addEventListener('input', function() {
+            document.getElementById('descCharCount').textContent = this.value.length;
+        });
+    </script>
+}
+
+<style>
+    .card {
+        transition: box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .form-label {
+        color: #2d3748;
+        margin-bottom: 0.75rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #0284c7, #0369a1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .alert-info {
+        background-color: #f0f9ff;
+        border-color: #bfdbfe;
+        color: #1e40af;
+    }
+</style>

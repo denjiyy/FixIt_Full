@@ -83,39 +83,39 @@ builder.Services.AddAuthentication(options =>
     options.LoginPath = "/login";
     options.LogoutPath = "/logout";
     options.AccessDeniedPath = "/access-denied";
-})
-.AddGoogle(options =>
-{
-    options.ClientId = authConfig["Google:ClientId"] ?? "";
-    options.ClientSecret = authConfig["Google:ClientSecret"] ?? "";
-    options.CallbackPath = "/signin-google";
-})
-.AddMicrosoftAccount(options =>
-{
-    options.ClientId = authConfig["Microsoft:ClientId"] ?? "";
-    options.ClientSecret = authConfig["Microsoft:ClientSecret"] ?? "";
-    options.CallbackPath = "/signin-microsoft";
-    options.Scope.Add("email");
-    options.Scope.Add("profile");
-})
-.AddOAuth("GitHub", options =>
-{
-    options.ClientId = authConfig["GitHub:ClientId"] ?? "";
-    options.ClientSecret = authConfig["GitHub:ClientSecret"] ?? "";
-    options.CallbackPath = "/signin-github";
-    options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
-    options.TokenEndpoint = "https://github.com/login/oauth/access_token";
-    options.UserInformationEndpoint = "https://api.github.com/user";
-})
-.AddOAuth("Facebook", options =>
-{
-    options.ClientId = authConfig["Facebook:AppId"] ?? "";
-    options.ClientSecret = authConfig["Facebook:AppSecret"] ?? "";
-    options.CallbackPath = "/signin-facebook";
-    options.AuthorizationEndpoint = "https://www.facebook.com/v12.0/dialog/oauth";
-    options.TokenEndpoint = "https://graph.facebook.com/v12.0/oauth/access_token";
-    options.UserInformationEndpoint = "https://graph.facebook.com/me?fields=id,name,email,picture";
 });
+
+// Only add Google if credentials are configured
+var googleClientId = authConfig["Google:ClientId"];
+var googleClientSecret = authConfig["Google:ClientSecret"];
+if (!string.IsNullOrEmpty(googleClientId) && !googleClientId.Contains("YOUR_") && 
+    !string.IsNullOrEmpty(googleClientSecret) && !googleClientSecret.Contains("YOUR_"))
+{
+    builder.Services.AddAuthentication().AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        options.CallbackPath = "/signin-google";
+    });
+}
+
+// Only add Microsoft if credentials are configured
+var microsoftClientId = authConfig["Microsoft:ClientId"];
+var microsoftClientSecret = authConfig["Microsoft:ClientSecret"];
+if (!string.IsNullOrEmpty(microsoftClientId) && !microsoftClientId.Contains("YOUR_") && 
+    !string.IsNullOrEmpty(microsoftClientSecret) && !microsoftClientSecret.Contains("YOUR_"))
+{
+    builder.Services.AddAuthentication().AddMicrosoftAccount(options =>
+    {
+        options.ClientId = microsoftClientId;
+        options.ClientSecret = microsoftClientSecret;
+        options.CallbackPath = "/signin-microsoft";
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+    });
+}
 
 // Register repositories with correct collection names
 builder.Services.AddScoped<IRepository<FixIt.Models.Locations.City>>(sp =>
@@ -146,6 +146,12 @@ builder.Services.AddScoped<IRepository<FixIt.Models.Engagement.Vote>>(sp =>
 {
     var db = sp.GetRequiredService<IMongoDatabase>();
     return new Repository<FixIt.Models.Engagement.Vote>(db, "votes");
+});
+
+builder.Services.AddScoped<IRepository<FixIt.Models.Issues.ViewEvent>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Issues.ViewEvent>(db, "viewEvents");
 });
 
 // Gamification repositories
@@ -199,6 +205,13 @@ builder.Services.AddScoped<IRepository<FixIt.Models.Media.MediaReference>>(sp =>
 {
     var db = sp.GetRequiredService<IMongoDatabase>();
     return new Repository<FixIt.Models.Media.MediaReference>(db, "mediaReferences");
+});
+
+// Engagement repositories
+builder.Services.AddScoped<IRepository<FixIt.Models.Engagement.Comment>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.Engagement.Comment>(db, "comments");
 });
 
 // Register services (business logic layer)

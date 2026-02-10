@@ -4,293 +4,309 @@
     ViewData["Title"] = "Health Reports";
 }
 
-<style>
-    .report-container {
-        margin-top: 2rem;
-    }
-
-    .report-section {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .report-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        color: #333;
-    }
-
-    .health-score {
-        text-align: center;
-        padding: 2rem;
-    }
-
-    .score-circle {
-        width: 200px;
-        height: 200px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        margin: 0 auto;
-        font-size: 3rem;
-        font-weight: 700;
-        color: white;
-    }
-
-    .score-excellent {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        box-shadow: 0 8px 25px rgba(17, 153, 142, 0.3);
-    }
-
-    .score-good {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-    }
-
-    .score-fair {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 8px 25px rgba(245, 87, 108, 0.3);
-    }
-
-    .score-label {
-        font-size: 1rem;
-        margin-top: 1rem;
-    }
-
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
-
-    .metric-card {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
-    }
-
-    .metric-label {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        color: #999;
-        font-weight: 600;
-    }
-
-    .metric-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #333;
-        margin: 0.5rem 0;
-    }
-
-    .metric-subtitle {
-        font-size: 0.85rem;
-        color: #666;
-    }
-
-    .city-selector {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-
-    .city-selector select {
-        padding: 0.75rem 1rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 1rem;
-    }
-</style>
-
 <div class="container-fluid mt-4">
+    <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <h1>Community Health Reports</h1>
-            <p class="text-muted">Monitor the health and engagement of your cities</p>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h1 class="h2 mb-2">
+                        <i class="bi bi-heart-pulse text-gradient"></i> Community Health Reports
+                    </h1>
+                    <p class="text-muted mb-0">Monitor community engagement and infrastructure health metrics</p>
+                </div>
+                @if (!Model.IsGlobal && Model.AllCities.Any())
+                {
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-geo-alt"></i> 
+                            @(Model.AllCities.FirstOrDefault(c => c.Id == Model.CityId)?.Name ?? "Select City")
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="max-height: 400px; overflow-y: auto;">
+                            <li>
+                                <a class="dropdown-item @(Model.IsGlobal ? "active" : "")" href="/HealthReports">
+                                    <i class="bi bi-globe"></i> Global Report
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            @foreach (var city in Model.AllCities.OrderBy(c => c.Name))
+                            {
+                                <li>
+                                    <a class="dropdown-item @(city.Id == Model.CityId ? "active" : "")" 
+                                       href="/HealthReports/@city.Id">
+                                        <i class="bi bi-building"></i> @city.Name
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 
-    <!-- City Selector -->
-    @if (!Model.IsGlobal)
+    <!-- Health Score Hero Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-body p-4 p-md-5">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-8">
+                            <h2 class="h3 mb-4" style="color: white;">Community Health Score</h2>
+                            <div class="row g-3">
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center">
+                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.HealthScore.ToString("F1")</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">Overall Score</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center">
+                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.TotalIssues</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">Total Issues</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center">
+                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.ResolutionRate.ToString("F0")%</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">Resolved</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="text-center">
+                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.TotalUpvotes</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">Votes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center">
+                            <div class="position-relative d-inline-block">
+                                <svg width="180" height="180" viewBox="0 0 200 200" style="transform: rotate(-90deg);">
+                                    <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="20"/>
+                                    <circle cx="100" cy="100" r="80" fill="none" stroke="white" stroke-width="20"
+                                            stroke-dasharray="@((Model.CityReport.HealthScore / 100.0 * 502.4).ToString("F2")) 502.4"
+                                            stroke-linecap="round"/>
+                                </svg>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <div class="h1 mb-0" style="color: white; font-size: 2.5rem;">
+                                        @Model.CityReport.HealthScore.ToString("F0")
+                                    </div>
+                                    <small style="opacity: 0.9;">/ 100</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--primary);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-bold mb-2">Total Issues</div>
+                            <div class="h2 mb-0">@Model.CityReport.TotalIssues</div>
+                        </div>
+                        <div class="text-primary" style="font-size: 2rem;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-primary" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--success);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-bold mb-2">Resolved</div>
+                            <div class="h2 mb-0">@Model.CityReport.ResolvedIssues</div>
+                        </div>
+                        <div class="text-success" style="font-size: 2rem;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-success" style="width: @Model.CityReport.ResolutionRate%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--danger);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-bold mb-2">Open Issues</div>
+                            <div class="h2 mb-0">@Model.CityReport.OpenIssues</div>
+                        </div>
+                        <div class="text-danger" style="font-size: 2rem;">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-danger" style="width: @((Model.CityReport.OpenIssues / (double)Math.Max(Model.CityReport.TotalIssues, 1) * 100).ToString("F0"))%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--info);">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="text-muted small text-uppercase fw-bold mb-2">Engagement</div>
+                            <div class="h2 mb-0">@(Model.CityReport.TotalUpvotes + Model.CityReport.TotalComments)</div>
+                        </div>
+                        <div class="text-info" style="font-size: 2rem;">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-info" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border: none;">
+                <div class="card-header" style="background: white; border-bottom: 2px solid var(--gray-200);">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Issues by Priority</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 g-md-4">
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1)); border-radius: 1rem;">
+                                <div class="display-5 fw-bold text-danger mb-2">@Model.CityReport.CriticalIssues</div>
+                                <div class="small text-uppercase fw-bold text-danger">Critical</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(249, 115, 22, 0.1)); border-radius: 1rem;">
+                                <div class="display-5 fw-bold text-warning mb-2">@Model.CityReport.HighIssues</div>
+                                <div class="small text-uppercase fw-bold text-warning">High</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1)); border-radius: 1rem;">
+                                <div class="display-5 fw-bold mb-2" style="color: #f59e0b;">@Model.CityReport.MediumIssues</div>
+                                <div class="small text-uppercase fw-bold" style="color: #f59e0b;">Medium</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border-radius: 1rem;">
+                                <div class="display-5 fw-bold text-success mb-2">@Model.CityReport.LowIssues</div>
+                                <div class="small text-uppercase fw-bold text-success">Low</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Issues -->
+    @if (Model.CityReport.TopIssues?.Any() == true)
     {
-        <div class="city-selector">
-            <label for="citySelect">Select City:</label>
-            <select id="citySelect" onchange="changeCityReport(this.value)">
-                <option value="">-- Global Report --</option>
-                @foreach (var city in Model.AllCities)
-                {
-                    <option value="@city.Id" selected="@(city.Id == Model.CityId)">@city.Name</option>
-                }
-            </select>
+        <div class="row">
+            <div class="col-12">
+                <div class="card" style="border: none;">
+                    <div class="card-header" style="background: white; border-bottom: 2px solid var(--gray-200);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-star"></i> Top Trending Issues</h5>
+                            <a href="/issues" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead style="background: var(--gray-100);">
+                                    <tr>
+                                        <th class="border-0 py-3 ps-4">Issue</th>
+                                        <th class="border-0 py-3">Status</th>
+                                        <th class="border-0 py-3">Priority</th>
+                                        <th class="border-0 py-3 text-center">Upvotes</th>
+                                        <th class="border-0 py-3 text-center">Comments</th>
+                                        <th class="border-0 py-3 pe-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var issue in Model.CityReport.TopIssues.Take(10))
+                                    {
+                                        <tr style="transition: background 0.2s;">
+                                            <td class="ps-4 py-3">
+                                                <div class="fw-bold text-truncate" style="max-width: 300px;">@issue.Title</div>
+                                            </td>
+                                            <td class="py-3">
+                                                @{
+                                                    var statusClass = issue.Status switch
+                                                    {
+                                                        FixIt.Models.Enums.IssueStatus.New => "warning",
+                                                        FixIt.Models.Enums.IssueStatus.Confirmed => "info",
+                                                        FixIt.Models.Enums.IssueStatus.InProgress => "primary",
+                                                        FixIt.Models.Enums.IssueStatus.Fixed => "success",
+                                                        _ => "secondary"
+                                                    };
+                                                }
+                                                <span class="badge bg-@statusClass">@issue.Status</span>
+                                            </td>
+                                            <td class="py-3">
+                                                @{
+                                                    var priorityClass = issue.Priority switch
+                                                    {
+                                                        FixIt.Models.Enums.IssuePriority.Critical => "danger",
+                                                        FixIt.Models.Enums.IssuePriority.High => "warning",
+                                                        FixIt.Models.Enums.IssuePriority.Medium => "info",
+                                                        FixIt.Models.Enums.IssuePriority.Low => "success",
+                                                        _ => "secondary"
+                                                    };
+                                                }
+                                                <span class="badge bg-@priorityClass">@issue.Priority</span>
+                                            </td>
+                                            <td class="py-3 text-center">
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="bi bi-hand-thumbs-up"></i> @issue.Upvotes
+                                                </span>
+                                            </td>
+                                            <td class="py-3 text-center">
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="bi bi-chat"></i> @issue.Comments
+                                                </span>
+                                            </td>
+                                            <td class="py-3 pe-4">
+                                                <a href="/issues/@issue.IssueId" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-arrow-right"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     }
-
-    <div class="report-container">
-        <!-- Health Score Card -->
-        <div class="report-section">
-            <h2 class="report-title">Community Health Score</h2>
-            <div class="health-score">
-                <div class="score-circle @GetScoreClass(Model.CityReport.HealthScore)">
-                    @Model.CityReport.HealthScore.ToString("F1")
-                </div>
-                <div class="score-label">
-                    @GetScoreDescription(Model.CityReport.HealthScore)
-                </div>
-            </div>
-        </div>
-
-        <!-- Key Metrics -->
-        <div class="report-section">
-            <h2 class="report-title">Key Metrics</h2>
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Total Issues</div>
-                    <div class="metric-value">@Model.CityReport.TotalIssues</div>
-                </div>
-                
-                <div class="metric-card" style="border-left-color: #28a745;">
-                    <div class="metric-label">Resolved Issues</div>
-                    <div class="metric-value">@Model.CityReport.ResolvedIssues</div>
-                </div>
-                
-                <div class="metric-card" style="border-left-color: #dc3545;">
-                    <div class="metric-label">Open Issues</div>
-                    <div class="metric-value">@Model.CityReport.OpenIssues</div>
-                </div>
-                
-                <div class="metric-card">
-                    <div class="metric-label">Resolution Rate</div>
-                    <div class="metric-value">@Model.CityReport.ResolutionRate.ToString("F1")%</div>
-                </div>
-                
-                <div class="metric-card">
-                    <div class="metric-label">Total Upvotes</div>
-                    <div class="metric-value">@Model.CityReport.TotalUpvotes</div>
-                </div>
-                
-                <div class="metric-card">
-                    <div class="metric-label">Total Comments</div>
-                    <div class="metric-value">@Model.CityReport.TotalComments</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Issues by Priority -->
-        <div class="report-section">
-            <h2 class="report-title">Issues by Priority</h2>
-            <div class="metrics-grid">
-                <div class="metric-card" style="border-left-color: #dc3545;">
-                    <div class="metric-label">Critical</div>
-                    <div class="metric-value">@Model.CityReport.CriticalIssues</div>
-                </div>
-                
-                <div class="metric-card" style="border-left-color: #fd7e14;">
-                    <div class="metric-label">High</div>
-                    <div class="metric-value">@Model.CityReport.HighIssues</div>
-                </div>
-                
-                <div class="metric-card" style="border-left-color: #ffc107;">
-                    <div class="metric-label">Medium</div>
-                    <div class="metric-value">@Model.CityReport.MediumIssues</div>
-                </div>
-                
-                <div class="metric-card" style="border-left-color: #28a745;">
-                    <div class="metric-label">Low</div>
-                    <div class="metric-value">@Model.CityReport.LowIssues</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Issues -->
-        @if (Model.CityReport.TopIssues?.Any() == true)
-        {
-            <div class="report-section">
-                <h2 class="report-title">Top Issues</h2>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Status</th>
-                                <th>Priority</th>
-                                <th>Upvotes</th>
-                                <th>Comments</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var issue in Model.CityReport.TopIssues)
-                            {
-                                <tr>
-                                    <td>@issue.Title</td>
-                                    <td><span class="badge bg-secondary">@issue.Status</span></td>
-                                    <td>
-                                        <span class="badge @GetPriorityBadgeClass(issue.Priority)">
-                                            @issue.Priority
-                                        </span>
-                                    </td>
-                                    <td>@issue.Upvotes</td>
-                                    <td>@issue.Comments</td>
-                                    <td>
-                                        <a href="/issues/@issue.IssueId" class="btn btn-sm btn-primary">View</a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        }
-    </div>
 </div>
 
-<script>
-    function changeCityReport(cityId) {
-        if (cityId === '') {
-            window.location.href = '/HealthReports';
-        } else {
-            window.location.href = `/HealthReports/${cityId}`;
-        }
+<style>
+    .table-hover tbody tr:hover {
+        background: var(--gray-100);
     }
-</script>
-
-@functions {
-    private string GetScoreClass(double score)
-    {
-        if (score >= 70)
-            return "score-excellent";
-        if (score >= 50)
-            return "score-good";
-        return "score-fair";
-    }
-
-    private string GetScoreDescription(double score)
-    {
-        if (score >= 70)
-            return "Excellent - Community is well-managed";
-        if (score >= 50)
-            return "Good - Community is doing well";
-        return "Fair - Community needs attention";
-    }
-
-    private string GetPriorityBadgeClass(FixIt.Models.Enums.IssuePriority priority)
-    {
-        return priority switch
-        {
-            FixIt.Models.Enums.IssuePriority.Critical => "bg-danger",
-            FixIt.Models.Enums.IssuePriority.High => "bg-warning",
-            FixIt.Models.Enums.IssuePriority.Medium => "bg-info",
-            FixIt.Models.Enums.IssuePriority.Low => "bg-success",
-            _ => "bg-secondary"
-        };
-    }
-}
+</style>

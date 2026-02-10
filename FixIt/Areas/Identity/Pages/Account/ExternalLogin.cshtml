@@ -1,0 +1,63 @@
+@page
+@model FixIt.Areas.Identity.Pages.Account.ExternalLoginModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card" style="border: none; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h3 mb-2">Complete Your Registration</h1>
+                        <p class="text-muted">Signing in with <strong>@Model.LoginProvider</strong></p>
+                    </div>
+
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">Email</label>
+                            <input asp-for="Input.Email" class="form-control form-control-lg" readonly />
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.DisplayName" class="form-label">Display Name</label>
+                            <input asp-for="Input.DisplayName" class="form-control form-control-lg" 
+                                   aria-required="true" placeholder="How should we call you?" />
+                            <span asp-validation-for="Input.DisplayName" class="text-danger small"></span>
+                            <small class="text-muted">This is how other users will see you</small>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Create Account
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <small class="text-muted">
+                                By creating an account, you agree to our Terms of Service
+                            </small>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="text-center">
+                        <p class="mb-2 text-muted small">Already have an account?</p>
+                        <a asp-page="./Login" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Log In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

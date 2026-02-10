@@ -1,0 +1,144 @@
+@page "/issues/{id}/delete"
+@model DeleteIssueModel
+@{
+    ViewData["Title"] = "Delete Issue";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Header -->
+            <div class="mb-5">
+                <a href="/issues/@Model.Id" class="text-decoration-none text-muted">
+                    <i class="bi bi-chevron-left"></i> Back to Issue
+                </a>
+                <h1 class="h2 fw-bold mt-3 text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Delete Issue
+                </h1>
+                <p class="text-muted">This action cannot be undone</p>
+            </div>
+
+            @if (Model.Issue != null)
+            {
+                <div class="card border-danger border-2 bg-danger-light">
+                    <div class="card-body p-5">
+                        <!-- Issue Summary -->
+                        <div class="mb-4">
+                            <h3 class="h5 fw-bold mb-3">
+                                <i class="bi bi-file-text me-2"></i>Issue to Delete:
+                            </h3>
+                            <div class="bg-white p-3 rounded border-start border-5 border-danger">
+                                <h4 class="h6 mb-2">@Model.Issue.Title</h4>
+                                <p class="text-muted mb-0">
+                                    <small>
+                                        Created by @Model.Issue.Reporter.DisplayName on @Model.Issue.CreatedAt.ToString("MMMM d, yyyy h:mm tt")
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Warning Message -->
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            <strong>Warning:</strong> Deleting this issue will remove it from public view, but your deletion will be recorded.
+                        </div>
+
+                        <!-- Consequences -->
+                        <div class="alert alert-light border border-danger">
+                            <strong class="d-block mb-3">When you delete this issue:</strong>
+                            <ul class="mb-0">
+                                <li>It will no longer appear in issue listings</li>
+                                <li>Other users will not be able to see it</li>
+                                <li>Comments and votes will be preserved internally</li>
+                                <li>Admins can restore deleted issues if needed</li>
+                            </ul>
+                        </div>
+
+                        <!-- Confirmation -->
+                        <div class="mb-4">
+                            <p class="text-muted mb-2">
+                                <strong>Confirm deletion of:</strong>
+                            </p>
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control"
+                                       value="@Model.Issue.Title"
+                                       disabled
+                                       placeholder="Issue title">
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <form method="post" class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash me-2"></i>Delete Issue Permanently
+                            </button>
+                            <a href="/issues/@Model.Id" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle me-2"></i>Cancel Deletion
+                            </a>
+                        </form>
+
+                        <!-- Additional Info -->
+                        <p class="text-muted text-center mt-4 mb-0">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                Need help? <a href="/help/issues" class="text-muted text-decoration-underline">Learn more about issues</a>
+                            </small>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Recovery Info -->
+                <div class="alert alert-info mt-4" role="alert">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    <strong>Note:</strong> If you delete this by mistake, please contact an administrator. They may be able to restore it.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Issue not found or has already been deleted.
+                    <a href="/issues" class="ms-2">Go to Issues List</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-danger-light {
+        background-color: #fff5f5;
+    }
+
+    .card {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .text-decoration-underline {
+        text-decoration: underline;
+    }
+
+    .border-danger {
+        border-color: #ef4444 !important;
+    }
+
+    ul {
+        padding-left: 1.25rem;
+    }
+
+    ul li {
+        margin-bottom: 0.5rem;
+    }
+</style>

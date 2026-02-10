@@ -1,4 +1,5 @@
 using FixIt.Data.Repository.Contracts;
+using FixIt.Services.Gamification;
 using FixIt.Models.Safety;
 using FixIt.Models.Locations;
 using MongoDB.Driver.GeoJsonObjectModel;
@@ -39,19 +40,32 @@ public interface IHazardService
     Task<int> GetUnconfirmedHazardsCountAsync(string cityId);
     
     Task<Dictionary<string, int>> GetHazardSeverityDistributionAsync(string cityId);
+
+    /// <summary>
+    /// Soft delete a hazard - marks it as deleted but keeps data for recovery
+    /// </summary>
+    Task SoftDeleteHazardAsync(string hazardId, string? deletedByUserId = null);
+
+    /// <summary>
+    /// Restore a soft-deleted hazard
+    /// </summary>
+    Task RestoreHazardAsync(string hazardId);
 }
 
 public class HazardService : IHazardService
 {
     private readonly IRepository<Hazard> _hazardRepo;
     private readonly IRepository<City> _cityRepo;
+    private readonly IReputationService _reputationService;
 
     public HazardService(
         IRepository<Hazard> hazardRepo,
-        IRepository<City> cityRepo)
+        IRepository<City> cityRepo,
+        IReputationService reputationService)
     {
         _hazardRepo = hazardRepo;
         _cityRepo = cityRepo;
+        _reputationService = reputationService;
     }
 
     public async Task<Hazard> CreateHazardAsync(string cityId, HazardType type, 
@@ -81,13 +95,16 @@ public class HazardService : IHazardService
 
     public async Task<Hazard?> GetHazardAsync(string hazardId)
     {
-        return await _hazardRepo.GetByIdAsync(hazardId);
+        var hazard = await _hazardRepo.GetByIdAsync(hazardId);
+        // Return null if hazard is deleted to treat it as not found
+        return hazard?.IsDeleted == false ? hazard : null;
     }
 
     public async Task<List<Hazard>> GetCityHazardsAsync(string cityId, bool includeResolved = false)
     {
         var hazards = await _hazardRepo.FindAsync(h => 
             h.CityId == cityId && 
+            !h.IsDeleted &&
             (!h.IsResolved || includeResolved) &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
 
@@ -118,6 +135,7 @@ public class HazardService : IHazardService
     {
         var hazards = await _hazardRepo.FindAsync(h =>
             h.CityId == cityId &&
+            !h.IsDeleted &&
             !h.IsResolved &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow) &&
             (h.Severity == HazardSeverity.High || h.Severity == HazardSeverity.Critical));
@@ -139,6 +157,17 @@ public class HazardService : IHazardService
             hazard.Confirmations++;
             hazard.UpdatedAt = DateTime.UtcNow;
             await _hazardRepo.ReplaceAsync(hazardId, hazard);
+            
+            // Award 10 points to the hazard reporter when first confirmed
+            // Only award on first confirmation to avoid duplicate rewards
+            if (hazard.Confirmations == 1 && !string.IsNullOrEmpty(hazard.ReportedByUserId))
+            {
+                await _reputationService.AddPointsAsync(
+                    hazard.ReportedByUserId,
+                    10,
+                    "hazard_confirmed",
+                    issueId: hazardId);
+            }
         }
 
         return true;
@@ -174,6 +203,7 @@ public class HazardService : IHazardService
     {
         var hazards = await _hazardRepo.FindAsync(h =>
             h.CityId == cityId &&
+            !h.IsDeleted &&
             !h.IsResolved &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow) &&
             (type == null || h.Type == type) &&
@@ -188,6 +218,7 @@ public class HazardService : IHazardService
     {
         var hazards = await _hazardRepo.FindAsync(h =>
             h.CityId == cityId &&
+            !h.IsDeleted &&
             h.Type == type &&
             !h.IsResolved &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
@@ -201,6 +232,7 @@ public class HazardService : IHazardService
     {
         var hazards = await _hazardRepo.FindAsync(h =>
             h.CityId == cityId &&
+            !h.IsDeleted &&
             h.Severity == severity &&
             !h.IsResolved &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
@@ -215,6 +247,7 @@ public class HazardService : IHazardService
         var cutoffTime = DateTime.UtcNow.AddHours(-hoursPast);
         var hazards = await _hazardRepo.FindAsync(h =>
             h.CityId == cityId &&
+            !h.IsDeleted &&
             h.CreatedAt >= cutoffTime &&
             !h.IsResolved &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
@@ -226,6 +259,7 @@ public class HazardService : IHazardService
     {
         var hazards = await _hazardRepo.FindAsync(h =>
             h.CityId == cityId &&
+            !h.IsDeleted &&
             h.Confirmations == 0 &&
             !h.IsResolved &&
             (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
@@ -256,5 +290,39 @@ public class HazardService : IHazardService
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         return R * c;
+    }
+
+    /// <summary>
+    /// Soft delete a hazard - marks it as deleted but keeps data for recovery
+    /// </summary>
+    public async Task SoftDeleteHazardAsync(string hazardId, string? deletedByUserId = null)
+    {
+        var hazard = await _hazardRepo.GetByIdAsync(hazardId);
+        if (hazard == null)
+            throw new KeyNotFoundException($"Hazard {hazardId} not found");
+
+        hazard.IsDeleted = true;
+        hazard.DeletedAt = DateTime.UtcNow;
+        hazard.DeletedByUserId = deletedByUserId;
+        hazard.UpdatedAt = DateTime.UtcNow;
+
+        await _hazardRepo.ReplaceAsync(hazardId, hazard);
+    }
+
+    /// <summary>
+    /// Restore a soft-deleted hazard
+    /// </summary>
+    public async Task RestoreHazardAsync(string hazardId)
+    {
+        var hazard = await _hazardRepo.GetByIdAsync(hazardId);
+        if (hazard == null)
+            throw new KeyNotFoundException($"Hazard {hazardId} not found");
+
+        hazard.IsDeleted = false;
+        hazard.DeletedAt = null;
+        hazard.DeletedByUserId = null;
+        hazard.UpdatedAt = DateTime.UtcNow;
+
+        await _hazardRepo.ReplaceAsync(hazardId, hazard);
     }
 }

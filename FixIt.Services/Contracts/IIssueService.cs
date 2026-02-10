@@ -18,6 +18,17 @@ public interface IIssueService
 
     Task<Issue?> GetIssueByIdAsync(string issueId);
 
+    /// <summary>
+    /// Track a view event for an issue to prevent duplicate view counting.
+    /// Only increments the view count if this is a new view from a unique user/session.
+    /// </summary>
+    /// <param name="issueId">The issue ID</param>
+    /// <param name="userId">The user ID (can be null for anonymous users)</param>
+    /// <param name="sessionId">Session ID for tracking anonymous users</param>
+    /// <param name="ipAddress">IP address for additional tracking</param>
+    /// <returns>True if view was recorded, false if it was a duplicate</returns>
+    Task<bool> TrackViewAsync(string issueId, string? userId = null, string? sessionId = null, string? ipAddress = null);
+
     Task<PagedResult<Issue>> GetIssuesByCityAsync(
         string cityId,
         IssueStatus? status = null,
@@ -64,4 +75,11 @@ public interface IIssueService
         int pageSize = 20);
 
     Task UpdateIssueAsync(Issue issue);
+
+    Task<FixIt.Models.Engagement.Comment> AddCommentAsync(
+        string issueId,
+        string authorId,
+        string text);
+
+    Task<List<FixIt.Models.Engagement.Comment>> GetCommentsForIssueAsync(string issueId);
 }

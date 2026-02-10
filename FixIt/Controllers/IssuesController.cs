@@ -386,7 +386,7 @@ public class IssuesController : ControllerBase
     /// </summary>
     /// <param name="id">Issue ID</param>
     /// <param name="request">Vote request</param>
-    /// <returns>Success response</returns>
+    /// <returns>Success response with updated vote counts</returns>
     [HttpPost("{id}/vote")]
     [Authorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
@@ -406,8 +406,15 @@ public class IssuesController : ControllerBase
 
             await _issueService.AddVoteAsync(id, userId, request.VoteType);
 
+            // Fetch updated issue to return current vote counts
+            var updatedIssue = await _issueService.GetIssueByIdAsync(id);
+
             return Ok(ApiResponse<object>.CreateSuccess(
-                new { message = "Vote recorded successfully" },
+                new { 
+                    message = "Vote recorded successfully",
+                    upvotes = updatedIssue?.Upvotes ?? 0,
+                    downvotes = updatedIssue?.Downvotes ?? 0
+                },
                 "Vote recorded"
             ));
         }

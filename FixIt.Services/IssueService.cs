@@ -15,6 +15,8 @@ public class IssueService : IIssueService
     private readonly IRepository<Issue> _issueRepo;
     private readonly IRepository<Tag> _tagRepo;
     private readonly IRepository<Vote> _voteRepo;
+    private readonly IRepository<ViewEvent> _viewEventRepo;
+    private readonly IRepository<Comment> _commentRepo;
     private readonly IReputationService _reputationService;
     private readonly IIssueAnalysisService _analysisService;
 
@@ -22,12 +24,16 @@ public class IssueService : IIssueService
         IRepository<Issue> issueRepo, 
         IRepository<Tag> tagRepo,
         IRepository<Vote> voteRepo,
+        IRepository<ViewEvent> viewEventRepo,
+        IRepository<Comment> commentRepo,
         IReputationService reputationService,
         IIssueAnalysisService analysisService)
     {
         _issueRepo = issueRepo;
         _tagRepo = tagRepo;
         _voteRepo = voteRepo;
+        _viewEventRepo = viewEventRepo;
+        _commentRepo = commentRepo;
         _reputationService = reputationService;
         _analysisService = analysisService;
     }
@@ -124,12 +130,62 @@ public class IssueService : IIssueService
         var issue = await _issueRepo.GetByIdAsync(issueId);
         if (issue != null && !issue.IsDeleted)
         {
-            // Increment view count
-            issue.ViewCount++;
-            issue.LastActivityAt = DateTime.UtcNow;
-            await _issueRepo.ReplaceAsync(issueId, issue);
+            // Note: View count increment is now handled through TrackViewAsync
+            // to prevent duplicate counting. This method does not increment views anymore.
         }
         return issue?.IsDeleted == false ? issue : null;
+    }
+
+    /// <summary>
+    /// Track a view event for an issue. Only increments the issue's view count if this is a new view
+    /// from a unique user/session within the tracking window.
+    /// </summary>
+    /// <param name="issueId">The issue ID</param>
+    /// <param name="userId">The user ID (can be null for anonymous users)</param>
+    /// <param name="sessionId">Session ID for tracking anonymous users</param>
+    /// <param name="ipAddress">IP address for additional tracking</param>
+    /// <returns>True if view was recorded, false if it was a duplicate</returns>
+    public async Task<bool> TrackViewAsync(string issueId, string? userId = null, string? sessionId = null, string? ipAddress = null)
+    {
+        var issue = await _issueRepo.GetByIdAsync(issueId);
+        if (issue == null || issue.IsDeleted)
+            return false;
+
+        // Check if this user/session has viewed this issue in the last 24 hours
+        var cutoffTime = DateTime.UtcNow.AddHours(-24);
+        
+        var existingViews = await _viewEventRepo.FindAsync(v => 
+            v.IssueId == issueId && 
+            v.ViewedAt > cutoffTime &&
+            (
+                (userId != null && v.UserId == userId) ||
+                (userId == null && sessionId != null && v.SessionId == sessionId) ||
+                (userId == null && sessionId == null && v.IpAddress == ipAddress)
+            )
+        );
+
+        // If a view from this user/session exists in the tracking window, don't count it
+        if (existingViews.Any())
+            return false;
+
+        // Record the view event
+        var viewEvent = new ViewEvent
+        {
+            IssueId = issueId,
+            UserId = userId,
+            SessionId = sessionId,
+            IpAddress = ipAddress,
+            ViewedAt = DateTime.UtcNow
+        };
+
+        await _viewEventRepo.InsertAsync(viewEvent);
+
+        // Increment the view count
+        issue.ViewCount++;
+        issue.LastActivityAt = DateTime.UtcNow;
+        await _issueRepo.ReplaceAsync(issueId, issue);
+
+        return true;
     }
 
     public async Task<PagedResult<Issue>> GetIssuesByCityAsync(
@@ -253,20 +309,35 @@ public class IssueService : IIssueService
             ChangedAt = DateTime.UtcNow
         });
 
+        var oldStatus = issue.Status;
         issue.Status = newStatus;
         issue.UpdatedAt = DateTime.UtcNow;
         issue.LastActivityAt = DateTime.UtcNow;
 
         await _issueRepo.ReplaceAsync(issueId, issue);
 
-        // Award reputation points to the user who fixed the issue
-        if (newStatus == IssueStatus.Fixed)
+        // Award reputation points to the issue reporter based on status changes
+        if (!string.IsNullOrEmpty(issue.Reporter?.Id))
         {
-            await _reputationService.AddPointsAsync(
-                changedByUserId,
-                10,
-                "issue_resolved",
-                issueId: issueId);
+            // Reporter gets 5 points when issue is confirmed (only once)
+            if (newStatus == IssueStatus.Confirmed && oldStatus != IssueStatus.Confirmed)
+            {
+                await _reputationService.AddPointsAsync(
+                    issue.Reporter.Id,
+                    5,
+                    "issue_confirmed",
+                    issueId: issueId);
+            }
+            
+            // Reporter gets 10 additional points when issue is fixed
+            if (newStatus == IssueStatus.Fixed && oldStatus != IssueStatus.Fixed)
+            {
+                await _reputationService.AddPointsAsync(
+                    issue.Reporter.Id,
+                    10,
+                    "issue_resolved",
+                    issueId: issueId);
+            }
         }
     }
 
@@ -520,5 +591,80 @@ public class IssueService : IIssueService
             
         issue.UpdatedAt = DateTime.UtcNow;
         await _issueRepo.ReplaceAsync(issue.Id, issue);
+    }
+
+    /// <summary>
+    /// Add a comment to an issue
+    /// </summary>
+    public async Task<Comment> AddCommentAsync(
+        string issueId,
+        string authorId,
+        string text)
+    {
+        // Validate inputs
+        if (string.IsNullOrWhiteSpace(issueId))
+            throw new ArgumentException("Issue ID is required", nameof(issueId));
+        if (string.IsNullOrWhiteSpace(authorId))
+            throw new ArgumentException("Author ID is required", nameof(authorId));
+        if (string.IsNullOrWhiteSpace(text))
+            throw new ArgumentException("Comment text is required", nameof(text));
+        if (text.Length > 5000)
+            throw new ArgumentException("Comment must not exceed 5000 characters", nameof(text));
+
+        // Get the issue
+        var issue = await _issueRepo.GetByIdAsync(issueId);
+        if (issue == null)
+            throw new InvalidOperationException("Issue not found");
+
+        if (issue.IsDeleted)
+            throw new InvalidOperationException("Cannot comment on a deleted issue");
+
+        if (issue.IsLocked)
+            throw new InvalidOperationException("Cannot comment on a locked issue");
+
+        // Create the comment
+        var comment = new Comment
+        {
+            IssueId = issueId,
+            AuthorId = authorId,
+            Text = text.Trim(),
+            MediaIds = new HashSet<string>(),
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Save the comment
+        var createdComment = await _commentRepo.InsertAsync(comment);
+
+        // Update the issue's comment count and last activity
+        issue.CommentCount++;
+        issue.LastActivityAt = DateTime.UtcNow;
+        await _issueRepo.ReplaceAsync(issueId, issue);
+
+        // Award reputation points to the comment author
+        await _reputationService.AddPointsAsync(
+            authorId,
+            2,
+            "comment_posted",
+            issueId: issueId,
+            commentId: createdComment.Id);
+
+        return createdComment;
+    }
+
+    /// <summary>
+    /// Get all non-deleted comments for an issue, ordered by creation date
+    /// </summary>
+    public async Task<List<Comment>> GetCommentsForIssueAsync(string issueId)
+    {
+        if (string.IsNullOrWhiteSpace(issueId))
+            throw new ArgumentException("Issue ID is required", nameof(issueId));
+
+        var comments = await _commentRepo.FindAsync(c => 
+            c.IssueId == issueId && !c.IsDeleted);
+
+        return comments
+            .OrderByDescending(c => c.CreatedAt)
+            .ToList();
     }
 }

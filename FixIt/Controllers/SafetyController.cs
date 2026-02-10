@@ -372,7 +372,7 @@ public class SafetyController : ControllerBase
     }
 
     /// <summary>
-    /// Enable/disable anonymous reporting for user
+    /// Toggle anonymous reporting for user
     /// </summary>
     /// <param name="request">Toggle request</param>
     /// <returns>Updated anonymous reporting status</returns>
@@ -412,7 +412,66 @@ public class SafetyController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Delete a hazard (soft delete)
+    /// Only the user who reported the hazard or an administrator can delete it
+    /// </summary>
+    /// <param name="id">Hazard ID</param>
+    /// <returns>Success response</returns>
+    [HttpDelete("{id}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object>>> DeleteHazard(string id)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+
+            var hazard = await _hazardService.GetHazardAsync(id);
+            if (hazard == null)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            // Check if hazard is already deleted
+            if (hazard.IsDeleted)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            // Only allow deletion by hazard reporter or admins
+            bool isReporter = hazard.ReportedByUserId == userId || hazard.InternalUserId == userId;
+            bool isAdmin = User.IsInRole("Admin");
+
+            if (!isReporter && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            await _hazardService.SoftDeleteHazardAsync(id, userId);
+
+            _logger.LogInformation("Hazard {HazardId} deleted by user {UserId}", id, userId);
+
+            return Ok(ApiResponse<object>.CreateSuccess(
+                new { message = "Hazard deleted successfully" },
+                "Hazard deleted"
+            ));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting hazard {HazardId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to delete hazard"));
+        }
+    }
+
     // Helper methods
+
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
     {
         const double R = 6371; // Earth radius in km

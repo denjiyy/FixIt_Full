@@ -5,103 +5,181 @@
     ViewData["Title"] = "Log in";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card" style="border: none; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
+<div class="container py-5" style="min-height: 80vh;">
+    <div class="row align-items-center justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <!-- Login Card -->
+            <div class="card border-0" style="box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);">
                 <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <div class="mb-3">
-                            <i class="bi bi-tools text-gradient" style="font-size: 3rem;"></i>
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <div class="mb-4" style="display: inline-block; padding: 1.25rem; background: linear-gradient(135deg, #e0f2fe, #f0f9ff); border-radius: 1rem;">
+                            <i class="bi bi-tools" style="font-size: 3rem; background: linear-gradient(135deg, #0ea5e9, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
                         </div>
-                        <h1 class="h3 mb-2">Welcome Back</h1>
-                        <p class="text-muted">Log in to continue reporting issues</p>
+                        <h1 class="h2 mb-2 fw-bold">Welcome Back</h1>
+                        <p class="text-muted mb-0">Sign in to continue making your community better</p>
                     </div>
-                    
-                    <!-- OAuth Providers Section -->
-                    @if (Model.ExternalLogins.Any())
-                    {
-                        <section class="mb-4">
-                            <h5 class="text-center text-muted mb-3">Sign in with</h5>
-                            <div class="d-grid gap-2">
-                                @foreach (var provider in Model.ExternalLogins)
-                                {
-                                    <form id="@provider.Name" method="post" action="@Url.Page("./ExternalLogin", new { handler = "Callback", returnUrl = Model.ReturnUrl })" style="display: none;">
-                                        <input type="hidden" name="provider" value="@provider.Name" />
-                                    </form>
-                                    <button type="button" class="btn btn-outline-secondary" 
-                                            onclick="document.getElementById('@provider.Name').submit();">
-                                        @{
-                                            var providerName = provider.Name;
-                                            if (providerName == "Google")
-                                            {
-                                                <text><i class="fab fa-google text-danger"></i> Continue with Google</text>
-                                            }
-                                            else if (providerName == "Microsoft")
-                                            {
-                                                <text><i class="fab fa-microsoft text-primary"></i> Continue with Microsoft</text>
-                                            }
-                                            else
-                                            {
-                                                <text><i class="bi bi-box-arrow-up-right"></i> @provider.DisplayName</text>
-                                            }
-                                        }
-                                    </button>
-                                }
-                            </div>
-                        </section>
 
-                        <div class="text-center mb-4">
-                            <div class="divider">
-                                <span class="divider-text">or</span>
-                            </div>
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger d-flex align-items-start mb-4" role="alert">
+                            <i class="bi bi-exclamation-circle me-2" style="font-size: 1.25rem;"></i>
+                            <div>@Model.ErrorMessage</div>
                         </div>
                     }
 
-                    <section>
-                        <form method="post">
-                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                            
-                            <div class="mb-3">
-                                <label asp-for="Input.Email" class="form-label">Email</label>
-                                <input asp-for="Input.Email" class="form-control form-control-lg" 
-                                       autocomplete="username" aria-required="true" 
-                                       placeholder="your@email.com" />
-                                <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                    <!-- OAuth Providers -->
+                    @if (Model.ExternalLogins.Any())
+                    {
+                        <div class="mb-4">
+                            <div class="text-center mb-3">
+                                <small class="text-uppercase fw-semibold text-muted" style="letter-spacing: 0.05em;">Quick Sign In</small>
                             </div>
+                            <div class="d-grid gap-2">
+                                @foreach (var provider in Model.ExternalLogins)
+                                {
+                                    <form method="post" action="@Url.Page("/Account/ExternalLogin", new { area = "Identity", returnUrl = Model.ReturnUrl })" style="display: contents;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="provider" value="@provider.Name" />
+                                        <button type="submit" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-3" 
+                                                style="border-width: 2px; font-weight: 500;">
+                                            @if (provider.Name == "Google")
+                                            {
+                                                <i class="fab fa-google text-danger" style="font-size: 1.25rem;"></i>
+                                                <span>Continue with Google</span>
+                                            }
+                                            else if (provider.Name == "Microsoft")
+                                            {
+                                                <i class="fab fa-microsoft text-primary" style="font-size: 1.25rem;"></i>
+                                                <span>Continue with Microsoft</span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                                <span>@provider.DisplayName</span>
+                                            }
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
 
-                            <div class="mb-3">
-                                <label asp-for="Input.Password" class="form-label">Password</label>
-                                <input asp-for="Input.Password" type="password" class="form-control form-control-lg" 
+                        <!-- Divider -->
+                        <div class="position-relative my-4">
+                            <hr class="my-0" style="border-color: #e5e7eb;">
+                            <span class="position-absolute top-50 start-50 translate-middle px-3 bg-white text-muted" 
+                                  style="font-size: 0.875rem;">or sign in with email</span>
+                        </div>
+                    }
+
+                    <!-- Login Form -->
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-flex align-items-start" role="alert" style="display: none !important;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <div></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Input.Email" class="form-label fw-semibold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0" style="border: 2px solid #d1d5db; border-right: none; border-radius: 0.75rem 0 0 0.75rem;">
+                                    <i class="bi bi-envelope text-muted"></i>
+                                </span>
+                                <input asp-for="Input.Email" class="form-control border-start-0" 
+                                       style="border: 2px solid #d1d5db; border-left: none; border-radius: 0 0.75rem 0.75rem 0;"
+                                       autocomplete="username" aria-required="true" 
+                                       placeholder="you@example.com" />
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger small d-block mt-1"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label asp-for="Input.Password" class="form-label fw-semibold mb-0">Password</label>
+                                <a asp-page="./ForgotPassword" class="text-decoration-none small" style="font-weight: 500;">
+                                    Forgot password?
+                                </a>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0" style="border: 2px solid #d1d5db; border-right: none; border-radius: 0.75rem 0 0 0.75rem;">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
+                                <input asp-for="Input.Password" type="password" class="form-control border-start-0" 
+                                       style="border: 2px solid #d1d5db; border-left: none; border-radius: 0 0.75rem 0.75rem 0;"
                                        autocomplete="current-password" aria-required="true" 
                                        placeholder="••••••••" />
-                                <span asp-validation-for="Input.Password" class="text-danger small"></span>
                             </div>
+                            <span asp-validation-for="Input.Password" class="text-danger small d-block mt-1"></span>
+                        </div>
 
-                            <div class="mb-4 form-check">
-                                <input class="form-check-input" asp-for="Input.RememberMe" />
-                                <label class="form-check-label" asp-for="Input.RememberMe">Remember me</label>
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="Input.RememberMe" type="checkbox" id="rememberMe" />
+                                <label class="form-check-label" for="rememberMe" style="font-size: 0.875rem; cursor: pointer;">
+                                    Keep me signed in
+                                </label>
                             </div>
+                        </div>
 
-                            <div class="d-grid mb-3">
-                                <button id="login-submit" type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-box-arrow-in-right"></i> Log in
-                                </button>
-                            </div>
-                            
-                            <div class="text-center">
-                                <a asp-page="./ForgotPassword" class="text-muted small">Forgot your password?</a>
-                            </div>
-                        </form>
-                    </section>
+                        <div class="d-grid mb-4">
+                            <button id="login-submit" type="submit" class="btn btn-primary btn-lg py-3" style="font-weight: 600;">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </button>
+                        </div>
+                    </form>
 
-                    <hr class="my-4">
+                    <!-- Register Link -->
+                    <div class="text-center pt-3" style="border-top: 1px solid #e5e7eb;">
+                        <p class="mb-0 text-muted">
+                            Don't have an account?
+                            <a asp-page="./Register" class="text-decoration-none fw-semibold ms-1" style="color: #0ea5e9;">
+                                Create one now
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="text-center">
-                        <p class="mb-2 text-muted small">Don't have an account?</p>
-                        <a asp-page="./Register" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-person-plus"></i> Create an Account
-                        </a>
+            <!-- Security Notice -->
+            <div class="text-center mt-4">
+                <small class="text-muted d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Your data is secure and encrypted</span>
+                </small>
+            </div>
+        </div>
+
+        <!-- Optional: Side panel with benefits -->
+        <div class="col-lg-5 d-none d-lg-block ps-5">
+            <div class="p-5">
+                <h2 class="h3 fw-bold mb-4">Join thousands making a difference</h2>
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0" style="width: 48px; height: 48px; background: #e0f2fe; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-flag" style="font-size: 1.5rem; color: #0ea5e9;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-1">Report Issues Easily</h6>
+                            <p class="text-muted small mb-0">Take a photo, add location, and submit in seconds</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0" style="width: 48px; height: 48px; background: #d1fae5; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-graph-up" style="font-size: 1.5rem; color: #10b981;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-1">Track Progress</h6>
+                            <p class="text-muted small mb-0">See real-time updates on reported issues</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0" style="width: 48px; height: 48px; background: #fef3c7; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-people" style="font-size: 1.5rem; color: #f59e0b;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-semibold mb-1">Community Impact</h6>
+                            <p class="text-muted small mb-0">Work together to improve your neighborhood</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -114,32 +192,36 @@
 }
 
 <style>
-.divider {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-}
-
-.divider-text {
-    flex: 1;
-    text-align: center;
-    color: #6c757d;
-    font-size: 0.875rem;
-}
-
-.divider::before,
-.divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background-color: #e9ecef;
-}
-
-.divider::before {
-    margin-right: 10px;
-}
-
-.divider::after {
-    margin-left: 10px;
-}
+    /* Input focus enhancement */
+    .form-control:focus {
+        border-color: #0ea5e9 !important;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1) !important;
+    }
+    
+    .input-group:focus-within .input-group-text {
+        border-color: #0ea5e9 !important;
+    }
+    
+    /* Button hover effect */
+    .btn-outline-secondary:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        transform: translateY(-1px);
+    }
+    
+    /* Card entrance animation */
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .card {
+        animation: slideUp 0.5s ease-out;
+    }
 </style>

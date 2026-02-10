@@ -535,6 +535,7 @@ else
         function showError() {
             const placeholder = document.getElementById('analysisPlaceholder');
             if (!placeholder) return;
+            const issueId = '@Model?.Id';
 
             placeholder.innerHTML = `
                 <div class="card-header" style="background: transparent; border-bottom: 1px solid rgba(13, 110, 253, 0.2);">
@@ -543,7 +544,7 @@ else
                 <div class="card-body text-center py-4">
                     <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
                     <p class="text-muted mt-3 mb-3">AI analysis is currently unavailable. This could be due to API limitations or configuration.</p>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="retryAnalysis('@Model?.Id ?? ""')">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="retryAnalysis('${issueId}')">
                         <i class="bi bi-arrow-clockwise"></i> Retry
                     </button>
                 </div>
@@ -587,8 +588,8 @@ else
 
         // Start polling on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const issueId = '@Model?.Id ?? ""';
-            if (issueId) {
+            const issueId = '@Model?.Id';
+            if (issueId && issueId.trim()) {
                 startAnalysisPolling(issueId);
             }
         });
@@ -603,14 +604,49 @@ else
 
                 const message = document.getElementById('voteMessage');
                 if (response.ok) {
+                    // Get updated vote counts from response
+                    const data = await response.json();
+                    
+                    // Update UI dynamically without page reload
+                    updateVoteUI(data.data);
+                    
                     message.innerHTML = '<div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> Vote recorded!</div>';
-                    setTimeout(() => location.reload(), 1500);
+                    setTimeout(() => {
+                        message.innerHTML = '';
+                    }, 2000);
                 } else {
                     message.innerHTML = '<div class="alert alert-danger py-2">Failed to record vote</div>';
                 }
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('voteMessage').innerHTML = '<div class="alert alert-danger py-2">An error occurred</div>';
+            }
+        }
+
+        function updateVoteUI(voteData) {
+            // Update upvote button and count
+            const upvoteBtn = document.querySelector('button[onclick="vote(1)"]');
+            if (upvoteBtn) {
+                const upvoteDiv = upvoteBtn.querySelector('.small');
+                if (upvoteDiv) {
+                    upvoteDiv.textContent = voteData.upvotes;
+                }
+            }
+            
+            // Update downvote button and count
+            const downvoteBtn = document.querySelector('button[onclick="vote(-1)"]');
+            if (downvoteBtn) {
+                const downvoteDiv = downvoteBtn.querySelector('.small');
+                if (downvoteDiv) {
+                    downvoteDiv.textContent = voteData.downvotes;
+                }
+            }
+            
+            // Update the score display in the stats row
+            const scoreElements = document.querySelectorAll('.stat-value');
+            if (scoreElements.length > 2) {
+                const netVotes = voteData.upvotes - voteData.downvotes;
+                scoreElements[2].textContent = netVotes;
             }
         }
     </script>

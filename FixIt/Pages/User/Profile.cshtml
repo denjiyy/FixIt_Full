@@ -4,35 +4,368 @@
     ViewData["Title"] = "User Profile";
 }
 
+<style>
+    /* Professional Profile Design */
+    .profile-header {
+        background: white;
+        border-radius: 8px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .profile-main {
+        display: flex;
+        align-items: start;
+        gap: 2rem;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #5b6fd8, #7c89e8);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .profile-info {
+        flex-grow: 1;
+    }
+
+    .profile-username {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .trust-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f3f4f6;
+        color: #4b5563;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .trust-badge.level-0 { background: #f3f4f6; color: #6b7280; }
+    .trust-badge.level-1 { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+    .trust-badge.level-2 { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+    .trust-badge.level-3 { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .stat-box {
+        text-align: center;
+        padding: 1.25rem;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #5b6fd8;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* Card Styles */
+    .profile-card {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e5e7eb;
+    }
+
+    .card-header-custom {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card-header-custom h5 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .card-header-custom i {
+        font-size: 1.375rem;
+        color: #5b6fd8;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-title {
+        font-weight: 600;
+        color: #4b5563;
+        font-size: 0.9375rem;
+    }
+
+    .progress-stats {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .progress {
+        height: 24px;
+        border-radius: 6px;
+        background: #e5e7eb;
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #5b6fd8, #7c89e8);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        transition: width 0.6s ease;
+    }
+
+    .progress-info {
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    /* Achievements */
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .achievement-badge {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        transition: all 0.2s ease;
+        cursor: default;
+    }
+
+    .achievement-badge:hover {
+        border-color: #5b6fd8;
+        box-shadow: 0 2px 8px rgba(91, 111, 216, 0.1);
+    }
+
+    .badge-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .badge-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 0.8125rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .badge-date {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    /* Activity Stats */
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .activity-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .activity-label {
+        font-weight: 500;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .activity-label i {
+        color: #6b7280;
+        font-size: 1.125rem;
+    }
+
+    .activity-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #5b6fd8;
+    }
+
+    /* Points List */
+    .points-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .points-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .points-label {
+        font-weight: 500;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .points-label i {
+        color: #6b7280;
+    }
+
+    .points-value {
+        font-weight: 600;
+        color: #10b981;
+        font-size: 1.0625rem;
+    }
+
+    /* Empty State */
+    .empty-achievements {
+        text-align: center;
+        padding: 2.5rem 2rem;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px dashed #d1d5db;
+    }
+
+    .empty-achievements i {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
+    .empty-achievements p {
+        color: #6b7280;
+        font-size: 0.9375rem;
+        margin: 0;
+    }
+
+    /* Not Found */
+    .not-found-container {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .not-found-icon {
+        font-size: 5rem;
+        color: #d1d5db;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .profile-main {
+            flex-direction: column;
+        }
+
+        .profile-username {
+            font-size: 1.5rem;
+        }
+
+        .profile-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .achievements-grid {
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        }
+
+        .profile-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
 <div class="container py-4">
     @if (Model.UserReputation != null)
     {
         <!-- Profile Header -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1 class="card-title">@Model.User.UserName</h1>
-                        <div class="profile-stats mt-3">
-                            <div class="stat-item d-inline-block me-4">
-                                <h5 class="text-primary">@Model.UserReputation.TotalPoints</h5>
-                                <span class="text-muted">Reputation Points</span>
-                            </div>
-                            <div class="stat-item d-inline-block me-4">
-                                <h5 class="text-info">@GetTrustLevelBadge(Model.UserReputation.TrustLevel)</h5>
-                                <span class="text-muted">Trust Level</span>
-                            </div>
-                            <div class="stat-item d-inline-block">
-                                <h5 class="text-success">@Model.UserReputation.Achievements.Count</h5>
-                                <span class="text-muted">Achievements</span>
-                            </div>
+        <div class="profile-header">
+            <div class="profile-main">
+                <div class="profile-avatar">
+                    @Model.User.UserName.Substring(0, 1).ToUpper()
+                </div>
+                <div class="profile-info">
+                    <h1 class="profile-username">@Model.User.UserName</h1>
+                    <span class="trust-badge level-@Model.UserReputation.TrustLevel">
+                        <i class="bi bi-award"></i>
+                        @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
+                    </span>
+                    <div class="profile-stats">
+                        <div class="stat-box">
+                            <div class="stat-value">@Model.UserReputation.TotalPoints</div>
+                            <div class="stat-label">Total Points</div>
                         </div>
-                    </div>
-                    <div class="col-md-4 text-md-end">
-                        <div class="trust-level-badge">
-                            <span class="badge bg-@GetTrustLevelColor(Model.UserReputation.TrustLevel) fs-5 px-3 py-2">
-                                @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
-                            </span>
+                        <div class="stat-box">
+                            <div class="stat-value">@Model.UserReputation.Achievements.Count</div>
+                            <div class="stat-label">Achievements</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">@Model.UserReputation.TrustLevel</div>
+                            <div class="stat-label">Trust Level</div>
                         </div>
                     </div>
                 </div>
@@ -40,103 +373,138 @@
         </div>
 
         <!-- Reputation Progress -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Reputation Progress</h5>
+        <div class="profile-card">
+            <div class="card-header-custom">
+                <i class="bi bi-graph-up"></i>
+                <h5>Reputation Progress</h5>
             </div>
-            <div class="card-body">
-                <div class="progress mb-2" style="height: 25px;">
-                    @{
-                        var maxPoints = Model.UserReputation.TrustLevel == 3 ? Model.UserReputation.TotalPoints : GetMaxPointsForLevel(Model.UserReputation.TrustLevel);
-                        var currentLevelMin = Model.UserReputation.TrustLevel == 0 ? 0 : 
-                                             Model.UserReputation.TrustLevel == 1 ? 11 : 
-                                             Model.UserReputation.TrustLevel == 2 ? 51 : 151;
-                        var progress = Model.UserReputation.TotalPoints - currentLevelMin;
-                        var nextLevel = Model.UserReputation.TrustLevel == 3 ? Model.UserReputation.TotalPoints : 
-                                       Model.UserReputation.TrustLevel == 0 ? 11 : 
-                                       Model.UserReputation.TrustLevel == 1 ? 51 : 151;
-                        var progressPercent = (progress / (nextLevel - currentLevelMin)) * 100;
-                    }
-                    <div class="progress-bar bg-success" role="progressbar" style="width: @progressPercent%" 
-                         aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="@(nextLevel - currentLevelMin)">
-                        @progress / @(nextLevel - currentLevelMin)
+            <div class="progress-container">
+                @{
+                    // Calculate current level bounds
+                    var (currentMin, nextThreshold) = Model.UserReputation.TrustLevel switch
+                    {
+                        0 => (0, 11),      // Level 0: 0-10 points, next at 11
+                        1 => (11, 51),     // Level 1: 11-50 points, next at 51
+                        2 => (51, 151),    // Level 2: 51-150 points, next at 151
+                        _ => (151, int.MaxValue)  // Level 3: 151+ points
+                    };
+                    
+                    var progress = Model.UserReputation.TotalPoints - currentMin;
+                    var levelSize = nextThreshold - currentMin;
+                    var progressPercent = Model.UserReputation.TrustLevel >= 3 ? 100 : 
+                        Math.Min(100, Math.Max(0, (progress / (double)levelSize) * 100));
+                    var pointsNeeded = Math.Max(0, nextThreshold - Model.UserReputation.TotalPoints);
+                }
+                <div class="progress-header">
+                    <span class="progress-title">Level Progress</span>
+                    <span class="progress-stats">@Math.Max(0, progress) / @(levelSize) points</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: @progressPercent%">
+                        @(((int)progressPercent))%
                     </div>
                 </div>
-                <small class="text-muted">
-                    @Model.UserReputation.TotalPoints total points
+                <div class="progress-info">
                     @if (Model.UserReputation.TrustLevel < 3)
                     {
-                        <text> • @(GetMaxPointsForLevel(Model.UserReputation.TrustLevel) - Model.UserReputation.TotalPoints) points until next level</text>
+                        <span>@pointsNeeded points until @GetTrustLevelLabel(Model.UserReputation.TrustLevel + 1)</span>
                     }
-                </small>
+                    else
+                    {
+                        <span>Maximum trust level achieved! 🎉</span>
+                    }
+                </div>
             </div>
         </div>
 
         <!-- Achievements -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Achievements (@Model.UserReputation.Achievements.Count)</h5>
+        <div class="profile-card">
+            <div class="card-header-custom">
+                <i class="bi bi-trophy"></i>
+                <h5>Achievements (@Model.UserReputation.Achievements.Count)</h5>
             </div>
-            <div class="card-body">
-                @if (Model.UserReputation.Achievements.Any())
-                {
-                    <div class="achievements-grid">
-                        @foreach (var achievement in Model.UserReputation.Achievements)
-                        {
-                            <div class="achievement-badge text-center me-3 mb-3" title="@GetAchievementDescription(achievement.Type.ToString())">
-                                <div class="badge-icon mb-2">
-                                    <span style="font-size: 2rem;">@GetAchievementIcon(achievement.Type.ToString())</span>
-                                </div>
-                                <small class="d-block">@GetAchievementName(achievement.Type.ToString())</small>
-                                <small class="text-muted d-block">@achievement.EarnedAt.ToShortDateString()</small>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted">No achievements earned yet. Keep contributing to the community!</p>
-                }
-            </div>
+            @if (Model.UserReputation.Achievements.Any())
+            {
+                <div class="achievements-grid">
+                    @foreach (var achievement in Model.UserReputation.Achievements)
+                    {
+                        <div class="achievement-badge" title="@GetAchievementDescription(achievement.Type.ToString())">
+                            <span class="badge-icon">@GetAchievementIcon(achievement.Type.ToString())</span>
+                            <div class="badge-name">@GetAchievementName(achievement.Type.ToString())</div>
+                            <div class="badge-date">@achievement.EarnedAt.ToString("MMM yyyy")</div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-achievements">
+                    <i class="bi bi-trophy"></i>
+                    <p>No achievements yet. Keep contributing to unlock achievements!</p>
+                </div>
+            }
         </div>
 
-        <!-- Activity Stats -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Community Contribution</h6>
-                        <ul class="list-unstyled">
-                            <li class="mb-2">
-                                <strong>Issues Reported:</strong> @Model.UserReputation.IssuesReported
-                            </li>
-                            <li class="mb-2">
-                                <strong>Comments:</strong> @Model.UserReputation.CommentsPosted
-                            </li>
-                            <li class="mb-2">
-                                <strong>Issues Resolved:</strong> @Model.UserReputation.IssuesResolved
-                            </li>
-                        </ul>
+        <!-- Activity & Points -->
+        <div class="row">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <i class="bi bi-activity"></i>
+                        <h5>Community Activity</h5>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <span class="activity-label">
+                                <i class="bi bi-flag"></i>
+                                Issues Reported
+                            </span>
+                            <span class="activity-value">@Model.UserReputation.IssuesReported</span>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-label">
+                                <i class="bi bi-chat-left-text"></i>
+                                Comments Posted
+                            </span>
+                            <span class="activity-value">@Model.UserReputation.CommentsPosted</span>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-label">
+                                <i class="bi bi-check-circle"></i>
+                                Issues Resolved
+                            </span>
+                            <span class="activity-value">@Model.UserReputation.IssuesResolved</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h6 class="card-title">Point Breakdown</h6>
-                        <div class="small">
-                            <div class="mb-2">
-                                <span>Issue Reports:</span>
-                                <span class="float-end">@(Model.UserReputation.IssuesReported * 5) pts</span>
-                            </div>
-                            <div class="mb-2">
-                                <span>Comments:</span>
-                                <span class="float-end">@(Model.UserReputation.CommentsPosted * 2) pts</span>
-                            </div>
-                            <div class="mb-2">
-                                <span>Resolved Issues:</span>
-                                <span class="float-end">@(Model.UserReputation.IssuesResolved * 10) pts</span>
-                            </div>
+            <div class="col-lg-6">
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <i class="bi bi-star"></i>
+                        <h5>Point Breakdown</h5>
+                    </div>
+                    <div class="points-list">
+                        <div class="points-item">
+                            <span class="points-label">
+                                <i class="bi bi-flag"></i>
+                                Issue Reports
+                            </span>
+                            <span class="points-value">+@(Model.UserReputation.IssuesReported * 5)</span>
+                        </div>
+                        <div class="points-item">
+                            <span class="points-label">
+                                <i class="bi bi-chat-left-text"></i>
+                                Comments
+                            </span>
+                            <span class="points-value">+@(Model.UserReputation.CommentsPosted * 2)</span>
+                        </div>
+                        <div class="points-item">
+                            <span class="points-label">
+                                <i class="bi bi-check-circle"></i>
+                                Resolved Issues
+                            </span>
+                            <span class="points-value">+@(Model.UserReputation.IssuesResolved * 10)</span>
                         </div>
                     </div>
                 </div>
@@ -145,8 +513,14 @@
     }
     else
     {
-        <div class="alert alert-info">
-            <p>User not found or has no reputation record yet.</p>
+        <div class="not-found-container">
+            <div class="not-found-icon">
+                <i class="bi bi-person-x"></i>
+            </div>
+            <div class="alert alert-info d-inline-block">
+                <h4><i class="bi bi-info-circle"></i> User Not Found</h4>
+                <p class="mb-0">This user does not exist or has no reputation record yet.</p>
+            </div>
         </div>
     }
 </div>
@@ -154,28 +528,10 @@
 @functions {
     private string GetTrustLevelLabel(int level) => level switch
     {
-        0 => "New",
-        1 => "Active",
-        2 => "Trusted",
-        3 => "Leader",
-        _ => "Unknown"
-    };
-
-    private string GetTrustLevelColor(int level) => level switch
-    {
-        0 => "secondary",
-        1 => "info",
-        2 => "success",
-        3 => "primary",
-        _ => "secondary"
-    };
-
-    private string GetTrustLevelBadge(int level) => level switch
-    {
-        0 => "Level 0",
-        1 => "Level 1",
-        2 => "Level 2",
-        3 => "Level 3",
+        0 => "New Member",
+        1 => "Active Citizen",
+        2 => "Trusted Member",
+        3 => "Community Leader",
         _ => "Unknown"
     };
 
@@ -191,17 +547,17 @@
     private string GetAchievementName(string type) => type switch
     {
         "FirstReporter" => "First Reporter",
-        "HelpfulCommenteer" => "Helpful Commenteer",
+        "HelpfulCommenteer" => "Helpful Commenter",
         "CommunityHelper" => "Community Helper",
         "IssueSolver" => "Issue Solver",
         "CivicContributor" => "Civic Contributor",
-        "CommunityChampion" => "Community Champion",
+        "CommunityChampion" => "Champion",
         "CivicLeader" => "Civic Leader",
-        "VerifiedCitizen" => "Verified Citizen",
-        "ConsistentParticipant" => "Consistent Participant",
+        "VerifiedCitizen" => "Verified",
+        "ConsistentParticipant" => "Consistent",
         "ImpactMaker" => "Impact Maker",
         "TopContributor" => "Top Contributor",
-        _ => "Unknown Achievement"
+        _ => "Achievement"
     };
 
     private string GetAchievementIcon(string type) => type switch
@@ -223,46 +579,16 @@
     private string GetAchievementDescription(string type) => type switch
     {
         "FirstReporter" => "Reported your first issue",
-        "HelpfulCommenteer" => "Posted a helpful comment",
-        "CommunityHelper" => "Helped the community grow",
-        "IssueSolver" => "Resolved an issue",
-        "CivicContributor" => "Made a civic contribution",
-        "CommunityChampion" => "Became a community champion",
-        "CivicLeader" => "Became a civic leader",
-        "VerifiedCitizen" => "Verified citizen status",
-        "ConsistentParticipant" => "Consistently participated",
-        "ImpactMaker" => "Made a positive impact",
-        "TopContributor" => "Top community contributor",
-        _ => "Achievement unlocked!"
+        "HelpfulCommenteer" => "Posted helpful comments",
+        "CommunityHelper" => "Helped the community",
+        "IssueSolver" => "Resolved issues",
+        "CivicContributor" => "Made civic contributions",
+        "CommunityChampion" => "Community champion",
+        "CivicLeader" => "Civic leader",
+        "VerifiedCitizen" => "Verified citizen",
+        "ConsistentParticipant" => "Consistent participation",
+        "ImpactMaker" => "Made positive impact",
+        "TopContributor" => "Top contributor",
+        _ => "Achievement unlocked"
     };
 }
-
-<style>
-    .achievements-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .achievement-badge {
-        padding: 1rem;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        cursor: pointer;
-        min-width: 100px;
-    }
-
-    .achievement-badge:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .profile-stats .stat-item {
-        text-align: center;
-    }
-
-    .trust-level-badge {
-        padding: 2rem 0;
-    }
-</style>

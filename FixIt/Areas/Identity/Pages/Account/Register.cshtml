@@ -68,6 +68,41 @@
                         </form>
                     </section>
 
+                    @if (Model.ExternalLogins.Any())
+                    {
+                        <hr class="my-4">
+                        <div>
+                            <p class="mb-2 text-center text-muted" style="font-size: 0.875rem;">Or sign up with</p>
+                            <div class="d-grid gap-2">
+                                @foreach (var provider in Model.ExternalLogins)
+                                {
+                                    <form method="post" action="@Url.Page("/Account/ExternalLogin", new { area = "Identity", returnUrl = Model.ReturnUrl })" style="display: contents;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="provider" value="@provider.Name" />
+                                        <button type="submit" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-2" 
+                                                style="border-width: 1px; font-weight: 500; font-size: 0.875rem;">
+                                            @if (provider.Name == "Google")
+                                            {
+                                                <i class="fab fa-google text-danger"></i>
+                                                <span>@provider.DisplayName</span>
+                                            }
+                                            else if (provider.Name == "Microsoft")
+                                            {
+                                                <i class="fab fa-microsoft text-primary"></i>
+                                                <span>@provider.DisplayName</span>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-box-arrow-up-right"></i>
+                                                <span>@provider.DisplayName</span>
+                                            }
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+
                     <hr class="my-4">
 
                     <div class="text-center">

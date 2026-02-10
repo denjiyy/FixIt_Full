@@ -5,26 +5,37 @@
 }
 
 <div class="container py-4">
-    <h1 class="mb-4">Community Leaderboards</h1>
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="bi bi-trophy text-gradient" style="font-size: 3.5rem;"></i>
+                </h1>
+                <h1 class="h2 mb-2">Community Leaderboards</h1>
+                <p class="text-muted">Celebrate the top contributors making our cities better</p>
+            </div>
+        </div>
+    </div>
 
-    <!-- Leaderboard Tabs -->
-    <ul class="nav nav-tabs mb-4" id="leaderboardTabs" role="tablist">
+    <!-- Period Tabs -->
+    <ul class="nav nav-pills justify-content-center mb-5 gap-2" id="leaderboardTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" 
-                    type="button" role="tab" aria-controls="weekly" aria-selected="true">
-                Weekly
+            <button class="nav-link active px-4 py-2" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" 
+                    type="button" role="tab" style="border-radius: 2rem; font-weight: 600;">
+                <i class="bi bi-calendar-week"></i> Weekly
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" 
-                    type="button" role="tab" aria-controls="monthly" aria-selected="false">
-                Monthly
+            <button class="nav-link px-4 py-2" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" 
+                    type="button" role="tab" style="border-radius: 2rem; font-weight: 600;">
+                <i class="bi bi-calendar-month"></i> Monthly
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="alltime-tab" data-bs-toggle="tab" data-bs-target="#alltime" 
-                    type="button" role="tab" aria-controls="alltime" aria-selected="false">
-                All Time
+            <button class="nav-link px-4 py-2" id="alltime-tab" data-bs-toggle="tab" data-bs-target="#alltime" 
+                    type="button" role="tab" style="border-radius: 2rem; font-weight: 600;">
+                <i class="bi bi-infinity"></i> All Time
             </button>
         </li>
     </ul>
@@ -32,83 +43,153 @@
     <!-- Leaderboard Content -->
     <div class="tab-content" id="leaderboardContent">
         <!-- Weekly Leaderboard -->
-        <div class="tab-pane fade show active" id="weekly" role="tabpanel" aria-labelledby="weekly-tab">
-            @RenderLeaderboard(Model.WeeklyLeaderboard, "Weekly")
+        <div class="tab-pane fade show active" id="weekly" role="tabpanel">
+            @RenderLeaderboard(Model.WeeklyLeaderboard, "This Week's Champions")
         </div>
 
         <!-- Monthly Leaderboard -->
-        <div class="tab-pane fade" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
-            @RenderLeaderboard(Model.MonthlyLeaderboard, "Monthly")
+        <div class="tab-pane fade" id="monthly" role="tabpanel">
+            @RenderLeaderboard(Model.MonthlyLeaderboard, "This Month's Top Contributors")
         </div>
 
         <!-- All Time Leaderboard -->
-        <div class="tab-pane fade" id="alltime" role="tabpanel" aria-labelledby="alltime-tab">
-            @RenderLeaderboard(Model.AllTimeLeaderboard, "All Time")
+        <div class="tab-pane fade" id="alltime" role="tabpanel">
+            @RenderLeaderboard(Model.AllTimeLeaderboard, "Hall of Fame")
         </div>
     </div>
 </div>
 
 @{
-    object RenderLeaderboard(List<FixIt.Models.Gamification.LeaderboardEntry> entries, string period)
+    object RenderLeaderboard(List<FixIt.Models.Gamification.LeaderboardEntry> entries, string title)
     {
-        <div class="card">
-            <div class="card-body p-0">
-                @if (entries.Any())
-                {
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>User</th>
-                                <th>Points</th>
-                                <th class="text-end">Trust Level</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var entry in entries.Take(20))
-                            {
-                                <tr class="leaderboard-row">
-                                    <td class="rank-cell">
-                                        @if (entry.Rank == 1)
-                                        {
-                                            <span class="badge bg-warning text-dark">🥇 @entry.Rank</span>
-                                        }
-                                        else if (entry.Rank == 2)
-                                        {
-                                            <span class="badge bg-secondary">🥈 @entry.Rank</span>
-                                        }
-                                        else if (entry.Rank == 3)
-                                        {
-                                            <span class="badge bg-danger">🥉 @entry.Rank</span>
-                                        }
-                                        else
-                                        {
-                                            <span>@entry.Rank</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <a href="/user/@entry.UserId" class="text-decoration-none">@entry.UserDisplayName</a>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-primary">@entry.Points pts</span>
-                                    </td>
-                                    <td class="text-end">
-                                        <span class="badge bg-@GetTrustLevelColor(entry.TrustLevel)">@GetTrustLevelLabel(entry.TrustLevel)</span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <div class="alert alert-info m-0">
-                        <p class="mb-0">No entries for @period leaderboard yet.</p>
-                    </div>
-                }
+        if (!entries.Any())
+        {
+            <div class="text-center py-5">
+                <div class="mb-4" style="font-size: 4rem; opacity: 0.3;">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h5 class="text-muted">No entries yet</h5>
+                <p class="text-muted">Be the first to contribute and claim your spot!</p>
+            </div>
+        }
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="text-center mb-4">@title</h4>
             </div>
         </div>
-        return null;
+
+        <!-- Top 3 Podium -->
+        if (entries.Count >= 3)
+        {
+            var top3 = entries.Take(3).ToList();
+            <div class="row mb-5 g-3">
+                <!-- 2nd Place -->
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="card w-100 text-center" style="border: none; background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(169, 169, 169, 0.2)); transform: translateY(20px);">
+                        <div class="card-body p-4">
+                            <div class="mb-3" style="font-size: 4rem;">🥈</div>
+                            <h5 class="mb-2">@top3[1].UserDisplayName</h5>
+                            <div class="display-6 fw-bold text-secondary mb-3">@top3[1].Points</div>
+                            <small class="text-muted d-block">Points</small>
+                            <div class="mt-3">
+                                <span class="badge bg-@GetTrustLevelColor(top3[1].TrustLevel)">
+                                    @GetTrustLevelLabel(top3[1].TrustLevel)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1st Place -->
+                <div class="col-md-4 order-md-first order-last">
+                    <div class="card w-100 text-center" style="border: none; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.3)); box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);">
+                        <div class="card-body p-4">
+                            <div class="mb-3" style="font-size: 5rem;">👑</div>
+                            <h4 class="mb-2 fw-bold">@top3[0].UserDisplayName</h4>
+                            <div class="display-4 fw-bold mb-3" style="color: #fbbf24;">@top3[0].Points</div>
+                            <small class="text-muted d-block">Points</small>
+                            <div class="mt-3">
+                                <span class="badge bg-@GetTrustLevelColor(top3[0].TrustLevel) px-3 py-2">
+                                    @GetTrustLevelLabel(top3[0].TrustLevel)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3rd Place -->
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="card w-100 text-center" style="border: none; background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.2)); transform: translateY(40px);">
+                        <div class="card-body p-4">
+                            <div class="mb-3" style="font-size: 3.5rem;">🥉</div>
+                            <h6 class="mb-2">@top3[2].UserDisplayName</h6>
+                            <div class="h4 fw-bold mb-3" style="color: #cd7f32;">@top3[2].Points</div>
+                            <small class="text-muted d-block">Points</small>
+                            <div class="mt-3">
+                                <span class="badge bg-@GetTrustLevelColor(top3[2].TrustLevel)">
+                                    @GetTrustLevelLabel(top3[2].TrustLevel)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Rest of Leaderboard -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card" style="border: none;">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead style="background: var(--gray-100); position: sticky; top: 0; z-index: 10;">
+                                    <tr>
+                                        <th class="border-0 py-3 ps-4" style="width: 80px;">Rank</th>
+                                        <th class="border-0 py-3">User</th>
+                                        <th class="border-0 py-3 text-center">Points</th>
+                                        <th class="border-0 py-3 text-end pe-4">Trust Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var entry in entries.Skip(3).Take(20))
+                                    {
+                                        <tr class="leaderboard-row">
+                                            <td class="ps-4 py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rank-circle">@entry.Rank</div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3">
+                                                <a href="/user/@entry.UserId" class="text-decoration-none d-flex align-items-center">
+                                                    <div class="avatar-circle me-2">
+                                                        @entry.UserDisplayName.Substring(0, 1).ToUpper()
+                                                    </div>
+                                                    <span class="fw-bold">@entry.UserDisplayName</span>
+                                                </a>
+                                            </td>
+                                            <td class="py-3 text-center">
+                                                <span class="badge" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                                    @entry.Points pts
+                                                </span>
+                                            </td>
+                                            <td class="py-3 text-end pe-4">
+                                                <span class="badge bg-@GetTrustLevelColor(entry.TrustLevel) px-3 py-2">
+                                                    @GetTrustLevelLabel(entry.TrustLevel)
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        return string.Empty;
     }
 }
 
@@ -133,33 +214,59 @@
 }
 
 <style>
+    .nav-pills .nav-link {
+        background: white;
+        color: var(--gray-700);
+        border: 2px solid var(--gray-300);
+        transition: all 0.3s;
+    }
+
+    .nav-pills .nav-link:hover {
+        background: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-color: var(--primary);
+        color: white;
+    }
+
     .leaderboard-row {
-        transition: background-color 0.2s;
+        transition: all 0.2s;
     }
 
     .leaderboard-row:hover {
-        background-color: #f5f5f5;
+        background: var(--gray-100);
+        transform: translateX(4px);
     }
 
-    .rank-cell {
+    .rank-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gray-300), var(--gray-400));
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: bold;
-        min-width: 60px;
+        color: var(--dark);
     }
 
-    .nav-tabs .nav-link {
-        color: #6c757d;
-        border: none;
-        border-bottom: 3px solid transparent;
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
     }
 
-    .nav-tabs .nav-link:hover {
-        color: #0d6efd;
-        border-bottom-color: #0d6efd;
-    }
-
-    .nav-tabs .nav-link.active {
-        color: #0d6efd;
-        background-color: transparent;
-        border-bottom-color: #0d6efd;
+    .table-hover tbody tr:hover {
+        background: var(--gray-100);
     }
 </style>

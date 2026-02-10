@@ -5,99 +5,156 @@
 }
 
 <!-- Hero Section -->
-<section class="hero">
-    <div class="container position-relative" style="z-index: 1;">
+<section class="hero position-relative">
+    <div class="container position-relative" style="z-index: 2;">
         <div class="row align-items-center">
-            <div class="col-lg-7 mb-4 mb-lg-0">
-                <h1>Report & Fix Community Issues</h1>
-                <p class="lead mb-4">
-                    FixIt is a community-powered platform where citizens report infrastructure problems—from potholes to streetlight failures—and track their resolution in real-time.
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="badge bg-white text-primary px-3 py-2 mb-4" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                     COMMUNITY-POWERED PLATFORM
+                </div>
+                <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
+                    Report & Fix<br />
+                    <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Community Issues</span>
+                </h1>
+                <p class="lead mb-4" style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.95); line-height: 1.7;">
+                    Join thousands of citizens making a difference. Report infrastructure problems, track their resolution in real-time, and help build stronger communities.
                 </p>
                 <div class="d-flex gap-3 flex-wrap">
                     @if (User?.Identity?.IsAuthenticated ?? false)
                     {
-                        <a asp-area="" asp-page="/Issues/Index" class="btn btn-accent btn-lg">
-                            <i class="bi bi-list-check"></i> Browse Issues
+                        <a asp-page="/Issues/Create" class="btn btn-accent btn-lg px-5">
+                            <i class="bi bi-plus-circle me-2"></i>Report New Issue
                         </a>
-                        <a asp-area="" asp-page="/Issues/Create" class="btn btn-outline-primary btn-lg" 
-                           style="background: rgba(255,255,255,0.2); border-color: white; color: white;">
-                            <i class="bi bi-plus-circle"></i> Report New
+                        <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5" 
+                           style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px);">
+                            <i class="bi bi-list-check me-2"></i>Browse Issues
                         </a>
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-accent btn-lg">
-                            <i class="bi bi-box-arrow-in-right"></i> Get Started
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-accent btn-lg px-5">
+                            <i class="bi bi-person-plus me-2"></i>Get Started Free
                         </a>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg"
-                           style="background: rgba(255,255,255,0.2); border-color: white; color: white;">
-                            <i class="bi bi-person-plus"></i> Create Account
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-lg px-5"
+                           style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px);">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
                         </a>
                     }
                 </div>
+                
+                <!-- Stats Bar -->
+                <div class="row g-4 mt-4">
+                    <div class="col-4">
+                        <div class="text-center">
+                            <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">10K+</div>
+                            <div class="small" style="opacity: 0.9;">Issues Reported</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center">
+                            <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">7.5K+</div>
+                            <div class="small" style="opacity: 0.9;">Issues Resolved</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center">
+                            <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">50+</div>
+                            <div class="small" style="opacity: 0.9;">Cities</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-5 text-center">
-                <div style="font-size: 10rem; opacity: 0.2;">
-                    <i class="bi bi-tools"></i>
+            
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="position-relative" style="perspective: 1000px;">
+                    <div style="transform: rotateY(-10deg) rotateX(5deg); transition: transform 0.5s;">
+                        <div class="p-5" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                            <div class="d-flex align-items-center gap-3 mb-4 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                <div style="width: 48px; height: 48px; background: rgba(249, 115, 22, 0.2); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-exclamation-triangle" style="font-size: 1.5rem; color: #f97316;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold" style="color: white;">New Issue Reported</div>
+                                    <div class="small" style="opacity: 0.8;">2 minutes ago</div>
+                                </div>
+                                <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">High Priority</span>
+                            </div>
+                            <h6 class="fw-bold mb-2" style="color: white;">Pothole on Main Street</h6>
+                            <p class="small mb-4" style="opacity: 0.8;">Large pothole near intersection causing traffic issues...</p>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.75rem;"><i class="bi bi-geo-alt me-1"></i>Downtown</span>
+                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.75rem;"><i class="bi bi-people me-1"></i>12 upvotes</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Features Grid -->
-<section class="mb-5">
+<!-- How It Works Section -->
+<section class="py-5 mb-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="mb-3">How FixIt Works</h2>
-            <p class="text-muted lead">A simple, transparent process for reporting and resolving community issues</p>
+            <span class="badge bg-primary text-white px-3 py-2 mb-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;">
+                HOW IT WORKS
+            </span>
+            <h2 class="h1 fw-bold mb-3">Simple. Transparent. Effective.</h2>
+            <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;">
+                Report issues, track progress, and see real results in your community
+            </p>
         </div>
-        
+
         <div class="row g-4">
             <div class="col-md-6 col-lg-3">
-                <div class="feature-card stagger-1" style="animation: fadeInUp 0.6s ease-out both;">
-                    <div class="feature-icon">
+                <div class="feature-card h-100">
+                    <div class="feature-number mb-3">1</div>
+                    <div class="feature-icon mb-4">
                         <i class="bi bi-camera"></i>
                     </div>
                     <h5 class="fw-bold mb-3">Report Issues</h5>
-                    <p class="text-muted mb-0">
-                        Spot a problem? Take photos, pinpoint the location on a map, and submit a detailed report in seconds.
+                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
+                        Take a photo, pin the location on a map, and submit a detailed report in seconds.
                     </p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <div class="feature-card stagger-2" style="animation: fadeInUp 0.6s ease-out both;">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <div class="feature-card h-100">
+                    <div class="feature-number mb-3" style="background: linear-gradient(135deg, #10b981, #059669);">2</div>
+                    <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         <i class="bi bi-graph-up"></i>
                     </div>
                     <h5 class="fw-bold mb-3">Real-Time Tracking</h5>
-                    <p class="text-muted mb-0">
-                        Watch as issues progress from reported to resolved. See status updates and timelines in real-time.
+                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
+                        Watch issues progress from reported to resolved with live status updates.
                     </p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <div class="feature-card stagger-3" style="animation: fadeInUp 0.6s ease-out both;">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <div class="feature-card h-100">
+                    <div class="feature-number mb-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">3</div>
+                    <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         <i class="bi bi-chat-dots"></i>
                     </div>
                     <h5 class="fw-bold mb-3">Community Engagement</h5>
-                    <p class="text-muted mb-0">
-                        Comment on issues, upvote important problems, and collaborate with neighbors to prioritize solutions.
+                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
+                        Upvote important issues, comment with insights, and collaborate with neighbors.
                     </p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <div class="feature-card stagger-4" style="animation: fadeInUp 0.6s ease-out both;">
-                    <div class="feature-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <div class="feature-card h-100">
+                    <div class="feature-number mb-3" style="background: linear-gradient(135deg, #ef4444, #dc2626);">4</div>
+                    <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         <i class="bi bi-check-circle"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Get Results</h5>
-                    <p class="text-muted mb-0">
-                        When issues are resolved, receive updates and see the impact your reports had on your community.
+                    <h5 class="fw-bold mb-3">See Results</h5>
+                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
+                        Get notified when issues are resolved and see your community improve.
                     </p>
                 </div>
             </div>
@@ -106,66 +163,103 @@
 </section>
 
 <!-- Why FixIt Matters -->
-<section class="py-5 mb-5" style="background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-    <div class="container py-4">
-        <div class="text-center mb-5">
-            <h2 class="mb-3">Why FixIt Matters</h2>
-            <p class="text-muted lead">Building stronger communities through transparency and collaboration</p>
-        </div>
-        
-        <div class="row g-5">
-            <div class="col-md-6">
-                <div class="d-flex gap-3">
-                    <div style="font-size: 2.5rem; color: var(--primary); flex-shrink: 0;">
-                        <i class="bi bi-shield-check"></i>
+<section class="py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="badge bg-primary text-white px-3 py-2 mb-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;">
+                    WHY IT MATTERS
+                </span>
+                <h2 class="h1 fw-bold mb-4">Building Stronger Communities Together</h2>
+                <p class="lead text-muted mb-5">
+                    FixIt empowers citizens to take an active role in maintaining and improving their neighborhoods through transparency and collaboration.
+                </p>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-shield-check" style="font-size: 1.5rem; color: #0ea5e9;"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Full Transparency</h6>
+                                <p class="text-muted small mb-0">Every report, status change, and action is visible to the community.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h5 class="fw-bold mb-2">Transparency</h5>
-                        <p class="text-muted mb-0">
-                            Know exactly where problems are, who reported them, and what's being done to fix them. Every action is tracked and visible.
-                        </p>
+
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-lightning" style="font-size: 1.5rem; color: #10b981;"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Faster Resolution</h6>
+                                <p class="text-muted small mb-0">Community reporting accelerates problem identification and prioritization.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-people" style="font-size: 1.5rem; color: #f59e0b;"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Community Power</h6>
+                                <p class="text-muted small mb-0">Your voice matters. Vote up important issues and shape priorities.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #fee2e2, #fecaca); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-bar-chart" style="font-size: 1.5rem; color: #ef4444;"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Data-Driven Impact</h6>
+                                <p class="text-muted small mb-0">Infrastructure decisions backed by real community input and analytics.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-md-6">
-                <div class="d-flex gap-3">
-                    <div style="font-size: 2.5rem; color: var(--success); flex-shrink: 0;">
-                        <i class="bi bi-lightning"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold mb-2">Faster Resolution</h5>
-                        <p class="text-muted mb-0">
-                            Community reporting accelerates problem identification and prioritization, leading to quicker repairs and improvements.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="d-flex gap-3">
-                    <div style="font-size: 2.5rem; color: var(--warning); flex-shrink: 0;">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold mb-2">Community Power</h5>
-                        <p class="text-muted mb-0">
-                            Your voice matters. Vote up important issues, share solutions, and help shape priorities for your neighborhood.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="d-flex gap-3">
-                    <div style="font-size: 2.5rem; color: var(--accent); flex-shrink: 0;">
-                        <i class="bi bi-bar-chart"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold mb-2">Data-Driven Impact</h5>
-                        <p class="text-muted mb-0">
-                            Infrastructure decisions backed by real community input. See maps, statistics, and trends to understand what needs fixing most.
-                        </p>
+
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <div class="card border-0" style="box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1); border-radius: 1.5rem; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 2rem; color: white;">
+                            <h4 class="fw-bold mb-3">Live Community Impact</h4>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
+                                        <div class="h2 fw-bold mb-1">75%</div>
+                                        <div class="small" style="opacity: 0.9;">Resolution Rate</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
+                                        <div class="h2 fw-bold mb-1">48h</div>
+                                        <div class="small" style="opacity: 0.9;">Avg Response Time</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
+                                        <div class="h2 fw-bold mb-1">25K+</div>
+                                        <div class="small" style="opacity: 0.9;">Active Community Members</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -174,32 +268,64 @@
 </section>
 
 <!-- Call to Action -->
-<section class="mb-5">
+<section class="py-5 mb-5">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <div class="card" style="border: none; background: linear-gradient(135deg, var(--primary-light), var(--white));">
-                    <div class="card-body p-5">
-                        <h2 class="fw-bold mb-3">Ready to Make a Difference?</h2>
-                        <p class="lead text-muted mb-4">
-                            Join thousands of citizens using FixIt to improve their communities. Every report matters.
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card border-0" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 1.5rem; overflow: hidden;">
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <span style="display: inline-block; width: 64px; height: 64px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <i class="bi bi-star" style="font-size: 2rem; color: white;"></i>
+                            </span>
+                        </div>
+                        <h2 class="h1 fw-bold mb-3">Ready to Make a Difference?</h2>
+                        <p class="lead text-muted mb-5" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+                            Join thousands of citizens using FixIt to improve their communities. Every report counts.
                         </p>
                         <div class="d-flex gap-3 justify-content-center flex-wrap">
                             @if (User?.Identity?.IsAuthenticated ?? false)
                             {
-                                <a asp-area="" asp-page="/Issues/Create" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-plus-circle"></i> Report an Issue Now
+                                <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-plus-circle me-2"></i>Report an Issue Now
+                                </a>
+                                <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5">
+                                    <i class="bi bi-list-check me-2"></i>Browse Issues
                                 </a>
                             }
                             else
                             {
-                                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-person-plus"></i> Create Free Account
+                                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-5">
+                                    <i class="bi bi-person-plus me-2"></i>Create Free Account
+                                </a>
+                                <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5">
+                                    <i class="bi bi-list-check me-2"></i>Explore Platform
                                 </a>
                             }
-                            <a asp-area="" asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg">
-                                <i class="bi bi-list-check"></i> Browse Issues
-                            </a>
+                        </div>
+                        
+                        <!-- Trust Indicators -->
+                        <div class="mt-5 pt-4" style="border-top: 1px solid rgba(14, 165, 233, 0.2);">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-shield-check" style="color: #0ea5e9; font-size: 1.25rem;"></i>
+                                        <small class="fw-semibold text-muted">100% Free</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-lock" style="color: #0ea5e9; font-size: 1.25rem;"></i>
+                                        <small class="fw-semibold text-muted">Secure & Private</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-lightning" style="color: #0ea5e9; font-size: 1.25rem;"></i>
+                                        <small class="fw-semibold text-muted">Instant Setup</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -207,3 +333,38 @@
         </div>
     </div>
 </section>
+
+<style>
+    /* Feature Card Enhancements */
+    .feature-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        font-size: 1.125rem;
+    }
+
+    .feature-card {
+        padding: 2.5rem;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Smooth Scroll */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Hover effects for feature cards */
+    .feature-card:hover .feature-number {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.15);
+    }
+</style>

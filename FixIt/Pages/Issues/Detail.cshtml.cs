@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using FixIt.Services.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.AI;
+using FixIt.Models.Engagement;
 using FixIt.Services.AI;
 
 namespace FixIt.Pages.Issues;
@@ -26,7 +29,7 @@ public class IssueDetailModel : PageModel
     public Issue? Issue { get; set; }
     public IssueAnalysis? Analysis { get; set; }
     public List<FixIt.Models.Media.Media> MediaList { get; set; } = new();
-    public List<dynamic>? Comments { get; set; } = new();
+    public List<Comment> Comments { get; set; } = new();
     public int? IssueCount { get; set; }
     
     public List<dynamic> SortedStatusHistory
@@ -53,12 +56,32 @@ public class IssueDetailModel : PageModel
 
         try
         {
-            // Load issue from service
+            // Load issue from service (no automatic view increment)
             Issue = await _issueService.GetIssueByIdAsync(Id);
             
             if (Issue == null)
             {
                 return NotFound();
+            }
+
+            // Track the view - only increment if it's a new view from this user/session
+            // This runs synchronously so the view count is updated before the page renders
+            try
+            {
+                var userId = User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var sessionId = HttpContext.Session?.Id ?? "anonymous";
+                var ipAddress = HttpContext.Connection?.RemoteIpAddress?.ToString();
+                
+                // Track the view and reload the issue with updated count
+                await _issueService.TrackViewAsync(Id, userId, sessionId, ipAddress);
+                
+                // Reload the issue to get the updated view count
+                Issue = await _issueService.GetIssueByIdAsync(Id);
+            }
+            catch (Exception trackingEx)
+            {
+                // Log but don't fail - view tracking errors shouldn't break the page
+                System.Diagnostics.Debug.WriteLine($"View tracking error: {trackingEx.Message}");
             }
 
             // Load AI analysis if available, otherwise trigger it
@@ -94,33 +117,55 @@ public class IssueDetailModel : PageModel
                 Id
             );
             
-            Comments = new List<dynamic>();
+            // Load comments
+            Comments = await _issueService.GetCommentsForIssueAsync(Id);
             
             return Page();
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Issue detail page error: {ex.Message}");
             return NotFound();
         }
     }
 
+    [Authorize]
     public async Task<IActionResult> OnPostAddCommentAsync(string commentText)
     {
         if (string.IsNullOrWhiteSpace(commentText))
         {
             ModelState.AddModelError("", "Comment cannot be empty");
-            return Page();
+            return RedirectToPage(new { id = Id });
         }
 
         try
         {
-            // TODO: Add comment via service
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            // Add comment via service
+            await _issueService.AddCommentAsync(Id, userId, commentText);
+
+            return RedirectToPage(new { id = Id });
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            return RedirectToPage(new { id = Id });
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError("", ex.Message);
             return RedirectToPage(new { id = Id });
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"Failed to add comment: {ex.Message}");
             ModelState.AddModelError("", "Failed to add comment");
-            return Page();
+            return RedirectToPage(new { id = Id });
         }
     }
 }
