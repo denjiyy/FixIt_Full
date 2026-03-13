@@ -2,13 +2,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using FixIt.Services.Contracts;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using FixIt.Models.Common;
-using FixIt.Models.Enums;
+using FixIt.Models.Issues;
+using FixIt.Models.Users;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using FixIt.Models.Enums;
 
 namespace FixIt.Pages.Issues;
 
@@ -18,17 +21,20 @@ public class CreateIssueModel : PageModel
     private readonly IIssueService _issueService;
     private readonly IMediaService _mediaService;
     private readonly IRepository<City> _cityRepo;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<CreateIssueModel> _logger;
 
     public CreateIssueModel(
         IIssueService issueService,
         IMediaService mediaService,
         IRepository<City> cityRepo,
+        UserManager<ApplicationUser> userManager,
         ILogger<CreateIssueModel> logger)
     {
         _issueService = issueService;
         _mediaService = mediaService;
         _cityRepo = cityRepo;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -68,6 +74,26 @@ public class CreateIssueModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
+        // Debug: Log received values
+        _logger.LogInformation("Form submission received:");
+        _logger.LogInformation("  Title: '{Title}' (length: {TitleLength})", Input.Title, Input.Title?.Length ?? 0);
+        _logger.LogInformation("  Description: '{Description}' (length: {DescLength})", Input.Description, Input.Description?.Length ?? 0);
+        _logger.LogInformation("  Latitude: {Latitude}, Longitude: {Longitude}", Input.Latitude, Input.Longitude);
+        _logger.LogInformation("  CityId: '{CityId}'", Input.CityId);
+        _logger.LogInformation("  ModelState.IsValid: {IsValid}", ModelState.IsValid);
+        
+        // Log validation errors
+        if (!ModelState.IsValid)
+        {
+            foreach (var modelState in ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    _logger.LogInformation("  ValidationError: {Error}", error.ErrorMessage);
+                }
+            }
+        }
+
         if (!ModelState.IsValid)
         {
             await LoadCities();
@@ -76,7 +102,6 @@ public class CreateIssueModel : PageModel
 
         try
         {
-            // Get current user info
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
@@ -87,27 +112,31 @@ public class CreateIssueModel : PageModel
                 return Page();
             }
 
-            // Create user summary
             var reporter = new UserSummary
             {
                 Id = userId,
                 DisplayName = userName ?? "Anonymous"
             };
 
+            // Check if user has enabled anonymous reporting in their privacy settings
+            var user = await _userManager.GetUserAsync(User);
+            bool isAnonymous = user?.AnonymousReportingEnabled ?? false;
+
             // Create the issue
             var issue = await _issueService.CreateIssueAsync(
-                title: Input.Title,
-                description: Input.Description,
+                title: Input.Title ?? "",
+                description: Input.Description ?? "",
                 longitude: Input.Longitude,
                 latitude: Input.Latitude,
                 cityId: Input.CityId,
                 reporter: reporter,
-                tagNames: null
+                tagNames: null,
+                isAnonymous: isAnonymous
             );
 
             _logger.LogInformation("Created issue {IssueId} by user {UserId}", issue.Id, userId);
 
-            // Handle photo uploads
+            // Handle photo/video uploads
             if (Input.Photos != null && Input.Photos.Any())
             {
                 try
@@ -119,27 +148,26 @@ public class CreateIssueModel : PageModel
                         issue.Id
                     );
 
-                    // Update issue with media IDs
                     foreach (var media in uploadedMedia)
                     {
                         issue.MediaIds.Add(media.Id);
                     }
 
-                    // Save updated issue
-                    await _issueService.UpdateIssueAsync(issue);
-
-                    _logger.LogInformation("Uploaded {Count} photos for issue {IssueId}", uploadedMedia.Count, issue.Id);
+                    _logger.LogInformation("Uploaded {Count} media files for issue {IssueId}", 
+                        uploadedMedia.Count, issue.Id);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to upload photos for issue {IssueId}", issue.Id);
-                    TempData["Warning"] = "Issue created but some photos failed to upload.";
+                    _logger.LogError(ex, "Failed to upload media for issue {IssueId}", issue.Id);
+                    TempData["Warning"] = "Issue created but some media failed to upload.";
                 }
             }
 
+            // Save final issue state
+            await _issueService.UpdateIssueAsync(issue);
+
             TempData["Success"] = "Issue reported successfully!";
-            
-            // FIXED: Use Redirect with the actual route path
+
             return Redirect($"/issues/{issue.Id}");
         }
         catch (Exception ex)

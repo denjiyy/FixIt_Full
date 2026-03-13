@@ -1,5 +1,6 @@
 using FixIt.Models.Issues;
 using FixIt.Models.Common;
+using FixIt.Models.Engagement;
 using FixIt.Data.Repository.Contracts;
 using FixIt.ViewModels.Issues;
 using FixIt.ViewModels.Tags;
@@ -23,7 +24,8 @@ public static class MapperExtensions
             Downvotes = issue.Downvotes,
             CommentCount = issue.CommentCount,
             ViewCount = issue.ViewCount,
-            Reporter = issue.Reporter.ToResponse(),
+            Reporter = issue.IsAnonymous ? new UserSummaryResponse { DisplayName = "Anonymous" } : issue.Reporter.ToResponse(),
+            IsAnonymous = issue.IsAnonymous,
             TagIds = issue.TagIds,
             CreatedAt = issue.CreatedAt,
             LastActivityAt = issue.LastActivityAt
@@ -46,7 +48,8 @@ public static class MapperExtensions
             Downvotes = issue.Downvotes,
             CommentCount = issue.CommentCount,
             ViewCount = issue.ViewCount,
-            Reporter = issue.Reporter.ToResponse(),
+            Reporter = issue.IsAnonymous ? new UserSummaryResponse { DisplayName = "Anonymous" } : issue.Reporter.ToResponse(),
+            IsAnonymous = issue.IsAnonymous,
             TagIds = issue.TagIds,
             StatusHistory = issue.StatusHistory.Select(sh => new IssueStatusHistoryResponse
             {
@@ -111,5 +114,18 @@ public static class MapperExtensions
             Total = result.Total,
             Page = page,
             PageSize = pageSize
+        };
+
+    public static CommentResponse ToResponse(this Comment comment) =>
+        new()
+        {
+            Id = comment.Id,
+            IssueId = comment.IssueId,
+            Author = comment.IsAnonymous ? new UserSummaryResponse { DisplayName = "Anonymous" } : comment.Author?.ToResponse() ?? new UserSummaryResponse { DisplayName = "Unknown" },
+            IsAnonymous = comment.IsAnonymous,
+            Text = comment.Text,
+            MediaIds = comment.MediaIds,
+            CreatedAt = comment.CreatedAt,
+            IsDeleted = comment.IsDeleted
         };
 }

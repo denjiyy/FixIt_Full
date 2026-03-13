@@ -42,7 +42,13 @@ public class MediaController : ControllerBase
 
             var (stream, contentType, fileName) = result.Value;
             
-            return File(stream, contentType, fileName, enableRangeProcessing: true);
+            // Set required headers for video/image streaming
+            Response.Headers["Content-Length"] = stream.Length.ToString();
+            Response.Headers["Accept-Ranges"] = "bytes";
+            
+            // Return file without fileDownloadName so it plays inline in video/image tags
+            // enableRangeProcessing = true enables HTTP range requests for seeking in videos
+            return File(stream, contentType, enableRangeProcessing: true);
         }
         catch (Exception ex)
         {
@@ -56,6 +62,7 @@ public class MediaController : ControllerBase
     /// </summary>
     [HttpGet("{id}/info")]
     [AllowAnonymous]
+    [Produces("application/json")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<object>>> GetMediaInfo(string id)
@@ -92,6 +99,7 @@ public class MediaController : ControllerBase
     /// </summary>
     [HttpDelete("{id}")]
     [Authorize]
+    [Produces("application/json")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

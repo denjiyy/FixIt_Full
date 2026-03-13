@@ -2,6 +2,7 @@ using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Locations;
 using FixIt.Models.Enums;
+using FixIt.Services.Analytics.Models;
 using MongoDB.Driver;
 
 namespace FixIt.Services.Analytics;
@@ -10,41 +11,7 @@ public interface IHeatmapService
 {
     Task<HeatmapData> GetCityHeatmapAsync(string cityId, DateTime? fromDate = null, DateTime? toDate = null);
     Task<List<HeatmapLocationPoint>> GetIssueHotspots(string cityId, int limit = 100);
-    Task<Dictionary<string, int>> GetIssuesByPriority(string cityId);
-    Task<Dictionary<string, int>> GetIssuesByStatus(string cityId);
     Task<Dictionary<string, int>> GetIssuesByTag(string cityId);
-    Task<List<ActivityTrendData>> GetActivityTrend(string cityId, int days = 30);
-}
-
-public class HeatmapData
-{
-    public string CityId { get; set; } = string.Empty;
-    public List<HeatmapLocationPoint> Hotspots { get; set; } = new();
-    public Dictionary<string, int> IssuesByStatus { get; set; } = new();
-    public Dictionary<string, int> IssuesByPriority { get; set; } = new();
-    public Dictionary<string, int> IssuesByTag { get; set; } = new();
-    public List<ActivityTrendData> ActivityTrend { get; set; } = new();
-    public int TotalIssues { get; set; }
-    public int ResolvedIssues { get; set; }
-    public int OpenIssues { get; set; }
-}
-
-public class HeatmapLocationPoint
-{
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
-    public int Intensity { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public IssueStatus Status { get; set; }
-    public IssuePriority Priority { get; set; }
-}
-
-public class ActivityTrendData
-{
-    public DateTime Date { get; set; }
-    public int NewIssues { get; set; }
-    public int ResolvedIssues { get; set; }
-    public int UpdatedIssues { get; set; }
 }
 
 public class HeatmapService : IHeatmapService
@@ -109,7 +76,7 @@ public class HeatmapService : IHeatmapService
             .ToList();
         
         if (issues.Count == 0)
-            return new List<HeatmapLocationPoint>();
+            return await Task.FromResult(new List<HeatmapLocationPoint>());
         
         // Group issues by location and create hotspots
         var hotspots = issues
@@ -130,7 +97,7 @@ public class HeatmapService : IHeatmapService
             .Take(limit)
             .ToList();
 
-        return hotspots;
+        return await Task.FromResult(hotspots);
     }
 
     public async Task<List<HeatmapLocationPoint>> GetIssueHotspots(string cityId, int limit = 100)
@@ -139,19 +106,7 @@ public class HeatmapService : IHeatmapService
         return await GetIssueHotspots(cityId, issues.ToList(), limit);
     }
 
-    public async Task<Dictionary<string, int>> GetIssuesByPriority(string cityId)
-    {
-        var issues = await _issueRepo.FindAsync(i => i.CityId == cityId);
-        return issues
-            .GroupBy(i => i.Priority.ToString())
-            .ToDictionary(g => g.Key, g => g.Count());
-    }
 
-    public async Task<Dictionary<string, int>> GetIssuesByStatus(string cityId)
-    {
-        var issues = await _issueRepo.FindAsync(i => i.CityId == cityId);
-        return GetIssuesByStatusFromList(issues.ToList());
-    }
 
     public async Task<Dictionary<string, int>> GetIssuesByTag(string cityId)
     {
@@ -190,15 +145,7 @@ public class HeatmapService : IHeatmapService
         return tagCounts;
     }
 
-    public async Task<List<ActivityTrendData>> GetActivityTrend(string cityId, int days = 30)
-    {
-        var fromDate = DateTime.UtcNow.AddDays(-days);
-        var issues = await _issueRepo.FindAsync(i => 
-            i.CityId == cityId && 
-            i.CreatedAt >= fromDate);
 
-        return GetActivityTrendFromList(issues.ToList(), days);
-    }
 
     private Dictionary<string, int> GetIssuesByStatusFromList(List<Issue> issues)
     {

@@ -41,24 +41,22 @@ public class LocalFileStorage : IFileStorage
         _logger.LogDebug("Saved file to {Path}", fullPath);
     }
 
-    public async Task<Stream?> GetFileStreamAsync(string path)
+    public Task<Stream?> GetFileStreamAsync(string path)
     {
         var fullPath = GetFullPath(path);
         
         if (!File.Exists(fullPath))
         {
             _logger.LogWarning("File not found: {Path}", fullPath);
-            return null;
+            return Task.FromResult<Stream?>(null);
         }
 
-        var memoryStream = new MemoryStream();
-        await using (var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read))
-        {
-            await fileStream.CopyToAsync(memoryStream);
-        }
+        // Return FileStream directly for seekability (important for video playback)
+        // FileStream is seekable, allowing browsers to read video metadata and seek to different parts
+        var fileStream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         
-        memoryStream.Position = 0;
-        return memoryStream;
+        _logger.LogDebug("Retrieved file stream for {Path}", fullPath);
+        return Task.FromResult<Stream?>(fileStream);
     }
 
     public Task DeleteFileAsync(string path)

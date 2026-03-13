@@ -3,10 +3,13 @@ using FixIt.Models.Issues;
 using FixIt.Models.Common;
 using FixIt.Models.Enums;
 using FixIt.Models.Engagement;
+using FixIt.Models.Users;
+using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
 using FixIt.Services.AI;
 using MongoDB.Driver.GeoJsonObjectModel;
+using Microsoft.AspNetCore.Identity;
 
 namespace FixIt.Services;
 
@@ -19,6 +22,7 @@ public class IssueService : IIssueService
     private readonly IRepository<Comment> _commentRepo;
     private readonly IReputationService _reputationService;
     private readonly IIssueAnalysisService _analysisService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public IssueService(
         IRepository<Issue> issueRepo, 
@@ -27,7 +31,8 @@ public class IssueService : IIssueService
         IRepository<ViewEvent> viewEventRepo,
         IRepository<Comment> commentRepo,
         IReputationService reputationService,
-        IIssueAnalysisService analysisService)
+        IIssueAnalysisService analysisService,
+        UserManager<ApplicationUser> userManager)
     {
         _issueRepo = issueRepo;
         _tagRepo = tagRepo;
@@ -36,6 +41,7 @@ public class IssueService : IIssueService
         _commentRepo = commentRepo;
         _reputationService = reputationService;
         _analysisService = analysisService;
+        _userManager = userManager;
     }
 
     public async Task<Issue> CreateIssueAsync(
@@ -45,17 +51,18 @@ public class IssueService : IIssueService
         double latitude,
         string cityId,
         UserSummary reporter,
-        IEnumerable<string>? tagNames = null)
+        IEnumerable<string>? tagNames = null,
+        bool isAnonymous = false)
     {
         // Validate inputs
         if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title is required", nameof(title));
+            throw new ArgumentException(ValidationMessages.IssuesTitleRequired, nameof(title));
         if (string.IsNullOrWhiteSpace(description))
-            throw new ArgumentException("Description is required", nameof(description));
+            throw new ArgumentException(ValidationMessages.IssuesDescriptionRequired, nameof(description));
         if (title.Length > 200)
-            throw new ArgumentException("Title must be 200 characters or less", nameof(title));
+            throw new ArgumentException(ValidationMessages.IssuesTitleTooLong, nameof(title));
         if (description.Length > 5000)
-            throw new ArgumentException("Description must be 5000 characters or less", nameof(description));
+            throw new ArgumentException(ValidationMessages.IssuesDescriptionTooLong, nameof(description));
 
         var issue = new Issue
         {
@@ -64,6 +71,7 @@ public class IssueService : IIssueService
             Location = GeoJson.Point(GeoJson.Geographic(longitude, latitude)),
             CityId = cityId,
             Reporter = reporter,
+            IsAnonymous = isAnonymous,
             Status = IssueStatus.New,
             Priority = IssuePriority.Medium,
             CreatedAt = DateTime.UtcNow,
@@ -102,12 +110,15 @@ public class IssueService : IIssueService
             CreatedAt = DateTime.UtcNow
         });
 
-        // Award reputation points to the reporter
-        await _reputationService.AddPointsAsync(
-            reporter.Id,
-            5,
-            "issue_reported",
-            issueId: createdIssue.Id);
+        // Award reputation points to the reporter (only if not anonymous)
+        if (!isAnonymous)
+        {
+            await _reputationService.AddPointsAsync(
+                reporter.Id,
+                5,
+                "issue_reported",
+                issueId: createdIssue.Id);
+        }
 
         // Analyze issue with AI (asynchronous, don't await to avoid delays)
         _ = Task.Run(async () =>
@@ -116,9 +127,9 @@ public class IssueService : IIssueService
             {
                 await _analysisService.AnalyzeIssueAsync(createdIssue.Id);
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"AI analysis failed: {ex.Message}");
+                // Analysis is optional, don't fail if it errors
             }
         });
 
@@ -599,17 +610,18 @@ public class IssueService : IIssueService
     public async Task<Comment> AddCommentAsync(
         string issueId,
         string authorId,
-        string text)
+        string text,
+        bool isAnonymous = false)
     {
         // Validate inputs
         if (string.IsNullOrWhiteSpace(issueId))
-            throw new ArgumentException("Issue ID is required", nameof(issueId));
+            throw new ArgumentException(ValidationMessages.IssuesIdRequired, nameof(issueId));
         if (string.IsNullOrWhiteSpace(authorId))
-            throw new ArgumentException("Author ID is required", nameof(authorId));
+            throw new ArgumentException(ValidationMessages.IssuesAuthorIdRequired, nameof(authorId));
         if (string.IsNullOrWhiteSpace(text))
-            throw new ArgumentException("Comment text is required", nameof(text));
+            throw new ArgumentException(ValidationMessages.IssuesCommentTextRequired, nameof(text));
         if (text.Length > 5000)
-            throw new ArgumentException("Comment must not exceed 5000 characters", nameof(text));
+            throw new ArgumentException(ValidationMessages.IssuesCommentTooLong, nameof(text));
 
         // Get the issue
         var issue = await _issueRepo.GetByIdAsync(issueId);
@@ -628,6 +640,7 @@ public class IssueService : IIssueService
             IssueId = issueId,
             AuthorId = authorId,
             Text = text.Trim(),
+            IsAnonymous = isAnonymous,
             MediaIds = new HashSet<string>(),
             IsDeleted = false,
             CreatedAt = DateTime.UtcNow
@@ -641,13 +654,16 @@ public class IssueService : IIssueService
         issue.LastActivityAt = DateTime.UtcNow;
         await _issueRepo.ReplaceAsync(issueId, issue);
 
-        // Award reputation points to the comment author
-        await _reputationService.AddPointsAsync(
-            authorId,
-            2,
-            "comment_posted",
-            issueId: issueId,
-            commentId: createdComment.Id);
+        // Award reputation points to the comment author (only if not anonymous)
+        if (!isAnonymous)
+        {
+            await _reputationService.AddPointsAsync(
+                authorId,
+                2,
+                "comment_posted",
+                issueId: issueId,
+                commentId: createdComment.Id);
+        }
 
         return createdComment;
     }
@@ -663,8 +679,92 @@ public class IssueService : IIssueService
         var comments = await _commentRepo.FindAsync(c => 
             c.IssueId == issueId && !c.IsDeleted);
 
-        return comments
+        var sortedComments = comments
             .OrderByDescending(c => c.CreatedAt)
             .ToList();
+
+        // Populate author information for each comment
+        foreach (var comment in sortedComments)
+        {
+            if (!string.IsNullOrEmpty(comment.AuthorId) && comment.Author == null)
+            {
+                var user = await _userManager.FindByIdAsync(comment.AuthorId);
+                if (user != null)
+                {
+                    comment.Author = new UserSummary
+                    {
+                        Id = user.Id.ToString(),
+                        DisplayName = user.DisplayName ?? user.UserName ?? "Anonymous",
+                        AvatarUrl = null // Avatar URL can be retrieved from media if needed
+                    };
+                }
+                else
+                {
+                    // Fallback if user not found
+                    comment.Author = new UserSummary
+                    {
+                        Id = comment.AuthorId,
+                        DisplayName = "Deleted User",
+                        AvatarUrl = null
+                    };
+                }
+            }
+        }
+
+        return sortedComments;
+    }
+
+    public async Task DeleteCommentAsync(string issueId, string commentId)
+    {
+        var comment = await _commentRepo.GetByIdAsync(commentId);
+        if (comment == null)
+            throw new InvalidOperationException("Comment not found");
+
+        if (comment.IssueId != issueId)
+            throw new InvalidOperationException("Comment does not belong to this issue");
+
+        // Mark the comment as deleted instead of removing it (soft delete)
+        comment.IsDeleted = true;
+        comment.Text = "[deleted]";
+
+        await _commentRepo.ReplaceAsync(commentId, comment);
+    }
+
+    public async Task LikeCommentAsync(string issueId, string commentId, string userId)
+    {
+        var comment = await _commentRepo.GetByIdAsync(commentId);
+        if (comment == null)
+            throw new InvalidOperationException("Comment not found");
+
+        if (comment.IssueId != issueId)
+            throw new InvalidOperationException("Comment does not belong to this issue");
+
+        // Remove from dislike if user previously disliked
+        comment.DislikedBy?.Remove(userId);
+
+        // Add to like
+        comment.LikedBy ??= new HashSet<string>();
+        comment.LikedBy.Add(userId);
+
+        await _commentRepo.ReplaceAsync(commentId, comment);
+    }
+
+    public async Task DislikeCommentAsync(string issueId, string commentId, string userId)
+    {
+        var comment = await _commentRepo.GetByIdAsync(commentId);
+        if (comment == null)
+            throw new InvalidOperationException("Comment not found");
+
+        if (comment.IssueId != issueId)
+            throw new InvalidOperationException("Comment does not belong to this issue");
+
+        // Remove from like if user previously liked
+        comment.LikedBy?.Remove(userId);
+
+        // Add to dislike
+        comment.DislikedBy ??= new HashSet<string>();
+        comment.DislikedBy.Add(userId);
+
+        await _commentRepo.ReplaceAsync(commentId, comment);
     }
 }

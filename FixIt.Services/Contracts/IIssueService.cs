@@ -14,7 +14,8 @@ public interface IIssueService
         double latitude,
         string cityId,
         UserSummary reporter,
-        IEnumerable<string>? tagNames = null);
+        IEnumerable<string>? tagNames = null,
+        bool isAnonymous = false);
 
     Task<Issue?> GetIssueByIdAsync(string issueId);
 
@@ -79,7 +80,14 @@ public interface IIssueService
     Task<FixIt.Models.Engagement.Comment> AddCommentAsync(
         string issueId,
         string authorId,
-        string text);
+        string text,
+        bool isAnonymous = false);
 
     Task<List<FixIt.Models.Engagement.Comment>> GetCommentsForIssueAsync(string issueId);
+
+    Task DeleteCommentAsync(string issueId, string commentId);
+
+    Task LikeCommentAsync(string issueId, string commentId, string userId);
+
+    Task DislikeCommentAsync(string issueId, string commentId, string userId);
 }

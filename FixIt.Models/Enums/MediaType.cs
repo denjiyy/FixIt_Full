@@ -4,5 +4,6 @@ public enum MediaType
 {
     Image,
     Video,
-    Document
+    Document,
+    Model3D  // GLB, GLTF, FBX, OBJ for AR proposals
 }

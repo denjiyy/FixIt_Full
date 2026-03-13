@@ -30,16 +30,12 @@ public interface IHazardService
     Task<List<Hazard>> SearchHazardsAsync(string cityId, HazardType? type = null, 
         HazardSeverity? severity = null, int limit = 100);
 
-    // New safety feature methods
-    Task<List<Hazard>> GetHazardsByTypeAsync(string cityId, HazardType type);
-    
-    Task<List<Hazard>> GetHazardsBySeverityAsync(string cityId, HazardSeverity severity);
-    
-    Task<List<Hazard>> GetRecentHazardsAsync(string cityId, int hoursPast = 24);
-    
-    Task<int> GetUnconfirmedHazardsCountAsync(string cityId);
-    
-    Task<Dictionary<string, int>> GetHazardSeverityDistributionAsync(string cityId);
+    /// <summary>
+    /// Update hazard fields (partial update)
+    /// </summary>
+    Task<Hazard> UpdateHazardAsync(string hazardId, HazardType? type = null, HazardSeverity? severity = null,
+        string? title = null, string? description = null, double? latitude = null, double? longitude = null,
+        string? address = null, DateTime? expiresAt = null);
 
     /// <summary>
     /// Soft delete a hazard - marks it as deleted but keeps data for recovery
@@ -214,72 +210,6 @@ public class HazardService : IHazardService
                      .ToList();
     }
 
-    public async Task<List<Hazard>> GetHazardsByTypeAsync(string cityId, HazardType type)
-    {
-        var hazards = await _hazardRepo.FindAsync(h =>
-            h.CityId == cityId &&
-            !h.IsDeleted &&
-            h.Type == type &&
-            !h.IsResolved &&
-            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
-
-        return hazards.OrderByDescending(h => h.Confirmations)
-                     .ThenByDescending(h => h.UpdatedAt)
-                     .ToList();
-    }
-
-    public async Task<List<Hazard>> GetHazardsBySeverityAsync(string cityId, HazardSeverity severity)
-    {
-        var hazards = await _hazardRepo.FindAsync(h =>
-            h.CityId == cityId &&
-            !h.IsDeleted &&
-            h.Severity == severity &&
-            !h.IsResolved &&
-            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
-
-        return hazards.OrderByDescending(h => h.Confirmations)
-                     .ThenByDescending(h => h.UpdatedAt)
-                     .ToList();
-    }
-
-    public async Task<List<Hazard>> GetRecentHazardsAsync(string cityId, int hoursPast = 24)
-    {
-        var cutoffTime = DateTime.UtcNow.AddHours(-hoursPast);
-        var hazards = await _hazardRepo.FindAsync(h =>
-            h.CityId == cityId &&
-            !h.IsDeleted &&
-            h.CreatedAt >= cutoffTime &&
-            !h.IsResolved &&
-            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
-
-        return hazards.OrderByDescending(h => h.CreatedAt).ToList();
-    }
-
-    public async Task<int> GetUnconfirmedHazardsCountAsync(string cityId)
-    {
-        var hazards = await _hazardRepo.FindAsync(h =>
-            h.CityId == cityId &&
-            !h.IsDeleted &&
-            h.Confirmations == 0 &&
-            !h.IsResolved &&
-            (h.ExpiresAt == null || h.ExpiresAt > DateTime.UtcNow));
-
-        return hazards.Count();
-    }
-
-    public async Task<Dictionary<string, int>> GetHazardSeverityDistributionAsync(string cityId)
-    {
-        var hazards = await GetCityHazardsAsync(cityId, includeResolved: false);
-
-        return new Dictionary<string, int>
-        {
-            { "Critical", hazards.Count(h => h.Severity == HazardSeverity.Critical) },
-            { "High", hazards.Count(h => h.Severity == HazardSeverity.High) },
-            { "Medium", hazards.Count(h => h.Severity == HazardSeverity.Medium) },
-            { "Low", hazards.Count(h => h.Severity == HazardSeverity.Low) }
-        };
-    }
-
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
     {
         const double R = 6371000; // Earth radius in meters
@@ -324,5 +254,68 @@ public class HazardService : IHazardService
         hazard.UpdatedAt = DateTime.UtcNow;
 
         await _hazardRepo.ReplaceAsync(hazardId, hazard);
+    }
+
+    public async Task<Hazard> UpdateHazardAsync(string hazardId, HazardType? type = null, HazardSeverity? severity = null,
+        string? title = null, string? description = null, double? latitude = null, double? longitude = null,
+        string? address = null, DateTime? expiresAt = null)
+    {
+        var hazard = await _hazardRepo.GetByIdAsync(hazardId);
+        if (hazard == null)
+            throw new KeyNotFoundException($"Hazard {hazardId} not found");
+
+        var updated = false;
+
+        if (type != null && hazard.Type != type.Value)
+        {
+            hazard.Type = type.Value;
+            updated = true;
+        }
+
+        if (severity != null && hazard.Severity != severity.Value)
+        {
+            hazard.Severity = severity.Value;
+            updated = true;
+        }
+
+        if (!string.IsNullOrEmpty(title) && hazard.Title != title)
+        {
+            hazard.Title = title;
+            updated = true;
+        }
+
+        if (!string.IsNullOrEmpty(description) && hazard.Description != description)
+        {
+            hazard.Description = description;
+            updated = true;
+        }
+
+        if (latitude != null && longitude != null)
+        {
+            hazard.Location = new MongoDB.Driver.GeoJsonObjectModel.GeoJsonPoint<MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates>(
+                new MongoDB.Driver.GeoJsonObjectModel.GeoJson2DGeographicCoordinates(longitude.Value, latitude.Value));
+            updated = true;
+        }
+
+        if (address != null && hazard.Address != address)
+        {
+            hazard.Address = address;
+            updated = true;
+        }
+
+        if (expiresAt != null)
+        {
+            hazard.ExpiresAt = expiresAt;
+            updated = true;
+        }
+
+        if (updated)
+        {
+            hazard.UpdatedAt = DateTime.UtcNow;
+            hazard.Version += 1;
+            await _hazardRepo.ReplaceAsync(hazardId, hazard);
+        }
+
+        return hazard;
     }
 }

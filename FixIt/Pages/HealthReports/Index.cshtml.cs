@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Services.Analytics;
+using FixIt.Services.Analytics.Models;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using System.Text.Json;

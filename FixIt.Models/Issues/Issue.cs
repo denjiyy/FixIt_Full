@@ -27,6 +27,12 @@ public class Issue
 
     public UserSummary Reporter { get; set; } = null!;
 
+    /// <summary>
+    /// Whether the issue was reported anonymously
+    /// When true, the reporter's name is not displayed publicly
+    /// </summary>
+    public bool IsAnonymous { get; set; } = false;
+
     public IssueStatus Status { get; set; } = IssueStatus.New;
     
     public List<IssueStatusHistory> StatusHistory { get; set; } = new();

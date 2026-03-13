@@ -367,4 +367,18 @@
     .feature-card:hover .feature-icon {
         transform: scale(1.15);
     }
+
+    /* Ensure Browse Issues button text stays white */
+    .hero .btn-outline-primary {
+        color: white !important;
+    }
+
+    .hero .btn-outline-primary:hover {
+        color: white !important;
+    }
+
+    /* CTA Section button styling */
+    .btn-outline-primary:not(.hero .btn-outline-primary) {
+        /* Keep default primary outline styling for buttons outside hero */
+    }
 </style>

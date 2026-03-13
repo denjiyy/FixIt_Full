@@ -5,5 +5,6 @@ public enum MediaReferenceType
     Issue,
     Comment,
     OfficialResponse,
-    UserAvatar
+    UserAvatar,
+    AR3DModel              // 3D models used in AR proposals
 }

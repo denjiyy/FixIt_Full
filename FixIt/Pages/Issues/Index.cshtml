@@ -2,381 +2,969 @@
 @model IssueListModel
 @{
     ViewData["Title"] = "Community Issues";
+
+    var totalIssues    = Model.Issues?.Count ?? 0;
+    var resolvedCount  = Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.Fixed) ?? 0;
+    var inProgressCount= Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.InProgress) ?? 0;
+    var newCount       = Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.New) ?? 0;
+    var hasFilters     = !string.IsNullOrEmpty(Model.SearchQuery) || Model.SelectedStatus >= 0 || Model.SelectedPriority >= 0;
 }
 
-<div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="row mb-4 align-items-center">
-        <div class="col-lg-6 mb-3 mb-lg-0">
-            <div class="d-flex align-items-center gap-3 mb-2">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                    <i class="bi bi-exclamation-triangle" style="font-size: 1.5rem; color: #0ea5e9;"></i>
-                </div>
-                <div>
-                    <h1 class="h2 mb-0 fw-bold">Community Issues</h1>
-                    <p class="text-muted mb-0 small">Report and track civic problems in your area</p>
-                </div>
+<style>
+/* ═══════════════════════════════════════════════════
+   Issues Index — Production
+   All colours via site.css design tokens
+═══════════════════════════════════════════════════ */
+
+/* ── Page entry animations ───────────────────────── */
+@@keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-1 { animation: rise .4s cubic-bezier(.22,1,.36,1) both; }
+.anim-2 { animation: rise .4s cubic-bezier(.22,1,.36,1) .07s both; }
+.anim-3 { animation: rise .4s cubic-bezier(.22,1,.36,1) .14s both; }
+.anim-4 { animation: rise .4s cubic-bezier(.22,1,.36,1) .21s both; }
+
+/* ── Page header ─────────────────────────────────── */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+    flex-wrap: wrap;
+}
+
+.page-header-left { display: flex; align-items: center; gap: var(--space-4); }
+
+.page-header-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+    border-radius: var(--radius-xl);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    color: var(--primary-600);
+    flex-shrink: 0;
+    border: 1px solid var(--primary-200);
+}
+
+.page-title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-extrabold);
+    color: var(--gray-900);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0 0 var(--space-1);
+}
+
+.page-subtitle {
+    font-size: var(--text-sm);
+    color: var(--gray-400);
+    margin: 0;
+    font-weight: var(--font-medium);
+}
+
+/* ── Stat cards ──────────────────────────────────── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--gray-200);
+    padding: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.stat-card > :last-child {
+    flex: 1;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transition: opacity var(--transition-base);
+    opacity: 0;
+}
+
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-card:hover::after { opacity: 1; }
+
+.stat-card.total::after    { background: linear-gradient(90deg, var(--warning),     var(--accent)); }
+.stat-card.resolved::after { background: linear-gradient(90deg, var(--success),     #34d399); }
+.stat-card.progress::after { background: linear-gradient(90deg, var(--info),        #60a5fa); }
+.stat-card.new-s::after    { background: linear-gradient(90deg, var(--danger),      #f87171); }
+
+.stat-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.stat-card.total   .stat-icon { background: var(--warning-light);  color: var(--warning-dark); }
+.stat-card.resolved .stat-icon { background: var(--success-light); color: var(--success-dark); }
+.stat-card.progress .stat-icon { background: var(--info-light);    color: var(--info-dark); }
+.stat-card.new-s    .stat-icon { background: var(--danger-light);  color: var(--danger-dark); }
+
+.stat-num {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-extrabold);
+    color: var(--gray-900);
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.stat-lbl {
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: var(--space-1);
+}
+
+/* ── Filter bar ──────────────────────────────────── */
+.filter-bar {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5) var(--space-6);
+    box-shadow: var(--shadow-xs);
+    margin-bottom: var(--space-6);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr minmax(140px,auto) minmax(140px,auto) auto auto;
+    gap: var(--space-3);
+    align-items: end;
+}
+
+.filter-field label {
+    display: block;
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gray-400);
+    margin-bottom: var(--space-2);
+}
+
+.filter-field label i { margin-right: var(--space-1); }
+
+/* Search with icon inside */
+.search-wrap { position: relative; }
+.search-wrap .search-icon {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%; transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: var(--text-base);
+    pointer-events: none;
+    z-index: 1;
+}
+.search-wrap .form-control { padding-left: 2.75rem; }
+
+/* Active filter pill */
+.active-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--gray-100);
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    background: var(--primary-50);
+    border: 1px solid var(--primary-200);
+    color: var(--primary-700);
+    border-radius: var(--radius-full);
+    padding: 2px var(--space-3);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+}
+
+/* ── Results header ──────────────────────────────── */
+.results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.results-count {
+    font-size: var(--text-sm);
+    color: var(--gray-400);
+    font-weight: var(--font-medium);
+}
+
+.results-count strong { color: var(--gray-800); }
+
+/* Sort buttons */
+.sort-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    background: var(--gray-100);
+    border-radius: var(--radius-lg);
+    padding: var(--space-1);
+}
+
+.sort-btn {
+    border: none;
+    background: none;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    font-family: var(--font-sans);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.sort-btn:hover { color: var(--gray-800); background: var(--white); }
+.sort-btn.active { background: var(--white); color: var(--primary-600); box-shadow: var(--shadow-xs); }
+
+/* ── Issue grid ──────────────────────────────────── */
+.issues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-5);
+    margin-bottom: var(--space-10);
+}
+
+/* ── Issue card ──────────────────────────────────── */
+.issue-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.issue-card {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-xs);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-base);
+}
+
+/* Priority left-bar */
+.issue-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 0;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform var(--transition-slow);
+}
+
+.issue-card-link:hover .issue-card {
+    border-color: var(--gray-300);
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-5px);
+}
+
+.issue-card-link:hover .issue-card::before { transform: scaleY(1); transform-origin: top; }
+
+/* Priority bar colours */
+.issue-card[data-priority="critical"]::before { background: linear-gradient(180deg, var(--danger), #f87171); }
+.issue-card[data-priority="high"]::before     { background: linear-gradient(180deg, var(--accent), #fb923c); }
+.issue-card[data-priority="medium"]::before   { background: linear-gradient(180deg, var(--warning), #fbbf24); }
+.issue-card[data-priority="low"]::before      { background: linear-gradient(180deg, var(--success), #34d399); }
+
+/* Stagger grid items */
+.issues-grid .issue-card-link { animation: rise .45s cubic-bezier(.22,1,.36,1) both; }
+.issues-grid .issue-card-link:nth-child(2) { animation-delay: .05s; }
+.issues-grid .issue-card-link:nth-child(3) { animation-delay: .10s; }
+.issues-grid .issue-card-link:nth-child(4) { animation-delay: .15s; }
+.issues-grid .issue-card-link:nth-child(5) { animation-delay: .20s; }
+.issues-grid .issue-card-link:nth-child(6) { animation-delay: .25s; }
+.issues-grid .issue-card-link:nth-child(n+7) { animation-delay: .30s; }
+
+/* Card header strip */
+.issue-card-head {
+    padding: var(--space-5) var(--space-5) var(--space-3);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.issue-badges { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+
+/* Priority dot indicator */
+.priority-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.priority-dot.critical { background: var(--danger); box-shadow: 0 0 6px rgba(239,68,68,.5); }
+.priority-dot.high     { background: var(--accent); }
+.priority-dot.medium   { background: var(--warning); }
+.priority-dot.low      { background: var(--success); }
+
+/* Card body */
+.issue-card-body {
+    padding: 0 var(--space-5) var(--space-4);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.issue-card-title {
+    font-size: var(--text-base);
+    font-weight: var(--font-bold);
+    color: var(--gray-900);
+    line-height: var(--leading-snug);
+    letter-spacing: -0.01em;
+    margin-bottom: var(--space-2);
+    transition: color var(--transition-fast);
+}
+
+.issue-card-link:hover .issue-card-title { color: var(--primary-600); }
+
+.issue-card-desc {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-4);
+    flex: 1;
+    /* 2-line clamp */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Location badge */
+.issue-location {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--gray-400);
+    font-weight: var(--font-medium);
+    margin-bottom: var(--space-3);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.issue-location i { color: var(--danger); flex-shrink: 0; }
+
+/* Tag pills */
+.issue-tags {
+    display: flex;
+    gap: var(--space-1);
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.issue-tag {
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: var(--font-medium);
+    padding: 2px var(--space-2);
+    font-family: var(--font-mono);
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* Card footer */
+.issue-card-foot {
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--gray-50);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+.issue-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--gray-400);
+    font-weight: var(--font-medium);
+}
+
+.issue-stat.votes {
+    color: var(--success-dark);
+    background: var(--success-light);
+    border: 1px solid #a7f3d0;
+    border-radius: var(--radius-full);
+    padding: 2px var(--space-2);
+    font-weight: var(--font-bold);
+    font-size: 11px;
+}
+
+.issue-date {
+    font-size: var(--text-xs);
+    color: var(--gray-300);
+    font-weight: var(--font-medium);
+}
+
+/* ── Pagination ──────────────────────────────────── */
+.pagination-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-6) 0 var(--space-10);
+    flex-wrap: wrap;
+}
+
+.page-ellipsis {
+    color: var(--gray-300);
+    font-size: var(--text-sm);
+    padding: 0 var(--space-1);
+    line-height: 40px;
+}
+
+/* ── Empty state ─────────────────────────────────── */
+.empty-state {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    padding: var(--space-16) var(--space-8);
+    margin-bottom: var(--space-10);
+}
+
+.empty-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--primary-50), var(--primary-100));
+    border: 1px solid var(--primary-200);
+    border-radius: var(--radius-2xl);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.25rem;
+    color: var(--primary-400);
+    margin: 0 auto var(--space-5);
+}
+
+.empty-title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--gray-800);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-2);
+}
+
+.empty-text {
+    font-size: var(--text-base);
+    color: var(--gray-400);
+    max-width: 380px;
+    margin: 0 auto var(--space-6);
+    line-height: var(--leading-relaxed);
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@@media (max-width: 1024px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@@media (max-width: 768px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .filter-grid > *:first-child { grid-column: 1 / -1; }
+    .filter-grid > *:nth-last-child(-n+2) { grid-column: span 1; }
+
+    .issues-grid { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; }
+    .results-header { flex-direction: column; align-items: flex-start; }
+}
+
+@@media (max-width: 576px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .sort-group { display: none; }
+}
+</style>
+
+<div class="container-fluid px-md-4">
+
+    <!-- ── Page Header ──────────────────────────────── -->
+    <div class="page-header anim-1">
+        <div class="page-header-left">
+            <div class="page-header-icon">
+                <i class="bi bi-list-check"></i>
+            </div>
+            <div>
+                <h1 class="page-title">Community Issues</h1>
+                <p class="page-subtitle">Report and track civic infrastructure problems in your area</p>
             </div>
         </div>
-        <div class="col-lg-6 text-lg-end">
+        <div>
             @if (User?.Identity?.IsAuthenticated ?? false)
             {
-                <a href="/issues/create" class="btn btn-primary btn-lg px-4">
-                    <i class="bi bi-plus-circle me-2"></i>Report New Issue
+                <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
+                    <i class="bi bi-plus-circle-fill me-2"></i>Report Issue
                 </a>
             }
             else
             {
-                <a href="/Identity/Account/Login" class="btn btn-primary btn-lg px-4">
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-5">
                     <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Report
                 </a>
             }
         </div>
     </div>
 
-    <!-- Stats Bar -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 1rem;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="h4 fw-bold mb-0" style="color: #92400e;">@(Model.Issues?.Count ?? 0)</div>
-                            <div class="small fw-semibold" style="color: #92400e; opacity: 0.8;">Total Issues</div>
-                        </div>
-                        <i class="bi bi-flag" style="font-size: 2rem; color: #92400e; opacity: 0.3;"></i>
-                    </div>
-                </div>
+    <!-- ── Stats Row ────────────────────────────────── -->
+    <div class="stats-row anim-2">
+        <div class="stat-card total">
+            <div class="stat-icon"><i class="bi bi-flag-fill"></i></div>
+            <div>
+                <div class="stat-num">@totalIssues</div>
+                <div class="stat-lbl">Total Issues</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 1rem;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="h4 fw-bold mb-0" style="color: #065f46;">@(Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.Fixed) ?? 0)</div>
-                            <div class="small fw-semibold" style="color: #065f46; opacity: 0.8;">Resolved</div>
-                        </div>
-                        <i class="bi bi-check-circle" style="font-size: 2rem; color: #065f46; opacity: 0.3;"></i>
-                    </div>
-                </div>
+        <div class="stat-card resolved">
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div>
+                <div class="stat-num">@resolvedCount</div>
+                <div class="stat-lbl">Resolved</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 1rem;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="h4 fw-bold mb-0" style="color: #1e40af;">@(Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.InProgress) ?? 0)</div>
-                            <div class="small fw-semibold" style="color: #1e40af; opacity: 0.8;">In Progress</div>
-                        </div>
-                        <i class="bi bi-arrow-repeat" style="font-size: 2rem; color: #1e40af; opacity: 0.3;"></i>
-                    </div>
-                </div>
+        <div class="stat-card progress">
+            <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
+            <div>
+                <div class="stat-num">@inProgressCount</div>
+                <div class="stat-lbl">In Progress</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-radius: 1rem;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="h4 fw-bold mb-0" style="color: #991b1b;">@(Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.New) ?? 0)</div>
-                            <div class="small fw-semibold" style="color: #991b1b; opacity: 0.8;">New</div>
-                        </div>
-                        <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: #991b1b; opacity: 0.3;"></i>
-                    </div>
-                </div>
+        <div class="stat-card new-s">
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div>
+                <div class="stat-num">@newCount</div>
+                <div class="stat-lbl">New</div>
             </div>
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card mb-4 border-0" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
-        <div class="card-body p-4">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="searchQuery" class="form-label fw-semibold small text-uppercase" style="letter-spacing: 0.05em; color: #6b7280;">
-                        <i class="bi bi-search me-1"></i>Search
-                    </label>
-                    <input type="text" class="form-control form-control-lg" id="searchQuery" name="searchQuery" 
-                           placeholder="Search by title or description..." value="@Model.SearchQuery"
-                           style="border: 2px solid #e5e7eb;">
+    <!-- ── Filter Bar ───────────────────────────────── -->
+    <div class="filter-bar anim-3">
+        <form method="get" id="filterForm">
+            <div class="filter-grid">
+
+                <!-- Search -->
+                <div class="filter-field">
+                    <label for="searchQuery"><i class="bi bi-search"></i>Search</label>
+                    <div class="search-wrap">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text"
+                               class="form-control"
+                               id="searchQuery"
+                               name="searchQuery"
+                               placeholder="Search by title or description…"
+                               value="@Model.SearchQuery"
+                               autocomplete="off">
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label for="status" class="form-label fw-semibold small text-uppercase" style="letter-spacing: 0.05em; color: #6b7280;">
-                        <i class="bi bi-funnel me-1"></i>Status
-                    </label>
-                    <select class="form-select form-select-lg" id="status" name="status" style="border: 2px solid #e5e7eb;">
+
+                <!-- Status -->
+                <div class="filter-field">
+                    <label for="status"><i class="bi bi-circle-half"></i>Status</label>
+                    <select class="form-select" id="status" name="status">
                         <option value="">All Statuses</option>
-                        <option value="0" selected="@(Model.SelectedStatus == 0)">New</option>
-                        <option value="1" selected="@(Model.SelectedStatus == 1)">Confirmed</option>
-                        <option value="2" selected="@(Model.SelectedStatus == 2)">In Progress</option>
-                        <option value="3" selected="@(Model.SelectedStatus == 3)">Fixed</option>
+                        @if (Model.SelectedStatus == 0)
+                        {
+                            <option value="0" selected>New</option>
+                        }
+                        else
+                        {
+                            <option value="0">New</option>
+                        }
+                        @if (Model.SelectedStatus == 1)
+                        {
+                            <option value="1" selected>Confirmed</option>
+                        }
+                        else
+                        {
+                            <option value="1">Confirmed</option>
+                        }
+                        @if (Model.SelectedStatus == 2)
+                        {
+                            <option value="2" selected>In Progress</option>
+                        }
+                        else
+                        {
+                            <option value="2">In Progress</option>
+                        }
+                        @if (Model.SelectedStatus == 3)
+                        {
+                            <option value="3" selected>Fixed</option>
+                        }
+                        else
+                        {
+                            <option value="3">Fixed</option>
+                        }
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="priority" class="form-label fw-semibold small text-uppercase" style="letter-spacing: 0.05em; color: #6b7280;">
-                        <i class="bi bi-flag me-1"></i>Priority
-                    </label>
-                    <select class="form-select form-select-lg" id="priority" name="priority" style="border: 2px solid #e5e7eb;">
+
+                <!-- Priority -->
+                <div class="filter-field">
+                    <label for="priority"><i class="bi bi-flag"></i>Priority</label>
+                    <select class="form-select" id="priority" name="priority">
                         <option value="">All Priorities</option>
-                        <option value="0" selected="@(Model.SelectedPriority == 0)">Low</option>
-                        <option value="1" selected="@(Model.SelectedPriority == 1)">Medium</option>
-                        <option value="2" selected="@(Model.SelectedPriority == 2)">High</option>
-                        <option value="3" selected="@(Model.SelectedPriority == 3)">Critical</option>
+                        @if (Model.SelectedPriority == 0)
+                        {
+                            <option value="0" selected>Low</option>
+                        }
+                        else
+                        {
+                            <option value="0">Low</option>
+                        }
+                        @if (Model.SelectedPriority == 1)
+                        {
+                            <option value="1" selected>Medium</option>
+                        }
+                        else
+                        {
+                            <option value="1">Medium</option>
+                        }
+                        @if (Model.SelectedPriority == 2)
+                        {
+                            <option value="2" selected>High</option>
+                        }
+                        else
+                        {
+                            <option value="2">High</option>
+                        }
+                        @if (Model.SelectedPriority == 3)
+                        {
+                            <option value="3" selected>Critical</option>
+                        }
+                        else
+                        {
+                            <option value="3">Critical</option>
+                        }
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="bi bi-search me-2"></i>Apply Filters
+
+                <!-- Apply -->
+                <div class="filter-field">
+                    <label style="visibility:hidden;">Apply</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Search
                     </button>
                 </div>
-                <div class="col-md-2">
-                    <a href="/issues" class="btn btn-outline-secondary btn-lg w-100">
-                        <i class="bi bi-x-circle me-2"></i>Clear
+
+                <!-- Clear -->
+                <div class="filter-field">
+                    <label style="visibility:hidden;">Clear</label>
+                    <a href="/issues" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-lg me-1"></i>Clear
                     </a>
                 </div>
-            </form>
-        </div>
+
+            </div>
+
+            <!-- Active filter pills -->
+            @if (hasFilters)
+            {
+                <div class="active-filters">
+                    <span style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .05em;">Active:</span>
+                    @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                    {
+                        <span class="filter-pill"><i class="bi bi-search"></i> "@Model.SearchQuery"</span>
+                    }
+                    @if (Model.SelectedStatus >= 0)
+                    {
+                        var statusLabel = Model.SelectedStatus switch { 0 => "New", 1 => "Confirmed", 2 => "In Progress", 3 => "Fixed", _ => "" };
+                        if (!string.IsNullOrEmpty(statusLabel))
+                        {
+                            <span class="filter-pill"><i class="bi bi-circle-half"></i> @statusLabel</span>
+                        }
+                    }
+                    @if (Model.SelectedPriority >= 0)
+                    {
+                        var priorityLabel = Model.SelectedPriority switch { 0 => "Low", 1 => "Medium", 2 => "High", 3 => "Critical", _ => "" };
+                        if (!string.IsNullOrEmpty(priorityLabel))
+                        {
+                            <span class="filter-pill"><i class="bi bi-flag"></i> @priorityLabel</span>
+                        }
+                    }
+                </div>
+            }
+        </form>
     </div>
 
-    <!-- Issues Grid -->
+    <!-- ── Issues Content ───────────────────────────── -->
     @if (Model.Issues?.Any() == true)
     {
-        <div class="row g-4 mb-5">
+        <!-- Results header -->
+        <div class="results-header anim-4">
+            <p class="results-count mb-0">
+                Showing <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? "issue" : "issues")
+                @if (Model.TotalPages > 1) { <text>· Page <strong>@Model.CurrentPage</strong> of <strong>@Model.TotalPages</strong></text> }
+            </p>
+
+            <div class="sort-group" role="group" aria-label="Sort options">
+                <button type="button" class="sort-btn active" data-sort="newest">
+                    <i class="bi bi-clock"></i> Newest
+                </button>
+                <button type="button" class="sort-btn" data-sort="votes">
+                    <i class="bi bi-hand-thumbs-up"></i> Most Voted
+                </button>
+                <button type="button" class="sort-btn" data-sort="views">
+                    <i class="bi bi-eye"></i> Most Viewed
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="issues-grid">
             @foreach (var issue in Model.Issues)
             {
-                <div class="col-md-6 col-lg-4">
-                    <a href="/issues/@issue.Id" class="issue-card card h-100 border-0 text-decoration-none" 
-                       style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                        <!-- Status Badge -->
-                        <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
-                            @{
-                                var (statusBg, statusText) = issue.Status switch
-                                {
-                                    FixIt.Models.Enums.IssueStatus.New => ("linear-gradient(135deg, #fbbf24, #f59e0b)", "New"),
-                                    FixIt.Models.Enums.IssueStatus.Confirmed => ("linear-gradient(135deg, #60a5fa, #3b82f6)", "Confirmed"),
-                                    FixIt.Models.Enums.IssueStatus.InProgress => ("linear-gradient(135deg, #a78bfa, #8b5cf6)", "In Progress"),
-                                    FixIt.Models.Enums.IssueStatus.Fixed => ("linear-gradient(135deg, #34d399, #10b981)", "Fixed"),
-                                    _ => ("linear-gradient(135deg, #9ca3af, #6b7280)", "Unknown")
-                                };
-                            }
-                            <span class="badge" style="background: @statusBg; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">
-                                @statusText
-                            </span>
-                        </div>
+                var priorityStr = issue.Priority switch
+                    {
+                        FixIt.Models.Enums.IssuePriority.Critical => "critical",
+                        FixIt.Models.Enums.IssuePriority.High     => "high",
+                        FixIt.Models.Enums.IssuePriority.Medium   => "medium",
+                        FixIt.Models.Enums.IssuePriority.Low      => "low",
+                        _ => "low"
+                    };
 
-                        <!-- Priority Indicator -->
-                        <div class="position-absolute top-0 start-0 p-3" style="z-index: 10;">
-                            @{
-                                var (priorityColor, priorityIcon) = issue.Priority switch
-                                {
-                                    FixIt.Models.Enums.IssuePriority.Critical => ("#ef4444", "bi-exclamation-triangle-fill"),
-                                    FixIt.Models.Enums.IssuePriority.High => ("#f97316", "bi-exclamation-circle-fill"),
-                                    FixIt.Models.Enums.IssuePriority.Medium => ("#f59e0b", "bi-info-circle-fill"),
-                                    FixIt.Models.Enums.IssuePriority.Low => ("#10b981", "bi-check-circle-fill"),
-                                    _ => ("#9ca3af", "bi-circle-fill")
-                                };
-                            }
-                            <i class="@priorityIcon" style="color: @priorityColor; font-size: 1.25rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"></i>
-                        </div>
+                var statusBadgeClass = issue.Status switch
+                    {
+                        FixIt.Models.Enums.IssueStatus.New        => "badge-status-new",
+                        FixIt.Models.Enums.IssueStatus.Confirmed  => "badge-status-confirmed",
+                        FixIt.Models.Enums.IssueStatus.InProgress => "badge-status-in-progress",
+                        FixIt.Models.Enums.IssueStatus.Fixed      => "badge-status-fixed",
+                        _ => "bg-secondary"
+                    };
 
-                        <div class="card-body p-4">
-                            <div style="padding-top: 2rem;">
-                                <h5 class="card-title fw-bold mb-3" style="color: #111827; line-height: 1.4;">@issue.Title</h5>
-                                <p class="card-text text-muted mb-4" style="font-size: 0.95rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                    @issue.Description
-                                </p>
+                <a href="/issues/@issue.Id" class="issue-card-link">
+                    <article class="issue-card" data-priority="@priorityStr">
 
-                                <!-- Tags -->
-                                @if (issue.TagIds?.Any() == true)
-                                {
-                                    <div class="d-flex gap-2 flex-wrap mb-3">
-                                        @foreach (var tagId in issue.TagIds.Take(3))
-                                        {
-                                            <span class="badge bg-light text-dark" style="font-size: 0.7rem; padding: 0.375rem 0.75rem; font-weight: 500; border: 1px solid #e5e7eb;">
-                                                #tag
-                                            </span>
-                                        }
-                                    </div>
-                                }
+                        <!-- Card head: badges + priority dot -->
+                        <div class="issue-card-head">
+                            <div class="issue-badges">
+                                <span class="badge @statusBadgeClass">@issue.Status</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="priority-dot @priorityStr" title="@issue.Priority Priority"></span>
+                                <span style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-semibold);">@issue.Priority</span>
                             </div>
                         </div>
 
-                        <!-- Footer -->
-                        <div class="card-footer bg-light border-0 p-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex gap-3">
-                                    <span class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.875rem;">
-                                        <i class="bi bi-eye"></i>
-                                        <span class="fw-medium">@issue.ViewCount</span>
-                                    </span>
-                                    <span class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.875rem;">
-                                        <i class="bi bi-chat"></i>
-                                        <span class="fw-medium">@issue.CommentCount</span>
-                                    </span>
-                                    <span class="d-flex align-items-center gap-1" style="font-size: 0.875rem; color: #10b981;">
-                                        <i class="bi bi-hand-thumbs-up-fill"></i>
-                                        <span class="fw-semibold">@issue.Upvotes</span>
-                                    </span>
+                        <!-- Card body -->
+                        <div class="issue-card-body">
+                            <h3 class="issue-card-title">@issue.Title</h3>
+
+                            @if (!string.IsNullOrEmpty(issue.Address))
+                            {
+                                <div class="issue-location">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    @issue.Address
                                 </div>
-                                <small class="text-muted fw-medium">@issue.CreatedAt.ToString("MMM d")</small>
-                            </div>
+                            }
+
+                            <p class="issue-card-desc">@issue.Description</p>
                         </div>
-                    </a>
-                </div>
+
+                        <!-- Card footer: stats + date -->
+                        <div class="issue-card-foot">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="issue-stat">
+                                    <i class="bi bi-eye"></i>@issue.ViewCount
+                                </span>
+                                <span class="issue-stat">
+                                    <i class="bi bi-chat"></i>@issue.CommentCount
+                                </span>
+                                <span class="issue-stat votes">
+                                    <i class="bi bi-hand-thumbs-up-fill"></i>@issue.Upvotes
+                                </span>
+                            </div>
+                            <span class="issue-date">@issue.CreatedAt.ToString("MMM d, yyyy")</span>
+                        </div>
+
+                    </article>
+                </a>
             }
         </div>
 
-        <!-- Pagination -->
+        <!-- ── Pagination ──────────────────────────────── -->
         @if (Model.TotalPages > 1)
         {
-            <nav aria-label="Page navigation" class="mb-5">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link" href="/issues?page=@(Model.CurrentPage - 1)&searchQuery=@Model.SearchQuery&status=@Model.SelectedStatus&priority=@Model.SelectedPriority">
-                            <i class="bi bi-chevron-left"></i> Previous
-                        </a>
-                    </li>
+            var startPage = Math.Max(1, Model.CurrentPage - 2);
+            var endPage   = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+            var baseUrl   = $"/issues?searchQuery={Uri.EscapeDataString(Model.SearchQuery ?? "")}&status={Model.SelectedStatus}&priority={Model.SelectedPriority}";
+            
+            <nav aria-label="Issue pages" class="pagination-wrap">
 
-                    @{
-                        var startPage = Math.Max(1, Model.CurrentPage - 2);
-                        var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
-                    }
+                <!-- Prev -->
+                @if (Model.CurrentPage > 1)
+                {
+                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage - 1)" aria-label="Previous">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                }
+                else
+                {
+                    <span class="page-link disabled" aria-disabled="true"><i class="bi bi-chevron-left"></i></span>
+                }
 
-                    @if (startPage > 1)
+                @if (startPage > 1)
+                {
+                    <a class="page-link" href="@baseUrl&page=1">1</a>
+                    @if (startPage > 2) { <span class="page-ellipsis">…</span> }
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    @if (i == Model.CurrentPage)
                     {
-                        <li class="page-item">
-                            <a class="page-link" href="/issues?page=1&searchQuery=@Model.SearchQuery&status=@Model.SelectedStatus&priority=@Model.SelectedPriority">1</a>
-                        </li>
-                        @if (startPage > 2)
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        }
+                        <span class="page-link active" aria-current="page">@i</span>
                     }
-
-                    @for (int i = startPage; i <= endPage; i++)
+                    else
                     {
-                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" href="/issues?page=@i&searchQuery=@Model.SearchQuery&status=@Model.SelectedStatus&priority=@Model.SelectedPriority">@i</a>
-                        </li>
+                        <a class="page-link" href="@baseUrl&page=@i">@i</a>
                     }
+                }
 
-                    @if (endPage < Model.TotalPages)
-                    {
-                        @if (endPage < Model.TotalPages - 1)
-                        {
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        }
-                        <li class="page-item">
-                            <a class="page-link" href="/issues?page=@Model.TotalPages&searchQuery=@Model.SearchQuery&status=@Model.SelectedStatus&priority=@Model.SelectedPriority">@Model.TotalPages</a>
-                        </li>
-                    }
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1) { <span class="page-ellipsis">…</span> }
+                    <a class="page-link" href="@baseUrl&page=@Model.TotalPages">@Model.TotalPages</a>
+                }
 
-                    <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link" href="/issues?page=@(Model.CurrentPage + 1)&searchQuery=@Model.SearchQuery&status=@Model.SelectedStatus&priority=@Model.SelectedPriority">
-                            Next <i class="bi bi-chevron-right"></i>
-                        </a>
-                    </li>
-                </ul>
+                <!-- Next -->
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage + 1)" aria-label="Next">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+                else
+                {
+                    <span class="page-link disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
+                }
+
             </nav>
         }
     }
     else
     {
-        <!-- Empty State -->
-        <div class="text-center py-5 mb-5">
-            <div class="card border-0" style="background: linear-gradient(135deg, #f9fafb, #f3f4f6); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
-                <div class="card-body p-5">
-                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                        <i class="bi bi-inbox" style="font-size: 2.5rem; color: #0ea5e9;"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">No Issues Found</h5>
-                    <p class="text-muted mb-4">
-                        @if (!string.IsNullOrEmpty(Model.SearchQuery) || Model.SelectedStatus >= 0 || Model.SelectedPriority >= 0)
-                        {
-                            <text>Try adjusting your filters or search terms.</text>
-                        }
-                        else
-                        {
-                            <text>Be the first to report an issue in your community!</text>
-                        }
-                    </p>
-                    @if (User?.Identity?.IsAuthenticated ?? false)
-                    {
-                        <a href="/issues/create" class="btn btn-primary px-4">
-                            <i class="bi bi-plus-circle me-2"></i>Report First Issue
-                        </a>
-                    }
-                    else
-                    {
-                        <a href="/Identity/Account/Login" class="btn btn-primary px-4">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Report
-                        </a>
-                    }
-                </div>
+        <!-- ── Empty state ─────────────────────────────── -->
+        <div class="empty-state anim-3">
+            <div class="empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h2 class="empty-title">No Issues Found</h2>
+            <p class="empty-text">
+                @if (hasFilters)
+                {
+                    <text>No results match your current filters. Try adjusting your search or clearing the filters.</text>
+                }
+                else
+                {
+                    <text>No issues have been reported yet. Be the first to make your community better!</text>
+                }
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                @if (hasFilters)
+                {
+                    <a href="/issues" class="btn btn-outline-secondary btn-lg px-5">
+                        <i class="bi bi-x-lg me-2"></i>Clear Filters
+                    </a>
+                }
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-plus-circle-fill me-2"></i>Report an Issue
+                    </a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Report
+                    </a>
+                }
             </div>
         </div>
     }
+
 </div>
 
-<style>
-    .issue-card {
-        position: relative;
-        overflow: hidden;
-    }
+@section Scripts {
+<script>
+/* ── Sort buttons (client-side visual only, hook to server sort param as needed) ── */
+document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // TODO: wire to server sort parameter when available
+        // const sortValue = btn.dataset.sort;
+        // const url = new URL(window.location);
+        // url.searchParams.set('sort', sortValue);
+        // window.location.href = url.toString();
+    });
+});
 
-    .issue-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, #0ea5e9, #0284c7);
-        transform: scaleY(0);
-        transform-origin: bottom;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+/* ── Live search debounce ──────────────────────────────────────────────────── */
+const searchInput = document.getElementById('searchQuery');
+let debounceTimer;
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            if (searchInput.value.length === 0 || searchInput.value.length >= 3) {
+                document.getElementById('filterForm').submit();
+            }
+        }, 480);
+    });
+}
 
-    .issue-card:hover {
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
-        transform: translateY(-4px);
-    }
-
-    .issue-card:hover::before {
-        transform: scaleY(1);
-        transform-origin: top;
-    }
-
-    .issue-card:active {
-        transform: translateY(-2px);
-    }
-
-    /* Form control focus */
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #0ea5e9 !important;
-        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1) !important;
-    }
-
-    /* Smooth animations */
-    .issue-card {
-        animation: fadeInUp 0.5s ease-out;
-    }
-
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>
+/* ── Auto-submit selects ───────────────────────────────────────────────────── */
+['status', 'priority'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => document.getElementById('filterForm').submit());
+});
+</script>
+}

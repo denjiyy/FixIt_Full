@@ -4,6 +4,8 @@ using FixIt.Models.Issues;
 using FixIt.Models.Engagement;
 using FixIt.Models.Locations;
 using FixIt.Models.Moderation;
+using FixIt.Models.Transparency;
+using FixIt.Models.Accessibility;
 using TagModel = FixIt.Models.Issues.Tag;
 
 namespace FixIt.Models.Infrastructure;
@@ -35,6 +37,13 @@ public class MongoDbContext
     // Moderation
     public IMongoCollection<ModerationAction> ModerationActions => Database.GetCollection<ModerationAction>("moderation_actions");
     public IMongoCollection<ContentReport> ContentReports => Database.GetCollection<ContentReport>("content_reports");
+
+    // Issue Resolution Evidence (Before/After Photo System)
+    public IMongoCollection<IssueResolutionEvidence> IssueResolutionEvidence => Database.GetCollection<IssueResolutionEvidence>("issueResolutionEvidence");
+
+
+    public IMongoCollection<TranslationRecord> Translations => Database.GetCollection<TranslationRecord>("translations");
+    public IMongoCollection<SupportedLanguage> SupportedLanguages => Database.GetCollection<SupportedLanguage>("supportedLanguages");
 
     public MongoDbContext(IMongoClient client, string databaseName)
     {

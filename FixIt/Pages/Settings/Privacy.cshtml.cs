@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Users;
 using FixIt.Data.Repository.Contracts;
@@ -9,35 +10,31 @@ namespace FixIt.Pages.Settings;
 [Authorize]
 public class PrivacyModel : PageModel
 {
-    private readonly IRepository<ApplicationUser> _userRepo;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public ApplicationUser? CurrentUser { get; set; }
     public AlertPreferences? AlertPreferences { get; set; }
     public string ProfileVisibility { get; set; } = "public";
 
-    public PrivacyModel(IRepository<ApplicationUser> userRepo)
+    public PrivacyModel(UserManager<ApplicationUser> userManager)
     {
-        _userRepo = userRepo;
+        _userManager = userManager;
     }
 
     public async Task OnGetAsync()
     {
-        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!string.IsNullOrEmpty(userId))
+        CurrentUser = await _userManager.GetUserAsync(User);
+        
+        // Load alert preferences (stored in user metadata or separate collection)
+        AlertPreferences = new AlertPreferences
         {
-            CurrentUser = await _userRepo.GetByIdAsync(userId);
-            
-            // Load alert preferences (stored in user metadata or separate collection)
-            AlertPreferences = new AlertPreferences
-            {
-                CrimeAlerts = true,
-                AccidentAlerts = true,
-                InfrastructureAlerts = true,
-                AllHazards = false,
-                AlertRadiusKm = 5,
-                SeverityThreshold = "All"
-            };
-        }
+            CrimeAlerts = true,
+            AccidentAlerts = true,
+            InfrastructureAlerts = true,
+            AllHazards = false,
+            AlertRadiusKm = 5,
+            SeverityThreshold = "All"
+        };
     }
 }
 

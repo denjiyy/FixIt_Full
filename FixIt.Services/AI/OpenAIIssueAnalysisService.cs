@@ -58,8 +58,12 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         if (issue == null)
             throw new InvalidOperationException($"Issue {issueId} not found");
 
-        var apiKey = _configuration["OpenAI:ApiKey"];
-        var isApiConfigured = !string.IsNullOrEmpty(apiKey) && !apiKey.StartsWith("sk-YOUR");
+        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
+        var isApiEnabled = _configuration.GetValue("OpenAI:Enabled", true);
+        var isApiConfigured = !string.IsNullOrEmpty(apiKey) 
+            && !apiKey.StartsWith("sk-YOUR") 
+            && !apiKey.StartsWith("${")
+            && isApiEnabled;
 
         IssueAnalysis analysis;
 
@@ -78,7 +82,7 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         }
         else
         {
-            _logger.LogInformation($"OpenAI not configured, using heuristic analysis for issue {issueId}");
+            _logger.LogInformation($"OpenAI not configured (Enabled={isApiEnabled}, KeySet={!string.IsNullOrEmpty(apiKey)}), using heuristic analysis for issue {issueId}");
             analysis = GenerateHeuristicAnalysis(issue);
         }
 
@@ -114,7 +118,19 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
     {
         var prompt = BuildAnalysisPrompt(issue);
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o-mini";
-        var apiKey = _configuration["OpenAI:ApiKey"]!;
+        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
+
+        // Validate API key format
+        if (string.IsNullOrWhiteSpace(apiKey) || apiKey.StartsWith("${"))
+        {
+            throw new InvalidOperationException(
+                "OpenAI API key is not properly configured. Please set the OPENAI_API_KEY environment variable with a valid key starting with 'sk-'");
+        }
+
+        if (!apiKey.StartsWith("sk-"))
+        {
+            _logger.LogWarning($"API key does not start with 'sk-' prefix. Key starts with: {apiKey.Substring(0, Math.Min(10, apiKey.Length))}...");
+        }
 
         var request = new
         {
@@ -139,7 +155,36 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
 
         var response = await _httpClient.SendAsync(httpRequest, cts.Token);
-        response.EnsureSuccessStatusCode();
+        
+        // Provide detailed error information for debugging
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cts.Token);
+            var errorMessage = $"OpenAI API returned {(int)response.StatusCode}: {response.ReasonPhrase}";
+            
+            // Log first 200 chars of error for debugging
+            if (!string.IsNullOrEmpty(errorBody))
+            {
+                try
+                {
+                    var errorDoc = JsonDocument.Parse(errorBody);
+                    if (errorDoc.RootElement.TryGetProperty("error", out var error))
+                    {
+                        if (error.TryGetProperty("message", out var message))
+                        {
+                            errorMessage += $" - {message.GetString()}";
+                        }
+                    }
+                }
+                catch
+                {
+                    errorMessage += $" - {errorBody.Substring(0, Math.Min(200, errorBody.Length))}";
+                }
+            }
+            
+            _logger.LogError($"OpenAI API Error: {errorMessage}");
+            throw new HttpRequestException($"{errorMessage}. Check your API key validity, account status, and rate limits.");
+        }
 
         var responseBody = await response.Content.ReadAsStringAsync(cts.Token);
         var jsonDoc = JsonDocument.Parse(responseBody);

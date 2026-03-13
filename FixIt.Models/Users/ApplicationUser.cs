@@ -85,4 +85,62 @@ public class ApplicationUser : MongoUser
     /// </summary>
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? DeletedAt { get; set; }
+
+    /// <summary>
+    /// Whether user has enabled email notifications
+    /// </summary>
+    public bool EmailNotificationsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether user wants to receive health reports
+    /// </summary>
+    public bool ReceiveHealthReports { get; set; } = true;
+
+    /// <summary>
+    /// Whether user wants to receive hazard alerts
+    /// </summary>
+    public bool ReceiveHazardAlerts { get; set; } = true;
+
+    /// <summary>
+    /// Whether user wants to receive weekly reminders
+    /// </summary>
+    public bool ReceiveWeeklyReminders { get; set; } = true;
+
+    /// <summary>
+    /// Whether the user account is banned
+    /// </summary>
+    public bool IsBanned { get; set; } = false;
+
+    /// <summary>
+    /// When the user was banned (if applicable)
+    /// </summary>
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? BannedAt { get; set; }
+
+    /// <summary>
+    /// Reason for banning the user
+    /// </summary>
+    public string? BannedReason { get; set; }
+
+    /// <summary>
+    /// Whether the user's account is restricted
+    /// </summary>
+    public bool IsRestricted { get; set; } = false;
+
+    /// <summary>
+    /// When the user restriction expires
+    /// </summary>
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? RestrictedUntil { get; set; }
+
+    /// <summary>
+    /// Reason for restricting the user
+    /// </summary>
+    public string? RestrictionReason { get; set; }
+
+    /// <summary>
+    /// When the user account was created
+    /// </summary>
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

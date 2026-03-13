@@ -20,7 +20,7 @@ public class ConnectedAccountsModel : PageModel
         _logger = logger;
     }
 
-    public ApplicationUser? User { get; set; }
+    public new ApplicationUser? User { get; set; }
     public string? SuccessMessage { get; set; }
     public string? ErrorMessage { get; set; }
 

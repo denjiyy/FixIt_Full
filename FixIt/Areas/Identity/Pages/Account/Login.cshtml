@@ -5,6 +5,9 @@
     ViewData["Title"] = "Log in";
 }
 
+<!-- Font Awesome for OAuth icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@fortawesome/fontawesome-free@@6.5.1/css/all.min.css" />
+
 <div class="container py-5" style="min-height: 80vh;">
     <div class="row align-items-center justify-content-center">
         <div class="col-lg-5 col-md-7">
@@ -43,21 +46,8 @@
                                         <input type="hidden" name="provider" value="@provider.Name" />
                                         <button type="submit" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-3" 
                                                 style="border-width: 2px; font-weight: 500;">
-                                            @if (provider.Name == "Google")
-                                            {
-                                                <i class="fab fa-google text-danger" style="font-size: 1.25rem;"></i>
-                                                <span>Continue with Google</span>
-                                            }
-                                            else if (provider.Name == "Microsoft")
-                                            {
-                                                <i class="fab fa-microsoft text-primary" style="font-size: 1.25rem;"></i>
-                                                <span>Continue with Microsoft</span>
-                                            }
-                                            else
-                                            {
-                                                <i class="bi bi-box-arrow-up-right"></i>
-                                                <span>@provider.DisplayName</span>
-                                            }
+                                            <i class="fab fa-google text-danger" style="font-size: 1.25rem;"></i>
+                                            <span>Continue with Google</span>
                                         </button>
                                     </form>
                                 }

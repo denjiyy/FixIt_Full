@@ -340,39 +340,65 @@
 </style>
 
 <div class="container py-4">
-    @if (Model.UserReputation != null)
+    @if (Model.UserProfile != null)
     {
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-main">
                 <div class="profile-avatar">
-                    @Model.User.UserName.Substring(0, 1).ToUpper()
+                    @Model.UserProfile?.UserName?.Substring(0, 1).ToUpper()
                 </div>
                 <div class="profile-info">
-                    <h1 class="profile-username">@Model.User.UserName</h1>
-                    <span class="trust-badge level-@Model.UserReputation.TrustLevel">
-                        <i class="bi bi-award"></i>
-                        @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
-                    </span>
-                    <div class="profile-stats">
-                        <div class="stat-box">
-                            <div class="stat-value">@Model.UserReputation.TotalPoints</div>
-                            <div class="stat-label">Total Points</div>
+                    <h1 class="profile-username">@Model.UserProfile?.UserName</h1>
+                    @if (Model.UserReputation != null)
+                    {
+                        <span class="trust-badge level-@Model.UserReputation.TrustLevel">
+                            <i class="bi bi-award"></i>
+                            @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
+                        </span>
+                        <div class="profile-stats">
+                            <div class="stat-box">
+                                <div class="stat-value">@Model.UserReputation.TotalPoints</div>
+                                <div class="stat-label">Total Points</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">@Model.UserReputation.Achievements.Count</div>
+                                <div class="stat-label">Achievements</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">@Model.UserReputation.TrustLevel</div>
+                                <div class="stat-label">Trust Level</div>
+                            </div>
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-value">@Model.UserReputation.Achievements.Count</div>
-                            <div class="stat-label">Achievements</div>
+                    }
+                    else
+                    {
+                        <span class="trust-badge level-0">
+                            <i class="bi bi-award"></i>
+                            New Member
+                        </span>
+                        <div class="profile-stats">
+                            <div class="stat-box">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Total Points</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Achievements</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Trust Level</div>
+                            </div>
                         </div>
-                        <div class="stat-box">
-                            <div class="stat-value">@Model.UserReputation.TrustLevel</div>
-                            <div class="stat-label">Trust Level</div>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
 
-        <!-- Reputation Progress -->
+        @if (Model.UserReputation != null)
+        {
+            <!-- Reputation Progress -->
         <div class="profile-card">
             <div class="card-header-custom">
                 <i class="bi bi-graph-up"></i>
@@ -510,6 +536,7 @@
                 </div>
             </div>
         </div>
+        }
     }
     else
     {

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- ADMIN LAYOUT VERSION 8 - TEST MARKER -->
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] ?? "Admin Panel") - FixIt</title>
+    <!-- Bootstrap CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+    <!-- Admin Dashboard CSS -->
+    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <style>
+        @@media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 250px;
+                top: 0;
+                left: -250px;
+                z-index: 1000;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @@media (min-width: 769px) {
+            .main-content {
+                margin-left: 250px;
+            }
+
+            .hamburger-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hamburger Menu (Mobile) -->
+    <button class="btn btn-primary hamburger-menu position-fixed top-3 start-3" id="sidebarToggle" style="z-index: 1001;">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar" style="width: 250px;">
+            <div class="sidebar-header">
+                <h4>
+                    <i class="bi bi-shield-lock"></i> FixIt Admin
+                </h4>
+                <small class="opacity-75">Management Portal</small>
+            </div>
+
+            <nav class="nav flex-column">
+                <a href="/admin/dashboard" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Dashboard" ? "active" : "")">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a href="/admin/users" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Users" ? "active" : "")">
+                    <i class="bi bi-people"></i> Users
+                </a>
+                <a href="/admin/issues" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Issues" ? "active" : "")">
+                    <i class="bi bi-exclamation-triangle"></i> Issues
+                </a>
+                <a href="/admin/reports" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Reports" ? "active" : "")">
+                    <i class="bi bi-flag"></i> Reports
+                </a>
+                <hr class="border-secondary" />
+                <a href="/settings/index" class="nav-link">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Logout" class="nav-link" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content w-100">
+            <!-- Topbar -->
+            <div class="topbar">
+                <div class="container-fluid">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5>@(ViewData["Title"] ?? "Admin Panel")</h5>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-muted">
+                                    <i class="bi bi-person-circle"></i> @User?.Identity?.Name
+                                </span>
+                                <form id="logoutForm" method="post" asp-area="Identity" asp-page="/Account/Logout" style="display: none;"></form>
+                                <button onclick="document.getElementById('logoutForm').submit();" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <main>
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Logout Form -->
+    <form id="logoutForm" method="post" asp-area="Identity" asp-page="/Account/Logout" style="display: none;"></form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar toggle for mobile
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        sidebarToggle?.addEventListener('click', () => {
+            sidebar?.classList.toggle('show');
+        });
+
+        // Close sidebar when clicking on a nav link on mobile
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 769) {
+                    sidebar?.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

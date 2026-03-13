@@ -55,6 +55,13 @@ public class OAuthService : IOAuthService
                          principal.FindFirstValue("urn:github:login") ?? 
                          email?.Split('@')[0] ?? "User";
 
+        // Generate a unique username
+        var baseUsername = principal.FindFirstValue("urn:github:login") ?? 
+                          email?.Split('@')[0] ?? 
+                          displayName.ToLower().Replace(" ", "");
+        
+        var username = await GenerateUniqueUsernameAsync(baseUsername);
+
         // Check if user exists by email
         var existingUser = email != null ? await _userManager.FindByEmailAsync(email) : null;
 
@@ -69,7 +76,7 @@ public class OAuthService : IOAuthService
         // Create new user
         var newUser = new ApplicationUser
         {
-            UserName = email ?? Guid.NewGuid().ToString(),
+            UserName = username,
             Email = email,
             DisplayName = displayName,
             EmailConfirmed = email != null,
@@ -142,6 +149,41 @@ public class OAuthService : IOAuthService
             identity.LastSignInAt = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
         }
+    }
+
+    /// <summary>
+    /// Generates a unique username, appending a number if necessary
+    /// </summary>
+    private async Task<string> GenerateUniqueUsernameAsync(string baseUsername)
+    {
+        // Clean up the username (remove special characters, convert to lowercase)
+        var cleanUsername = System.Text.RegularExpressions.Regex.Replace(
+            baseUsername.ToLower(), 
+            @"[^a-z0-9_-]", 
+            string.Empty);
+        
+        cleanUsername = string.IsNullOrEmpty(cleanUsername) ? "user" : cleanUsername.Substring(0, Math.Min(20, cleanUsername.Length));
+
+        // Check if username is available
+        var existingUser = await _userManager.FindByNameAsync(cleanUsername);
+        if (existingUser == null)
+        {
+            return cleanUsername;
+        }
+
+        // If taken, append numbers until we find an available username
+        for (int i = 1; i <= 9999; i++)
+        {
+            var candidateUsername = $"{cleanUsername}{i}";
+            existingUser = await _userManager.FindByNameAsync(candidateUsername);
+            if (existingUser == null)
+            {
+                return candidateUsername;
+            }
+        }
+
+        // Fallback to GUID-based username (extremely unlikely)
+        return Guid.NewGuid().ToString().Substring(0, 20);
     }
 
     /// <summary>

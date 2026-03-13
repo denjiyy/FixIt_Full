@@ -1,5 +1,6 @@
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
+using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
 
 namespace FixIt.Services;
@@ -62,10 +63,10 @@ public class TagService : ITagService
     public async Task<Tag> CreateTagAsync(string name, string? category = null, string? description = null)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Tag name is required", nameof(name));
+            throw new ArgumentException(ValidationMessages.TagsNameRequired, nameof(name));
 
         if (name.Length > 50)
-            throw new ArgumentException("Tag name must be 50 characters or less", nameof(name));
+            throw new ArgumentException(ValidationMessages.TagsNameTooLong, nameof(name));
 
         var normalizedName = name.ToLowerInvariant().Trim();
         

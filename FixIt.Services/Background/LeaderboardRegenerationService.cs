@@ -14,6 +14,7 @@ public class LeaderboardRegenerationService : BackgroundService
     private readonly ILogger<LeaderboardRegenerationService> _logger;
     private Timer? _weeklyTimer;
     private Timer? _monthlyTimer;
+    private Timer? _allTimeTimer;
 
     public LeaderboardRegenerationService(
         IServiceProvider serviceProvider,
@@ -60,6 +61,20 @@ public class LeaderboardRegenerationService : BackgroundService
             dueTime: monthlyDelay,
             period: TimeSpan.FromDays(30));
 
+        // Schedule all-time regeneration daily at 3 AM UTC
+        var nextAllTime = now.Date.AddHours(3);
+        if (nextAllTime <= now)
+            nextAllTime = nextAllTime.AddDays(1);
+
+        var allTimeDelay = nextAllTime - now;
+        _logger.LogInformation($"Next all-time leaderboard regeneration scheduled for: {nextAllTime:O}");
+
+        _allTimeTimer = new Timer(
+            callback: async _ => await RegenerateAllTimeLeaderboardAsync(),
+            state: null,
+            dueTime: allTimeDelay,
+            period: TimeSpan.FromDays(1));
+
         return Task.CompletedTask;
     }
 
@@ -97,12 +112,30 @@ public class LeaderboardRegenerationService : BackgroundService
         }
     }
 
+    private async Task RegenerateAllTimeLeaderboardAsync()
+    {
+        try
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
+                await reputationService.RegenerateAllTimeLeaderboardAsync();
+                _logger.LogInformation("All-time leaderboard regenerated successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error regenerating all-time leaderboard");
+        }
+    }
+
     public override async Task StopAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("LeaderboardRegenerationService is stopping.");
 
         _weeklyTimer?.Dispose();
         _monthlyTimer?.Dispose();
+        _allTimeTimer?.Dispose();
 
         await base.StopAsync(stoppingToken);
     }
@@ -111,6 +144,7 @@ public class LeaderboardRegenerationService : BackgroundService
     {
         _weeklyTimer?.Dispose();
         _monthlyTimer?.Dispose();
+        _allTimeTimer?.Dispose();
         base.Dispose();
     }
 }

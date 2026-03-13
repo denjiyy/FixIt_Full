@@ -1,0 +1,251 @@
+@page "/admin/dashboard"
+@model FixIt.Areas.Admin.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+<link href="~/css/admin-panel.css" rel="stylesheet" />
+
+<style>
+    .stat-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-top: 4px solid var(--primary);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card.success { border-top-color: var(--success); }
+    .stat-card.warning { border-top-color: var(--warning); }
+    .stat-card.danger { border-top-color: var(--danger); }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0.5rem 0;
+    }
+
+    .stat-card.success .stat-number { color: var(--success); }
+    .stat-card.warning .stat-number { color: var(--warning); }
+    .stat-card.danger .stat-number { color: var(--danger); }
+
+    .stat-subtitle {
+        font-size: 0.875rem;
+        color: var(--secondary);
+        margin: 0;
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        opacity: 0.08;
+        text-align: right;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .management-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .management-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 2rem 1.5rem;
+        background: white;
+        border: 2px solid var(--border);
+        border-radius: 0.5rem;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .management-btn:hover {
+        transform: translateY(-4px);
+        border-color: var(--primary);
+        box-shadow: 0 8px 16px rgba(14, 165, 233, 0.15);
+    }
+
+    .management-btn i {
+        font-size: 2rem;
+        color: var(--primary);
+    }
+
+    .status-box {
+        padding: 1.5rem;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        border-left: 4px solid var(--success);
+    }
+
+    .status-box.info { border-left-color: var(--primary); }
+
+    .status-title {
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .status-text {
+        font-size: 0.875rem;
+        color: var(--secondary);
+        margin: 0;
+    }
+
+    @@media (max-width: 768px) {
+        .stat-number { font-size: 2rem; }
+        .management-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+
+<div class="container-fluid my-4">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="admin-header-content">
+            <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+            <p class="admin-header-subtitle">System overview and management</p>
+        </div>
+        <a href="/" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back to App
+        </a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-number">@Model.TotalUsers</div>
+                        <p class="stat-subtitle">@Model.ActiveModerators moderators</p>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="stat-label">Total Issues</div>
+                        <div class="stat-number">@Model.TotalIssues</div>
+                        <p class="stat-subtitle">@Model.ResolvedIssues resolved</p>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="stat-label">Pending Reports</div>
+                        <div class="stat-number">@Model.PendingReports</div>
+                        <p class="stat-subtitle">Awaiting review</p>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-flag-fill"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="stat-card danger">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="stat-label">Total Reports</div>
+                        <div class="stat-number">@Model.TotalReports</div>
+                        <p class="stat-subtitle">All time</p>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Areas -->
+    <div class="data-container">
+        <div style="padding: 1.5rem;">
+            <h2 class="section-title">
+                <i class="bi bi-lightning-charge"></i> Management Areas
+            </h2>
+            <div class="management-grid">
+                <a href="/admin/users" class="management-btn">
+                    <i class="bi bi-people"></i>
+                    User Management
+                </a>
+                <a href="/admin/issues" class="management-btn">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Issue Management
+                </a>
+                <a href="/admin/reports" class="management-btn">
+                    <i class="bi bi-flag"></i>
+                    Report Management
+                </a>
+                <a href="/admin/cities" class="management-btn">
+                    <i class="bi bi-geo-alt"></i>
+                    Cities & Countries
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="data-container mt-4">
+        <div style="padding: 1.5rem;">
+            <h2 class="section-title">
+                <i class="bi bi-activity"></i> System Status
+            </h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="status-box">
+                        <div class="status-title"><i class="bi bi-check-circle"></i> System Operational</div>
+                        <p class="status-text">All services running normally</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="status-box info">
+                        <div class="status-title"><i class="bi bi-database"></i> Database</div>
+                        <p class="status-text">Connected and healthy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -33,7 +33,7 @@ public class ExternalLoginModel : PageModel
 
     public string? ReturnUrl { get; set; }
 
-    public async Task OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null)
+    public async Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null)
     {
         returnUrl ??= Url.Content("~/");
         if (remoteError != null)
@@ -44,8 +44,7 @@ public class ExternalLoginModel : PageModel
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info == null)
         {
-            RedirectToPage("./Login", new { ReturnUrl = returnUrl });
-            return;
+            return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
         }
 
         // Sign in the user with this external login provider if the user already has a login.
@@ -53,12 +52,11 @@ public class ExternalLoginModel : PageModel
         if (result.Succeeded)
         {
             _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.LoginProvider, info.LoginProvider);
-            return;
+            return LocalRedirect(returnUrl);
         }
         if (result.IsLockedOut)
         {
-            RedirectToPage("./Lockout");
-            return;
+            return RedirectToPage("./Lockout");
         }
         else
         {
@@ -69,15 +67,16 @@ public class ExternalLoginModel : PageModel
             {
                 Input = new InputModel { Email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "" };
             }
+            return Page();
         }
     }
 
-    public async Task<IActionResult> OnPostAsync(string provider, string? returnUrl = null)
+    public Task<IActionResult> OnPostAsync(string provider, string? returnUrl = null)
     {
         // Request a redirect to the external login provider
         var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
         var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-        return new ChallengeResult(provider, properties);
+        return Task.FromResult<IActionResult>(new ChallengeResult(provider, properties));
     }
 
     public async Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null)

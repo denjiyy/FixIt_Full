@@ -15,15 +15,18 @@ public class IssueDetailModel : PageModel
     private readonly IIssueService _issueService;
     private readonly IMediaService _mediaService;
     private readonly IIssueAnalysisService _analysisService;
+    private readonly ILogger<IssueDetailModel> _logger;
 
     public IssueDetailModel(
         IIssueService issueService, 
         IMediaService mediaService,
-        IIssueAnalysisService analysisService)
+        IIssueAnalysisService analysisService,
+        ILogger<IssueDetailModel> logger)
     {
         _issueService = issueService;
         _mediaService = mediaService;
         _analysisService = analysisService;
+        _logger = logger;
     }
 
     public Issue? Issue { get; set; }
@@ -81,7 +84,7 @@ public class IssueDetailModel : PageModel
             catch (Exception trackingEx)
             {
                 // Log but don't fail - view tracking errors shouldn't break the page
-                System.Diagnostics.Debug.WriteLine($"View tracking error: {trackingEx.Message}");
+                _logger.LogWarning(trackingEx, "View tracking error: {Message}", trackingEx.Message);
             }
 
             // Load AI analysis if available, otherwise trigger it
@@ -124,7 +127,7 @@ public class IssueDetailModel : PageModel
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Issue detail page error: {ex.Message}");
+            _logger.LogError(ex, "Error loading issue detail page for {IssueId}", Id);
             return NotFound();
         }
     }
@@ -146,8 +149,14 @@ public class IssueDetailModel : PageModel
                 return Unauthorized();
             }
 
+            // Check if user has enabled anonymous reporting in their privacy settings
+            // Comments respect the same privacy setting as issues
+            var _userManager = HttpContext.RequestServices.GetService(typeof(Microsoft.AspNetCore.Identity.UserManager<FixIt.Models.Users.ApplicationUser>)) as Microsoft.AspNetCore.Identity.UserManager<FixIt.Models.Users.ApplicationUser>;
+            var user = await _userManager?.GetUserAsync(User)!;
+            bool isAnonymous = user?.AnonymousReportingEnabled ?? false;
+
             // Add comment via service
-            await _issueService.AddCommentAsync(Id, userId, commentText);
+            await _issueService.AddCommentAsync(Id, userId, commentText, isAnonymous);
 
             return RedirectToPage(new { id = Id });
         }
@@ -163,7 +172,7 @@ public class IssueDetailModel : PageModel
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to add comment: {ex.Message}");
+            _logger.LogError(ex, "Error adding comment to issue {IssueId}", Id);
             ModelState.AddModelError("", "Failed to add comment");
             return RedirectToPage(new { id = Id });
         }

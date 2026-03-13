@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FixIt.Services.Safety;
@@ -22,17 +23,20 @@ public class SafetyController : ControllerBase
     private readonly IHazardService _hazardService;
     private readonly IRepository<Hazard> _hazardRepo;
     private readonly IRepository<ApplicationUser> _userRepo;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<SafetyController> _logger;
 
     public SafetyController(
         IHazardService hazardService,
         IRepository<Hazard> hazardRepo,
         IRepository<ApplicationUser> userRepo,
+        UserManager<ApplicationUser> userManager,
         ILogger<SafetyController> logger)
     {
         _hazardService = hazardService;
         _hazardRepo = hazardRepo;
         _userRepo = userRepo;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -168,15 +172,13 @@ public class SafetyController : ControllerBase
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
 
-            // Determine if report should be anonymous
-            bool isAnonymous = request.IsAnonymous;
-            if (isAnonymous)
-            {
-                // Check if user has anonymous reporting enabled
-                var user = await _userRepo.GetByIdAsync(userId);
-                if (user == null || !user.AnonymousReportingEnabled)
-                    return BadRequest(ApiResponse<object>.CreateError("Anonymous reporting is not enabled for your account. Please enable it in privacy settings first."));
-            }
+            // Check if user has anonymous reporting enabled in their privacy settings
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized(ApiResponse<object>.CreateError("User not found"));
+
+            // Use the user's privacy setting, not the request flag
+            bool isAnonymous = user.AnonymousReportingEnabled;
 
             var hazard = await _hazardService.CreateHazardAsync(
                 cityId: request.CityId,
@@ -327,7 +329,17 @@ public class SafetyController : ControllerBase
             if (hazard == null)
                 return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
 
-            return Ok(ApiResponse<HazardDetailResponse>.CreateSuccess(HazardToDetailResponse(hazard)));
+            var response = HazardToDetailResponse(hazard);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isReporter = !string.IsNullOrEmpty(userId) && (hazard.ReportedByUserId == userId || hazard.InternalUserId == userId);
+            bool isAdmin = User.IsInRole("Admin");
+
+            response.CanEdit = isReporter || isAdmin;
+            response.CanDelete = isReporter || isAdmin;
+            response.CanRestore = isAdmin && hazard.IsDeleted;
+
+            return Ok(ApiResponse<HazardDetailResponse>.CreateSuccess(response));
         }
         catch (Exception ex)
         {
@@ -372,30 +384,53 @@ public class SafetyController : ControllerBase
     }
 
     /// <summary>
+    /// Get all hazards for a city (optional include resolved)
+    /// </summary>
+    [HttpGet("city/{cityId}/hazards")]
+    [ProducesResponseType(typeof(ApiResponse<List<HazardDetailResponse>>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<List<HazardDetailResponse>>>> GetCityHazards(string cityId, [FromQuery] bool includeResolved = false)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(cityId))
+                return BadRequest(ApiResponse<object>.CreateError("City ID is required"));
+
+            var hazards = await _hazardService.GetCityHazardsAsync(cityId, includeResolved);
+            var response = hazards.Select(HazardToDetailResponse).ToList();
+            return Ok(ApiResponse<List<HazardDetailResponse>>.CreateSuccess(response));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching city hazards");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch hazards"));
+        }
+    }
+
+    /// <summary>
     /// Toggle anonymous reporting for user
     /// </summary>
     /// <param name="request">Toggle request</param>
     /// <returns>Updated anonymous reporting status</returns>
     [HttpPost("anonymous-reporting/toggle")]
     [Authorize]
+    [IgnoreAntiforgeryToken]
     [ProducesResponseType(typeof(ApiResponse<AnonymousReportingStatusResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<AnonymousReportingStatusResponse>>> ToggleAnonymousReporting(
         [FromBody] ToggleAnonymousReportingRequest request)
     {
         try
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
                 return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
 
-            var user = await _userRepo.GetByIdAsync(userId);
-            if (user == null)
-                return NotFound(ApiResponse<object>.CreateError("User not found"));
-
             user.AnonymousReportingEnabled = request.Enabled;
-            await _userRepo.ReplaceAsync(userId, user);
+            var result = await _userManager.UpdateAsync(user);
 
-            _logger.LogInformation("User {UserId} toggled anonymous reporting: {Enabled}", userId, request.Enabled);
+            if (!result.Succeeded)
+                return BadRequest(ApiResponse<object>.CreateError("Failed to update setting"));
+
+            _logger.LogInformation("User {UserId} toggled anonymous reporting: {Enabled}", user.Id, request.Enabled);
 
             return Ok(ApiResponse<AnonymousReportingStatusResponse>.CreateSuccess(
                 new AnonymousReportingStatusResponse
@@ -467,6 +502,77 @@ public class SafetyController : ControllerBase
         {
             _logger.LogError(ex, "Error deleting hazard {HazardId}", id);
             return BadRequest(ApiResponse<object>.CreateError("Failed to delete hazard"));
+        }
+    }
+
+    /// <summary>
+    /// Restore a soft-deleted hazard (admin only)
+    /// </summary>
+    [HttpPost("{id}/restore")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<ApiResponse<object>>> RestoreHazard(string id)
+    {
+        try
+        {
+            await _hazardService.RestoreHazardAsync(id);
+            _logger.LogInformation("Hazard {HazardId} restored by admin", id);
+            return Ok(ApiResponse<object>.CreateSuccess(new { message = "Hazard restored" }, "Hazard restored"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error restoring hazard {HazardId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to restore hazard"));
+        }
+    }
+
+    /// <summary>
+    /// Update a hazard (partial update) - allowed for reporter or admin
+    /// </summary>
+    [HttpPut("{id}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> UpdateHazard(string id, [FromBody] UpdateHazardRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+
+            var hazard = await _hazardService.GetHazardAsync(id);
+            if (hazard == null)
+                return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            bool isReporter = hazard.ReportedByUserId == userId || hazard.InternalUserId == userId;
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isReporter && !isAdmin)
+                return Forbid();
+
+            var updated = await _hazardService.UpdateHazardAsync(
+                id,
+                type: request.Type,
+                severity: request.Severity,
+                title: request.Title,
+                description: request.Description,
+                latitude: request.Latitude,
+                longitude: request.Longitude,
+                address: request.Address,
+                expiresAt: request.ExpiresAt);
+
+            return Ok(ApiResponse<HazardDetailResponse>.CreateSuccess(HazardToDetailResponse(updated), "Hazard updated"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating hazard {HazardId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to update hazard"));
         }
     }
 
@@ -563,6 +669,9 @@ public class HazardDetailResponse
     public DateTime CreatedAt { get; set; }
     public DateTime ResolvedAt { get; set; }
     public string? ResolutionNotes { get; set; }
+    public bool CanEdit { get; set; }
+    public bool CanDelete { get; set; }
+    public bool CanRestore { get; set; }
 }
 
 public class HazardConfirmationResponse
@@ -591,4 +700,20 @@ public class ToggleAnonymousReportingRequest
 public class AnonymousReportingStatusResponse
 {
     public bool AnonymousReportingEnabled { get; set; }
+}
+
+public class UpdateHazardRequest
+{
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public HazardType? Type { get; set; }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public HazardSeverity? Severity { get; set; }
+
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public string? Address { get; set; }
+    public DateTime? ExpiresAt { get; set; }
 }

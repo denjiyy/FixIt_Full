@@ -18,8 +18,11 @@ public class MediaService : IMediaService
     private readonly ILogger<MediaService> _logger;
 
     private readonly long _maxFileSizeBytes;
-    private readonly string[] _allowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-    private readonly string[] _allowedImageMimeTypes = { "image/jpeg", "image/png", "image/gif", "image/webp" };
+    private readonly long _maxVideoFileSizeBytes;
+    private readonly string[] _allowedImageExtensions = { ".jpg", ".jpeg", ".png" };
+    private readonly string[] _allowedImageMimeTypes = { "image/jpeg", "image/png" };
+    private readonly string[] _allowedVideoExtensions = { ".mp4", ".webm" };
+    private readonly string[] _allowedVideoMimeTypes = { "video/mp4", "video/webm" };
 
     public MediaService(
         IRepository<Models.Media.Media> mediaRepo,
@@ -34,8 +37,9 @@ public class MediaService : IMediaService
         _configuration = configuration;
         _logger = logger;
 
-        // Get max file size from config (default 5MB)
+        // Get max file sizes from config (default 5MB for images, 100MB for videos)
         _maxFileSizeBytes = configuration.GetValue<long>("Media:MaxFileSizeBytes", 5 * 1024 * 1024);
+        _maxVideoFileSizeBytes = configuration.GetValue<long>("Media:MaxVideoFileSizeBytes", 100 * 1024 * 1024);
     }
 
     public async Task<Models.Media.Media> UploadFileAsync(
@@ -62,7 +66,7 @@ public class MediaService : IMediaService
             await using var stream = file.OpenReadStream();
             await _fileStorage.SaveFileAsync(storagePath, stream);
 
-            // Create thumbnail for images
+            // Create thumbnail for images only (not for videos)
             string? thumbnailPath = null;
             if (IsImage(file))
             {
@@ -94,7 +98,8 @@ public class MediaService : IMediaService
 
             await _mediaRefRepo.InsertAsync(mediaRef);
 
-            _logger.LogInformation("Uploaded file {FileName} for user {UserId}", file.FileName, ownerId);
+            _logger.LogInformation("Uploaded file {FileName} ({MediaType}) for user {UserId}", 
+                file.FileName, DetermineMediaType(file), ownerId);
 
             return media;
         }
@@ -251,21 +256,32 @@ public class MediaService : IMediaService
             return (false, "File is empty");
         }
 
-        if (file.Length > _maxFileSizeBytes)
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var isVideo = _allowedVideoExtensions.Contains(extension);
+        var isImage = _allowedImageExtensions.Contains(extension);
+
+        if (!isVideo && !isImage)
         {
-            var maxSizeMB = _maxFileSizeBytes / (1024 * 1024);
+            var allowedTypes = string.Join(", ", _allowedImageExtensions.Concat(_allowedVideoExtensions));
+            return (false, $"File type {extension} is not allowed. Allowed types: {allowedTypes}");
+        }
+
+        // Check file size based on type
+        var maxSize = isVideo ? _maxVideoFileSizeBytes : _maxFileSizeBytes;
+        if (file.Length > maxSize)
+        {
+            var maxSizeMB = maxSize / (1024 * 1024);
             return (false, $"File size exceeds maximum allowed size of {maxSizeMB}MB");
         }
 
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!_allowedImageExtensions.Contains(extension))
+        // Validate MIME type
+        var mimeTypeLower = file.ContentType.ToLowerInvariant();
+        var allowedMimeTypes = isVideo ? _allowedVideoMimeTypes : _allowedImageMimeTypes;
+        
+        if (!allowedMimeTypes.Contains(mimeTypeLower))
         {
-            return (false, $"File type {extension} is not allowed. Allowed types: {string.Join(", ", _allowedImageExtensions)}");
-        }
-
-        if (!_allowedImageMimeTypes.Contains(file.ContentType.ToLowerInvariant()))
-        {
-            return (false, $"File MIME type {file.ContentType} is not allowed");
+            var allowedMimes = string.Join(", ", allowedMimeTypes);
+            return (false, $"File MIME type {file.ContentType} is not allowed. Allowed types: {allowedMimes}");
         }
 
         return (true, null);
@@ -274,6 +290,11 @@ public class MediaService : IMediaService
     private bool IsImage(IFormFile file)
     {
         return file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsVideo(IFormFile file)
+    {
+        return file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase);
     }
 
     private MediaType DetermineMediaType(IFormFile file)
@@ -294,7 +315,7 @@ public class MediaService : IMediaService
             // Example: resize to 300x300, save to thumbnails/ folder
             
             _logger.LogInformation("Thumbnail generation not implemented yet for {Path}", originalPath);
-            return null;
+            return await Task.FromResult((string?)null);
         }
         catch (Exception ex)
         {

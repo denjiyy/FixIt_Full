@@ -6,451 +6,454 @@
 }
 
 <style>
-    /* Professional Hero Section */
-    .cities-hero {
-        background: linear-gradient(135deg, #5b6fd8 0%, #7c89e8 100%);
-        color: white;
-        padding: 3.5rem 2.5rem;
-        border-radius: 8px;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .cities-hero h1 {
-        font-size: 2.25rem;
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        letter-spacing: -0.02em;
-    }
-
-    .cities-hero p {
-        font-size: 1.05rem;
-        opacity: 0.95;
-        max-width: 700px;
-        margin: 0 auto;
-        font-weight: 400;
-    }
-
-    /* Country Selector */
+    /* ── Country Selector ───────────────────────────────── */
     .country-selector {
-        background: white;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e5e7eb;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: var(--space-6);
+        margin-bottom: var(--space-8);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
     }
 
     .country-selector h3 {
-        color: #1f2937;
-        margin-bottom: 1.25rem;
-        font-weight: 600;
-        font-size: 1.125rem;
+        color: var(--gray-900);
+        margin-bottom: var(--space-5);
+        font-weight: var(--font-semibold);
+        font-size: var(--text-base);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--space-2);
+        color: var(--gray-500);
     }
 
     .country-tabs {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: var(--space-3);
     }
 
     .country-btn {
-        padding: 0.625rem 1.25rem;
-        border: 1.5px solid #d1d5db;
-        background: white;
-        border-radius: 6px;
+        padding: var(--space-2) var(--space-5);
+        border: 2px solid var(--gray-300);
+        background: var(--white);
+        border-radius: var(--radius-full);
         cursor: pointer;
-        font-weight: 500;
-        font-size: 0.9375rem;
-        transition: all 0.2s ease;
+        font-weight: var(--font-semibold);
+        font-size: var(--text-sm);
+        transition: all var(--transition-base);
         text-decoration: none;
-        color: #4b5563;
+        color: var(--gray-600);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
     }
 
     .country-btn:hover {
-        border-color: #6b7fd8;
-        color: #5b6fd8;
-        background: #f9fafb;
+        border-color: var(--primary-400);
+        color: var(--primary-600);
+        background: var(--primary-50);
+        transform: translateY(-1px);
     }
 
     .country-btn.active {
-        background: #5b6fd8;
-        color: white;
-        border-color: #5b6fd8;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: var(--white);
+        border-color: var(--primary-500);
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
     }
 
-    /* Section Header */
+    /* ── Section Header ─────────────────────────────────── */
     .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: var(--space-8);
+        padding-bottom: var(--space-5);
+        border-bottom: 2px solid var(--gray-200);
     }
 
     .section-header h2 {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: #1f2937;
+        font-size: var(--text-3xl);
+        font-weight: var(--font-bold);
+        color: var(--gray-900);
         margin: 0;
+        letter-spacing: -0.02em;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--space-3);
+    }
+
+    .section-header h2 i {
+        color: var(--primary-500);
     }
 
     .city-count-badge {
-        background: #f3f4f6;
-        color: #4b5563;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        border: 1px solid #e5e7eb;
+        background: var(--primary-50);
+        color: var(--primary-700);
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-full);
+        font-size: var(--text-sm);
+        font-weight: var(--font-semibold);
+        border: 1px solid var(--primary-200);
+        letter-spacing: 0.02em;
     }
 
-    /* City Grid */
+    /* ── City Grid ──────────────────────────────────────── */
     .city-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.75rem;
-        margin-bottom: 2.5rem;
+        gap: var(--space-6);
+        margin-bottom: var(--space-8);
     }
 
     .city-card {
-        background: white;
-        border-radius: 8px;
+        background: var(--white);
+        border-radius: var(--radius-xl);
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        transition: all 0.25s ease;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-base);
         text-decoration: none;
         color: inherit;
         display: flex;
         flex-direction: column;
         height: 100%;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--gray-200);
+        position: relative;
+    }
+
+    .city-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-500), var(--accent));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform var(--transition-slow);
+        z-index: 1;
     }
 
     .city-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        border-color: #d1d5db;
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--gray-300);
+    }
+
+    .city-card:hover::before {
+        transform: scaleX(1);
     }
 
     .city-image-container {
         position: relative;
         overflow: hidden;
         height: 200px;
-        background: #f3f4f6;
+        background: var(--gray-100);
     }
 
     .city-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.4s ease;
+        transition: transform 0.5s ease;
     }
 
     .city-card:hover .city-image {
-        transform: scale(1.05);
+        transform: scale(1.07);
     }
 
     .city-placeholder {
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 3rem;
-        color: #9ca3af;
+        color: var(--primary-400);
     }
 
     .city-content {
-        padding: 1.5rem;
+        padding: var(--space-6);
         flex-grow: 1;
         display: flex;
         flex-direction: column;
     }
 
     .city-name {
-        font-size: 1.375rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: #1f2937;
-        line-height: 1.3;
+        font-size: var(--text-xl);
+        font-weight: var(--font-bold);
+        margin-bottom: var(--space-2);
+        color: var(--gray-900);
+        line-height: var(--leading-tight);
+        letter-spacing: -0.01em;
     }
 
     .city-description {
-        font-size: 0.9375rem;
-        color: #6b7280;
-        margin-bottom: 1.25rem;
+        font-size: var(--text-sm);
+        color: var(--gray-500);
+        margin-bottom: var(--space-5);
         flex-grow: 1;
-        line-height: 1.5;
+        line-height: var(--leading-relaxed);
     }
 
     .city-actions {
         display: flex;
-        gap: 0.625rem;
+        gap: var(--space-3);
         margin-top: auto;
     }
 
     .city-action-btn {
         flex: 1;
-        padding: 0.625rem 1rem;
-        border-radius: 6px;
-        font-weight: 500;
-        font-size: 0.875rem;
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-lg);
+        font-weight: var(--font-semibold);
+        font-size: var(--text-sm);
         text-decoration: none;
         text-align: center;
-        transition: all 0.2s ease;
+        transition: all var(--transition-base);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.375rem;
+        gap: var(--space-2);
+        border: 2px solid transparent;
+        cursor: pointer;
     }
 
     .city-action-btn.btn-primary {
-        background: #5b6fd8;
-        color: white;
-        border: none;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: var(--white);
+        box-shadow: var(--shadow-sm);
     }
 
     .city-action-btn.btn-primary:hover {
-        background: #4a5dc4;
-        transform: translateY(-1px);
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+        color: var(--white);
     }
 
     .city-action-btn.btn-outline {
-        background: white;
-        color: #5b6fd8;
-        border: 1.5px solid #5b6fd8;
+        background: var(--white);
+        color: var(--primary-600);
+        border-color: var(--primary-300);
     }
 
     .city-action-btn.btn-outline:hover {
-        background: #5b6fd8;
-        color: white;
+        background: var(--primary-500);
+        color: var(--white);
+        border-color: var(--primary-500);
+        transform: translateY(-2px);
     }
 
-    /* Pagination */
+    /* ── Pagination ─────────────────────────────────────── */
     .pagination-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 0.5rem;
-        margin: 2.5rem 0;
+        gap: var(--space-2);
+        margin: var(--space-8) 0;
         flex-wrap: wrap;
     }
 
-    .page-link {
-        padding: 0.5rem 0.875rem;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        background: white;
-        color: #4b5563;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9375rem;
-        transition: all 0.2s ease;
-        min-width: 42px;
-        text-align: center;
-    }
-
-    .page-link:hover:not(.disabled) {
-        background: #f9fafb;
-        border-color: #5b6fd8;
-        color: #5b6fd8;
-    }
-
-    .page-link.active {
-        background: #5b6fd8;
-        color: white;
-        border-color: #5b6fd8;
-    }
-
-    .page-link.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        color: #9ca3af;
-    }
-
-    /* Issues Section */
+    /* ── Issues Section ─────────────────────────────────── */
     .selected-city-section {
-        background: white;
-        border-radius: 8px;
-        padding: 2.5rem;
-        margin-top: 2.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e5e7eb;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        padding: var(--space-8);
+        margin-top: var(--space-8);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
     }
 
-    .selected-city-section h2 {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
+    .selected-city-section .section-title {
+        font-size: var(--text-3xl);
+        font-weight: var(--font-bold);
+        color: var(--gray-900);
+        margin-bottom: var(--space-2);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--space-3);
+        letter-spacing: -0.02em;
     }
 
-    .selected-city-section > p {
-        color: #6b7280;
-        font-size: 0.9375rem;
-        margin-bottom: 2rem;
+    .selected-city-section .section-title i {
+        color: var(--warning);
+    }
+
+    .selected-city-section .section-subtitle {
+        color: var(--gray-500);
+        font-size: var(--text-sm);
+        margin-bottom: var(--space-8);
     }
 
     .issues-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
+        gap: var(--space-5);
+        margin-top: var(--space-6);
     }
 
     .issue-card {
-        background: white;
-        border-radius: 6px;
-        padding: 1.5rem;
-        border-left: 3px solid #5b6fd8;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-        transition: all 0.2s ease;
-        border: 1px solid #e5e7eb;
-        border-left-width: 3px;
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        border-left: 4px solid var(--primary-500);
+        box-shadow: var(--shadow-xs);
+        transition: all var(--transition-base);
+        border: 1px solid var(--gray-200);
+        border-left: 4px solid var(--primary-500);
     }
 
     .issue-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
     }
 
-    .issue-card.critical {
-        border-left-color: #dc2626;
-    }
-
-    .issue-card.high {
-        border-left-color: #ea580c;
-    }
-
-    .issue-card.medium {
-        border-left-color: #f59e0b;
-    }
-
-    .issue-card.low {
-        border-left-color: #10b981;
-    }
+    .issue-card.critical { border-left-color: var(--danger); }
+    .issue-card.high     { border-left-color: var(--accent); }
+    .issue-card.medium   { border-left-color: var(--warning); }
+    .issue-card.low      { border-left-color: var(--success); }
 
     .issue-title {
-        font-size: 1.0625rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-        line-height: 1.4;
+        font-size: var(--text-base);
+        font-weight: var(--font-semibold);
+        color: var(--gray-900);
+        margin-bottom: var(--space-2);
+        line-height: var(--leading-snug);
     }
 
     .issue-description {
-        color: #6b7280;
-        font-size: 0.9375rem;
-        margin-bottom: 1rem;
-        line-height: 1.5;
+        color: var(--gray-500);
+        font-size: var(--text-sm);
+        margin-bottom: var(--space-4);
+        line-height: var(--leading-relaxed);
     }
 
     .issue-meta {
         display: flex;
-        gap: 1rem;
-        font-size: 0.8125rem;
-        color: #9ca3af;
+        gap: var(--space-3);
+        font-size: var(--text-xs);
+        color: var(--gray-400);
         flex-wrap: wrap;
+        align-items: center;
     }
 
     .issue-meta span {
         display: flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: var(--space-1);
     }
 
     .issue-votes {
         display: flex;
         align-items: center;
-        gap: 0.375rem;
-        background: #f3f4f6;
-        padding: 0.25rem 0.625rem;
-        border-radius: 4px;
-        font-weight: 500;
-        color: #4b5563;
+        gap: var(--space-1);
+        background: var(--primary-50);
+        padding: 0.2rem var(--space-3);
+        border-radius: var(--radius-full);
+        font-weight: var(--font-semibold);
+        color: var(--primary-700);
+        border: 1px solid var(--primary-200);
+        margin-left: auto;
     }
 
-    /* Empty State */
+    /* ── Empty State ────────────────────────────────────── */
     .empty-state {
         text-align: center;
-        padding: 4rem 2rem;
+        padding: var(--space-16) var(--space-8);
     }
 
     .empty-state-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        color: #d1d5db;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-50), var(--primary-100));
+        border-radius: var(--radius-2xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+        font-size: 2.5rem;
+        color: var(--primary-400);
+        border: 1px solid var(--primary-200);
     }
 
     .empty-state h3 {
-        color: #4b5563;
-        font-size: 1.375rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        color: var(--gray-800);
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+        margin-bottom: var(--space-2);
+        letter-spacing: -0.01em;
     }
 
     .empty-state p {
-        color: #6b7280;
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
+        color: var(--gray-500);
+        font-size: var(--text-base);
+        margin-bottom: var(--space-6);
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    /* Responsive Design */
+    /* ── Responsive ─────────────────────────────────────── */
     @@media (max-width: 768px) {
-        .cities-hero {
-            padding: 2.5rem 1.5rem;
-        }
-
-        .cities-hero h1 {
-            font-size: 1.75rem;
-        }
-
-        .city-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .issues-grid {
-            grid-template-columns: 1fr;
-        }
+        .city-grid { grid-template-columns: 1fr; }
+        .issues-grid { grid-template-columns: 1fr; }
 
         .section-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 1rem;
+            gap: var(--space-3);
         }
 
         .selected-city-section {
-            padding: 2rem 1.25rem;
+            padding: var(--space-6) var(--space-5);
         }
     }
 </style>
 
 <div class="container mt-4">
-    <!-- Hero Banner -->
-    <div class="cities-hero text-center">
-        <h1><i class="bi bi-geo-alt"></i> Explore Cities & Infrastructure</h1>
-        <p>Discover cities across the globe and track infrastructure issues reported by engaged community members.</p>
-    </div>
 
-    <!-- Country Selector -->
+    <!-- ── Hero Banner ───────────────────────────────────── -->
+    <section class="hero position-relative mb-5">
+        <div class="position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="badge bg-white text-primary px-3 py-2 mb-4"
+                         style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        INFRASTRUCTURE EXPLORER
+                    </div>
+                    <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
+                        Explore Cities &amp;<br/>
+                        <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.65)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            Infrastructure Issues
+                        </span>
+                    </h1>
+                    <p class="lead mb-0" style="color: rgba(255,255,255,0.9); max-width: 580px; font-size: 1.15rem;">
+                        Discover cities across the globe and track infrastructure issues reported by engaged community members.
+                    </p>
+                </div>
+                <div class="col-lg-4 d-none d-lg-flex justify-content-end align-items-center">
+                    <div style="background: rgba(255,255,255,0.12); backdrop-filter: blur(20px); border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.2); padding: 1.75rem; min-width: 200px; text-align: center;">
+                        <div style="font-size: 3rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 0.25rem;">@Model.TotalCities</div>
+                        <div style="color: rgba(255,255,255,0.8); font-size: 0.875rem; font-weight: 500;">@(Model.TotalCities == 1 ? "City" : "Cities") in @Model.SelectedCountry</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Country Selector ──────────────────────────────── -->
     <div class="country-selector">
-        <h3><i class="bi bi-flag"></i> Select Country</h3>
+        <h3><i class="bi bi-flag-fill"></i> Filter by Country</h3>
         <div class="country-tabs">
             @foreach (var country in Model.Countries)
             {
-                <a asp-page="Cities" 
+                <a asp-page="Cities"
                    asp-route-selectedCountry="@country"
                    asp-route-selectedCity=""
                    asp-route-currentPage="1"
@@ -461,7 +464,7 @@
         </div>
     </div>
 
-    <!-- Cities Grid -->
+    <!-- ── Cities Grid ───────────────────────────────────── -->
     <div>
         <div class="section-header">
             <h2>
@@ -472,7 +475,7 @@
                 @Model.TotalCities @(Model.TotalCities == 1 ? "city" : "cities")
             </span>
         </div>
-        
+
         @if (Model.Cities.Any())
         {
             <div class="city-grid">
@@ -482,7 +485,8 @@
                         <div class="city-image-container">
                             @if (!string.IsNullOrEmpty(city.PhotoUrl))
                             {
-                                <img src="@city.PhotoUrl" alt="@city.Name" class="city-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <img src="@city.PhotoUrl" alt="@city.Name" class="city-image"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                 <div class="city-placeholder" style="display: none;">
                                     <i class="bi bi-building"></i>
                                 </div>
@@ -506,10 +510,10 @@
                             }
                             <div class="city-actions">
                                 <a href="/Heatmaps/@city.Id" class="city-action-btn btn-primary">
-                                    <i class="bi bi-map"></i> Heatmap
+                                    <i class="bi bi-map-fill"></i> Heatmap
                                 </a>
                                 <a href="/HealthReports/@city.Id" class="city-action-btn btn-outline">
-                                    <i class="bi bi-heart-pulse"></i> Health
+                                    <i class="bi bi-heart-pulse-fill"></i> Health
                                 </a>
                             </div>
                         </div>
@@ -533,9 +537,7 @@
                     }
                     else
                     {
-                        <span class="page-link disabled">
-                            <i class="bi bi-chevron-left"></i>
-                        </span>
+                        <span class="page-link disabled"><i class="bi bi-chevron-left"></i></span>
                     }
 
                     @for (int i = 1; i <= Model.TotalPages; i++)
@@ -566,9 +568,7 @@
                     }
                     else
                     {
-                        <span class="page-link disabled">
-                            <i class="bi bi-chevron-right"></i>
-                        </span>
+                        <span class="page-link disabled"><i class="bi bi-chevron-right"></i></span>
                     }
                 </div>
             }
@@ -580,20 +580,35 @@
                     <i class="bi bi-inbox"></i>
                 </div>
                 <h3>No Cities Found</h3>
-                <p>There are no cities available for the selected country.</p>
-                <a asp-page="Cities" asp-route-selectedCountry="Bulgaria" class="btn btn-primary">
-                    <i class="bi bi-arrow-left"></i> Return to Bulgaria
+                <p>There are no cities available for the selected country. Try a different region.</p>
+                <a asp-page="Cities" asp-route-selectedCountry="Bulgaria" class="btn btn-primary btn-lg px-5">
+                    <i class="bi bi-arrow-left me-2"></i> Back to Bulgaria
                 </a>
             </div>
         }
     </div>
 
-    <!-- Selected City Issues -->
+    <!-- ── Selected City Issues ──────────────────────────── -->
     @if (!string.IsNullOrEmpty(Model.SelectedCity) && Model.CityIssues.Any())
     {
         <div class="selected-city-section">
-            <h2><i class="bi bi-exclamation-triangle"></i> Issues in @Model.SelectedCity</h2>
-            <p>@Model.CityIssues.Count @(Model.CityIssues.Count == 1 ? "issue" : "issues") reported by community members</p>
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2">
+                <div>
+                    <h2 class="section-title">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Issues in @Model.SelectedCity
+                    </h2>
+                    <p class="section-subtitle mb-0">
+                        @Model.CityIssues.Count @(Model.CityIssues.Count == 1 ? "issue" : "issues") reported by community members
+                    </p>
+                </div>
+                @if (Model.CityIssues.Count > 12)
+                {
+                    <a asp-page="/Issues/Index" class="btn btn-primary">
+                        <i class="bi bi-list-ul me-2"></i>View All @Model.CityIssues.Count Issues
+                    </a>
+                }
+            </div>
 
             <div class="issues-grid">
                 @foreach (var issue in Model.CityIssues.Take(12))
@@ -601,48 +616,36 @@
                     <div class="issue-card @issue.Priority.ToString().ToLower()">
                         <div class="issue-title">@issue.Title</div>
                         <div class="issue-description">@issue.Description</div>
-                        
                         <div class="issue-meta">
                             <span>
                                 <i class="bi bi-calendar3"></i>
                                 @issue.CreatedAt.ToString("MMM dd, yyyy")
                             </span>
                             <span>
-                                <i class="bi bi-tag"></i>
+                                <i class="bi bi-tag-fill"></i>
                                 @issue.Status
                             </span>
                             <div class="issue-votes">
-                                <i class="bi bi-hand-thumbs-up"></i>
+                                <i class="bi bi-hand-thumbs-up-fill"></i>
                                 @issue.Upvotes
                             </div>
                         </div>
                     </div>
                 }
             </div>
-
-            @if (Model.CityIssues.Count > 12)
-            {
-                <div style="text-align: center; margin-top: 2rem;">
-                    <a asp-page="/Issues/Index" class="btn btn-primary">
-                        <i class="bi bi-list-ul"></i>
-                        View All @Model.CityIssues.Count Issues
-                    </a>
-                </div>
-            }
         </div>
     }
     else if (!string.IsNullOrEmpty(Model.SelectedCity) && !Model.CityIssues.Any())
     {
         <div class="selected-city-section">
             <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i class="bi bi-check-circle"></i>
+                <div class="empty-state-icon" style="background: linear-gradient(135deg, var(--success-light), #a7f3d0); border-color: #6ee7b7; color: var(--success);">
+                    <i class="bi bi-check-circle-fill"></i>
                 </div>
-                <h3>No Issues in @Model.SelectedCity</h3>
-                <p>Great news! This city currently has no reported infrastructure issues.</p>
-                <a asp-page="/Issues/Create" class="btn btn-primary mt-3">
-                    <i class="bi bi-plus-circle"></i>
-                    Report an Issue
+                <h3>All Clear in @Model.SelectedCity</h3>
+                <p>Great news — this city currently has no reported infrastructure issues.</p>
+                <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
+                    <i class="bi bi-plus-circle me-2"></i> Report an Issue
                 </a>
             </div>
         </div>

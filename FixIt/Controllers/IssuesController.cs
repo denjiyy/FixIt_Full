@@ -2,9 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FixIt.Services.Contracts;
+using FixIt.Services.Constants;
 using FixIt.Models.Common;
+using FixIt.Models.Users;
 using FixIt.ViewModels;
 using FixIt.ViewModels.Issues;
+using FixIt.Services.AI;
+using FixIt.Data.Repository.Contracts;
+using Microsoft.AspNetCore.Identity;
 
 namespace FixIt.Controllers;
 
@@ -18,16 +23,25 @@ public class IssuesController : ControllerBase
 {
     private readonly IIssueService _issueService;
     private readonly ITagService _tagService;
+    private readonly IIssueAnalysisService _analysisService;
+    private readonly IRepository<ApplicationUser> _userRepo;
     private readonly ILogger<IssuesController> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public IssuesController(
         IIssueService issueService,
         ITagService tagService,
-        ILogger<IssuesController> logger)
+        IIssueAnalysisService analysisService,
+        IRepository<ApplicationUser> userRepo,
+        ILogger<IssuesController> logger,
+        UserManager<ApplicationUser> userManager)
     {
         _issueService = issueService;
         _tagService = tagService;
+        _analysisService = analysisService;
+        _userRepo = userRepo;
         _logger = logger;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -47,7 +61,7 @@ public class IssuesController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
             // Parse tags from request
@@ -68,6 +82,14 @@ public class IssuesController : ControllerBase
                 }
             }
 
+            // Check if anonymous posting is enabled when requesting anonymous post
+            if (request.IsAnonymous)
+            {
+                var user = await _userRepo.GetByIdAsync(userId);
+                if (user == null || !user.AnonymousReportingEnabled)
+                    return BadRequest(ApiResponse<object>.CreateError("Anonymous posting is not enabled for your account. Please enable it in privacy settings first."));
+            }
+
             var reporter = new UserSummary
             {
                 Id = userId,
@@ -82,10 +104,15 @@ public class IssuesController : ControllerBase
                 request.Latitude,
                 request.CityId,
                 reporter,
-                tagNames
+                tagNames,
+                request.IsAnonymous
             );
 
-            _logger.LogInformation("Issue created: {IssueId} by user {UserId}", issue.Id, userId);
+            _logger.LogInformation(
+                request.IsAnonymous 
+                    ? "Anonymous issue created: {IssueId}" 
+                    : "Issue created: {IssueId} by user {UserId}", 
+                issue.Id, userId);
 
             return CreatedAtAction(
                 nameof(GetIssueById),
@@ -103,7 +130,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating issue");
-            return BadRequest(ApiResponse<object>.CreateError("Failed to create issue"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToCreateIssue));
         }
     }
 
@@ -122,7 +149,7 @@ public class IssuesController : ControllerBase
             var issue = await _issueService.GetIssueByIdAsync(id);
             if (issue == null)
             {
-                return NotFound(ApiResponse<object>.CreateError("Issue not found"));
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
             }
 
             return Ok(ApiResponse<IssueDetailResponse>.CreateSuccess(issue.ToDetailResponse()));
@@ -130,7 +157,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching issue {IssueId}", id);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch issue"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToFetchIssue));
         }
     }
 
@@ -171,48 +198,10 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching issues for city {CityId}", cityId);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch issues"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToFetchIssues));
         }
     }
 
-    /// <summary>
-    /// DEBUG: Get raw issues data for city (unfiltered)
-    /// </summary>
-    [HttpGet("debug/city/{cityId}")]
-    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<object>>> DebugGetIssuesForCity(string cityId)
-    {
-        try
-        {
-            var result = await _issueService.GetIssuesByCityAsync(cityId, null, 1, 100);
-            
-            var debugData = new
-            {
-                cityId,
-                totalFound = result.Total,
-                issues = result.Items.Select(i => new
-                {
-                    id = i.Id,
-                    title = i.Title,
-                    cityId = i.CityId,
-                    hasLocation = i.Location != null,
-                    hasCoordinates = i.Location?.Coordinates != null,
-                    latitude = i.Location?.Coordinates?.Latitude,
-                    longitude = i.Location?.Coordinates?.Longitude,
-                    status = i.Status.ToString(),
-                    priority = i.Priority.ToString(),
-                    createdAt = i.CreatedAt
-                }).ToList()
-            };
-
-            return Ok(ApiResponse<object>.CreateSuccess(debugData));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Debug error for city {CityId}", cityId);
-            return BadRequest(ApiResponse<object>.CreateError($"Debug error: {ex.Message}"));
-        }
-    }
 
     /// <summary>
     /// Search issues with advanced filtering
@@ -246,7 +235,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error searching issues for city {CityId}", cityId);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to search issues"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToSearchIssues));
         }
     }
 
@@ -268,7 +257,7 @@ public class IssuesController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
             var result = await _issueService.GetUserIssuesAsync(userId, page, pageSize);
@@ -280,7 +269,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching user issues");
-            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch issues"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToFetchIssues));
         }
     }
 
@@ -305,7 +294,7 @@ public class IssuesController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
             await _issueService.UpdateIssueStatusAsync(id, request.NewStatus, userId, request.Comment);
@@ -313,7 +302,7 @@ public class IssuesController : ControllerBase
             var issue = await _issueService.GetIssueByIdAsync(id);
             if (issue == null)
             {
-                return NotFound(ApiResponse<object>.CreateError("Issue not found"));
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
             }
 
             _logger.LogInformation("Issue {IssueId} status updated to {Status} by user {UserId}",
@@ -331,7 +320,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating issue status {IssueId}", id);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to update issue status"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToUpdateIssueStatus));
         }
     }
 
@@ -358,7 +347,7 @@ public class IssuesController : ControllerBase
             var issue = await _issueService.GetIssueByIdAsync(id);
             if (issue == null)
             {
-                return NotFound(ApiResponse<object>.CreateError("Issue not found"));
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -377,7 +366,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating issue priority {IssueId}", id);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to update issue priority"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToUpdateIssuePriority));
         }
     }
 
@@ -401,7 +390,7 @@ public class IssuesController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
             await _issueService.AddVoteAsync(id, userId, request.VoteType);
@@ -425,7 +414,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error voting on issue {IssueId}", id);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to record vote"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToRecordVote));
         }
     }
 
@@ -446,7 +435,7 @@ public class IssuesController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
             await _issueService.RemoveVoteAsync(id, userId);
@@ -459,7 +448,7 @@ public class IssuesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error removing vote from issue {IssueId}", id);
-            return BadRequest(ApiResponse<object>.CreateError("Failed to remove vote"));
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToRemoveVote));
         }
     }
 
@@ -481,13 +470,13 @@ public class IssuesController : ControllerBase
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
             var issue = await _issueService.GetIssueByIdAsync(id);
             if (issue == null)
             {
-                return NotFound(ApiResponse<object>.CreateError("Issue not found"));
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
             }
 
             // Only allow deletion by issue reporter or admins
@@ -561,5 +550,307 @@ public class IssuesController : ControllerBase
             return BadRequest(ApiResponse<object>.CreateError("Failed to retrieve issues"));
         }
     }
+
+    /// <summary>
+    /// Get AI analysis for an issue (used by frontend polling)
+    /// </summary>
+    /// <param name="id">Issue ID</param>
+    /// <returns>AI analysis if available</returns>
+    [HttpGet("{id}/analysis")]
+    [ProducesResponseType(typeof(FixIt.Models.AI.IssueAnalysis), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> GetIssueAnalysis(string id)
+    {
+        try
+        {
+            var analysis = await _analysisService.GetAnalysisAsync(id);
+            if (analysis == null)
+            {
+                return NoContent(); // 204 - Still processing
+            }
+
+            return Ok(analysis);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching analysis for issue {IssueId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch analysis"));
+        }
+    }
+
+    /// <summary>
+    /// Add a comment to an issue
+    /// </summary>
+    /// <param name="issueId">Issue ID</param>
+    /// <param name="request">Comment creation request</param>
+    /// <returns>The created comment</returns>
+    [HttpPost("{issueId}/comments")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<CommentResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CommentResponse>>> AddComment(
+        string issueId,
+        [FromBody] CreateCommentRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+            }
+
+            // Use the user's privacy setting from their profile, not the request flag
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized(ApiResponse<object>.CreateError("User not found"));
+            }
+            
+            bool isAnonymous = user.AnonymousReportingEnabled;
+
+            var comment = await _issueService.AddCommentAsync(
+                issueId,
+                userId,
+                request.Text,
+                isAnonymous
+            );
+
+            _logger.LogInformation(
+                request.IsAnonymous
+                    ? "Anonymous comment added to issue {IssueId}"
+                    : "Comment added to issue {IssueId} by user {UserId}",
+                issueId, userId);
+
+            return CreatedAtAction(
+                nameof(GetComments),
+                new { issueId = issueId },
+                ApiResponse<CommentResponse>.CreateSuccess(
+                    comment.ToResponse(),
+                    "Comment added successfully"
+                )
+            );
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding comment to issue {IssueId}", issueId);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to add comment"));
+        }
+    }
+
+    /// <summary>
+    /// Get all comments for an issue
+    /// </summary>
+    /// <param name="issueId">Issue ID</param>
+    /// <returns>List of comments</returns>
+    [HttpGet("{issueId}/comments")]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CommentResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IEnumerable<CommentResponse>>>> GetComments(string issueId)
+    {
+        try
+        {
+            var issue = await _issueService.GetIssueByIdAsync(issueId);
+            if (issue == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError("Issue not found"));
+            }
+
+            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+
+            return Ok(ApiResponse<IEnumerable<CommentResponse>>.CreateSuccess(
+                comments.Select(c => c.ToResponse()),
+                "Comments retrieved successfully"
+            ));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching comments for issue {IssueId}", issueId);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to fetch comments"));
+        }
+    }
+
+    /// <summary>
+    /// Delete a comment
+    /// </summary>
+    /// <param name="issueId">Issue ID</param>
+    /// <param name="commentId">Comment ID</param>
+    /// <returns>Success response</returns>
+    [HttpDelete("{issueId}/comments/{commentId}")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<object>>> DeleteComment(string issueId, string commentId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+            }
+
+            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comment = comments?.FirstOrDefault(c => c.Id == commentId);
+            if (comment == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError("Comment not found"));
+            }
+
+            // Only the comment author can delete their own comments
+            if (comment.AuthorId != userId)
+            {
+                return Forbid();
+            }
+
+            await _issueService.DeleteCommentAsync(issueId, commentId);
+
+            _logger.LogInformation("Comment {CommentId} deleted by user {UserId}", commentId, userId);
+
+            return Ok(ApiResponse<object>.CreateSuccess((object?)null, "Comment deleted successfully"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting comment {CommentId}", commentId);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to delete comment"));
+        }
+    }
+
+    /// <summary>
+    /// Like a comment
+    /// </summary>
+    /// <param name="issueId">Issue ID</param>
+    /// <param name="commentId">Comment ID</param>
+    /// <returns>Updated comment with like counts</returns>
+    [HttpPost("{issueId}/comments/{commentId}/like")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<CommentLikeResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CommentLikeResponse>>> LikeComment(string issueId, string commentId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+            }
+
+            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comment = comments?.FirstOrDefault(c => c.Id == commentId);
+            if (comment == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError("Comment not found"));
+            }
+
+            await _issueService.LikeCommentAsync(issueId, commentId, userId);
+
+            // Fetch updated comment
+            var updatedComments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var updatedComment = updatedComments?.FirstOrDefault(c => c.Id == commentId);
+
+            return Ok(ApiResponse<CommentLikeResponse>.CreateSuccess(
+                new CommentLikeResponse
+                {
+                    LikeCount = updatedComment?.LikedBy?.Count ?? 0,
+                    DislikeCount = updatedComment?.DislikedBy?.Count ?? 0
+                },
+                "Comment liked successfully"
+            ));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error liking comment {CommentId}", commentId);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to like comment"));
+        }
+    }
+
+    /// <summary>
+    /// Dislike a comment
+    /// </summary>
+    /// <param name="issueId">Issue ID</param>
+    /// <param name="commentId">Comment ID</param>
+    /// <returns>Updated comment with dislike counts</returns>
+    [HttpPost("{issueId}/comments/{commentId}/dislike")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<CommentLikeResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<CommentLikeResponse>>> DislikeComment(string issueId, string commentId)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+            }
+
+            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comment = comments?.FirstOrDefault(c => c.Id == commentId);
+            if (comment == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError("Comment not found"));
+            }
+
+            await _issueService.DislikeCommentAsync(issueId, commentId, userId);
+
+            // Fetch updated comment
+            var updatedComments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var updatedComment = updatedComments?.FirstOrDefault(c => c.Id == commentId);
+
+            return Ok(ApiResponse<CommentLikeResponse>.CreateSuccess(
+                new CommentLikeResponse
+                {
+                    LikeCount = updatedComment?.LikedBy?.Count ?? 0,
+                    DislikeCount = updatedComment?.DislikedBy?.Count ?? 0
+                },
+                "Comment disliked successfully"
+            ));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disliking comment {CommentId}", commentId);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to dislike comment"));
+        }
+    }
+}
+
+/// <summary>
+/// Response model for comment like/dislike operations
+/// </summary>
+public class CommentLikeResponse
+{
+    public int LikeCount { get; set; }
+    public int DislikeCount { get; set; }
 }
 

@@ -1,0 +1,126 @@
+@page "/Account/Manage"
+@model FixIt.Areas.Identity.Pages.Account.Manage.ManageModel
+@{
+    ViewData["Title"] = "Account Management";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="mb-4">Account Management</h1>
+            <p class="text-muted mb-4">Manage your profile and account settings</p>
+
+            <div class="row">
+                <!-- Navigation -->
+                <div class="col-md-3">
+                    <div class="list-group sticky-top" style="top: 1rem;">
+                        <a href="#profile-info" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                            <i class="bi bi-person"></i> Profile Information
+                        </a>
+                        <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                            <i class="bi bi-shield-lock"></i> Security
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="col-md-9">
+                    <!-- Profile Information -->
+                    <div id="profile-info" class="settings-section card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">
+                                <i class="bi bi-person-circle text-primary"></i> Profile Information
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Email Address</label>
+                                        <p class="form-control-plaintext fw-semibold">@Model.Email</p>
+                                        @if (!Model.IsEmailConfirmed)
+                                        {
+                                            <small class="text-warning"><i class="bi bi-exclamation-circle"></i> Not verified</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-success"><i class="bi bi-check-circle"></i> Verified</small>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Member Since</label>
+                                        <p class="form-control-plaintext">@Model.CurrentUser?.CreatedAt.ToString("MMMM d, yyyy")</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="d-flex gap-2">
+                                <a href="/Settings" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-gear"></i> Settings
+                                </a>
+                                <a href="/user/@Model.CurrentUser?.Id" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-eye"></i> View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Section -->
+                    <div id="security" class="settings-section card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">
+                                <i class="bi bi-shield-lock text-danger"></i> Security
+                            </h5>
+
+                            <div class="card bg-light border-0 mb-4">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 fw-semibold">Password</h6>
+                                    <p class="text-muted mb-3">Change your password to keep your account secure.</p>
+                                    <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-key"></i> Change Password
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle mb-2 fw-semibold">Two-Factor Authentication</h6>
+                                    <p class="text-muted mb-3">Enable additional security with two-factor authentication.</p>
+                                    <a href="/Identity/Account/Manage/TwoFactorAuthentication" class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-lock"></i> Set Up 2FA
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-section {
+        border: 1px solid #e9ecef;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .settings-section:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .list-group-item {
+        border-left: 3px solid transparent;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .list-group-item.active {
+        border-left-color: #0ea5e9;
+        background-color: #f0f9ff;
+        color: #0c63e4;
+    }
+</style>

@@ -56,7 +56,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 42.016707,
                 Longitude = 23.094362,
                 Description = "A city in southwestern Bulgaria, known as a cultural center with significant youth population.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/%D0%91%D0%BB%D0%B0%D0%B3%D0%BE%D0%B5%D0%B2%D0%B3%D1%80%D0%B0%D0%B4_-_panoramio_%2826%29.jpg/1024px-%D0%91%D0%BB%D0%B0%D0%B3%D0%BE%D0%B5%D0%B2%D0%B3%D1%80%D0%B0%D0%B4_-_panoramio_%2826%29.jpg"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/%D0%91%D0%BB%D0%B0%D0%B3%D0%BE%D0%B5%D0%B2%D0%B3%D1%80%D0%B0%D0%B4_-_panoramio_%2826%29.jpg/1280px-%D0%91%D0%BB%D0%B0%D0%B3%D0%BE%D0%B5%D0%B2%D0%B3%D1%80%D0%B0%D0%B4_-_panoramio_%2826%29.jpg"
             },
 
             // Burgas Province
@@ -111,7 +111,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 41.9294,
                 Longitude = 25.5500,
                 Description = "A city in southern Bulgaria situated on the Maritsa River.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Haskovo2.jpg/1024px-Haskovo2.jpg"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Haskovo_Bulgaria_cityscape.jpg/1280px-Haskovo_Bulgaria_cityscape.jpg"
             },
 
             // Kardjali Province
@@ -122,7 +122,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 41.6478,
                 Longitude = 25.4185,
                 Description = "A city in southern Bulgaria known for its Thracian heritage and diamond reserves.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/5/5d/%D0%98%D1%81%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%8F%D1%82_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%B2_%D0%9A%D1%8A%D1%80%D0%B4%D0%B6%D0%B0%D0%BB%D0%B8.JPG"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/%D0%98%D1%81%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%8F%D1%82_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%B2_%D0%9A%D1%8A%D1%80%D0%B4%D0%B6%D0%B0%D0%BB%D0%B8.JPG/1280px-%D0%98%D1%81%D1%82%D0%BE%D1%80%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D1%8F%D1%82_%D0%BC%D1%83%D0%B7%D0%B5%D0%B9_%D0%B2_%D0%9A%D1%8A%D1%80%D0%B4%D0%B6%D0%B0%D0%BB%D0%B8.JPG"
             },
 
             // Kyustendil Province
@@ -155,7 +155,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 43.4097,
                 Longitude = 23.2261,
                 Description = "A city in northwestern Bulgaria with rich Roman and medieval heritage.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/4/47/Montana-downtown.jpg"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Montana-downtown.jpg/1280px-Montana-downtown.jpg"
             },
 
             // Pazardzhik Province
@@ -232,7 +232,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 43.2735,
                 Longitude = 26.9244,
                 Description = "A historic city in northeastern Bulgaria known for its fortress and cultural heritage.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/5/51/Shumen_chitalishte_Dobri_Voynikov.jpg"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Shumen_chitalishte_Dobri_Voynikov.jpg/1280px-Shumen_chitalishte_Dobri_Voynikov.jpg"
             },
 
             // Silistra Province
@@ -276,7 +276,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 42.6342,
                 Longitude = 25.6446,
                 Description = "A city in south-central Bulgaria with significant sports infrastructure.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/3/33/Samarsko_Zname_Panorama.jpg"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Samarsko_Zname_Panorama.jpg/1280px-Samarsko_Zname_Panorama.jpg"
             },
 
             // Targovishte Province
@@ -309,7 +309,7 @@ public class CityConfiguration : ICollectionConfigurator
                 Latitude = 43.9963,
                 Longitude = 22.8734,
                 Description = "A Danube port city in northwestern Bulgaria with well-preserved fortifications.",
-                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/7/70/Theater_House_in_Vidin_%2827460729905%29.jpg"
+                PhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Theater_House_in_Vidin_%2827460729905%29.jpg/1280px-Theater_House_in_Vidin_%2827460729905%29.jpg"
             },
 
             // Vratsa Province

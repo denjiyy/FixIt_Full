@@ -8,10 +8,12 @@ namespace FixIt.Pages.Issues;
 public class IssueListModel : PageModel
 {
     private readonly IIssueService _issueService;
+    private readonly ILogger<IssueListModel> _logger;
 
-    public IssueListModel(IIssueService issueService)
+    public IssueListModel(IIssueService issueService, ILogger<IssueListModel> logger)
     {
         _issueService = issueService;
+        _logger = logger;
     }
 
     public List<Issue> Issues { get; set; } = new();
@@ -66,6 +68,7 @@ public class IssueListModel : PageModel
         catch (Exception ex)
         {
             // Log error
+            _logger.LogError(ex, "Error loading issues for page {CurrentPage}", CurrentPage);
             ModelState.AddModelError("", "Failed to load issues. Please try again.");
             Issues = new List<Issue>();
             TotalPages = 1;

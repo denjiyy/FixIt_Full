@@ -315,13 +315,29 @@ public class ReputationService : IReputationService
     /// </summary>
     private async Task RegenerateLeaderboardAsync(LeaderboardPeriod period, DateTime sinceDate)
     {
-        // Get points earned in this period
-        var transactions = await _transactionRepository.FindAsync(t => t.CreatedAt >= sinceDate);
-        var periodTransactions = transactions
-            .GroupBy(t => t.UserId)
-            .Select(g => new { UserId = g.Key, Points = g.Sum(t => t.Points) })
-            .OrderByDescending(x => x.Points)
-            .ToList();
+        var entries = new List<dynamic>();
+
+        if (period == LeaderboardPeriod.AllTime)
+        {
+            // For AllTime, use UserReputation.TotalPoints directly (more reliable than summing transactions)
+            var allReputations = await _reputationRepository.FindAsync(r => r.TotalPoints > 0);
+            entries = allReputations
+                .OrderByDescending(r => r.TotalPoints)
+                .Select(r => new { UserId = r.UserId, Points = r.TotalPoints })
+                .Cast<dynamic>()
+                .ToList();
+        }
+        else
+        {
+            // For Weekly/Monthly, use points earned in the specific period from transactions
+            var transactions = await _transactionRepository.FindAsync(t => t.CreatedAt >= sinceDate);
+            entries = transactions
+                .GroupBy(t => t.UserId)
+                .Select(g => new { UserId = g.Key, Points = g.Sum(t => t.Points) })
+                .OrderByDescending(x => x.Points)
+                .Cast<dynamic>()
+                .ToList();
+        }
 
         // Clear old leaderboard entries for this period
         var oldEntries = await _leaderboardRepository.FindAsync(e => e.Period == period);
@@ -333,20 +349,20 @@ public class ReputationService : IReputationService
 
         // Create new leaderboard entries
         var newEntries = new List<LeaderboardEntry>();
-        for (int i = 0; i < periodTransactions.Count; i++)
+        for (int i = 0; i < entries.Count; i++)
         {
-            var transaction = periodTransactions[i];
-            var user = await _userManager.FindByIdAsync(transaction.UserId);
-            var userReputation = await GetUserReputationAsync(transaction.UserId);
+            var entry = entries[i];
+            var user = await _userManager.FindByIdAsync(entry.UserId);
+            var userReputation = await GetUserReputationAsync(entry.UserId);
             
             if (user != null)
             {
                 newEntries.Add(new LeaderboardEntry
                 {
-                    UserId = transaction.UserId,
+                    UserId = entry.UserId,
                     UserDisplayName = user.DisplayName,
                     UserAvatarId = user.AvatarMediaId,
-                    Points = transaction.Points,
+                    Points = entry.Points,
                     Rank = i + 1,
                     TrustLevel = userReputation?.TrustLevel ?? 0,
                     Period = period

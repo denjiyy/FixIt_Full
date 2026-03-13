@@ -1,0 +1,142 @@
+@page "/settings/email-preferences"
+@model FixIt.Pages.Settings.EmailPreferencesModel
+@{
+    ViewData["Title"] = "Email Preferences";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Email Preferences</h1>
+            <p class="text-muted">Manage your email notification settings</p>
+
+            @if (Model.SuccessMessage != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @Model.SuccessMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Email Notifications Master Toggle -->
+            <form method="post" asp-page-handler="UpdateAllNotifications" class="mb-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="emailNotificationsEnabled" 
+                                   name="emailNotificationsEnabled" 
+                                   onchange="this.form.submit()"
+                                   @(Model.User?.EmailNotificationsEnabled == true ? "checked" : "")>
+                            <label class="form-check-label" for="emailNotificationsEnabled">
+                                <h5 class="mb-0">Email Notifications</h5>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card-body text-muted">
+                        <p class="mb-0">Turn on or off all email notifications from FixIt</p>
+                    </div>
+                </div>
+            </form>
+
+            @if (Model.User?.EmailNotificationsEnabled == true)
+            {
+                <!-- Individual Notification Preferences -->
+                <form method="post" asp-page-handler="UpdatePreferences" class="mb-4">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-envelope"></i> Notification Types</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Health Reports -->
+                            <div class="mb-4 pb-4 border-bottom">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="receiveHealthReports" 
+                                           name="receiveHealthReports"
+                                           @(Model.User?.ReceiveHealthReports == true ? "checked" : "")>
+                                    <label class="form-check-label" for="receiveHealthReports">
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-heart-pulse text-danger"></i> Weekly Health Reports
+                                        </h6>
+                                        <small class="text-muted">Get weekly community health metrics and insights for your city</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Weekly Reminders -->
+                            <div class="mb-4 pb-4 border-bottom">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="receiveWeeklyReminders" 
+                                           name="receiveWeeklyReminders"
+                                           @(Model.User?.ReceiveWeeklyReminders == true ? "checked" : "")>
+                                    <label class="form-check-label" for="receiveWeeklyReminders">
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-bell text-warning"></i> Weekly Reminders
+                                        </h6>
+                                        <small class="text-muted">Reminders about open issues in your area that need attention</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Hazard Alerts -->
+                            <div class="mb-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="receiveHazardAlerts" 
+                                           name="receiveHazardAlerts"
+                                           @(Model.User?.ReceiveHazardAlerts == true ? "checked" : "")>
+                                    <label class="form-check-label" for="receiveHazardAlerts">
+                                        <h6 class="mb-1">
+                                            <i class="bi bi-exclamation-triangle text-danger"></i> Safety Alerts
+                                        </h6>
+                                        <small class="text-muted">Instant alerts when hazards are reported near you</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- City Preference -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-geo-alt"></i> City Preference</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="citySelect" class="form-label">Receive reports for:</label>
+                                <select id="citySelect" name="preferredCityId" class="form-select">
+                                    <option value="">Global (All Cities)</option>
+                                    @foreach (var city in Model.AvailableCities)
+                                    {
+                                        if (city.Id == Model.User?.PreferredCityId)
+                                        {
+                                            <option value="@city.Id" selected>@city.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@city.Id">@city.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <small class="text-muted d-block mt-2">
+                                    Choose which city's reports you want to receive, or select "Global" for all cities
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Preferences
+                        </button>
+                        <a href="/settings" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Enable email notifications above to customize your preferences.
+                </div>
+            }
+        </div>
+    </div>
+</div>

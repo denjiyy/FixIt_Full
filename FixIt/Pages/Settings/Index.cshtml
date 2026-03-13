@@ -1,0 +1,168 @@
+@page
+@model FixIt.Pages.Settings.IndexModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="mb-2">Settings</h1>
+            <p class="text-muted mb-5">Manage your account, preferences, and more</p>
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success border-0 rounded-lg p-4" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle me-3" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0">@Model.SuccessMessage</p>
+                    </div>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger border-0 rounded-lg p-4" style="background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0">@Model.ErrorMessage</p>
+                    </div>
+                </div>
+            }
+
+            <!-- City Preference Card -->
+            <div class="card border-0 mb-4" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border-radius: 1rem;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-map" style="font-size: 1.5rem; color: #1e40af;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">City Preference</h5>
+                            <p class="text-muted small mb-0">Select your city to personalize feature content</p>
+                        </div>
+                    </div>
+
+                    <form method="post" asp-page-handler="SetCity" class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="cityId" class="form-label fw-semibold small text-uppercase" style="letter-spacing: 0.05em; color: #6b7280;">
+                                City
+                            </label>
+                            <select class="form-select form-select-lg" id="cityId" name="cityId" style="border: 2px solid #e5e7eb;" required>
+                                <option value="">Select a city...</option>
+                                @foreach (var city in Model.AvailableCities)
+                                {
+                                    <option value="@city.Id" selected="@(Model.SelectedCityId == city.Id)">
+                                        @city.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-save me-2"></i>Save
+                            </button>
+                        </div>
+                    </form>
+
+                    @if (!string.IsNullOrEmpty(Model.SelectedCityId))
+                    {
+                        <div class="alert alert-info mt-3 mb-0 py-2 px-3">
+                            <small>
+                                <i class="bi bi-info-circle me-2"></i>
+                                This city will be used for Issue Forecasting, SLA Compliance, Campaigns, and other feature pages.
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Connected Accounts -->
+                <div class="col-md-6">
+                    <a href="/settings/connected-accounts" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="bi bi-link-45deg" style="font-size: 2rem; color: #0d6efd;"></i>
+                            </div>
+                            <h5 class="card-title">Connected Accounts</h5>
+                            <p class="card-text text-muted small mb-0">Link OAuth providers and manage authentication methods</p>
+                        </div>
+                        <div class="card-footer bg-light border-top-0">
+                            <small class="text-muted">Google • Microsoft • Facebook • GitHub</small>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Email Preferences -->
+                <div class="col-md-6">
+                    <a href="/settings/email-preferences" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="bi bi-envelope" style="font-size: 2rem; color: #dc3545;"></i>
+                            </div>
+                            <h5 class="card-title">Email Preferences</h5>
+                            <p class="card-text text-muted small mb-0">Control which emails and notifications you receive</p>
+                        </div>
+                        <div class="card-footer bg-light border-top-0">
+                            <small class="text-muted">Health Reports • Hazard Alerts • Reminders</small>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Privacy & Safety -->
+                <div class="col-md-6">
+                    <a href="/settings/privacy" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="bi bi-shield-lock" style="font-size: 2rem; color: #198754;"></i>
+                            </div>
+                            <h5 class="card-title">Privacy & Safety</h5>
+                            <p class="card-text text-muted small mb-0">Anonymous reporting, hazard alerts, and profile visibility</p>
+                        </div>
+                        <div class="card-footer bg-light border-top-0">
+                            <small class="text-muted">Anonymous Mode • Hazard Mode • Visibility</small>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Account Management -->
+                <div class="col-md-6">
+                    <a href="/Account/Manage" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="bi bi-person-circle" style="font-size: 2rem; color: #6f42c1;"></i>
+                            </div>
+                            <h5 class="card-title">Account Management</h5>
+                            <p class="card-text text-muted small mb-0">Change password, manage profile, and account security</p>
+                        </div>
+                        <div class="card-footer bg-light border-top-0">
+                            <small class="text-muted">Profile • Password • Email</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-top">
+                <h6 class="text-muted mb-3">Account Status</h6>
+                <div class="alert alert-info mb-3">
+                    <small>
+                        @if (User?.Identity?.IsAuthenticated ?? false)
+                        {
+                            <i class="bi bi-check-circle text-success"></i> <strong>Signed in</strong>
+                            <br/>
+                            <span class="text-muted">Email notifications: @(Model.User?.EmailNotificationsEnabled == true ? "Enabled" : "Disabled")</span>
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+</style>
