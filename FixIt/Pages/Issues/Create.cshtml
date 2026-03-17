@@ -1,7 +1,8 @@
 @page "/issues/create"
 @model CreateIssueModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Create an Issue";
+    ViewData["Title"] = Localizer["CreateAnIssue"];
 }
 
 <style>
@@ -652,25 +653,25 @@
                 <div class="create-hero-icon">
                     <i class="bi bi-plus-circle-fill"></i>
                 </div>
-                <h1>Report a Civic Issue</h1>
-                <p>Help improve your community by documenting a problem that needs attention</p>
+                <h1>@Localizer["CreateAnIssue"]</h1>
+                <p>@Localizer["ReportAndTrackInfrastructure"]</p>
             </div>
 
             <!-- ── Step Tracker ──────────────────────────── -->
             <div class="step-tracker anim-1">
                 <div class="step-item">
                     <div class="step-bubble active" id="step1Bubble">1</div>
-                    <span class="step-label active" id="step1Label">Details</span>
+                    <span class="step-label active" id="step1Label">@Localizer["Details"]</span>
                 </div>
                 <div class="step-connector" id="conn1"></div>
                 <div class="step-item">
                     <div class="step-bubble" id="step2Bubble">2</div>
-                    <span class="step-label" id="step2Label">Location</span>
+                    <span class="step-label" id="step2Label">@Localizer["Location"]</span>
                 </div>
                 <div class="step-connector" id="conn2"></div>
                 <div class="step-item">
                     <div class="step-bubble" id="step3Bubble">3</div>
-                    <span class="step-label" id="step3Label">Media</span>
+                    <span class="step-label" id="step3Label">@Localizer["Media"]</span>
                 </div>
             </div>
 
@@ -694,12 +695,8 @@
             <div class="info-banner anim-2">
                 <i class="bi bi-shield-check-fill"></i>
                 <div>
-                    <strong>Your report will be reviewed by city officials.</strong>
-                    Be as specific as possible — a clear title, accurate location, and photos
-                    significantly speed up the resolution process.
-                </div>
-            </div>
-
+                        <strong>@Localizer["YourReportWillBeReviewed"]</strong>
+                        @Localizer["BeAsSpecificAsPossible"]
             <!-- ── Form ──────────────────────────────────── -->
             <form method="post" enctype="multipart/form-data" id="issueForm" novalidate>
 
@@ -722,8 +719,8 @@
                     <div class="create-card-header">
                         <div class="create-card-step-num">1</div>
                         <div class="create-card-header-text">
-                            <h6>Basic Information</h6>
-                            <small>Give the issue a clear title and description</small>
+                            <h6>@Localizer["BasicInformation"]</h6>
+                            <small>@Localizer["GiveThemeAClearTitleAndDescription"]</small>
                         </div>
                     </div>
                     <div class="create-card-body">
@@ -731,19 +728,19 @@
                         <!-- Title -->
                         <div class="mb-5">
                             <label for="baseTitle" class="create-label">
-                                Issue Title <span class="required-star">*</span>
+                                @Localizer["IssueTitle"] <span class="required-star">*</span>
                             </label>
                             <input type="text"
                                    class="create-input input-lg"
                                    id="baseTitle"
                                    name="baseTitle"
-                                   placeholder="e.g., Pothole on Main Street near the library"
+                                   placeholder="@Localizer["ExamplePotholeOnMainStreet"]"
                                    maxlength="200" />
                             <span asp-validation-for="Input.Title" class="text-danger" style="font-size: var(--text-xs);"></span>
                             <div class="d-flex justify-content-between align-items-center mt-2">
                                 <span class="input-hint">
                                     <i class="bi bi-pencil"></i>
-                                    Specific and descriptive (3–200 characters)
+                                    @Localizer["SpecificAndDescriptive"]
                                 </span>
                                 <span class="char-counter" id="titleCounterDisplay">0 / 200</span>
                             </div>
@@ -752,19 +749,19 @@
                         <!-- Description -->
                         <div class="mb-0">
                             <label for="baseDescription" class="create-label">
-                                Description <span class="required-star">*</span>
+                                @Localizer["Description"] <span class="required-star">*</span>
                             </label>
                             <textarea class="create-textarea"
                                       id="baseDescription"
                                       name="baseDescription"
                                       rows="6"
                                       maxlength="5000"
-                                      placeholder="Describe the issue in detail — when you noticed it, how severe it is, any safety concerns, and anything else that might be helpful…"></textarea>
+                                      placeholder="@Localizer["DescribeTheIssueInDetail"]"></textarea>
                             <span class="text-danger" style="font-size: var(--text-xs);"></span>
                             <div class="d-flex justify-content-between align-items-center mt-2">
                                 <span class="input-hint">
                                     <i class="bi bi-chat-text"></i>
-                                    Minimum 10 characters
+                                    @Localizer["MinimumTenCharacters"]
                                 </span>
                                 <span class="char-counter" id="descCounterDisplay">0 / 5000</span>
                             </div>
@@ -778,8 +775,8 @@
                     <div class="create-card-header">
                         <div class="create-card-step-num">2</div>
                         <div class="create-card-header-text">
-                            <h6>Location</h6>
-                            <small>Pin the exact spot on the map</small>
+                            <h6>@Localizer["LocationSectionHeading"]</h6>
+                            <small>@Localizer["PinTheExactSpotOnTheMapDescription"]</small>
                         </div>
                     </div>
                     <div class="create-card-body">
@@ -787,25 +784,25 @@
                         <!-- Address -->
                         <div class="mb-5">
                             <label asp-for="Input.Address" class="create-label">
-                                Address <span class="optional-tag">auto-filled</span>
+                                @Localizer["Address"] <span class="optional-tag">@Localizer["Optional"]</span>
                             </label>
                             <input asp-for="Input.Address"
                                    class="create-input"
-                                   placeholder="Address is auto-filled when you pin the map" />
-                            <span class="input-hint"><i class="bi bi-magic"></i> Reverse geocoded from your map pin</span>
+                                   placeholder="@Localizer["AddressAutoFilled"]" />
+                            <span class="input-hint"><i class="bi bi-magic"></i> @Localizer["ReverseGeocodedFromYourMapPin"]</span>
                         </div>
 
                         <!-- Map -->
                         <div class="mb-5">
                             <label class="create-label">
-                                Pin on Map <span class="required-star">*</span>
+                                @Localizer["PinOnMap"] <span class="required-star">*</span>
                             </label>
                             <div class="map-container">
                                 <div id="map"></div>
                                 <div class="coords-pill">
                                     <i class="bi bi-crosshair"></i>
-                                    <span>Coordinates:</span>
-                                    <strong id="coordsDisplay">Click the map to place a pin</strong>
+                                    <span>@Localizer["Coordinates"]</span>
+                                    <strong id="coordsDisplay">@Localizer["ClickTheMapToPlacePin"]</strong>
                                 </div>
                             </div>
                             <input type="hidden" asp-for="Input.Latitude"  id="latitude" />
@@ -816,16 +813,16 @@
                         <!-- City -->
                         <div class="mb-0">
                             <label for="baseCity" class="create-label">
-                                City <span class="required-star">*</span>
+                                @Localizer["CityOrCities"] <span class="required-star">*</span>
                             </label>
                             <select class="create-select" id="baseCity" name="baseCity">
-                                <option value="">Select a city…</option>
+                                <option value="">@Localizer["SelectACity"]</option>
                                 @foreach (var city in Model.Cities)
                                 {
                                     <option value="@city.Value">@city.Text</option>
                                 }
                             </select>
-                            <span class="input-hint"><i class="bi bi-building"></i> Usually auto-selected from your map pin</span>
+                            <span class="input-hint"><i class="bi bi-building"></i> @Localizer["UsuallyAutoSelectedFromYourMapPin"]</span>
                         </div>
 
                     </div>
@@ -836,10 +833,10 @@
                     <div class="create-card-header">
                         <div class="create-card-step-num">3</div>
                         <div class="create-card-header-text">
-                            <h6>Photos &amp; Videos</h6>
-                            <small>Visual evidence helps city officials act faster</small>
+                            <h6>@Localizer["PhotosAndVideos"]</h6>
+                            <small>@Localizer["VisualEvidenceHelpsOfficials"]</small>
                         </div>
-                        <span class="badge" style="background: var(--gray-100); color: var(--gray-500); font-size: var(--text-xs); border: 1px solid var(--gray-200); font-weight: var(--font-semibold);">Optional</span>
+                        <span class="badge" style="background: var(--gray-100); color: var(--gray-500); font-size: var(--text-xs); border: 1px solid var(--gray-200); font-weight: var(--font-semibold);">@Localizer["Optional"]</span>
                     </div>
                     <div class="create-card-body">
 
@@ -848,10 +845,10 @@
                                 <i class="bi bi-cloud-arrow-up-fill"></i>
                             </div>
                             <div class="upload-zone-title">
-                                Drop files here or <span>browse to upload</span>
+                                @Localizer["DropFilesHereOrBrowseToUpload"]
                             </div>
                             <div class="upload-zone-sub">
-                                Up to 10 files &mdash; Images up to 5 MB each · Videos up to 100 MB each
+                                @Localizer["UploadFileInfo"]
                             </div>
                             <div class="upload-type-chips">
                                 <span class="upload-chip"><i class="bi bi-image"></i> JPG</span>
@@ -878,15 +875,15 @@
                 <div class="submit-footer anim-5">
                     <div class="submit-footer-meta">
                         <i class="bi bi-shield-check-fill"></i>
-                        <span>Visible to the public &amp; city officials after review</span>
+                        <span>@Localizer["VisibleToPublicAndCityOfficials"]</span>
                     </div>
                     <div class="submit-actions">
                         <a href="/issues" class="btn-cancel">
-                            <i class="bi bi-x"></i> Cancel
+                            <i class="bi bi-x"></i> @Localizer["Cancel"]
                         </a>
                         <button type="submit" class="btn-submit" id="baseSubmitBtn">
                             <i class="bi bi-send-fill"></i>
-                            Submit Report
+                            @Localizer["SubmitReport"]
                         </button>
                     </div>
                 </div>
@@ -1178,7 +1175,7 @@
 
         if (!city) {
             e.preventDefault();
-            alert('Please select a city — try clicking a location on the map first');
+                            alert('@Localizer["PleaseSelectACity"]');
             return;
         }
 

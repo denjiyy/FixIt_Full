@@ -1,7 +1,8 @@
 @page "/issues/{id}/delete"
 @model DeleteIssueModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Delete Issue";
+    ViewData["Title"] = Localizer["DeleteIssue"];
 }
 
 <div class="container py-5">
@@ -10,12 +11,12 @@
             <!-- Header -->
             <div class="mb-5">
                 <a href="/issues/@Model.Id" class="text-decoration-none text-muted">
-                    <i class="bi bi-chevron-left"></i> Back to Issue
+                    <i class="bi bi-chevron-left"></i> @Localizer["BackToIssue"]
                 </a>
                 <h1 class="h2 fw-bold mt-3 text-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Delete Issue
+                    <i class="bi bi-exclamation-triangle me-2"></i>@Localizer["DeleteIssue"]
                 </h1>
-                <p class="text-muted">This action cannot be undone</p>
+                <p class="text-muted">@Localizer["ThisActionCannotBeUndone"]</p>
             </div>
 
             @if (Model.Issue != null)
@@ -25,13 +26,13 @@
                         <!-- Issue Summary -->
                         <div class="mb-4">
                             <h3 class="h5 fw-bold mb-3">
-                                <i class="bi bi-file-text me-2"></i>Issue to Delete:
+                                <i class="bi bi-file-text me-2"></i>@Localizer["IssueToDeleteHeading"]
                             </h3>
                             <div class="bg-white p-3 rounded border-start border-5 border-danger">
                                 <h4 class="h6 mb-2">@Model.Issue.Title</h4>
                                 <p class="text-muted mb-0">
                                     <small>
-                                        Created by @Model.Issue.Reporter.DisplayName on @Model.Issue.CreatedAt.ToString("MMMM d, yyyy h:mm tt")
+                                        @Localizer["CreatedBy"] @Model.Issue.Reporter.DisplayName @Localizer["OnDate"] @Model.Issue.CreatedAt.ToString("MMMM d, yyyy h:mm tt")
                                     </small>
                                 </p>
                             </div>
@@ -40,24 +41,24 @@
                         <!-- Warning Message -->
                         <div class="alert alert-danger" role="alert">
                             <i class="bi bi-exclamation-circle me-2"></i>
-                            <strong>Warning:</strong> Deleting this issue will remove it from public view, but your deletion will be recorded.
+                            <strong>@Localizer["Warning"]</strong> @Localizer["DeletingThisIssue"]
                         </div>
 
                         <!-- Consequences -->
                         <div class="alert alert-light border border-danger">
-                            <strong class="d-block mb-3">When you delete this issue:</strong>
+                            <strong class="d-block mb-3">@Localizer["WhenYouDeleteThisIssueColon"]</strong>
                             <ul class="mb-0">
-                                <li>It will no longer appear in issue listings</li>
-                                <li>Other users will not be able to see it</li>
-                                <li>Comments and votes will be preserved internally</li>
-                                <li>Admins can restore deleted issues if needed</li>
+                                <li>@Localizer["ItWillNoLongerAppearInIssueListings"]</li>
+                                <li>@Localizer["OtherUsersWillNotBeSeeIt"]</li>
+                                <li>@Localizer["CommentsAndVotesWillBePreserved"]</li>
+                                <li>@Localizer["AdminsCanRestoreDeletedIssues"]</li>
                             </ul>
                         </div>
 
                         <!-- Confirmation -->
                         <div class="mb-4">
                             <p class="text-muted mb-2">
-                                <strong>Confirm deletion of:</strong>
+                                <strong>@Localizer["ConfirmDeletionOf"]</strong>
                             </p>
                             <div class="input-group">
                                 <input type="text" 
@@ -71,10 +72,10 @@
                         <!-- Form Actions -->
                         <form method="post" class="d-grid gap-2">
                             <button type="submit" class="btn btn-danger btn-lg">
-                                <i class="bi bi-trash me-2"></i>Delete Issue Permanently
+                                <i class="bi bi-trash me-2"></i>@Localizer["DeleteIssuePermanently"]
                             </button>
                             <a href="/issues/@Model.Id" class="btn btn-outline-secondary btn-lg">
-                                <i class="bi bi-x-circle me-2"></i>Cancel Deletion
+                                <i class="bi bi-x-circle me-2"></i>@Localizer["CancelDeletion"]
                             </a>
                         </form>
 
@@ -82,7 +83,7 @@
                         <p class="text-muted text-center mt-4 mb-0">
                             <small>
                                 <i class="bi bi-info-circle me-1"></i>
-                                Need help? <a href="/help/issues" class="text-muted text-decoration-underline">Learn more about issues</a>
+                                @Localizer["NeedHelp"] <a href="/help/issues" class="text-muted text-decoration-underline">@Localizer["LearnMoreAboutIssues"]</a>
                             </small>
                         </p>
                     </div>
@@ -91,15 +92,15 @@
                 <!-- Recovery Info -->
                 <div class="alert alert-info mt-4" role="alert">
                     <i class="bi bi-lightbulb me-2"></i>
-                    <strong>Note:</strong> If you delete this by mistake, please contact an administrator. They may be able to restore it.
+                    <strong>@Localizer["Note"]</strong> @Localizer["IfYouDeleteThisByMistake"]
                 </div>
             }
             else
             {
                 <div class="alert alert-warning" role="alert">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    Issue not found or has already been deleted.
-                    <a href="/issues" class="ms-2">Go to Issues List</a>
+                    @Localizer["IssueNotFoundMessage"]
+                    <a href="/issues" class="ms-2">@Localizer["GoToIssuesList"]</a>
                 </div>
             }
         </div>

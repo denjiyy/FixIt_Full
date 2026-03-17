@@ -1,7 +1,8 @@
 @page "/HealthReports/{cityId?}"
 @model HealthReportsModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Health Reports";
+    ViewData["Title"] = Localizer["CommunityHealthReports"];
 }
 
 <div class="container-fluid mt-4">
@@ -11,21 +12,21 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h1 class="h2 mb-2">
-                        <i class="bi bi-heart-pulse text-gradient"></i> Community Health Reports
+                        <i class="bi bi-heart-pulse text-gradient"></i> @Localizer["CommunityHealthReports"]
                     </h1>
-                    <p class="text-muted mb-0">Monitor community engagement and infrastructure health metrics</p>
+                    <p class="text-muted mb-0">@Localizer["MonitorHealthMetrics"]</p>
                 </div>
                 @if (!Model.IsGlobal && Model.AllCities.Any())
                 {
                     <div class="dropdown">
                         <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="bi bi-geo-alt"></i> 
-                            @(Model.AllCities.FirstOrDefault(c => c.Id == Model.CityId)?.Name ?? "Select City")
+                            @(Model.AllCities.FirstOrDefault(c => c.Id == Model.CityId)?.Name ?? Localizer["SelectCity"])
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="max-height: 400px; overflow-y: auto;">
                             <li>
                                 <a class="dropdown-item @(Model.IsGlobal ? "active" : "")" href="/HealthReports">
-                                    <i class="bi bi-globe"></i> Global Report
+                                    <i class="bi bi-globe"></i> @Localizer["GlobalReport"]
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -52,30 +53,30 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="row align-items-center g-4">
                         <div class="col-lg-8">
-                            <h2 class="h3 mb-4" style="color: white;">Community Health Score</h2>
+                            <h2 class="h3 mb-4" style="color: white;">@Localizer["CommunityHealthScore"]</h2>
                             <div class="row g-3">
                                 <div class="col-6 col-md-3">
                                     <div class="text-center">
                                         <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.HealthScore.ToString("F1")</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">Overall Score</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["OverallScore"]</div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <div class="text-center">
                                         <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.TotalIssues</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">Total Issues</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["TotalIssues"]</div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <div class="text-center">
                                         <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.ResolutionRate.ToString("F0")%</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">Resolved</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["Resolved"]</div>
                                     </div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <div class="text-center">
                                         <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.TotalUpvotes</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">Votes</div>
+                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["Votes"]</div>
                                     </div>
                                 </div>
                             </div>

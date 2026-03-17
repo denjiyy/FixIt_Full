@@ -1,7 +1,8 @@
 @page "/issues/{id}/edit"
 @model EditIssueModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Edit Issue";
+    ViewData["Title"] = Localizer["EditIssue"];
 }
 
 <div class="container py-5">
@@ -10,10 +11,10 @@
             <!-- Header -->
             <div class="mb-5">
                 <a href="/issues/@Model.Id" class="text-decoration-none text-muted">
-                    <i class="bi bi-chevron-left"></i> Back to Issue
+                    <i class="bi bi-chevron-left"></i> @Localizer["BackToIssue"]
                 </a>
-                <h1 class="h2 fw-bold mt-2">Edit Issue</h1>
-                <p class="text-muted">Update the issue details below</p>
+                <h1 class="h2 fw-bold mt-2">@Localizer["EditIssue"]</h1>
+                <p class="text-muted">@Localizer["UpdateTheIssueDetails"]</p>
             </div>
 
             @if (Model.Issue != null)
@@ -24,16 +25,16 @@
                             <!-- Title -->
                             <div class="mb-4">
                                 <label for="Input_Title" class="form-label fw-semibold">
-                                    <i class="bi bi-pencil-square me-2"></i>Title
+                                    <i class="bi bi-pencil-square me-2"></i>@Localizer["Title"]
                                 </label>
                                 <input type="text" 
                                        class="form-control @(ModelState.IsValid ? "" : "is-invalid")"
                                        id="Input_Title"
                                        asp-for="Input.Title"
-                                       placeholder="Brief title of the issue"
+                                       placeholder="@Localizer["BriefTitleOfTheIssueEdit"]"
                                        maxlength="200">
                                 <small class="text-muted d-block mt-1">
-                                    <span id="charCount">@Model.Input.Title?.Length ?? 0</span>/200 characters
+                                    <span id="charCount">@Model.Input.Title?.Length ?? 0</span>/200 @Localizer["CharactersText"]
                                 </small>
                                 <span asp-validation-for="Input.Title" class="invalid-feedback"></span>
                             </div>
@@ -41,16 +42,16 @@
                             <!-- Description -->
                             <div class="mb-4">
                                 <label for="Input_Description" class="form-label fw-semibold">
-                                    <i class="bi bi-file-text me-2"></i>Description
+                                    <i class="bi bi-file-text me-2"></i>@Localizer["Description"]
                                 </label>
                                 <textarea class="form-control @(ModelState.IsValid ? "" : "is-invalid")"
                                           id="Input_Description"
                                           asp-for="Input.Description"
                                           rows="6"
-                                          placeholder="Detailed description of the issue"
+                                          placeholder="@Localizer["DetailedDescriptionOfTheIssueEdit"]"
                                           maxlength="5000"></textarea>
                                 <small class="text-muted d-block mt-1">
-                                    <span id="descCharCount">@Model.Input.Description?.Length ?? 0</span>/5000 characters
+                                    <span id="descCharCount">@Model.Input.Description?.Length ?? 0</span>/5000 @Localizer["CharactersText"]
                                 </small>
                                 <span asp-validation-for="Input.Description" class="invalid-feedback"></span>
                             </div>
@@ -58,32 +59,32 @@
                             <!-- Address -->
                             <div class="mb-4">
                                 <label for="Input_Address" class="form-label fw-semibold">
-                                    <i class="bi bi-geo-alt me-2"></i>Address (Optional)
+                                    <i class="bi bi-geo-alt me-2"></i>@Localizer["Address"]
                                 </label>
                                 <input type="text" 
                                        class="form-control"
                                        id="Input_Address"
                                        asp-for="Input.Address"
-                                       placeholder="Location or street address"
+                                       placeholder="@Localizer["LocationOrStreetAddress"]"
                                        maxlength="300">
                             </div>
 
                             <!-- Original Info -->
                             <div class="alert alert-info" role="alert">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <strong>Issue Info:</strong> Created by @Model.Issue.Reporter.DisplayName on @Model.Issue.CreatedAt.ToString("MMMM d, yyyy")
+                                <strong>@Localizer["IssueInfoEdit"]</strong> @Localizer["CreatedBy"] @Model.Issue.Reporter.DisplayName @Localizer["OnDate"] @Model.Issue.CreatedAt.ToString("MMMM d, yyyy")
                             </div>
 
                             <!-- Form Actions -->
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                                    <i class="bi bi-check-circle me-2"></i>@Localizer["SaveChanges"]
                                 </button>
                                 <a href="/issues/@Model.Id" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                    <i class="bi bi-x-circle me-2"></i>@Localizer["Cancel"]
                                 </a>
                                 <a href="/issues/@Model.Id/delete" class="btn btn-outline-danger ms-auto">
-                                    <i class="bi bi-trash me-2"></i>Delete Issue
+                                    <i class="bi bi-trash me-2"></i>@Localizer["DeleteIssue"]
                                 </a>
                             </div>
                         </div>
@@ -94,7 +95,7 @@
             {
                 <div class="alert alert-warning" role="alert">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    Issue not found or has been deleted.
+                    @Localizer["IssueNotFoundMessage"]
                 </div>
             }
         </div>

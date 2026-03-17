@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata" type="xsd:string" minOccurs="0" />
+          <xsd:element name="assembly" type="xsd:string" minOccurs="0" />
+          <xsd:element name="data" minOccurs="0" maxOccurs="unbounded">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="xml:space" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Home" xml:space="preserve"><value>Начало</value></data>
+  <data name="Issues" xml:space="preserve"><value>Проблеми</value></data>
+  <data name="Cities" xml:space="preserve"><value>Градове</value></data>
+  <data name="Leaderboards" xml:space="preserve"><value>Класации</value></data>
+  <data name="Safety" xml:space="preserve"><value>Сигурност</value></data>
+  <data name="HazardTools" xml:space="preserve"><value>Инструменти за опасности</value></data>
+  <data name="Privacy" xml:space="preserve"><value>Поверителност</value></data>
+  <data name="PrivacySettings" xml:space="preserve"><value>Настройки за поверителност</value></data>
+  <data name="ReportIssue" xml:space="preserve"><value>Подай сигнал</value></data>
+  <data name="ViewProfile" xml:space="preserve"><value>Профил</value></data>
+  <data name="ConnectedAccounts" xml:space="preserve"><value>Свързани акаунти</value></data>
+  <data name="PrivacyAndSafety" xml:space="preserve"><value>Поверителност и сигурност</value></data>
+  <data name="Settings" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Language" xml:space="preserve"><value>Език</value></data>
+  <data name="AnalyticsDropdown" xml:space="preserve"><value>Аналитика</value></data>
+  <data name="ReportAnIssue" xml:space="preserve"><value>Докладвай проблем</value></data>
+  <data name="AdminPanel" xml:space="preserve"><value>Административен панел</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Изход</value></data>
+  <data name="SignIn" xml:space="preserve"><value>Вход</value></data>
+  <data name="GetStarted" xml:space="preserve"><value>Започнете</value></data>
+  <data name="Admin" xml:space="preserve"><value>Админ</value></data>
+  <data name="MyAccount" xml:space="preserve"><value>Моят профил</value></data>
+  <data name="QuickActions" xml:space="preserve"><value>Бързи действия</value></data>
+  <data name="FooterTagline" xml:space="preserve"><value>Даваме възможност на общностите да докладват, следят и разрешават инфраструктурни проблеми заедно.</value></data>
+  <data name="Platform" xml:space="preserve"><value>Платформа</value></data>
+  <data name="Insights" xml:space="preserve"><value>Анализи</value></data>
+  <data name="Support" xml:space="preserve"><value>Поддръжка</value></data>
+  <data name="Account" xml:space="preserve"><value>Акаунт</value></data>
+  <data name="BrowseIssues" xml:space="preserve"><value>Разгледай проблеми</value></data>
+  <data name="Heatmaps" xml:space="preserve"><value>Топлинни карти</value></data>
+  <data name="HazardMode" xml:space="preserve"><value>Режим опасност</value></data>
+  <data name="MyProfile" xml:space="preserve"><value>Моят профил</value></data>
+  <data name="CreateAccount" xml:space="preserve"><value>Създай акаунт</value></data>
+  <data name="MadeWithLove" xml:space="preserve"><value>Създадено с ♥ за по-добри общности</value></data>
+  <data name="CommunityPoweredPlatform" xml:space="preserve"><value>ПЛАТФОРМА, ЗАДВИЖВАНА ОТ ОБЩНОСТТА</value></data>
+  <data name="ReportAndFix" xml:space="preserve"><value>Докладвай и Реши</value></data>
+  <data name="CommunityIssues" xml:space="preserve"><value>Проблеми в общността</value></data>
+  <data name="JoinThousands" xml:space="preserve"><value>Присъединете се към хиляди граждани, които правят промяна. Докладвайте инфраструктурни проблеми, следете тяхното разрешение в реално време и помогнете за по-силни общности.</value></data>
+  <data name="ReportNewIssue" xml:space="preserve"><value>Докладвай нов проблем</value></data>
+  <data name="GetStartedFree" xml:space="preserve"><value>Започни безплатно</value></data>
+  <data name="SimpleTransparentEffective" xml:space="preserve"><value>Просто. Прозрачно. Ефективно.</value></data>
+  <data name="HowItWorks" xml:space="preserve"><value>Как работи</value></data>
+  <data name="ReportIssues" xml:space="preserve"><value>Докладвай проблеми</value></data>
+  <data name="RealTimeTracking" xml:space="preserve"><value>Проследяване в реално време</value></data>
+  <data name="CommunityEngagement" xml:space="preserve"><value>Ангажиране на общността</value></data>
+  <data name="SeeResults" xml:space="preserve"><value>Виж резултатите</value></data>
+  <data name="WhyItMatters" xml:space="preserve"><value>Защо е важно</value></data>
+  <data name="BuildingStrongerCommunities" xml:space="preserve"><value>Изграждане на по-силни общности заедно</value></data>
+  <data name="FullTransparency" xml:space="preserve"><value>Пълна прозрачност</value></data>
+  <data name="FasterResolution" xml:space="preserve"><value>По-бързо разрешаване</value></data>
+  <data name="CommunityPower" xml:space="preserve"><value>Силата на общността</value></data>
+  <data name="DataDrivenImpact" xml:space="preserve"><value>Влияние, базирано на данни</value></data>
+  <data name="HazardMap" xml:space="preserve"><value>Карта на опасностите</value></data>
+  <data name="HealthReports" xml:space="preserve"><value>Отчети за здравето</value></data>
+  <data name="ViewHeatmaps" xml:space="preserve"><value>Преглед на топлинни карти</value></data>
+  <data name="HelpCenter" xml:space="preserve"><value>Център за помощ</value></data>
+  <data name="ContactUs" xml:space="preserve"><value>Свържете се с нас</value></data>
+  <data name="PrivacyPolicy" xml:space="preserve"><value>Política за поверителност</value></data>
+  <data name="IssuesReported" xml:space="preserve"><value>Докладани проблеми</value></data>
+  <data name="IssuesResolved" xml:space="preserve"><value>Разрешени проблеми</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="NoCitiesFound" xml:space="preserve"><value>Няма намерени градове</value></data>
+  <data name="NoCitiesMessage" xml:space="preserve"><value>Няма налични градове за избраната страна. Опитайте различен регион.</value></data>
+  <data name="ExploreCities" xml:space="preserve"><value>Разгледай градовете</value></data>
+  <data name="DiscoverCitiesDesc" xml:space="preserve"><value>Откройте градове по целия свят и следете инфраструктурни проблеми, докладвани от ангажирани членове на общността.</value></data>
+  <data name="CommunityHealthReports" xml:space="preserve"><value>Отчети за здравето на общността</value></data>
+  <data name="SelectCity" xml:space="preserve"><value>Избери град</value></data>
+  <data name="GlobalAllCities" xml:space="preserve"><value>Глобално (всички градове)</value></data>
+  <data name="HealthReportsHazardAlerts" xml:space="preserve"><value>Отчети за здравето • Предупреждения за опасност • Напомняния</value></data>
+  <data name="CommunityInfrastructureSolutions" xml:space="preserve"><value>Решения за общинска инфраструктура</value></data>
+  <data name="CityOrCities" xml:space="preserve"><value>град</value></data>
+  <data name="CitiesPlural" xml:space="preserve"><value>градове</value></data>
+  <data name="IssueSolverBadge" xml:space="preserve"><value>Разрешени проблеми</value></data>
+  <data name="IssuesResolvedPoints" xml:space="preserve"><value>Разрешени проблеми</value></data>
+  <data name="IssuesReporterStat" xml:space="preserve"><value>докладвани проблеми</value></data>
+  <data name="CelebratateTopContributors" xml:space="preserve"><value>Празнувайте най-добрите сътрудници, които правят нашите градове по-добри</value></data>
+  <data name="SafetyHazardMap" xml:space="preserve"><value>Карта на сигурността на опасностите</value></data>
+  <data name="TakePhotoPin" xml:space="preserve"><value>Направете снимка, маркирайте местоположението на карта и подайте подробен доклад за секунди.</value></data>
+  <data name="WatchIssuesProgress" xml:space="preserve"><value>Наблюдавайте напредъка на проблемите от докладвани до разрешени с актуализации в реално време.</value></data>
+  <data name="UpvoteIssuesComment" xml:space="preserve"><value>Гласувайте за важни проблеми, коментирайте с прозрения и сътрудничайте със съседи.</value></data>
+  <data name="GetNotifiedWhenResolved" xml:space="preserve"><value>Получавайте известия, когато проблемите са разрешени, и видете вашата общност да се подобрява.</value></data>
+  <data name="ReportTrackResolve" xml:space="preserve"><value>Докладвайте, следете и разрешават инфраструктурни проблеми заедно</value></data>
+  <data name="EveryReportStatusVisible" xml:space="preserve"><value>Всеки доклад, промяна на статуса и действие са видими за общността.</value></data>
+  <data name="CommunityReportingAccelerates" xml:space="preserve"><value>Докладването на общностите ускорява идентификацията и приоритизирането на проблемите.</value></data>
+  <data name="YourVoiceMatters" xml:space="preserve"><value>Вашият глас е важен. Гласувайте за важни проблеми и формирайте приоритетите.</value></data>
+  <data name="InfrastructureDecisionsBackedBy" xml:space="preserve"><value>Решения за инфраструктура, подкрепени от реален вход на общността и аналитика.</value></data>
+  <data name="LiveCommunityImpact" xml:space="preserve"><value>Живо влияние на общността</value></data>
+  <data name="ResolutionRate" xml:space="preserve"><value>Процент разрешаване</value></data>
+  <data name="AvgResponseTime" xml:space="preserve"><value>Средно време на отговор</value></data>
+  <data name="ActiveCommunityMembers" xml:space="preserve"><value>Активни членове на общността</value></data>
+  <data name="ReportAndTrackInfrastructure" xml:space="preserve"><value>Докладвайте и проследявайте проблеми с гражданската инфраструктура в вашия район</value></data>
+  <data name="ReportIssueBtn" xml:space="preserve"><value>Докладване на проблем</value></data>
+  <data name="SignInToReport" xml:space="preserve"><value>Влезте за докладване</value></data>
+  <data name="TotalIssues" xml:space="preserve"><value>Общо проблеми</value></data>
+  <data name="InProgress" xml:space="preserve"><value>В процес</value></data>
+  <data name="New" xml:space="preserve"><value>Ново</value></data>
+  <data name="Search" xml:space="preserve"><value>Търсене</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Всички статуси</value></data>
+  <data name="Confirmed" xml:space="preserve"><value>Потвърдено</value></data>
+  <data name="Fixed" xml:space="preserve"><value>Поправено</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="AllPriorities" xml:space="preserve"><value>Всички приоритети</value></data>
+  <data name="Low" xml:space="preserve"><value>Нисък</value></data>
+  <data name="Medium" xml:space="preserve"><value>Среден</value></data>
+  <data name="High" xml:space="preserve"><value>Висок</value></data>
+  <data name="Critical" xml:space="preserve"><value>Критичен</value></data>
+  <data name="SearchByTitle" xml:space="preserve"><value>Търсене по заглавие или описание…</value></data>
+  <data name="InfrastructureExplorer" xml:space="preserve"><value>ПРОУЧВАЧ НА ИНФРАСТРУКТУРА</value></data>
+  <data name="InfrastructureIssues" xml:space="preserve"><value>Проблеми с инфраструктурата</value></data>
+  <data name="CreateAnIssue" xml:space="preserve"><value>Създаване на проблем</value></data>
+  <data name="Title" xml:space="preserve"><value>Заглавие</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Address" xml:space="preserve"><value>Адрес (незадължително)</value></data>
+  <data name="BriefTitleOfTheIssue" xml:space="preserve"><value>Кратко заглавие на проблема</value></data>
+  <data name="DetailedDescriptionOfTheIssue" xml:space="preserve"><value>Подробно описание на проблема</value></data>
+  <data name="LocationOrStreetAddress" xml:space="preserve"><value>Местоположение или адрес на улица</value></data>
+  <data name="Characters" xml:space="preserve"><value>символи</value></data>
+  <data name="SubmitIssue" xml:space="preserve"><value>Изпращане на проблем</value></data>
+  <data name="BackToIssue" xml:space="preserve"><value>Обратно към проблема</value></data>
+  <data name="DeleteIssue" xml:space="preserve"><value>Изтриване на проблема</value></data>
+  <data name="ThisActionCannotBeUndone" xml:space="preserve"><value>Това действие не може да бъде отменено</value></data>
+  <data name="IssueToDelete" xml:space="preserve"><value>Проблем за изтриване:</value></data>
+  <data name="Warning" xml:space="preserve"><value>Предупреждение:</value></data>
+  <data name="DeletingIssueWillRemoveIt" xml:space="preserve"><value>Изтриването на този проблем ще го премахне от публичния преглед, но вашето изтриване ще бъде записано.</value></data>
+  <data name="WhenYouDeleteThisIssue" xml:space="preserve"><value>Когато изтриете този проблем:</value></data>
+  <data name="ItWillNoLongerAppear" xml:space="preserve"><value>Той вече няма да се появи в списъците на проблемите</value></data>
+  <data name="OtherUsersWillNotBeSeeIt" xml:space="preserve"><value>Други потребители няма да могат да го видят</value></data>
+  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Коментарите и гласовете ще бъдат запазени внътрешно</value></data>
+  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Администраторите могат да възстановят изтритите проблеми, ако е необходимо</value></data>
+  <data name="ConfirmDeletion" xml:space="preserve"><value>Потвърдете изтриването на:</value></data>
+  <data name="DeleteIssuePermanently" xml:space="preserve"><value>Изтриване на проблема завинаги</value></data>
+  <data name="CancelDeletion" xml:space="preserve"><value>Отказ на изтриване</value></data>
+  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Научете повече за проблемите</value></data>
+  <data name="NeedHelp" xml:space="preserve"><value>Нуждаете се от помощ?</value></data>
+  <data name="Note" xml:space="preserve"><value>Забележка:</value></data>
+  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>Ако по грешка изтриете това, моля свържете се с администратор. Те могат да бъдат в състояние да го възстановят.</value></data>
+  <data name="IssueNotFound" xml:space="preserve"><value>Проблемът не е намерен или е бил изтрит.</value></data>
+  <data name="EditIssue" xml:space="preserve"><value>Редактиране на проблема</value></data>
+  <data name="UpdateTheIssueDetails" xml:space="preserve"><value>Актуализирайте детайлите на проблема по-долу</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>Запазване на промените</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отказ</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Създадено от</value></data>
+  <data name="IssueInfo" xml:space="preserve"><value>Информация за проблема:</value></data>
+  <data name="MapClick" xml:space="preserve"><value>Щракнете върху всеки маркер, за да видите детайлите на проблема</value></data>
+  <data name="ActiveIssues" xml:space="preserve"><value>Активни проблеми</value></data>
+  <data name="MapLegend" xml:space="preserve"><value>Легенда на картата</value></data>
+  <data name="CriticalPriority" xml:space="preserve"><value>Критичен приоритет</value></data>
+  <data name="HighPriority" xml:space="preserve"><value>Висок приоритет</value></data>
+  <data name="MediumPriority" xml:space="preserve"><value>Среден приоритет</value></data>
+  <data name="LowPriority" xml:space="preserve"><value>Нисък приоритет</value></data>
+  <data name="OpenIssues" xml:space="preserve"><value>Отворени проблеми</value></data>
+  <data name="ResolvedIssues" xml:space="preserve"><value>Разрешени проблеми</value></data>
+  <data name="GlobalReport" xml:space="preserve"><value>Глобален отчет</value></data>
+  <data name="HealthScore" xml:space="preserve"><value>Оценка на здравето на общностю</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>Обща оценка</value></data>
+  <data name="Votes" xml:space="preserve"><value>Гласове</value></data>
+  <data name="IssuesByPriority" xml:space="preserve"><value>Проблеми по приоритет</value></data>
+  <data name="OpenStatus" xml:space="preserve"><value>Отворено</value></data>
+  <data name="ResolvedStatus" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Engagement" xml:space="preserve"><value>Ангажираност</value></data>
+  <data name="ActiveHazards" xml:space="preserve"><value>Активни опасности</value></data>
+  <data name="GoToHazardMode" xml:space="preserve"><value>Отидете в режим на опасности</value></data>
+  <data name="SeverityLevels" xml:space="preserve"><value>Нива на тежест</value></data>
+  <data name="MinorIssues" xml:space="preserve"><value>Малки проблеми</value></data>
+  <data name="RequiresAttention" xml:space="preserve"><value>Изисква внимание</value></data>
+  <data name="SignificantHazard" xml:space="preserve"><value>Значителна опасност</value></data>
+  <data name="ImmediateDanger" xml:space="preserve"><value>Незабавна опасност</value></data>
+  <data name="UseThisPagePagePrivacy" xml:space="preserve"><value>Използвайте тази страница, за да детайлирате политиката си на поверителност.</value></data>
+  <data name="Error" xml:space="preserve"><value>Грешка</value></data>
+  <data name="Details" xml:space="preserve"><value>Детайли</value></data>
+  <data name="Location" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="Media" xml:space="preserve"><value>Медия</value></data>
+  <data name="YourReportWillBeReviewed" xml:space="preserve"><value>Вашата докладност ще бъде разглеждана от градски служители.</value></data>
+  <data name="BeAsSpecificAsPossible" xml:space="preserve"><value>Бъдете възможно конкретни — ясно заглавие, точно местоположение и снимки значително ускоряват процеса на разрешение.</value></data>
+  <data name="BasicInformation" xml:space="preserve"><value>Основна информация</value></data>
+  <data name="GiveThemeAClearTitleAndDescription" xml:space="preserve"><value>Дайте на проблема ясно заглавие и описание</value></data>
+  <data name="IssueTitle" xml:space="preserve"><value>Заглавие на проблема</value></data>
+  <data name="ExamplePotholeOnMainStreet" xml:space="preserve"><value>например, Пролом на главната улица при библиотеката</value></data>
+  <data name="SpecificAndDescriptive" xml:space="preserve"><value>Конкретно и описателно (3–200 знака)</value></data>
+  <data name="DescribeTheIssueInDetail" xml:space="preserve"><value>Описанието на проблема подробно — кога го заметнахте, как сериозен е, всички мерки за безопасност, и всичко друго, което може да бъде полезно…</value></data>
+  <data name="MinimumTenCharacters" xml:space="preserve"><value>Минимум 10 знака</value></data>
+  <data name="PinTheExactSpotOnTheMap" xml:space="preserve"><value>Поставете точното място на картата</value></data>
+  <data name="AddressAutoFilled" xml:space="preserve"><value>Адресът се автоматично попълва когато поставите щифт на картата</value></data>
+  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Обратно геокодирано от вашия щифт на картата</value></data>
+  <data name="PinOnMap" xml:space="preserve"><value>Щифт на картата</value></data>
+  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Кликнете на картата за поставяне на щифт</value></data>
+  <data name="Coordinates" xml:space="preserve"><value>Координати:</value></data>
+  <data name="SelectACity" xml:space="preserve"><value>Изберете град…</value></data>
+  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Обикновено автоматично избран от вашия щифт на картата</value></data>
+  <data name="PhotosAndVideos" xml:space="preserve"><value>Фото и видеозаписи</value></data>
+  <data name="VisualEvidenceHelpsOfficials" xml:space="preserve"><value>Визуално доказателство помагане на служителите по-бързо да действат</value></data>
+  <data name="Optional" xml:space="preserve"><value>По желание</value></data>
+  <data name="DropFilesHereOrBrowseToUpload" xml:space="preserve"><value>Отпустете файлове тук или преглеждайте за качване</value></data>
+  <data name="UploadFileInfo" xml:space="preserve"><value>До 10 файла — Изображения до 5 MB всеки · Видеозаписи до 100 MB всеки</value></data>
+  <data name="VisibleToPublicAndCityOfficials" xml:space="preserve"><value>Видимо от публиката и служителите на града след преглед</value></data>
+  <data name="SubmitReport" xml:space="preserve"><value>Изпращане на докладност</value></data>
+  <data name="MonitorHealthMetrics" xml:space="preserve"><value>Мониториране на ангажираност на общностю и показатели на здравето на инфраструктурата</value></data>
+  <data name="IssueToDeleteHeading" xml:space="preserve"><value>Проблем за изтриване:</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Създано от</value></data>
+  <data name="OnDate" xml:space="preserve"><value>на</value></data>
+  <data name="DeletingThisIssue" xml:space="preserve"><value>Изтриването на този проблем ще го премахне от публично виждане, но вашето изтриване ще бъде записано.</value></data>
+  <data name="WhenYouDeleteThisIssueColon" xml:space="preserve"><value>Когато изтриете този проблем:</value></data>
+  <data name="ItWillNoLongerAppearInIssueListings" xml:space="preserve"><value>Той больше няма да се появява в списъците на проблемите</value></data>
+  <data name="OtherUsersWillNotBeSeeIt" xml:space="preserve"><value>Други потребители няма да могат да го видят</value></data>
+  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Коментарите и гласовете ще бъдат запазени вътрешно</value></data>
+  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Администраторите могат да възстановят изтритите проблеми, ако е необходимо</value></data>
+  <data name="ConfirmDeletionOf" xml:space="preserve"><value>Потвърдете изтриване на:</value></data>
+  <data name="DeleteIssuePermanently" xml:space="preserve"><value>Трайно изтриване на проблем</value></data>
+  <data name="CancelDeletion" xml:space="preserve"><value>Отмяна на изтриване</value></data>
+  <data name="NeedHelp" xml:space="preserve"><value>Нужна ли ви помощ?</value></data>
+  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Научете повече за проблемите</value></data>
+  <data name="Note" xml:space="preserve"><value>Забележка:</value></data>
+  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>Ако изтриете това по грешка, свържете се с администратор. Те могат да го възстановят.</value></data>
+  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Проблемът не е намерен или вече е изтрит.</value></data>
+  <data name="GoToIssuesList" xml:space="preserve"><value>Отидете в списъка на проблемите</value></data>
+  <data name="BriefTitleOfTheIssueEdit" xml:space="preserve"><value>Кратко заглавие на проблема</value></data>
+  <data name="DetailedDescriptionOfTheIssueEdit" xml:space="preserve"><value>Подробно описание на проблема</value></data>
+  <data name="CharactersText" xml:space="preserve"><value>знаци</value></data>
+  <data name="IssueInfoEdit" xml:space="preserve"><value>Информация за проблема:</value></data>
+  <data name="CommunityHealthScore" xml:space="preserve"><value>Оценка на здравето на общностю</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>Обща оценка</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Newest" xml:space="preserve"><value>Най-нови</value></data>
+  <data name="MostVoted" xml:space="preserve"><value>Най-гласувани</value></data>
+  <data name="MostViewed" xml:space="preserve"><value>Най-гледани</value></data>
+  <data name="Showing" xml:space="preserve"><value>Показване</value></data>
+  <data name="Issue" xml:space="preserve"><value>проблем</value></data>
+  <data name="IssuePlural" xml:space="preserve"><value>проблеми</value></data>
+  <data name="PageOf" xml:space="preserve"><value>Страница</value></data>
+  <data name="Of" xml:space="preserve"><value>на</value></data>
+  <data name="NoIssuesFoundEmptyState" xml:space="preserve"><value>Не са намерени проблеми</value></data>
+  <data name="NoIssuesFoundMessage" xml:space="preserve"><value>Няма проблеми за показване. Бъдете първият че докладете един!</value></data>
+  <data name="Previous" xml:space="preserve"><value>Предишна</value></data>
+  <data name="Next" xml:space="preserve"><value>Следваща</value></data>
+  <data name="SortOptions" xml:space="preserve"><value>Опции за сортиране</value></data>
+  <data name="ClearFilter" xml:space="preserve"><value>Изчистване</value></data>
+  <data name="Active" xml:space="preserve"><value>Активни:</value></data>
+  <data name="CityPreference" xml:space="preserve"><value>Предпочитание за град</value></data>
+  <data name="SelectYourCityToPersonalizeFeatureContent" xml:space="preserve"><value>Изберете вашия град за персонализиране на съдържанието на функциите</value></data>
+  <data name="LinkOAuthProvidersAndManageAuthenticationMethods" xml:space="preserve"><value>Свързване на доставчици на OAuth и управление на методите на автентификация</value></data>
+  <data name="ControlWhichEmailsAndNotificationsYouReceive" xml:space="preserve"><value>Контролирайте кои имейли и известия получавате</value></data>
+  <data name="AnonymousReportingHazardAlertsAndProfileVisibility" xml:space="preserve"><value>Анонимна докладност, предупреждения за опасности и видимост на профила</value></data>
+  <data name="ChangePasswordManageProfileAndAccountSecurity" xml:space="preserve"><value>Променете парола, управление на профила и сигурност на сметката</value></data>
+  <data name="AccountStatus" xml:space="preserve"><value>Статус на сметката</value></data>
+  <data name="EmailPreferencesPage" xml:space="preserve"><value>Предпочитания за имейл</value></data>
+  <data name="ManageYourEmailNotificationSettings" xml:space="preserve"><value>Управление на настройките за известяване по имейл</value></data>
+  <data name="SearchByTitle" xml:space="preserve"><value>Търсете по заглавие...</value></data>
+  <data name="SearchByReason" xml:space="preserve"><value>Търсете по причина...</value></data>
+  <data name="EnterYourUsername" xml:space="preserve"><value>Въведете вашето потребителско име</value></data>
+  <data name="EnterYourPassword" xml:space="preserve"><value>Въведете вашата парола</value></data>
+  <data name="SearchByEmailUsernameOrName" xml:space="preserve"><value>Търсете по имейл, потребителско име или име...</value></data>
+  <data name="ExampleNewYork" xml:space="preserve"><value>например, Ню Йорк</value></data>
+  <data name="AdditionalInformationAboutThisCity" xml:space="preserve"><value>Допълнителна информация за този град...</value></data>
+  <data name="CityImageUrl" xml:space="preserve"><value>https://пример.com/city-image.jpg</value></data>
+  <data name="SearchByCityOrCountry" xml:space="preserve"><value>Търсете по град или държава...</value></data>
+  <data name="EmailPlaceholder" xml:space="preserve"><value>you@example.com</value></data>
+  <data name="PasswordPlaceholder" xml:space="preserve"><value>••••••••</value></data>
+  <data name="HowShouldWeCallYouPlaceholder" xml:space="preserve"><value>Как би трябвало да ви викаме?</value></data>
+  <data name="YourAtEmailComPlaceholder" xml:space="preserve"><value>your@email.com</value></data>
+  <data name="LocationSectionHeading" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="PinTheExactSpotOnTheMapDescription" xml:space="preserve"><value>Поставете точното място на картата</value></data>
+  <data name="Remove" xml:space="preserve"><value>Премахване</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Преглед на детайлите</value></data>
+  <data name="Confirmations" xml:space="preserve"><value>потвърждения</value></data>
+  <data name="ToggleNavigation" xml:space="preserve"><value>Превключване на навигацията</value></data>
+  <data name="BackToTop" xml:space="preserve"><value>Обратно към горе</value></data>
+  <data name="AdminAndModeratorLogin" xml:space="preserve"><value>Вход за администратори и модератори</value></data>
+  <data name="AccountManagement" xml:space="preserve"><value>Управление на профила</value></data>
+  <data name="ManageYourProfileAndAccountSettings" xml:space="preserve"><value>Управлявайте вашия профил и настройки на сметката</value></data>
+  <data name="WelcomeBack" xml:space="preserve"><value>Добре дошли обратно</value></data>
+  <data name="SignInToContinueMakingYourCommunityBetter" xml:space="preserve"><value>Влезте, за да продължите да правите вашата общност по-добра</value></data>
+  <data name="SystemOverviewAndManagement" xml:space="preserve"><value>Преглед и управление на системата</value></data>
+  <data name="AddAndManageCitiesWorldwide" xml:space="preserve"><value>Добавяй и управлявай градове по целия свят</value></data>
+  <data name="ReviewAndManageReportedIssues" xml:space="preserve"><value>Преглед и управление на докладани проблеми</value></data>
+  <data name="ReviewAndManageUserReports" xml:space="preserve"><value>Преглед и управление на потребителски доклади</value></data>
+  <data name="ManagementPortalForFixIt" xml:space="preserve"><value>Портал за управление на FixIt</value></data>
+  <data name="JoinThousandsMakingADifference" xml:space="preserve"><value>Присъединете се към хиляди, които правят разлика</value></data>
+  <data name="ReportIssuesEasily" xml:space="preserve"><value>Докладвайте проблемите лесно</value></data>
+  <data name="TrackProgressLabel" xml:space="preserve"><value>Проследете напредъка</value></data>
+  <data name="CommunityImpactLabel" xml:space="preserve"><value>Въздействие на общността</value></data>
+  <data name="WorkTogetherToImproveYourNeighborhood" xml:space="preserve"><value>Работете заедно, за да подобрите вашия район</value></data>
+  <data name="YourDataIsSecureAndEncrypted" xml:space="preserve"><value>Вашите данни са защитени и криптирани</value></data>
+  <data name="OrSignInWithEmail" xml:space="preserve"><value>или влезте с имейл</value></data>
+  <data name="OrSignUpWith" xml:space="preserve"><value>Или се регистрирайте с</value></data>
+  <data name="QuickSignInText" xml:space="preserve"><value>Бързо влизане</value></data>
+  <data name="ContinueWithGoogle" xml:space="preserve"><value>Продължете с Google</value></data>
+  <data name="SignedIn" xml:space="preserve"><value>Влязохте</value></data>
+  <data name="WeeklyTab" xml:space="preserve"><value>Седмично</value></data>
+  <data name="MonthlyTab" xml:space="preserve"><value>Месечно</value></data>
+  <data name="AllTimeTab" xml:space="preserve"><value>Всички времена</value></data>
+  <data name="KeepMeSignedIn" xml:space="preserve"><value>Запомни ме</value></data>
+  <data name="FirstPage" xml:space="preserve"><value>Първи</value></data>
+  <data name="LastPage" xml:space="preserve"><value>Последни</value></data>
+  <data name="ThisWeeksChampions" xml:space="preserve"><value>Чемпионите на тази седмица</value></data>
+  <data name="ThisMonthsTopContributors" xml:space="preserve"><value>Най-добрите сътрудници на този месец</value></data>
+  <data name="AllTimeLeaders" xml:space="preserve"><value>Лидери всички време</value></data>
+  <data name="Latitude" xml:space="preserve"><value>Географска ширина</value></data>
+  <data name="Longitude" xml:space="preserve"><value>Географска дължина</value></data>
+  <data name="MemberSince" xml:space="preserve"><value>Член от</value></data>
+  <data name="NotSelected" xml:space="preserve"><value>Не е избрано</value></data>
+  <data name="ClickOnTheMapToSelectCoordinates" xml:space="preserve"><value>Кликнете на картата, за да изберете координати</value></data>
+  <data name="CurrentCoordinates" xml:space="preserve"><value>Текущи</value></data>
+  <data name="NoIssuesReportedYet" xml:space="preserve"><value>Все още нямат докладани проблеми</value></data>
+  <data name="BeTheFirstToMakeYourCommunityBetter" xml:space="preserve"><value>Бъдете първите, които правите вашата общност по-добра!</value></data>
+  <data name="NoCommentsYet" xml:space="preserve"><value>Все още няма коментари</value></data>
+  <data name="BeTheFirstToShareYourThoughts" xml:space="preserve"><value>Бъдете първите, които делят вашите мисли</value></data>
+  <data name="NoEntriesYet" xml:space="preserve"><value>Все още няма записи</value></data>
+  <data name="BeTheFirstToContributeAndClaimYourSpot" xml:space="preserve"><value>Бъдете първи да се вмешаете и заемете своето място!</value></data>
+  <data name="NoUsersFound" xml:space="preserve"><value>Няма намерени потребители</value></data>
+  <data name="NoReportsFound" xml:space="preserve"><value>Няма намерени доклади</value></data>
+  <data name="NoCitiesFound" xml:space="preserve"><value>Няма намерени градове</value></data>
+  <data name="AddYourFirstCityToGetStarted" xml:space="preserve"><value>Добавьте първия си град, за да начнете</value></data>
+  <data name="ThisIsHowOtherUsersWillSeeYou" xml:space="preserve"><value>Това е как другите потребители ще ви видят</value></data>
+  <data name="SignInToJoinTheConversation" xml:space="preserve"><value>Влезте, за да се присъедините към разговора</value></data>
+  <data name="SignInToCastYourVote" xml:space="preserve"><value>Влезте, за да отдадете вашия вот</value></data>
+  <data name="SignInToReport" xml:space="preserve"><value>Влизане за докладване</value></data>
+  <data name="CompleteYourRegistration" xml:space="preserve"><value>Завършете вашата регистрация</value></data>
+  <data name="SigningInWith" xml:space="preserve"><value>Влизане с</value></data>
+  <data name="PasswordAuthentication" xml:space="preserve"><value>Удостоверение с парола</value></data>
+  <data name="Enabled" xml:space="preserve"><value>Активирано</value></data>
+  <data name="Disabled" xml:space="preserve"><value>Деактивирано</value></data>
+  <data name="YouCanSignInWithEmailAndPassword" xml:space="preserve"><value>Можете да влезете с имейл и парола</value></data>
+  <data name="NoOAuthProvidersLinked" xml:space="preserve"><value>Спилнозни доставчици на OAuth</value></data>
+  <data name="ManageYourAuthenticationMethodsAndLinkedProviders" xml:space="preserve"><value>Управлявайте методите на удостоверяване и свързаните доставчици</value></data>
+  <data name="TotalPoints" xml:space="preserve"><value>Общо точки</value></data>
+  <data name="AchievementsLabel" xml:space="preserve"><value>Постижения</value></data>
+  <data name="ReputationProgressLabel" xml:space="preserve"><value>Прогрес на репутацията</value></data>
+  <data name="LevelProgressLabel" xml:space="preserve"><value>Прогрес на нивото</value></data>
+  <data name="CommunityActivityLabel" xml:space="preserve"><value>Активност на общността</value></data>
+  <data name="PointBreakdownLabel" xml:space="preserve"><value>Разбивка на точките</value></data>
+  <data name="AnonymousUser" xml:space="preserve"><value>Анонимен потребител</value></data>
+  <data name="IdentityHiddenForPrivacy" xml:space="preserve"><value>Самоличност скритаза поверителност</value></data>
+  <data name="AgeLabel" xml:space="preserve"><value>Възраст</value></data>
+  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Проблемът не е намерен</value></data>
+  <data name="AnalysisLabel" xml:space="preserve"><value>Анализ</value></data>
+  <data name="CategoryLabel" xml:space="preserve"><value>Категория</value></data>
+  <data name="SeverityLabel" xml:space="preserve"><value>Тежест</value></data>
+  <data name="AnalysisUnavailable" xml:space="preserve"><value>Анализът е недостъпен</value></data>
+  <data name="CompleteStatus" xml:space="preserve"><value>Завършено</value></data>
+  <data name="PendingStatus" xml:space="preserve"><value>В очакване</value></data>
+  <data name="UnavailableStatus" xml:space="preserve"><value>Недостъпно</value></data>
+  <data name="NewestFirstOption" xml:space="preserve"><value>Най-ново първо</value></data>
+  <data name="OldestFirstOption" xml:space="preserve"><value>Най-старо първо</value></data>
+  <data name="MostLikedOption" xml:space="preserve"><value>Най-харесано</value></data>
+  <data name="AwaitingReview" xml:space="preserve"><value>В очакване на преглед</value></data>
+  <data name="TotalUsersLabel" xml:space="preserve"><value>Общо потребители</value></data>
+  <data name="TotalIssuesLabel" xml:space="preserve"><value>Общо проблеми</value></data>
+  <data name="PendingReportsLabel" xml:space="preserve"><value>Доклади в очакване</value></data>
+  <data name="TotalReportsLabel" xml:space="preserve"><value>Общо доклади</value></data>
+  <data name="AllServicesRunningNormally" xml:space="preserve"><value>Всички услуги работят нормално</value></data>
+  <data name="ConnectedAndHealthy" xml:space="preserve"><value>Свързано и здравословно</value></data>
+  <data name="ReputationLabel" xml:space="preserve"><value>Репутация</value></data>
+  <data name="JoinedLabel" xml:space="preserve"><value>Присъединени</value></data>
+  <data name="SelectARole" xml:space="preserve"><value>Изберете роля</value></data>
+  <data name="RegularUserRole" xml:space="preserve"><value>Обикновен потребител</value></data>
+  <data name="ModeratorRole" xml:space="preserve"><value>Модератор</value></data>
+  <data name="AdministratorRole" xml:space="preserve"><value>Администратор</value></data>
+  <data name="UpdateRoleBtn" xml:space="preserve"><value>Актуализиране на роля</value></data>
+  <data name="UserEmailLabel" xml:space="preserve"><value>Имейл на потребител</value></data>
+  <data name="NewRoleLabel" xml:space="preserve"><value>Нова роля</value></data>
+  <data name="ChangeUserRoleModal" xml:space="preserve"><value>Промяна на роля на потребител</value></data>
+  <data name="TargetLabel" xml:space="preserve"><value>Цел</value></data>
+  <data name="CreatedLabel" xml:space="preserve"><value>Създадено</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Статус</value></data>
+  <data name="EmailNotificationsTitle" xml:space="preserve"><value>Имейл известувания</value></data>
+  <data name="TurnOnOrOffAllEmailNotificationsFromFixIt" xml:space="preserve"><value>Включете или изключите всички имейл известувания от FixIt</value></data>
+  <data name="WeeklyHealthReportsLabel" xml:space="preserve"><value>Седмични доклади за здравето</value></data>
+  <data name="GetWeeklyCommunityHealthMetrics" xml:space="preserve"><value>Получавайте седмични показатели за здравето на общността и информация за вашия град</value></data>
+  <data name="WeeklyRemindersLabel" xml:space="preserve"><value>Седмични напомняния</value></data>
+  <data name="RemindersAboutOpenIssuesInYourArea" xml:space="preserve"><value>Напомняния за отворени проблеми във вашия район, които трябва да бъдат разрешени</value></data>
+  <data name="InstantAlertsWhenHazardsAreReportedNearYou" xml:space="preserve"><value>Незабавни предупреждения, когда се докладват опасности близо до вас</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Отказ</value></data>
+  <data name="LastSignInLabel" xml:space="preserve"><value>Последно влизане</value></data>
+  <data name="OAuthProvidersLabel" xml:space="preserve"><value>Доставчици на OAuth</value></data>
+  <data name="DevelopmentModeTitle" xml:space="preserve"><value>Режим на разработка</value></data>
+  <data name="SwappingToDevelopmentEnvironment" xml:space="preserve"><value>Преминаването към средата за разработка показва подробна информация за възникналога грешка.</value></data>
+  <data name="PasswordLabel" xml:space="preserve"><value>Парола</value></data>
+  <data name="ConnectedAccounts" xml:space="preserve"><value>Свързани сметки</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Потвърди парола</value></data>
+  <data name="DisplayNameField" xml:space="preserve"><value>Дисплей име</value></data>
+  <data name="UpvoteLabel" xml:space="preserve"><value>Гласуване нагоре</value></data>
+  <data name="DownvoteLabel" xml:space="preserve"><value>Гласуване надолу</value></data>
+  <data name="UpvotesCount" xml:space="preserve"><value>Гласове нагоре</value></data>
+  <data name="DownvotesCount" xml:space="preserve"><value>Гласове надолу</value></data>
+  <data name="RankHeader" xml:space="preserve"><value>Ранг</value></data>
+  <data name="UserHeader" xml:space="preserve"><value>Потребител</value></data>
+  <data name="PointsHeader" xml:space="preserve"><value>Точки</value></data>
+  <data name="TrustLevelHeader" xml:space="preserve"><value>Ниво на доверие</value></data>
+  <data name="SelectCity" xml:space="preserve"><value>Избирам град</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Изчистване на филтрите</value></data>
+  <data name="NoResultsMatchYourCurrentFilters" xml:space="preserve"><value>Няма резултати, които съответстват на вашите текущи филтри. Опитайте да коригирате вашето търсене или да изчистите филтрите.</value></data>
+  <data name="Delete" xml:space="preserve"><value>Изтриване</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактиране</value></data>
+  <data name="Save" xml:space="preserve"><value>Запази</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>Запази промени</value></data>
+  <data name="Submit" xml:space="preserve"><value>Подайте</value></data>
+  <data name="Filter" xml:space="preserve"><value>Филтър</value></data>
+  <data name="Search" xml:space="preserve"><value>Търси</value></data>
+  <data name="Loading" xml:space="preserve"><value>Зареждане</value></data>
+  <data name="LoadingHazards" xml:space="preserve"><value>Зареждане на опасности...</value></data>
+  <data name="LoadingAddress" xml:space="preserve"><value>Зареждане на адрес...</value></data>
+  <data name="DropFilesHereOrBrowseToUpload" xml:space="preserve"><value>Отпуснете файлами тук или прегледайте за качване</value></data>
+  <data name="UploadFileInfo" xml:space="preserve"><value>Максимум 10 файла, по 50 MB всеки (JPG, PNG, WEBP, MP4)</value></data>
+  <data name="PinOnMap" xml:space="preserve"><value>Щифт на картата</value></data>
+  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Щракнете на картата, за да поставите щифт</value></data>
+  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Обратно геокодиран от вашия щифт на картата</value></data>
+  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Обикновено автоматично избран от вашия щифт на картата</value></data>
+  <data name="ConfirmDeleteReport" xml:space="preserve"><value>Изтрийте този доклад?</value></data>
+  <data name="ConfirmDeleteCity" xml:space="preserve"><value>Изтрийте този град?</value></data>
+  <data name="ConfirmDeleteUser" xml:space="preserve"><value>Окончателно изтрийте този потребител?</value></data>
+  <data name="ConfirmDeleteIssue" xml:space="preserve"><value>Изтрийте този проблем?</value></data>
+  <data name="ConfirmBanUser" xml:space="preserve"><value>Забранете този потребител?</value></data>
+  <data name="ConfirmUnbanUser" xml:space="preserve"><value>Отразрешете този потребител?</value></data>
+  <data name="ConfirmRestrictUser" xml:space="preserve"><value>Ограничете за 30 дни?</value></data>
+  <data name="ConfirmRemoveRestrictions" xml:space="preserve"><value>Премахване на ограниченията?</value></data>
+  <data name="ConfirmApproveReport" xml:space="preserve"><value>Одобрите този доклад?</value></data>
+  <data name="ConfirmDismissReport" xml:space="preserve"><value>Отхвърлите този доклад?</value></data>
+  <data name="NoReportsInTheSystem" xml:space="preserve"><value>Няма доклади в системата</value></data>
+  <data name="NoIssuesInTheSystem" xml:space="preserve"><value>Няма проблеми в системата</value></data>
+  <data name="NoUsersInTheSystem" xml:space="preserve"><value>Няма потребители в системата</value></data>
+  <data name="FilterResults" xml:space="preserve"><value>Няма резултати за</value></data>
+  <data name="TermsOfService" xml:space="preserve"><value>Условия на услугата</value></data>
+  <data name="ByCreatingAnAccountYouAgreeTo" xml:space="preserve"><value>Чрез създаване на сметка, вие се съглашате с нашите</value></data>
+  <data name="HealthReports" xml:space="preserve"><value>Доклади за здравето</value></data>
+  <data name="ViewHeatmaps" xml:space="preserve"><value>Преглед на топлинни карти</value></data>
+  <data name="Reports" xml:space="preserve"><value>Доклади</value></data>
+  <data name="ReportsLabel" xml:space="preserve"><value>Доклади</value></data>
+  <data name="Unban" xml:space="preserve"><value>Отразрещаване</value></data>
+  <data name="Ban" xml:space="preserve"><value>Забрана</value></data>
+  <data name="RemoveRestrictions" xml:space="preserve"><value>Премахване на ограниченията</value></data>
+  <data name="RestrictUser" xml:space="preserve"><value>Ограничаване на потребителя</value></data>
+  <data name="Approve" xml:space="preserve"><value>Одобрете</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>Отхвърлете</value></data>
+  <data name="GoToHazardMode" xml:space="preserve"><value>Отиди на режим опасност</value></data>
+  <data name="SafetyHazardMap" xml:space="preserve"><value>Карта за безопасност опасности</value></data>
+  <data name="FilterHazards" xml:space="preserve"><value>Филтър опасности...</value></data>
+  <data name="ErrorLoadingHazards" xml:space="preserve"><value>Грешка при зареждане на опасности</value></data>
+  <data name="ErrorLoadingHazardDetail" xml:space="preserve"><value>Грешка при зареждане на детайли за опасност</value></data>
+  <data name="Error" xml:space="preserve"><value>Грешка</value></data>
+  <data name="FailedToUpdateSettings" xml:space="preserve"><value>Неудачно обновяване на настройки</value></data>
+  <data name="ErrorUpdatingSettings" xml:space="preserve"><value>Грешка при обновяване на настройки</value></data>
+  <data name="PleaseSelectACity" xml:space="preserve"><value>Моля изберете град — опитайте да щракнете на местоположение на картата</value></data>
+  <data name="OnlyAdminsAndModeratorsCanAccessThisPanel" xml:space="preserve"><value>Само администраторите и модераторите могат да получат достъп до този панел</value></data>
+  <data name="ReportsLabel2" xml:space="preserve"><value>Доклади</value></data>
+  <data name="YourReportsWillShowAsAnonymous" xml:space="preserve"><value>Вашите доклади ще се показват като "Анонимни" на картата и в списъци</value></data>
+</root>

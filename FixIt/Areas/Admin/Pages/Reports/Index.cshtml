@@ -1,5 +1,6 @@
 @page "/admin/reports"
 @model FixIt.Areas.Admin.Pages.Reports.IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Reports Management";
 }
@@ -101,7 +102,7 @@
         <div class="admin-header-content">
             <div>
                 <h1><i class="bi bi-flag"></i> Reports Management</h1>
-                <p class="admin-header-subtitle">Review and manage user reports</p>
+                <p class="admin-header-subtitle">@Localizer["ReviewAndManageUserReports"]</p>
             </div>
             <a href="/admin/dashboard" class="btn btn-outline">
                 <i class="bi bi-arrow-left"></i> Back
@@ -120,7 +121,7 @@
     <!-- Search -->
     <div class="search-section">
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by reason..." class="form-control">
+            <input type="text" id="searchInput" placeholder="@Localizer["SearchByReason"]" class="form-control">
             <button class="btn btn-primary" onclick="filterReports()">
                 <i class="bi bi-search"></i> Search
             </button>
@@ -157,15 +158,15 @@
 
                         <div class="report-meta">
                             <div class="meta-item">
-                                <span class="meta-label">Target</span>
+                                <span class="meta-label">@Localizer["TargetLabel"]</span>
                                 <span class="meta-value">@report.TargetType</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">Created</span>
+                                <span class="meta-label">@Localizer["CreatedLabel"]</span>
                                 <span class="meta-value">@report.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">Status</span>
+                                <span class="meta-label">@Localizer["StatusLabel"]</span>
                                 <span class="meta-value">@report.Status</span>
                             </div>
                         </div>
@@ -175,13 +176,13 @@
                             {
                                 <form method="post" asp-page-handler="Approve" style="display: inline;">
                                     <input type="hidden" name="reportId" value="@report.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #10b981;" onclick="return confirm('Approve this report?');">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #10b981;" onclick="return confirm('@Localizer[\"ConfirmApproveReport\"]');">
                                         <i class="bi bi-check-circle"></i> Uphold
                                     </button>
                                 </form>
                                 <form method="post" asp-page-handler="Reject" style="display: inline;">
                                     <input type="hidden" name="reportId" value="@report.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="return confirm('Dismiss this report?');">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="return confirm('@Localizer[\"ConfirmDismissReport\"]');">
                                         <i class="bi bi-x-circle"></i> Dismiss
                                     </button>
                                 </form>
@@ -193,8 +194,8 @@
 
                             <form method="post" asp-page-handler="Delete" style="display: inline;">
                                 <input type="hidden" name="reportId" value="@report.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this report?');">
-                                    <i class="bi bi-trash"></i> Delete
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('@Localizer[\"ConfirmDeleteReport\"]');">
+                                    <i class="bi bi-trash"></i> @Localizer["Delete"]
                                 </button>
                             </form>
                         </div>
@@ -208,7 +209,7 @@
                 <div class="pagination">
                     @if (Model.PageNumber > 1)
                     {
-                        <a href="/admin/reports?pageNumber=1">First</a>
+                        <a href="/admin/reports?pageNumber=1">@Localizer["FirstPage"]</a>
                         <a href="/admin/reports?pageNumber=@(Model.PageNumber - 1)">Previous</a>
                     }
 
@@ -227,7 +228,7 @@
                     @if (Model.PageNumber < Model.TotalPages)
                     {
                         <a href="/admin/reports?pageNumber=@(Model.PageNumber + 1)">Next</a>
-                        <a href="/admin/reports?pageNumber=@Model.TotalPages">Last</a>
+                        <a href="/admin/reports?pageNumber=@Model.TotalPages">@Localizer["LastPage"]</a>
                     }
                 </div>
             }
@@ -236,8 +237,8 @@
         {
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="bi bi-flag"></i></div>
-                <h3>No reports found</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? "No reports in the system" : $"No results for \"{Model.SearchTerm}\"")</p>
+                <h3>@Localizer["NoReportsFound"]</h3>
+                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoReportsInTheSystem"] : $"@Localizer[\"FilterResults\"] \"{Model.SearchTerm}\"")</p>
             </div>
         }
     </div>

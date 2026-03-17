@@ -1,5 +1,6 @@
 @page "/settings/email-preferences"
 @model FixIt.Pages.Settings.EmailPreferencesModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Email Preferences";
 }
@@ -7,8 +8,8 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8">
-            <h1>Email Preferences</h1>
-            <p class="text-muted">Manage your email notification settings</p>
+            <h1>@Localizer["EmailPreferencesPage"]</h1>
+            <p class="text-muted">@Localizer["ManageYourEmailNotificationSettings"]</p>
 
             @if (Model.SuccessMessage != null)
             {
@@ -28,12 +29,12 @@
                                    onchange="this.form.submit()"
                                    @(Model.User?.EmailNotificationsEnabled == true ? "checked" : "")>
                             <label class="form-check-label" for="emailNotificationsEnabled">
-                                <h5 class="mb-0">Email Notifications</h5>
+                                <h5 class="mb-0">@Localizer["EmailNotificationsTitle"]</h5>
                             </label>
                         </div>
                     </div>
                     <div class="card-body text-muted">
-                        <p class="mb-0">Turn on or off all email notifications from FixIt</p>
+                        <p class="mb-0">@Localizer["TurnOnOrOffAllEmailNotificationsFromFixIt"]</p>
                     </div>
                 </div>
             </form>
@@ -55,9 +56,9 @@
                                            @(Model.User?.ReceiveHealthReports == true ? "checked" : "")>
                                     <label class="form-check-label" for="receiveHealthReports">
                                         <h6 class="mb-1">
-                                            <i class="bi bi-heart-pulse text-danger"></i> Weekly Health Reports
+                                            <i class="bi bi-heart-pulse text-danger"></i> @Localizer["WeeklyHealthReportsLabel"]
                                         </h6>
-                                        <small class="text-muted">Get weekly community health metrics and insights for your city</small>
+                                        <small class="text-muted">@Localizer["GetWeeklyCommunityHealthMetrics"]</small>
                                     </label>
                                 </div>
                             </div>
@@ -72,7 +73,7 @@
                                         <h6 class="mb-1">
                                             <i class="bi bi-bell text-warning"></i> Weekly Reminders
                                         </h6>
-                                        <small class="text-muted">Reminders about open issues in your area that need attention</small>
+                                        <small class="text-muted">@Localizer["RemindersAboutOpenIssuesInYourArea"]</small>
                                     </label>
                                 </div>
                             </div>
@@ -87,7 +88,7 @@
                                         <h6 class="mb-1">
                                             <i class="bi bi-exclamation-triangle text-danger"></i> Safety Alerts
                                         </h6>
-                                        <small class="text-muted">Instant alerts when hazards are reported near you</small>
+                                        <small class="text-muted">@Localizer["InstantAlertsWhenHazardsAreReportedNearYou"]</small>
                                     </label>
                                 </div>
                             </div>
@@ -127,7 +128,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Save Preferences
                         </button>
-                        <a href="/settings" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="/settings" class="btn btn-outline-secondary">@Localizer["CancelButton"]</a>
                     </div>
                 </form>
             }

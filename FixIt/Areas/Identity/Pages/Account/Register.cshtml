@@ -1,5 +1,6 @@
 @page
 @model FixIt.Areas.Identity.Pages.Account.RegisterModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Register";
 }
@@ -16,8 +17,8 @@
                         <div class="mb-3">
                             <i class="bi bi-tools text-gradient" style="font-size: 3rem;"></i>
                         </div>
-                        <h1 class="h3 mb-2">Create Account</h1>
-                        <p class="text-muted">Join the community and start making a difference</p>
+                        <h1 class="h3 mb-2">@Localizer["CreateAccount"]</h1>
+                        <p class="text-muted">@Localizer["JoinThousands"]</p>
                     </div>
 
                     <section>
@@ -25,47 +26,47 @@
                             <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                             
                             <div class="mb-3">
-                                <label asp-for="Input.Email" class="form-label">Email</label>
+                                <label asp-for="Input.Email" class="form-label">@Localizer["EmailAddress"]</label>
                                 <input asp-for="Input.Email" class="form-control form-control-lg" 
                                        autocomplete="username" aria-required="true" 
-                                       placeholder="your@email.com" />
+                                       placeholder='@Localizer["YourAtEmailComPlaceholder"]' />
                                 <span asp-validation-for="Input.Email" class="text-danger small"></span>
                             </div>
 
                             <div class="mb-3">
-                                <label asp-for="Input.DisplayName" class="form-label">Display Name</label>
+                                <label asp-for="Input.DisplayName" class="form-label">@Localizer["DisplayNameField"]</label>
                                 <input asp-for="Input.DisplayName" class="form-control form-control-lg" 
-                                       aria-required="true" placeholder="How should we call you?" />
+                                       aria-required="true" placeholder='@Localizer["HowShouldWeCallYouPlaceholder"]' />
                                 <span asp-validation-for="Input.DisplayName" class="text-danger small"></span>
-                                <small class="text-muted">This is how other users will see you</small>
+                                <small class="text-muted">@Localizer["ThisIsHowOtherUsersWillSeeYou"]</small>
                             </div>
 
                             <div class="mb-3">
-                                <label asp-for="Input.Password" class="form-label">Password</label>
+                                <label asp-for="Input.Password" class="form-label">@Localizer["PasswordLabel"]</label>
                                 <input asp-for="Input.Password" type="password" class="form-control form-control-lg" 
                                        autocomplete="new-password" aria-required="true" 
-                                       placeholder="••••••••" />
+                                       placeholder='@Localizer["PasswordPlaceholder"]' />
                                 <span asp-validation-for="Input.Password" class="text-danger small"></span>
                                 <small class="text-muted">At least 8 characters with uppercase and numbers</small>
                             </div>
 
                             <div class="mb-4">
-                                <label asp-for="Input.ConfirmPassword" class="form-label">Confirm Password</label>
+                                <label asp-for="Input.ConfirmPassword" class="form-label">@Localizer["ConfirmPassword"]</label>
                                 <input asp-for="Input.ConfirmPassword" type="password" class="form-control form-control-lg" 
                                        autocomplete="new-password" aria-required="true" 
-                                       placeholder="••••••••" />
+                                       placeholder='@Localizer["PasswordPlaceholder"]' />
                                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
                             </div>
 
                             <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                                <button type="submit" class="btn btn-primary btn-lg">@Localizer["CreateAccount"]</button>
                                     <i class="bi bi-person-plus"></i> Create Account
                                 </button>
                             </div>
                             
                             <div class="text-center">
                                 <small class="text-muted">
-                                    By creating an account, you agree to our Terms of Service
+                                    By creating an account, you agree to our @Localizer["TermsOfService"]
                                 </small>
                             </div>
                         </form>
@@ -75,7 +76,7 @@
                     {
                         <hr class="my-4">
                         <div>
-                            <p class="mb-2 text-center text-muted" style="font-size: 0.875rem;">Or sign up with</p>
+                            <p class="mb-2 text-center text-muted" style="font-size: 0.875rem;">@Localizer["OrSignUpWith"]</p>
                             <div class="d-grid gap-2">
                                 @foreach (var provider in Model.ExternalLogins)
                                 {

@@ -1,5 +1,6 @@
 @page "/admin/login"
 @model FixIt.Areas.Admin.Pages.LoginModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Admin & Moderator Login";
     Layout = null; // Custom layout for login
@@ -235,8 +236,8 @@
             <!-- Header -->
             <div class="login-header">
                 <i class="bi bi-shield-lock"></i>
-                <h1>Admin Panel</h1>
-                <p>Management Portal for FixIt</p>
+                <h1>@Localizer["AdminPanel"]</h1>
+                <p>@Localizer["ManagementPortalForFixIt"]</p>
             </div>
 
             <!-- Form -->
@@ -256,7 +257,7 @@
                         <i class="bi bi-person"></i> Username
                     </label>
                     <input type="text" class="form-control @(ModelState.ContainsKey("Input.Username") && ModelState["Input.Username"]?.Errors.Any() == true ? "is-invalid" : "")" 
-                           id="username" asp-for="Input.Username" autocomplete="username" placeholder="Enter your username">
+                           id="username" asp-for="Input.Username" autocomplete="username" placeholder="@Localizer["EnterYourUsername"]">
                     <span asp-validation-for="Input.Username" class="error-message"></span>
                 </div>
 
@@ -266,7 +267,7 @@
                         <i class="bi bi-lock"></i> Password
                     </label>
                     <input type="password" class="form-control @(ModelState.ContainsKey("Input.Password") && ModelState["Input.Password"]?.Errors.Any() == true ? "is-invalid" : "")" 
-                           id="password" asp-for="Input.Password" autocomplete="current-password" placeholder="Enter your password">
+                           id="password" asp-for="Input.Password" autocomplete="current-password" placeholder="@Localizer["EnterYourPassword"]">
                     <span asp-validation-for="Input.Password" class="error-message"></span>
                 </div>
 

@@ -1,5 +1,6 @@
 @page "/issues/{id}"
 @model IssueDetailModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Model.Issue?.Title ?? "Issue";
 }
@@ -1317,7 +1318,7 @@
                                             <i class="bi bi-tag-fill"></i>
                                         </div>
                                         <div>
-                                            <div class="ai-metric-label">Category</div>
+                                            <div class="ai-metric-label">@Localizer["CategoryLabel"]</div>
                                             <div class="ai-metric-value">@Model.Analysis.Category</div>
                                             <div class="ai-metric-sub">@Model.Analysis.ConfidenceScore% confidence</div>
                                         </div>
@@ -1329,7 +1330,7 @@
                                             <i class="bi bi-exclamation-triangle-fill"></i>
                                         </div>
                                         <div>
-                                            <div class="ai-metric-label">Severity</div>
+                                            <div class="ai-metric-label">@Localizer["SeverityLabel"]</div>
                                             <div class="ai-metric-value">@Model.Analysis.EstimatedSeverity <span style="font-size: var(--text-sm); color: var(--gray-400);">/ 10</span></div>
                                             <div class="severity-track">
                                                 <div class="severity-fill @severityBgClass" style="width: @(Model.Analysis.EstimatedSeverity * 10)%;"></div>
@@ -1442,7 +1443,7 @@
                                 <div style="width: 56px; height: 56px; background: var(--warning-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); font-size: 1.5rem; color: var(--warning);">
                                     <i class="bi bi-exclamation-triangle-fill"></i>
                                 </div>
-                                <div style="font-weight: var(--font-semibold); color: var(--gray-700); margin-bottom: var(--space-1);">Analysis Unavailable</div>
+                                <div style="font-weight: var(--font-semibold); color: var(--gray-700); margin-bottom: var(--space-1);">@Localizer["AnalysisUnavailable"]</div>
                                 <div style="font-size: var(--text-sm); color: var(--gray-400); margin-bottom: var(--space-4);">Could not generate AI analysis at this time.</div>
                                 <button type="button" class="btn btn-primary btn-sm" onclick="retryAnalysis('@Model.Id')">
                                     <i class="bi bi-arrow-clockwise me-1"></i>Retry
@@ -1462,9 +1463,9 @@
                         @if (Model.Comments?.Any() == true)
                         {
                             <select id="commentSortDropdown" class="form-select form-select-sm" style="width: 160px; margin-left: auto;">
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                                <option value="mostLiked">Most Liked</option>
+                                <option value="newest">@Localizer["NewestFirstOption"]</option>
+                                <option value="oldest">@Localizer["OldestFirstOption"]</option>
+                                <option value="mostLiked">@Localizer["MostLikedOption"]</option>
                             </select>
                         }
                     </div>
@@ -1542,7 +1543,7 @@
                         {
                             <div class="alert alert-info" style="border-radius: var(--radius-lg);">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <a asp-area="Identity" asp-page="/Account/Login">Sign in</a> to join the conversation.
+                                <a asp-area="Identity" asp-page="/Account/Login">@Localizer["SignIn"]</a> @Localizer["SignInToJoinTheConversation"].
                             </div>
                         }
                         else
@@ -1551,8 +1552,8 @@
                                 <div style="font-size: 2.5rem; margin-bottom: var(--space-3); opacity: .4;">
                                     <i class="bi bi-chat-square-dots"></i>
                                 </div>
-                                <div style="font-weight: var(--font-semibold); color: var(--gray-500);">No comments yet</div>
-                                <div style="font-size: var(--text-sm);">Be the first to share your thoughts</div>
+                                <div style="font-weight: var(--font-semibold); color: var(--gray-500);">@Localizer["NoCommentsYet"]</div>
+                                <div style="font-size: var(--text-sm);">@Localizer["BeTheFirstToShareYourThoughts"]</div>
                             </div>
                         }
                     </div>
@@ -1576,12 +1577,12 @@
                                     <button type="button" class="vote-btn upvote" id="upvoteBtn" onclick="vote(1)">
                                         <i class="bi bi-hand-thumbs-up-fill"></i>
                                         <span class="vote-count" id="upvoteCount">@Model.Issue?.Upvotes</span>
-                                        <span style="font-size: var(--text-xs); font-weight: var(--font-medium); opacity: .7; position: relative; z-index: 1;">Upvote</span>
+                                        <span style="font-size: var(--text-xs); font-weight: var(--font-medium); opacity: .7; position: relative; z-index: 1;">@Localizer["UpvoteLabel"]</span>
                                     </button>
                                     <button type="button" class="vote-btn downvote" id="downvoteBtn" onclick="vote(-1)">
                                         <i class="bi bi-hand-thumbs-down-fill"></i>
                                         <span class="vote-count" id="downvoteCount">@Model.Issue?.Downvotes</span>
-                                        <span style="font-size: var(--text-xs); font-weight: var(--font-medium); opacity: .7; position: relative; z-index: 1;">Downvote</span>
+                                        <span style="font-size: var(--text-xs); font-weight: var(--font-medium); opacity: .7; position: relative; z-index: 1;">@Localizer["DownvoteLabel"]</span>
                                     </button>
                                 </div>
                                 <div class="vote-score-bar">
@@ -1599,16 +1600,16 @@
                                     <div class="vote-display-box up-box">
                                         <i class="bi bi-hand-thumbs-up-fill"></i>
                                         <strong>@Model.Issue?.Upvotes</strong>
-                                        <small>Upvotes</small>
+                                        <small>@Localizer["UpvotesCount"]</small>
                                     </div>
                                     <div class="vote-display-box down-box">
                                         <i class="bi bi-hand-thumbs-down-fill"></i>
                                         <strong>@Model.Issue?.Downvotes</strong>
-                                        <small>Downvotes</small>
+                                        <small>@Localizer["DownvotesCount"]</small>
                                     </div>
                                 </div>
                                 <div class="login-prompt mt-3">
-                                    <a asp-area="Identity" asp-page="/Account/Login">Sign in</a> to cast your vote
+                                    <a asp-area="Identity" asp-page="/Account/Login">@Localizer["SignIn"]</a> @Localizer["SignInToCastYourVote"]
                                 </div>
                             }
                         </div>
@@ -1627,8 +1628,8 @@
                                         <i class="bi bi-incognito"></i>
                                     </div>
                                     <div>
-                                        <div class="reporter-name">Anonymous User</div>
-                                        <small class="text-muted">Identity hidden for privacy</small>
+                                        <div class="reporter-name">@Localizer["AnonymousUser"]</div>
+                                        <small class="text-muted">@Localizer["IdentityHiddenForPrivacy"]</small>
                                     </div>
                                 </div>
                             }
@@ -1654,7 +1655,7 @@
                                     <i class="bi bi-chevron-right ms-auto" style="color: var(--gray-300); font-size: var(--text-sm);"></i>
                                 </a>
                                 <a href="/user/@Model.Issue.Reporter?.Id" class="btn btn-outline-primary w-100 btn-sm">
-                                    <i class="bi bi-person-lines-fill me-1"></i>View Profile
+                                    <i class="bi bi-person-lines-fill me-1"></i>@Localizer["ViewDetails"]
                                 </a>
                             }
                         </div>
@@ -1704,7 +1705,7 @@ else
             <div class="not-found-icon">
                 <i class="bi bi-exclamation-triangle-fill"></i>
             </div>
-            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-extrabold); margin-bottom: var(--space-2);">Issue Not Found</h2>
+            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-extrabold); margin-bottom: var(--space-2);">@Localizer["IssueNotFoundMessage"]</h2>
             <p style="color: var(--gray-500); font-size: var(--text-base); max-width: 400px; margin: 0 auto var(--space-6);">
                 The issue you're looking for doesn't exist or may have been removed.
             </p>
@@ -1884,7 +1885,7 @@ function displayAnalysis(a) {
     el.innerHTML = `
         <div class="ai-card-header">
             <div class="ai-card-header-left"><i class="bi bi-stars"></i> AI Analysis</div>
-            <span class="badge bg-success" style="font-size:var(--text-xs);"><i class="bi bi-check-circle-fill me-1"></i>Complete</span>
+            <span class="badge bg-success" style="font-size:var(--text-xs);"><i class="bi bi-check-circle-fill me-1"></i>@Localizer["CompleteStatus"]</span>
         </div>
         <div class="ai-card-body">
             <div class="row g-3 mb-4">
@@ -1924,14 +1925,14 @@ function showAnalysisError() {
     el.innerHTML = `
         <div class="ai-card-header">
             <div class="ai-card-header-left"><i class="bi bi-stars"></i> AI Analysis</div>
-            <span class="badge" style="background:var(--warning-light);color:var(--warning-dark);border:1px solid #fde68a;font-size:var(--text-xs);"><i class="bi bi-exclamation-triangle me-1"></i>Unavailable</span>
+            <span class="badge" style="background:var(--warning-light);color:var(--warning-dark);border:1px solid #fde68a;font-size:var(--text-xs);"><i class="bi bi-exclamation-triangle me-1"></i>@Localizer["UnavailableStatus"]</span>
         </div>
         <div class="ai-card-body">
             <div style="text-align:center;padding:var(--space-8);">
                 <div style="width:56px;height:56px;background:var(--warning-light);border-radius:var(--radius-xl);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);font-size:1.5rem;color:var(--warning);">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                 </div>
-                <div style="font-weight:var(--font-semibold);color:var(--gray-700);margin-bottom:var(--space-1);">Analysis Unavailable</div>
+                <div style="font-weight:var(--font-semibold);color:var(--gray-700);margin-bottom:var(--space-1);">@Localizer["AnalysisUnavailable"]</div>
                 <div style="font-size:var(--text-sm);color:var(--gray-400);margin-bottom:var(--space-4);">Could not generate AI analysis at this time.</div>
                 <button type="button" class="btn btn-primary btn-sm" onclick="retryAnalysis('${id}')">
                     <i class="bi bi-arrow-clockwise me-1"></i>Retry
@@ -1947,7 +1948,7 @@ async function retryAnalysis(issueId) {
         el.innerHTML = `
             <div class="ai-card-header">
                 <div class="ai-card-header-left"><i class="bi bi-stars"></i> AI Analysis</div>
-                <span class="badge" style="background:var(--warning-light);color:var(--warning-dark);border:1px solid #fde68a;font-size:var(--text-xs);"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                <span class="badge" style="background:var(--warning-light);color:var(--warning-dark);border:1px solid #fde68a;font-size:var(--text-xs);"><i class="bi bi-hourglass-split me-1"></i>@Localizer["PendingStatus"]</span>
             </div>
             <div class="ai-card-body">
                 <div class="ai-loading">

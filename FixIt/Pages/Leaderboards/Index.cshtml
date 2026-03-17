@@ -1,7 +1,8 @@
 @page
 @model FixIt.Pages.Leaderboards.IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Community Leaderboards";
+    ViewData["Title"] = Localizer["Leaderboards"] + " - FixIt";
 }
 
 <div class="container py-4">
@@ -13,7 +14,7 @@
                     <i class="bi bi-trophy text-gradient" style="font-size: 3.5rem;"></i>
                 </h1>
                 <h1 class="h2 mb-2">Community Leaderboards</h1>
-                <p class="text-muted">Celebrate the top contributors making our cities better</p>
+                <p class="text-muted">@Localizer["CelebratateTopContributors"]</p>
             </div>
         </div>
     </div>
@@ -35,7 +36,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link px-4 py-2" id="alltime-tab" data-bs-toggle="tab" data-bs-target="#alltime" 
                     type="button" role="tab" style="border-radius: 2rem; font-weight: 600;">
-                <i class="bi bi-infinity"></i> All Time
+                <i class="bi bi-infinity"></i> @Localizer["AllTimeTab"]
             </button>
         </li>
     </ul>
@@ -44,12 +45,12 @@
     <div class="tab-content" id="leaderboardContent">
         <!-- Weekly Leaderboard -->
         <div class="tab-pane fade show active" id="weekly" role="tabpanel">
-            @RenderLeaderboard(Model.WeeklyLeaderboard, "This Week's Champions")
+            @RenderLeaderboard(Model.WeeklyLeaderboard, Localizer["ThisWeeksChampions"])
         </div>
 
         <!-- Monthly Leaderboard -->
         <div class="tab-pane fade" id="monthly" role="tabpanel">
-            @RenderLeaderboard(Model.MonthlyLeaderboard, "This Month's Top Contributors")
+            @RenderLeaderboard(Model.MonthlyLeaderboard, Localizer["ThisMonthsTopContributors"])
         </div>
 
         <!-- All Time Leaderboard -->
@@ -68,8 +69,8 @@
                 <div class="mb-4" style="font-size: 4rem; opacity: 0.3;">
                     <i class="bi bi-inbox"></i>
                 </div>
-                <h5 class="text-muted">No entries yet</h5>
-                <p class="text-muted">Be the first to contribute and claim your spot!</p>
+                <h5 class="text-muted">@Localizer["NoEntriesYet"]</h5>
+                <p class="text-muted">@Localizer["BeTheFirstToContributeAndClaimYourSpot"]</p>
             </div>
         }
 
@@ -146,10 +147,10 @@
                             <table class="table table-hover mb-0">
                                 <thead style="background: var(--gray-100); position: sticky; top: 0; z-index: 10;">
                                     <tr>
-                                        <th class="border-0 py-3 ps-4" style="width: 80px;">Rank</th>
-                                        <th class="border-0 py-3">User</th>
-                                        <th class="border-0 py-3 text-center">Points</th>
-                                        <th class="border-0 py-3 text-end pe-4">Trust Level</th>
+                                        <th class="border-0 py-3 ps-4" style="width: 80px;">@Localizer["RankHeader"]</th>
+                                        <th class="border-0 py-3">@Localizer["UserHeader"]</th>
+                                        <th class="border-0 py-3 text-center">@Localizer["PointsHeader"]</th>
+                                        <th class="border-0 py-3 text-end pe-4">@Localizer["TrustLevelHeader"]</th>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -1,5 +1,6 @@
 @page "/admin/users"
 @model FixIt.Areas.Admin.Pages.Users.IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Users Management";
 }
@@ -140,7 +141,7 @@
     <!-- Search -->
     <div class="search-section">
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by email, username, or name..." class="form-control">
+            <input type="text" id="searchInput" placeholder="@Localizer["SearchByEmailUsernameOrName"]" class="form-control">
             <button class="btn btn-primary" onclick="filterUsers()">
                 <i class="bi bi-search"></i> Search
             </button>
@@ -206,15 +207,15 @@
 
                         <div class="user-meta">
                             <div class="meta-item">
-                                <span class="meta-label">Reputation</span>
+                                <span class="meta-label">@Localizer["ReputationLabel"]</span>
                                 <span class="meta-value">@user.ReputationScore pts</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">Joined</span>
+                                <span class="meta-label">@Localizer["JoinedLabel"]</span>
                                 <span class="meta-value">@user.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">Status</span>
+                                <span class="meta-label">@Localizer["StatusLabel"]</span>
                                 <span class="meta-value">@(user.EmailConfirmed ? "Verified" : "Unverified")</span>
                             </div>
                         </div>
@@ -228,7 +229,7 @@
                             {
                                 <form method="post" asp-page-handler="Unban" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Unban this user?');">
+                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('@Localizer[\"ConfirmUnbanUser\"]');">
                                         <i class="bi bi-unlock"></i> Unban
                                     </button>
                                 </form>
@@ -237,7 +238,7 @@
                             {
                                 <form method="post" asp-page-handler="Ban" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #991b1b;" onclick="return confirm('Ban this user?');">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #991b1b;" onclick="return confirm('@Localizer[\"ConfirmBanUser\"]');">
                                         <i class="bi bi-ban"></i> Ban
                                     </button>
                                 </form>
@@ -247,7 +248,7 @@
                             {
                                 <form method="post" asp-page-handler="Unrestrict" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Remove restrictions?');">
+                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('@Localizer[\"ConfirmRemoveRestrictions\"]');">
                                         <i class="bi bi-check-circle"></i> Unrestrict
                                     </button>
                                 </form>
@@ -256,7 +257,7 @@
                             {
                                 <form method="post" asp-page-handler="Restrict" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #f59e0b;" onclick="return confirm('Restrict for 30 days?');">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #f59e0b;" onclick="return confirm('@Localizer[\"ConfirmRestrictUser\"]');">
                                         <i class="bi bi-pause-circle"></i> Restrict
                                     </button>
                                 </form>
@@ -269,8 +270,8 @@
 
                             <form method="post" asp-page-handler="Delete" style="display: inline;">
                                 <input type="hidden" name="userId" value="@user.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this user permanently?');">
-                                    <i class="bi bi-trash"></i> Delete
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('@Localizer[\"ConfirmDeleteUser\"]');">
+                                    <i class="bi bi-trash"></i> @Localizer["Delete"]
                                 </button>
                             </form>
                         </div>
@@ -284,7 +285,7 @@
                 <div class="pagination">
                     @if (Model.PageNumber > 1)
                     {
-                        <a href="/admin/users?pageNumber=1">First</a>
+                        <a href="/admin/users?pageNumber=1">@Localizer["FirstPage"]</a>
                         <a href="/admin/users?pageNumber=@(Model.PageNumber - 1)">Previous</a>
                     }
 
@@ -303,7 +304,7 @@
                     @if (Model.PageNumber < Model.TotalPages)
                     {
                         <a href="/admin/users?pageNumber=@(Model.PageNumber + 1)">Next</a>
-                        <a href="/admin/users?pageNumber=@Model.TotalPages">Last</a>
+                        <a href="/admin/users?pageNumber=@Model.TotalPages">@Localizer["LastPage"]</a>
                     }
                 </div>
             }
@@ -312,8 +313,8 @@
         {
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="bi bi-people"></i></div>
-                <h3>No users found</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? "No users in the system" : $"No results for \"{Model.SearchTerm}\"")</p>
+                <h3>@Localizer["NoUsersFound"]</h3>
+                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoUsersInTheSystem"] : $"@Localizer[\"FilterResults\"] \"{Model.SearchTerm}\"")</p>
             </div>
         }
     </div>
@@ -324,14 +325,14 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Change User Role</h5>
+                <h5 class="modal-title">@Localizer["ChangeUserRoleModal"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="roleForm" method="post" asp-page-handler="ChangeRole">
                     <input type="hidden" id="userId" name="userId" />
                     <div class="mb-3">
-                        <label for="userEmail" class="form-label">User Email</label>
+                        <label for="userEmail" class="form-label">@Localizer["UserEmailLabel"]</label>
                         <input type="text" class="form-control" id="userEmail" disabled />
                     </div>
                     <div class="mb-3">
@@ -343,7 +344,7 @@
                             <option value="Admin">Administrator</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Update Role</button>
+                    <button type="submit" class="btn btn-primary w-100">@Localizer["UpdateRoleBtn"]</button>
                 </form>
             </div>
         </div>

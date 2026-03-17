@@ -1,7 +1,8 @@
 ﻿@page
 @model IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "FixIt - Community-Driven Infrastructure Solutions";
+    ViewData["Title"] = Localizer["ReportAndFix"] + " - FixIt";
 }
 
 <!-- Hero Section -->
@@ -10,34 +11,34 @@
         <div class="row align-items-center">
             <div class="col-lg-6 mb-5 mb-lg-0">
                 <div class="badge bg-white text-primary px-3 py-2 mb-4" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-                     COMMUNITY-POWERED PLATFORM
+                     @Localizer["CommunityPoweredPlatform"]
                 </div>
                 <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
-                    Report & Fix<br />
-                    <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Community Issues</span>
+                    @Localizer["ReportAndFix"]<br />
+                    <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">@Localizer["CommunityIssues"]</span>
                 </h1>
                 <p class="lead mb-4" style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.95); line-height: 1.7;">
-                    Join thousands of citizens making a difference. Report infrastructure problems, track their resolution in real-time, and help build stronger communities.
+                    @Localizer["JoinThousands"]
                 </p>
                 <div class="d-flex gap-3 flex-wrap">
                     @if (User?.Identity?.IsAuthenticated ?? false)
                     {
                         <a asp-page="/Issues/Create" class="btn btn-accent btn-lg px-5">
-                            <i class="bi bi-plus-circle me-2"></i>Report New Issue
+                            <i class="bi bi-plus-circle me-2"></i>@Localizer["ReportNewIssue"]
                         </a>
                         <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5" 
                            style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px);">
-                            <i class="bi bi-list-check me-2"></i>Browse Issues
+                            <i class="bi bi-list-check me-2"></i>@Localizer["BrowseIssues"]
                         </a>
                     }
                     else
                     {
                         <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-accent btn-lg px-5">
-                            <i class="bi bi-person-plus me-2"></i>Get Started Free
+                            <i class="bi bi-person-plus me-2"></i>@Localizer["GetStartedFree"]
                         </a>
                         <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-lg px-5"
                            style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px);">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            <i class="bi bi-box-arrow-in-right me-2"></i>@Localizer["SignIn"]
                         </a>
                     }
                 </div>
@@ -47,19 +48,19 @@
                     <div class="col-4">
                         <div class="text-center">
                             <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">10K+</div>
-                            <div class="small" style="opacity: 0.9;">Issues Reported</div>
+                            <div class="small" style="opacity: 0.9;">@Localizer["IssuesReported"]</div>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="text-center">
                             <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">7.5K+</div>
-                            <div class="small" style="opacity: 0.9;">Issues Resolved</div>
+                            <div class="small" style="opacity: 0.9;">@Localizer["IssuesResolved"]</div>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="text-center">
                             <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">50+</div>
-                            <div class="small" style="opacity: 0.9;">Cities</div>
+                            <div class="small" style="opacity: 0.9;">@Localizer["Cities"]</div>
                         </div>
                     </div>
                 </div>
@@ -98,11 +99,11 @@
     <div class="container">
         <div class="text-center mb-5">
             <span class="badge bg-primary text-white px-3 py-2 mb-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;">
-                HOW IT WORKS
+                @Localizer["HowItWorks"]
             </span>
-            <h2 class="h1 fw-bold mb-3">Simple. Transparent. Effective.</h2>
+            <h2 class="h1 fw-bold mb-3">@Localizer["SimpleTransparentEffective"]</h2>
             <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;">
-                Report issues, track progress, and see real results in your community
+                @Localizer["ReportTrackResults"]
             </p>
         </div>
 
@@ -113,9 +114,9 @@
                     <div class="feature-icon mb-4">
                         <i class="bi bi-camera"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Report Issues</h5>
+                    <h5 class="fw-bold mb-3">@Localizer["ReportIssues"]</h5>
                     <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        Take a photo, pin the location on a map, and submit a detailed report in seconds.
+                        @Localizer["TakePhotoPin"]
                     </p>
                 </div>
             </div>
@@ -126,9 +127,9 @@
                     <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         <i class="bi bi-graph-up"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Real-Time Tracking</h5>
+                    <h5 class="fw-bold mb-3">@Localizer["RealTimeTracking"]</h5>
                     <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        Watch issues progress from reported to resolved with live status updates.
+                        @Localizer["WatchIssuesProgress"]
                     </p>
                 </div>
             </div>
@@ -139,9 +140,9 @@
                     <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         <i class="bi bi-chat-dots"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">Community Engagement</h5>
+                    <h5 class="fw-bold mb-3">@Localizer["CommunityEngagement"]</h5>
                     <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        Upvote important issues, comment with insights, and collaborate with neighbors.
+                        @Localizer["UpvoteIssuesComment"]
                     </p>
                 </div>
             </div>
@@ -152,9 +153,9 @@
                     <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         <i class="bi bi-check-circle"></i>
                     </div>
-                    <h5 class="fw-bold mb-3">See Results</h5>
+                    <h5 class="fw-bold mb-3">@Localizer["SeeResults"]</h5>
                     <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        Get notified when issues are resolved and see your community improve.
+                        @Localizer["GetNotifiedWhenResolved"]
                     </p>
                 </div>
             </div>
@@ -168,11 +169,11 @@
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
                 <span class="badge bg-primary text-white px-3 py-2 mb-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;">
-                    WHY IT MATTERS
+                    @Localizer["WhyItMatters"]
                 </span>
-                <h2 class="h1 fw-bold mb-4">Building Stronger Communities Together</h2>
+                <h2 class="h1 fw-bold mb-4">@Localizer["BuildingStrongerCommunities"]</h2>
                 <p class="lead text-muted mb-5">
-                    FixIt empowers citizens to take an active role in maintaining and improving their neighborhoods through transparency and collaboration.
+                    @Localizer["FixItEmpower"]
                 </p>
 
                 <div class="row g-4">
@@ -184,8 +185,8 @@
                                 </div>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-2">Full Transparency</h6>
-                                <p class="text-muted small mb-0">Every report, status change, and action is visible to the community.</p>
+                                <h6 class="fw-bold mb-2">@Localizer["FullTransparency"]</h6>
+                                <p class="text-muted small mb-0">@Localizer["FullTransparencyDesc"]</p>
                             </div>
                         </div>
                     </div>
@@ -198,8 +199,8 @@
                                 </div>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-2">Faster Resolution</h6>
-                                <p class="text-muted small mb-0">Community reporting accelerates problem identification and prioritization.</p>
+                                <h6 class="fw-bold mb-2">@Localizer["FasterResolution"]</h6>
+                                <p class="text-muted small mb-0">@Localizer["FasterResolutionDesc"]</p>
                             </div>
                         </div>
                     </div>
@@ -212,8 +213,8 @@
                                 </div>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-2">Community Power</h6>
-                                <p class="text-muted small mb-0">Your voice matters. Vote up important issues and shape priorities.</p>
+                                <h6 class="fw-bold mb-2">@Localizer["CommunityPower"]</h6>
+                                <p class="text-muted small mb-0">@Localizer["YourVoiceMatters"]</p>
                             </div>
                         </div>
                     </div>
@@ -226,8 +227,8 @@
                                 </div>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-2">Data-Driven Impact</h6>
-                                <p class="text-muted small mb-0">Infrastructure decisions backed by real community input and analytics.</p>
+                                <h6 class="fw-bold mb-2">@Localizer["DataDrivenImpact"]</h6>
+                                <p class="text-muted small mb-0">@Localizer["InfrastructureDecisionsBackedBy"]</p>
                             </div>
                         </div>
                     </div>
@@ -238,24 +239,24 @@
                 <div class="position-relative">
                     <div class="card border-0" style="box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1); border-radius: 1.5rem; overflow: hidden;">
                         <div style="background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 2rem; color: white;">
-                            <h4 class="fw-bold mb-3">Live Community Impact</h4>
+                            <h4 class="fw-bold mb-3">@Localizer["LiveCommunityImpact"]</h4>
                             <div class="row g-3">
                                 <div class="col-6">
                                     <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
                                         <div class="h2 fw-bold mb-1">75%</div>
-                                        <div class="small" style="opacity: 0.9;">Resolution Rate</div>
+                                        <div class="small" style="opacity: 0.9;">@Localizer["ResolutionRate"]</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
                                         <div class="h2 fw-bold mb-1">48h</div>
-                                        <div class="small" style="opacity: 0.9;">Avg Response Time</div>
+                                        <div class="small" style="opacity: 0.9;">@Localizer["AvgResponseTime"]</div>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
                                         <div class="h2 fw-bold mb-1">25K+</div>
-                                        <div class="small" style="opacity: 0.9;">Active Community Members</div>
+                                        <div class="small" style="opacity: 0.9;">@Localizer["ActiveCommunityMembers"]</div>
                                     </div>
                                 </div>
                             </div>

@@ -1,5 +1,6 @@
 @page
 @model FixIt.Pages.Settings.IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Settings";
 }
@@ -7,7 +8,7 @@
 <div class="container py-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
-            <h1 class="mb-2">Settings</h1>
+            <h1 class="mb-2">@Localizer["Settings"]</h1>
             <p class="text-muted mb-5">Manage your account, preferences, and more</p>
 
             @if (!string.IsNullOrEmpty(Model.SuccessMessage))
@@ -38,8 +39,8 @@
                             <i class="bi bi-map" style="font-size: 1.5rem; color: #1e40af;"></i>
                         </div>
                         <div>
-                            <h5 class="mb-0">City Preference</h5>
-                            <p class="text-muted small mb-0">Select your city to personalize feature content</p>
+                            <h5 class="mb-0">@Localizer["CityPreference"]</h5>
+                            <p class="text-muted small mb-0">@Localizer["SelectYourCityToPersonalizeFeatureContent"]</p>
                         </div>
                     </div>
 
@@ -85,8 +86,8 @@
                             <div class="mb-3">
                                 <i class="bi bi-link-45deg" style="font-size: 2rem; color: #0d6efd;"></i>
                             </div>
-                            <h5 class="card-title">Connected Accounts</h5>
-                            <p class="card-text text-muted small mb-0">Link OAuth providers and manage authentication methods</p>
+                            <h5 class="card-title">@Localizer["ConnectedAccounts"]</h5>
+                            <p class="card-text text-muted small mb-0">@Localizer["LinkOAuthProvidersAndManageAuthenticationMethods"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
                             <small class="text-muted">Google • Microsoft • Facebook • GitHub</small>
@@ -101,8 +102,8 @@
                             <div class="mb-3">
                                 <i class="bi bi-envelope" style="font-size: 2rem; color: #dc3545;"></i>
                             </div>
-                            <h5 class="card-title">Email Preferences</h5>
-                            <p class="card-text text-muted small mb-0">Control which emails and notifications you receive</p>
+                            <h5 class="card-title">@Localizer["EmailPreferencesPage"]</h5>
+                            <p class="card-text text-muted small mb-0">@Localizer["ControlWhichEmailsAndNotificationsYouReceive"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
                             <small class="text-muted">Health Reports • Hazard Alerts • Reminders</small>
@@ -117,8 +118,8 @@
                             <div class="mb-3">
                                 <i class="bi bi-shield-lock" style="font-size: 2rem; color: #198754;"></i>
                             </div>
-                            <h5 class="card-title">Privacy & Safety</h5>
-                            <p class="card-text text-muted small mb-0">Anonymous reporting, hazard alerts, and profile visibility</p>
+                            <h5 class="card-title">@Localizer["PrivacyAndSafety"]</h5>
+                            <p class="card-text text-muted small mb-0">@Localizer["AnonymousReportingHazardAlertsAndProfileVisibility"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
                             <small class="text-muted">Anonymous Mode • Hazard Mode • Visibility</small>
@@ -133,8 +134,8 @@
                             <div class="mb-3">
                                 <i class="bi bi-person-circle" style="font-size: 2rem; color: #6f42c1;"></i>
                             </div>
-                            <h5 class="card-title">Account Management</h5>
-                            <p class="card-text text-muted small mb-0">Change password, manage profile, and account security</p>
+                            <h5 class="card-title">@Localizer["MyAccount"]</h5>
+                            <p class="card-text text-muted small mb-0">@Localizer["ChangePasswordManageProfileAndAccountSecurity"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
                             <small class="text-muted">Profile • Password • Email</small>
@@ -144,7 +145,7 @@
             </div>
 
             <div class="mt-5 pt-4 border-top">
-                <h6 class="text-muted mb-3">Account Status</h6>
+                <h6 class="text-muted mb-3">@Localizer["AccountStatus"]</h6>
                 <div class="alert alert-info mb-3">
                     <small>
                         @if (User?.Identity?.IsAuthenticated ?? false)

@@ -1,8 +1,10 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="@CultureInfo.CurrentUICulture.Name">
+@using System.Globalization
 @using Microsoft.AspNetCore.Identity
 @using FixIt.Models.Users
 @inject UserManager<ApplicationUser> UserManager
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -164,25 +166,25 @@
 
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Index">
-                                <i class="bi bi-house-door"></i> Home
+                                <i class="bi bi-house-door"></i> @Localizer["Home"]
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Issues/Index">
-                                <i class="bi bi-list-check"></i> Issues
+                                <i class="bi bi-list-check"></i> @Localizer["Issues"]
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Cities">
-                                <i class="bi bi-geo-alt"></i> Cities
+                                <i class="bi bi-geo-alt"></i> @Localizer["Cities"]
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Leaderboards/Index">
-                                <i class="bi bi-trophy"></i> Leaderboards
+                                <i class="bi bi-trophy"></i> @Localizer["Leaderboards"]
                             </a>
                         </li>
 
@@ -190,20 +192,20 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-shield-check"></i> Safety
+                                <i class="bi bi-shield-check"></i> @Localizer["Safety"]
                             </a>
                             <ul class="dropdown-menu">
-                                <li class="dropdown-header"><i class="bi bi-exclamation-triangle me-1"></i> Hazard Tools</li>
+                                <li class="dropdown-header"><i class="bi bi-exclamation-triangle me-1"></i> @Localizer["HazardTools"]</li>
                                 <li>
                                     <a class="dropdown-item" href="/safety/hazard-mode">
-                                        <i class="bi bi-map"></i> Hazard Map
+                                        <i class="bi bi-map"></i> @Localizer["HazardMap"]
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li class="dropdown-header"><i class="bi bi-lock me-1"></i> Privacy</li>
                                 <li>
                                     <a class="dropdown-item" href="/settings/privacy">
-                                        <i class="bi bi-incognito"></i> Privacy Settings
+                                        <i class="bi bi-incognito"></i> @Localizer["PrivacySettings"]
                                     </a>
                                 </li>
                             </ul>
@@ -238,7 +240,7 @@
                             <!-- Report issue CTA -->
                             <li class="nav-item d-none d-lg-flex">
                                 <a class="nav-report-btn" asp-area="" asp-page="/Issues/Create">
-                                    <i class="bi bi-plus-circle-fill"></i> Report Issue
+                                    <i class="bi bi-plus-circle-fill"></i> @Localizer["ReportIssue"]
                                 </a>
                             </li>
 
@@ -260,22 +262,22 @@
                                     </span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li class="dropdown-header">My Account</li>
+                                    <li class="dropdown-header">@Localizer["MyAccount"]</li>
                                     <li>
                                         <a class="dropdown-item"
                                            asp-area="" asp-page="/User/Profile"
                                            asp-route-userId="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
-                                            <i class="bi bi-person-circle"></i> View Profile
+                                            <i class="bi bi-person-circle"></i> @Localizer["ViewProfile"]
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Settings/ConnectedAccounts">
-                                            <i class="bi bi-link-45deg"></i> Connected Accounts
+                                            <i class="bi bi-link-45deg"></i> @Localizer["ConnectedAccounts"]
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Settings/Privacy">
-                                            <i class="bi bi-shield-lock"></i> Privacy & Safety
+                                            <i class="bi bi-shield-lock"></i> @Localizer["PrivacyAndSafety"]
                                         </a>
                                     </li>
                                     <li>
@@ -284,7 +286,7 @@
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li class="dropdown-header">Quick Actions</li>
+                                    <li class="dropdown-header">@Localizer["QuickActions"]</li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Issues/Create">
                                             <i class="bi bi-plus-circle"></i> Report an Issue
@@ -295,7 +297,7 @@
                                     {
                                         <li>
                                             <a class="dropdown-item" href="/admin/dashboard">
-                                                <i class="bi bi-shield-lock text-danger"></i> <strong>Admin Panel</strong>
+                                                <i class="bi bi-shield-lock text-danger"></i> <strong>@Localizer["AdminPanel"]</strong>
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
@@ -318,17 +320,17 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                                    <i class="bi bi-box-arrow-in-right"></i> @Localizer["SignIn"]
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-report-btn" asp-area="Identity" asp-page="/Account/Register">
-                                    <i class="bi bi-person-plus-fill"></i> Get Started
+                                    <i class="bi bi-person-plus-fill"></i> @Localizer["GetStarted"]
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/admin/login" title="Admin and Moderator Login">
-                                    <i class="bi bi-shield-lock"></i> Admin
+                                    <i class="bi bi-shield-lock"></i> @Localizer["Admin"]
                                 </a>
                             </li>
                         }
@@ -364,73 +366,73 @@
                     <div class="d-flex gap-4 mt-4">
                         <div>
                             <div style="font-size: var(--text-xl); font-weight: var(--font-extrabold); color: var(--gray-800); letter-spacing: -0.03em;">10K+</div>
-                            <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">Issues Reported</div>
+                            <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">@Localizer["IssuesReported"]</div>
                         </div>
                         <div>
                             <div style="font-size: var(--text-xl); font-weight: var(--font-extrabold); color: var(--gray-800); letter-spacing: -0.03em;">50+</div>
-                            <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">Cities</div>
+                            <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">@Localizer["Cities"]</div>
                         </div>
                         <div>
                             <div style="font-size: var(--text-xl); font-weight: var(--font-extrabold); color: var(--gray-800); letter-spacing: -0.03em;">75%</div>
-                            <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">Resolved</div>
+                            <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">@Localizer["Resolved"]</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Platform links -->
                 <div class="col-6 col-lg-2">
-                    <h6>Platform</h6>
+                    <h6>@Localizer["Platform"]</h6>
                     <nav class="footer-links d-flex flex-column gap-1">
                         <a asp-area="" asp-page="/Index">
-                            <i class="bi bi-house-door"></i> Home
+                            <i class="bi bi-house-door"></i> @Localizer["Home"]
                         </a>
                         <a asp-area="" asp-page="/Issues/Index">
-                            <i class="bi bi-list-check"></i> Browse Issues
+                            <i class="bi bi-list-check"></i> @Localizer["BrowseIssues"]
                         </a>
                         <a asp-area="" asp-page="/Cities">
-                            <i class="bi bi-geo-alt"></i> Cities
+                            <i class="bi bi-geo-alt"></i> @Localizer["Cities"]
                         </a>
                         <a asp-area="" asp-page="/Leaderboards/Index">
-                            <i class="bi bi-trophy"></i> Leaderboards
+                            <i class="bi bi-trophy"></i> @Localizer["Leaderboards"]
                         </a>
                     </nav>
                 </div>
 
                 <!-- Insights links -->
                 <div class="col-6 col-lg-2">
-                    <h6>Insights</h6>
+                    <h6>@Localizer["Insights"]</h6>
                     <nav class="footer-links d-flex flex-column gap-1">
                         <a href="/HealthReports">
-                            <i class="bi bi-heart-pulse"></i> Health Reports
+                            <i class="bi bi-heart-pulse"></i> @Localizer["HealthReports"]
                         </a>
                         <a href="/Cities">
-                            <i class="bi bi-map"></i> Heatmaps
+                            <i class="bi bi-map"></i> @Localizer["Heatmaps"]
                         </a>
                         <a href="/safety/hazard-mode">
-                            <i class="bi bi-exclamation-triangle"></i> Hazard Mode
+                            <i class="bi bi-exclamation-triangle"></i> @Localizer["HazardMode"]
                         </a>
                     </nav>
                 </div>
 
                 <!-- Support links -->
                 <div class="col-6 col-lg-2">
-                    <h6>Support</h6>
+                    <h6>@Localizer["Support"]</h6>
                     <nav class="footer-links d-flex flex-column gap-1">
                         <a asp-area="" asp-page="/Privacy">
-                            <i class="bi bi-shield-check"></i> Privacy Policy
+                            <i class="bi bi-shield-check"></i> @Localizer["PrivacyPolicy"]
                         </a>
                         <a href="mailto:support@fixit.local">
-                            <i class="bi bi-envelope"></i> Contact Us
+                            <i class="bi bi-envelope"></i> @Localizer["ContactUs"]
                         </a>
                         <a href="#">
-                            <i class="bi bi-question-circle"></i> Help Center
+                            <i class="bi bi-question-circle"></i> @Localizer["HelpCenter"]
                         </a>
                     </nav>
                 </div>
 
                 <!-- Account links -->
                 <div class="col-6 col-lg-2">
-                    <h6>Account</h6>
+                    <h6>@Localizer["Account"]</h6>
                     <nav class="footer-links d-flex flex-column gap-1">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
@@ -448,10 +450,10 @@
                         else
                         {
                             <a asp-area="Identity" asp-page="/Account/Login">
-                                <i class="bi bi-box-arrow-in-right"></i> Sign In
+                                <i class="bi bi-box-arrow-in-right"></i> @Localizer["SignIn"]
                             </a>
                             <a asp-area="Identity" asp-page="/Account/Register">
-                                <i class="bi bi-person-plus"></i> Create Account
+                                <i class="bi bi-person-plus"></i> @Localizer["CreateAccount"]
                             </a>
                         }
                     </nav>
@@ -462,10 +464,21 @@
             <hr>
 
             <div class="footer-bottom">
-                <span>&copy; 2026 FixIt — Community Infrastructure Solutions</span>
-                <span style="display: flex; align-items: center; gap: var(--space-1);">
-                    Made with <i class="bi bi-heart-fill" style="color: var(--danger); font-size: 11px;"></i> for better communities
-                </span>
+                <span>&copy; 2026 FixIt — @Localizer["CommunityInfrastructureSolutions"]</span>
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe"></i> @Localizer["Language"]
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/SetLanguage?culture=en-US&returnUrl=@Context.Request.Path">English</a></li>
+                            <li><a class="dropdown-item" href="/SetLanguage?culture=bg-BG&returnUrl=@Context.Request.Path">Български</a></li>
+                        </ul>
+                    </div>
+                    <span style="display: flex; align-items: center; gap: var(--space-1);">
+                        @Localizer["MadeWithLove"] <i class="bi bi-heart-fill" style="color: var(--danger); font-size: 11px;"></i>
+                    </span>
+                </div>
             </div>
         </div>
     </footer>

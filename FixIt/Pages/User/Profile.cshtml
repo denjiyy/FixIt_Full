@@ -1,7 +1,8 @@
 @page "/user/{userId}"
 @model FixIt.Pages.User.ProfileModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "User Profile";
+    ViewData["Title"] = Localizer["ViewProfile"];
 }
 
 <style>
@@ -402,7 +403,7 @@
         <div class="profile-card">
             <div class="card-header-custom">
                 <i class="bi bi-graph-up"></i>
-                <h5>Reputation Progress</h5>
+                <h5>@Localizer["ReputationProgressLabel"]</h5>
             </div>
             <div class="progress-container">
                 @{
@@ -422,7 +423,7 @@
                     var pointsNeeded = Math.Max(0, nextThreshold - Model.UserReputation.TotalPoints);
                 }
                 <div class="progress-header">
-                    <span class="progress-title">Level Progress</span>
+                    <span class="progress-title">@Localizer["LevelProgressLabel"]</span>
                     <span class="progress-stats">@Math.Max(0, progress) / @(levelSize) points</span>
                 </div>
                 <div class="progress">
@@ -477,7 +478,7 @@
                 <div class="profile-card">
                     <div class="card-header-custom">
                         <i class="bi bi-activity"></i>
-                        <h5>Community Activity</h5>
+                        <h5>@Localizer["CommunityActivityLabel"]</h5>
                     </div>
                     <div class="activity-list">
                         <div class="activity-item">
@@ -508,7 +509,7 @@
                 <div class="profile-card">
                     <div class="card-header-custom">
                         <i class="bi bi-star"></i>
-                        <h5>Point Breakdown</h5>
+                        <h5>@Localizer["PointBreakdownLabel"]</h5>
                     </div>
                     <div class="points-list">
                         <div class="points-item">

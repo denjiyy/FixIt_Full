@@ -1,7 +1,8 @@
 @page "/safety/hazard-mode"
 @model FixIt.Pages.Safety.HazardModeModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Hazard Mode - Real-time Safety Alerts";
+    ViewData["Title"] = Localizer["SafetyHazardMap"];
 }
 
 <div class="container-fluid" style="height: 100vh; padding: 0;">
@@ -31,7 +32,7 @@
                 <h6 class="mb-3">Nearby Hazards</h6>
                 <div class="filter-controls">
                     <input type="text" class="form-control form-control-sm mb-2" 
-                           id="hazardFilter" placeholder="Filter hazards..."
+                           id="hazardFilter" placeholder='@Localizer["FilterHazards"]'
                            onkeyup="filterHazards(this.value)">
                     <select class="form-select form-select-sm mb-2" id="severityFilter" 
                             onchange="filterBySeverity(this.value)">
@@ -75,7 +76,7 @@
 
             <div class="hazards-list" id="hazardsList">
                 <div class="text-center text-muted py-4">
-                    <i class="bi bi-hourglass-split"></i> Loading hazards...
+                    <i class="bi bi-hourglass-split"></i> @Localizer["LoadingHazards"]
                 </div>
             </div>
         </div>
@@ -176,7 +177,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" onclick="submitHazardUpdate()">Save Changes</button>
+                            <button type="button" class="btn btn-primary" onclick="submitHazardUpdate()">@Localizer["SaveChanges"]</button>
                         </div>
                     </div>
                 </div>
@@ -374,7 +375,7 @@
             // Show loading state
             const coordDisplay = `Latitude: ${reportLocationLat.toFixed(6)}, Longitude: ${reportLocationLng.toFixed(6)}`;
             document.getElementById('reportLocationDisplay').textContent = coordDisplay;
-            document.getElementById('reportLocationInput').value = 'Loading address...';
+                            document.getElementById('reportLocationInput').value = '@Localizer["LoadingAddress"]';
             document.getElementById('reportLocationInput').style.color = '#999';
             
             // Debounce geocoding requests

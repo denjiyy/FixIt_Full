@@ -1,8 +1,9 @@
 @page
 @using FixIt.Models.Issues
 @model CitiesModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Explore Cities - FixIt";
+    ViewData["Title"] = Localizer["ExploreCities"] + " - FixIt";
 }
 
 <style>
@@ -428,13 +429,13 @@
                         INFRASTRUCTURE EXPLORER
                     </div>
                     <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
-                        Explore Cities &amp;<br/>
+                        @Localizer["ExploreCities"] <br/>
                         <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.65)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                             Infrastructure Issues
                         </span>
                     </h1>
                     <p class="lead mb-0" style="color: rgba(255,255,255,0.9); max-width: 580px; font-size: 1.15rem;">
-                        Discover cities across the globe and track infrastructure issues reported by engaged community members.
+                        @Localizer["DiscoverCitiesDesc"]
                     </p>
                 </div>
                 <div class="col-lg-4 d-none d-lg-flex justify-content-end align-items-center">

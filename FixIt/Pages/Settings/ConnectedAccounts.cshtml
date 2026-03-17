@@ -1,5 +1,6 @@
 @page "/settings/connected-accounts"
 @model FixIt.Pages.Settings.ConnectedAccountsModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Connected Accounts";
 }
@@ -7,8 +8,8 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8">
-            <h1>Connected Accounts</h1>
-            <p class="text-muted">Manage your authentication methods and linked providers</p>
+            <h1>@Localizer["ConnectedAccounts"]</h1>
+            <p class="text-muted">@Localizer["ManageYourAuthenticationMethodsAndLinkedProviders"]</p>
 
             @if (Model.SuccessMessage != null)
             {
@@ -29,12 +30,12 @@
             <!-- OAuth Providers -->
             <div class="card mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">OAuth Providers</h5>
+                    <h5 class="mb-0">@Localizer["OAuthProvidersLabel"]</h5>
                 </div>
                 <div class="card-body">
                     @if (Model.User?.ExternalIdentities.Count == 0)
                     {
-                        <p class="text-muted mb-0">No OAuth providers linked</p>
+                        <p class="text-muted mb-0">@Localizer["NoOAuthProvidersLinked"]</p>
                     }
                     else
                     {

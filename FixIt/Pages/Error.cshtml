@@ -1,7 +1,8 @@
 ﻿@page
 @model ErrorModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = Localizer["Error"];
 }
 
 <h1 class="text-danger">Error.</h1>

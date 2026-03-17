@@ -1,5 +1,6 @@
 @page
 @model FixIt.Areas.Identity.Pages.Account.LoginModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 
 @{
     ViewData["Title"] = "Log in";
@@ -19,8 +20,8 @@
                         <div class="mb-4" style="display: inline-block; padding: 1.25rem; background: linear-gradient(135deg, #e0f2fe, #f0f9ff); border-radius: 1rem;">
                             <i class="bi bi-tools" style="font-size: 3rem; background: linear-gradient(135deg, #0ea5e9, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
                         </div>
-                        <h1 class="h2 mb-2 fw-bold">Welcome Back</h1>
-                        <p class="text-muted mb-0">Sign in to continue making your community better</p>
+                        <h1 class="h2 mb-2 fw-bold">@Localizer["WelcomeBack"]</h1>
+                        <p class="text-muted mb-0">@Localizer["SignInToContinueMakingYourCommunityBetter"]</p>
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -36,7 +37,7 @@
                     {
                         <div class="mb-4">
                             <div class="text-center mb-3">
-                                <small class="text-uppercase fw-semibold text-muted" style="letter-spacing: 0.05em;">Quick Sign In</small>
+                                <small class="text-uppercase fw-semibold text-muted" style="letter-spacing: 0.05em;">@Localizer["QuickSignInText"]</small>
                             </div>
                             <div class="d-grid gap-2">
                                 @foreach (var provider in Model.ExternalLogins)
@@ -47,7 +48,7 @@
                                         <button type="submit" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-3" 
                                                 style="border-width: 2px; font-weight: 500;">
                                             <i class="fab fa-google text-danger" style="font-size: 1.25rem;"></i>
-                                            <span>Continue with Google</span>
+                                            <span>@Localizer["ContinueWithGoogle"]</span>
                                         </button>
                                     </form>
                                 }
@@ -58,7 +59,7 @@
                         <div class="position-relative my-4">
                             <hr class="my-0" style="border-color: #e5e7eb;">
                             <span class="position-absolute top-50 start-50 translate-middle px-3 bg-white text-muted" 
-                                  style="font-size: 0.875rem;">or sign in with email</span>
+                                  style="font-size: 0.875rem;">@Localizer["OrSignInWithEmail"]</span>
                         </div>
                     }
 
@@ -70,7 +71,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="Input.Email" class="form-label fw-semibold">Email Address</label>
+                            <label asp-for="Input.Email" class="form-label fw-semibold">@Localizer["EmailAddress"]</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0" style="border: 2px solid #d1d5db; border-right: none; border-radius: 0.75rem 0 0 0.75rem;">
                                     <i class="bi bi-envelope text-muted"></i>
@@ -78,14 +79,14 @@
                                 <input asp-for="Input.Email" class="form-control border-start-0" 
                                        style="border: 2px solid #d1d5db; border-left: none; border-radius: 0 0.75rem 0.75rem 0;"
                                        autocomplete="username" aria-required="true" 
-                                       placeholder="you@example.com" />
+                                       placeholder='@Localizer["EmailPlaceholder"]' />
                             </div>
                             <span asp-validation-for="Input.Email" class="text-danger small d-block mt-1"></span>
                         </div>
 
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label asp-for="Input.Password" class="form-label fw-semibold mb-0">Password</label>
+                                <label asp-for="Input.Password" class="form-label fw-semibold mb-0">@Localizer["PasswordLabel"]</label>
                                 <a asp-page="./ForgotPassword" class="text-decoration-none small" style="font-weight: 500;">
                                     Forgot password?
                                 </a>
@@ -97,7 +98,7 @@
                                 <input asp-for="Input.Password" type="password" class="form-control border-start-0" 
                                        style="border: 2px solid #d1d5db; border-left: none; border-radius: 0 0.75rem 0.75rem 0;"
                                        autocomplete="current-password" aria-required="true" 
-                                       placeholder="••••••••" />
+                                       placeholder='@Localizer["PasswordPlaceholder"]' />
                             </div>
                             <span asp-validation-for="Input.Password" class="text-danger small d-block mt-1"></span>
                         </div>
@@ -106,14 +107,14 @@
                             <div class="form-check">
                                 <input class="form-check-input" asp-for="Input.RememberMe" type="checkbox" id="rememberMe" />
                                 <label class="form-check-label" for="rememberMe" style="font-size: 0.875rem; cursor: pointer;">
-                                    Keep me signed in
+                                    @Localizer["KeepMeSignedIn"]
                                 </label>
                             </div>
                         </div>
 
                         <div class="d-grid mb-4">
                             <button id="login-submit" type="submit" class="btn btn-primary btn-lg py-3" style="font-weight: 600;">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                                <i class="bi bi-box-arrow-in-right me-2"></i>@Localizer["SignIn"]
                             </button>
                         </div>
                     </form>
@@ -134,7 +135,7 @@
             <div class="text-center mt-4">
                 <small class="text-muted d-flex align-items-center justify-content-center gap-2">
                     <i class="bi bi-shield-check"></i>
-                    <span>Your data is secure and encrypted</span>
+                    <span>@Localizer["YourDataIsSecureAndEncrypted"]</span>
                 </small>
             </div>
         </div>
@@ -142,14 +143,14 @@
         <!-- Optional: Side panel with benefits -->
         <div class="col-lg-5 d-none d-lg-block ps-5">
             <div class="p-5">
-                <h2 class="h3 fw-bold mb-4">Join thousands making a difference</h2>
+                <h2 class="h3 fw-bold mb-4">@Localizer["JoinThousandsMakingADifference"]</h2>
                 <div class="d-flex flex-column gap-4">
                     <div class="d-flex align-items-start gap-3">
                         <div class="flex-shrink-0" style="width: 48px; height: 48px; background: #e0f2fe; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
                             <i class="bi bi-flag" style="font-size: 1.5rem; color: #0ea5e9;"></i>
                         </div>
                         <div>
-                            <h6 class="fw-semibold mb-1">Report Issues Easily</h6>
+                            <h6 class="fw-semibold mb-1">@Localizer["ReportIssuesEasily"]</h6>
                             <p class="text-muted small mb-0">Take a photo, add location, and submit in seconds</p>
                         </div>
                     </div>
@@ -158,7 +159,7 @@
                             <i class="bi bi-graph-up" style="font-size: 1.5rem; color: #10b981;"></i>
                         </div>
                         <div>
-                            <h6 class="fw-semibold mb-1">Track Progress</h6>
+                            <h6 class="fw-semibold mb-1">@Localizer["TrackProgressLabel"]</h6>
                             <p class="text-muted small mb-0">See real-time updates on reported issues</p>
                         </div>
                     </div>
@@ -167,8 +168,8 @@
                             <i class="bi bi-people" style="font-size: 1.5rem; color: #f59e0b;"></i>
                         </div>
                         <div>
-                            <h6 class="fw-semibold mb-1">Community Impact</h6>
-                            <p class="text-muted small mb-0">Work together to improve your neighborhood</p>
+                            <h6 class="fw-semibold mb-1">@Localizer["CommunityImpactLabel"]</h6>
+                            <p class="text-muted small mb-0">@Localizer["WorkTogetherToImproveYourNeighborhood"]</p>
                         </div>
                     </div>
                 </div>

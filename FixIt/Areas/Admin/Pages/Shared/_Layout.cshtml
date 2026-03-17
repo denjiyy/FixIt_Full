@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- ADMIN LAYOUT VERSION 8 - TEST MARKER -->
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -54,7 +55,7 @@
                 <h4>
                     <i class="bi bi-shield-lock"></i> FixIt Admin
                 </h4>
-                <small class="opacity-75">Management Portal</small>
+                <small class="opacity-75">@Localizer["ManagementPortalForFixIt"]</small>
             </div>
 
             <nav class="nav flex-column">

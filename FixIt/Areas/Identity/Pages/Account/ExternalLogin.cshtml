@@ -1,5 +1,6 @@
 @page
 @model FixIt.Areas.Identity.Pages.Account.ExternalLoginModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Register";
 }
@@ -10,15 +11,15 @@
             <div class="card" style="border: none; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <h1 class="h3 mb-2">Complete Your Registration</h1>
-                        <p class="text-muted">Signing in with <strong>@Model.LoginProvider</strong></p>
+                        <h1 class="h3 mb-2">@Localizer["CompleteYourRegistration"]</h1>
+                        <p class="text-muted">@Localizer["SigningInWith"] <strong>@Model.LoginProvider</strong></p>
                     </div>
 
                     <form method="post" asp-page-handler="Confirmation">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Input.Email" class="form-label">Email</label>
+                            <label asp-for="Input.Email" class="form-label">@Localizer["EmailAddress"]</label>
                             <input asp-for="Input.Email" class="form-control form-control-lg" readonly />
                             <span asp-validation-for="Input.Email" class="text-danger small"></span>
                         </div>
@@ -26,20 +27,20 @@
                         <div class="mb-3">
                             <label asp-for="Input.DisplayName" class="form-label">Display Name</label>
                             <input asp-for="Input.DisplayName" class="form-control form-control-lg" 
-                                   aria-required="true" placeholder="How should we call you?" />
+                                   aria-required="true" placeholder='@Localizer["HowShouldWeCallYouPlaceholder"]' />
                             <span asp-validation-for="Input.DisplayName" class="text-danger small"></span>
                             <small class="text-muted">This is how other users will see you</small>
                         </div>
 
                         <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-lg">@Localizer["CreateAccount"]</button>
                                 <i class="bi bi-person-plus"></i> Create Account
                             </button>
                         </div>
 
                         <div class="text-center">
                             <small class="text-muted">
-                                By creating an account, you agree to our Terms of Service
+                                By creating an account, you agree to our @Localizer["TermsOfService"]
                             </small>
                         </div>
                     </form>

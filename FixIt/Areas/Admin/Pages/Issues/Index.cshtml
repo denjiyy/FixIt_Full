@@ -1,5 +1,6 @@
 @page "/admin/issues"
 @model FixIt.Areas.Admin.Pages.Issues.IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Issues Management";
 }
@@ -103,7 +104,7 @@
         <div class="admin-header-content">
             <div>
                 <h1><i class="bi bi-exclamation-triangle"></i> Issues Management</h1>
-                <p class="admin-header-subtitle">Review and manage reported issues</p>
+                <p class="admin-header-subtitle">@Localizer["ReviewAndManageReportedIssues"]</p>
             </div>
             <a href="/admin/dashboard" class="btn btn-outline">
                 <i class="bi bi-arrow-left"></i> Back
@@ -122,7 +123,7 @@
     <!-- Search -->
     <div class="search-section">
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by title..." class="form-control">
+            <input type="text" id="searchInput" placeholder="@Localizer["SearchByTitle"]" class="form-control">
             <button class="btn btn-primary" onclick="filterIssues()">
                 <i class="bi bi-search"></i> Search
             </button>
@@ -159,18 +160,18 @@
 
                         <div class="issue-meta">
                             <div class="meta-item">
-                                <span class="meta-label">Created</span>
+                                <span class="meta-label">@Localizer["CreatedLabel"]</span>
                                 <span class="meta-value">@issue.CreatedAt.ToString("MMM dd, yyyy")</span>
                             </div>
                             @if (issue.Status != IssueStatus.Fixed)
                             {
                                 <div class="meta-item">
-                                    <span class="meta-label">Age</span>
+                                    <span class="meta-label">@Localizer["AgeLabel"]</span>
                                     <span class="meta-value">@((DateTime.UtcNow - issue.CreatedAt).Days) days</span>
                                 </div>
                             }
                             <div class="meta-item">
-                                <span class="meta-label">Reports</span>
+                                <span class="meta-label">@Localizer["ReportsLabel"]</span>
                                 <span class="meta-value">-</span>
                             </div>
                         </div>
@@ -201,8 +202,8 @@
 
                             <form method="post" asp-page-handler="Delete" style="display: inline;">
                                 <input type="hidden" name="issueId" value="@issue.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this issue?');">
-                                    <i class="bi bi-trash"></i> Delete
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('@Localizer[\"ConfirmDeleteIssue\"]');">
+                                    <i class="bi bi-trash"></i> @Localizer["Delete"]
                                 </button>
                             </form>
                         </div>
@@ -216,7 +217,7 @@
                 <div class="pagination">
                     @if (Model.PageNumber > 1)
                     {
-                        <a href="/admin/issues?pageNumber=1">First</a>
+                        <a href="/admin/issues?pageNumber=1">@Localizer["FirstPage"]</a>
                         <a href="/admin/issues?pageNumber=@(Model.PageNumber - 1)">Previous</a>
                     }
 
@@ -235,7 +236,7 @@
                     @if (Model.PageNumber < Model.TotalPages)
                     {
                         <a href="/admin/issues?pageNumber=@(Model.PageNumber + 1)">Next</a>
-                        <a href="/admin/issues?pageNumber=@Model.TotalPages">Last</a>
+                        <a href="/admin/issues?pageNumber=@Model.TotalPages">@Localizer["LastPage"]</a>
                     }
                 </div>
             }
@@ -244,8 +245,8 @@
         {
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
-                <h3>No issues found</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? "No issues in the system" : $"No results for \"{Model.SearchTerm}\"")</p>
+                <h3>@Localizer["NoIssuesReportedYet"]</h3>
+                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoIssuesInTheSystem"] : $"@Localizer[\"FilterResults\"] \"{Model.SearchTerm}\"")</p>
             </div>
         }
     </div>

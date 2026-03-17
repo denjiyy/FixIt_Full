@@ -1,7 +1,8 @@
 @page "/issues"
 @model IssueListModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Community Issues";
+    ViewData["Title"] = Localizer["CommunityIssues"];
 
     var totalIssues    = Model.Issues?.Count ?? 0;
     var resolvedCount  = Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.Fixed) ?? 0;
@@ -534,21 +535,21 @@
                 <i class="bi bi-list-check"></i>
             </div>
             <div>
-                <h1 class="page-title">Community Issues</h1>
-                <p class="page-subtitle">Report and track civic infrastructure problems in your area</p>
+                <h1 class="page-title">@Localizer["CommunityIssues"]</h1>
+                <p class="page-subtitle">@Localizer["ReportAndTrackInfrastructure"]</p>
             </div>
         </div>
         <div>
             @if (User?.Identity?.IsAuthenticated ?? false)
             {
                 <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-plus-circle-fill me-2"></i>Report Issue
+                    <i class="bi bi-plus-circle-fill me-2"></i>@Localizer["ReportIssueBtn"]
                 </a>
             }
             else
             {
                 <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Report
+                    <i class="bi bi-box-arrow-in-right me-2"></i>@Localizer["SignInToReport"]
                 </a>
             }
         </div>
@@ -560,28 +561,28 @@
             <div class="stat-icon"><i class="bi bi-flag-fill"></i></div>
             <div>
                 <div class="stat-num">@totalIssues</div>
-                <div class="stat-lbl">Total Issues</div>
+                <div class="stat-lbl">@Localizer["TotalIssues"]</div>
             </div>
         </div>
         <div class="stat-card resolved">
             <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
             <div>
                 <div class="stat-num">@resolvedCount</div>
-                <div class="stat-lbl">Resolved</div>
+                <div class="stat-lbl">@Localizer["Resolved"]</div>
             </div>
         </div>
         <div class="stat-card progress">
             <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
             <div>
                 <div class="stat-num">@inProgressCount</div>
-                <div class="stat-lbl">In Progress</div>
+                <div class="stat-lbl">@Localizer["InProgress"]</div>
             </div>
         </div>
         <div class="stat-card new-s">
             <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
             <div>
                 <div class="stat-num">@newCount</div>
-                <div class="stat-lbl">New</div>
+                <div class="stat-lbl">@Localizer["New"]</div>
             </div>
         </div>
     </div>
@@ -593,14 +594,14 @@
 
                 <!-- Search -->
                 <div class="filter-field">
-                    <label for="searchQuery"><i class="bi bi-search"></i>Search</label>
+                    <label for="searchQuery"><i class="bi bi-search"></i>@Localizer["Search"]</label>
                     <div class="search-wrap">
                         <i class="bi bi-search search-icon"></i>
                         <input type="text"
                                class="form-control"
                                id="searchQuery"
                                name="searchQuery"
-                               placeholder="Search by title or description…"
+                               placeholder="@Localizer["SearchByTitle"]"
                                value="@Model.SearchQuery"
                                autocomplete="off">
                     </div>
@@ -608,80 +609,80 @@
 
                 <!-- Status -->
                 <div class="filter-field">
-                    <label for="status"><i class="bi bi-circle-half"></i>Status</label>
+                    <label for="status"><i class="bi bi-circle-half"></i>@Localizer["Status"]</label>
                     <select class="form-select" id="status" name="status">
-                        <option value="">All Statuses</option>
+                        <option value="">@Localizer["AllStatuses"]</option>
                         @if (Model.SelectedStatus == 0)
                         {
-                            <option value="0" selected>New</option>
+                            <option value="0" selected>@Localizer["New"]</option>
                         }
                         else
                         {
-                            <option value="0">New</option>
+                            <option value="0">@Localizer["New"]</option>
                         }
                         @if (Model.SelectedStatus == 1)
                         {
-                            <option value="1" selected>Confirmed</option>
+                            <option value="1" selected>@Localizer["Confirmed"]</option>
                         }
                         else
                         {
-                            <option value="1">Confirmed</option>
+                            <option value="1">@Localizer["Confirmed"]</option>
                         }
                         @if (Model.SelectedStatus == 2)
                         {
-                            <option value="2" selected>In Progress</option>
+                            <option value="2" selected>@Localizer["InProgress"]</option>
                         }
                         else
                         {
-                            <option value="2">In Progress</option>
+                            <option value="2">@Localizer["InProgress"]</option>
                         }
                         @if (Model.SelectedStatus == 3)
                         {
-                            <option value="3" selected>Fixed</option>
+                            <option value="3" selected>@Localizer["Fixed"]</option>
                         }
                         else
                         {
-                            <option value="3">Fixed</option>
+                            <option value="3">@Localizer["Fixed"]</option>
                         }
                     </select>
                 </div>
 
                 <!-- Priority -->
                 <div class="filter-field">
-                    <label for="priority"><i class="bi bi-flag"></i>Priority</label>
+                    <label for="priority"><i class="bi bi-flag"></i>@Localizer["Priority"]</label>
                     <select class="form-select" id="priority" name="priority">
-                        <option value="">All Priorities</option>
+                        <option value="">@Localizer["AllPriorities"]</option>
                         @if (Model.SelectedPriority == 0)
                         {
-                            <option value="0" selected>Low</option>
+                            <option value="0" selected>@Localizer["Low"]</option>
                         }
                         else
                         {
-                            <option value="0">Low</option>
+                            <option value="0">@Localizer["Low"]</option>
                         }
                         @if (Model.SelectedPriority == 1)
                         {
-                            <option value="1" selected>Medium</option>
+                            <option value="1" selected>@Localizer["Medium"]</option>
                         }
                         else
                         {
-                            <option value="1">Medium</option>
+                            <option value="1">@Localizer["Medium"]</option>
                         }
                         @if (Model.SelectedPriority == 2)
                         {
-                            <option value="2" selected>High</option>
+                            <option value="2" selected>@Localizer["High"]</option>
                         }
                         else
                         {
-                            <option value="2">High</option>
+                            <option value="2">@Localizer["High"]</option>
                         }
                         @if (Model.SelectedPriority == 3)
                         {
-                            <option value="3" selected>Critical</option>
+                            <option value="3" selected>@Localizer["Critical"]</option>
                         }
                         else
                         {
-                            <option value="3">Critical</option>
+                            <option value="3">@Localizer["Critical"]</option>
                         }
                     </select>
                 </div>
@@ -708,7 +709,7 @@
             @if (hasFilters)
             {
                 <div class="active-filters">
-                    <span style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .05em;">Active:</span>
+                    <span style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .05em;">@Localizer["Active"]</span>
                     @if (!string.IsNullOrEmpty(Model.SearchQuery))
                     {
                         <span class="filter-pill"><i class="bi bi-search"></i> "@Model.SearchQuery"</span>
@@ -740,19 +741,19 @@
         <!-- Results header -->
         <div class="results-header anim-4">
             <p class="results-count mb-0">
-                Showing <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? "issue" : "issues")
-                @if (Model.TotalPages > 1) { <text>· Page <strong>@Model.CurrentPage</strong> of <strong>@Model.TotalPages</strong></text> }
+                @Localizer["Showing"] <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? Localizer["Issue"] : Localizer["IssuePlural"])
+                @if (Model.TotalPages > 1) { <text>· @Localizer["PageOf"] <strong>@Model.CurrentPage</strong> @Localizer["Of"] <strong>@Model.TotalPages</strong></text> }
             </p>
 
-            <div class="sort-group" role="group" aria-label="Sort options">
+            <div class="sort-group" role="group" aria-label="@Localizer["SortOptions"]">
                 <button type="button" class="sort-btn active" data-sort="newest">
-                    <i class="bi bi-clock"></i> Newest
+                    <i class="bi bi-clock"></i> @Localizer["Newest"]
                 </button>
                 <button type="button" class="sort-btn" data-sort="votes">
-                    <i class="bi bi-hand-thumbs-up"></i> Most Voted
+                    <i class="bi bi-hand-thumbs-up"></i> @Localizer["MostVoted"]
                 </button>
                 <button type="button" class="sort-btn" data-sort="views">
-                    <i class="bi bi-eye"></i> Most Viewed
+                    <i class="bi bi-eye"></i> @Localizer["MostViewed"]
                 </button>
             </div>
         </div>
@@ -841,7 +842,7 @@
                 <!-- Prev -->
                 @if (Model.CurrentPage > 1)
                 {
-                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage - 1)" aria-label="Previous">
+                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage - 1)" aria-label='@Localizer["Previous"]'>
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 }
@@ -877,7 +878,7 @@
                 <!-- Next -->
                 @if (Model.CurrentPage < Model.TotalPages)
                 {
-                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage + 1)" aria-label="Next">
+                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage + 1)" aria-label='@Localizer["Next"]'>
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 }
@@ -896,22 +897,22 @@
             <div class="empty-icon">
                 <i class="bi bi-inbox"></i>
             </div>
-            <h2 class="empty-title">No Issues Found</h2>
+            <h2 class="empty-title">@Localizer["NoIssuesFoundEmptyState"]</h2>
             <p class="empty-text">
                 @if (hasFilters)
                 {
-                    <text>No results match your current filters. Try adjusting your search or clearing the filters.</text>
+                    <text>@Localizer["NoResultsMatchYourCurrentFilters"]</text>
                 }
                 else
                 {
-                    <text>No issues have been reported yet. Be the first to make your community better!</text>
+                    <text>@Localizer["NoIssuesReportedYet"]. @Localizer["BeTheFirstToMakeYourCommunityBetter"]</text>
                 }
             </p>
             <div class="d-flex gap-3 justify-content-center flex-wrap">
                 @if (hasFilters)
                 {
                     <a href="/issues" class="btn btn-outline-secondary btn-lg px-5">
-                        <i class="bi bi-x-lg me-2"></i>Clear Filters
+                        <i class="bi bi-x-lg me-2"></i>@Localizer["ClearFilters"]
                     </a>
                 }
                 @if (User?.Identity?.IsAuthenticated ?? false)

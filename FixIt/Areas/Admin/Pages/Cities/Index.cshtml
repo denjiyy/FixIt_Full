@@ -1,5 +1,6 @@
 @page "/admin/cities"
 @model FixIt.Areas.Admin.Pages.Cities.IndexModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Cities Management";
     var countries = new[] { "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Czechia", "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Ivory Coast", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macao", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Republic of the Congo", "Romania", "Russia", "Rwanda", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe" };
@@ -90,7 +91,7 @@
         <div class="admin-header-content">
             <div>
                 <h1><i class="bi bi-globe"></i> Cities Management</h1>
-                <p class="admin-header-subtitle">Add and manage cities worldwide</p>
+                <p class="admin-header-subtitle">@Localizer["AddAndManageCitiesWorldwide"]</p>
             </div>
             <a href="/admin/dashboard" class="btn btn-outline">
                 <i class="bi bi-arrow-left"></i> Back
@@ -119,7 +120,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="CityName">City Name *</label>
-                    <input type="text" class="form-control" id="CityName" name="CityName" required placeholder="e.g., New York">
+                    <input type="text" class="form-control" id="CityName" name="CityName" required placeholder="@Localizer["ExampleNewYork"]">
                 </div>
                 <div class="form-group">
                     <label for="Country">Country *</label>
@@ -137,17 +138,17 @@
                 <label>Coordinates *</label>
                 <div id="coordinatesMap"></div>
                 <div class="map-info">
-                    <i class="bi bi-info-circle"></i> Click on the map to select coordinates. Current: <strong><span id="coordsDisplay">Not selected</span></strong>
+                    <i class="bi bi-info-circle"></i> @Localizer["ClickOnTheMapToSelectCoordinates"]. @Localizer["CurrentCoordinates"]: <strong><span id="coordsDisplay">@Localizer["NotSelected"]</span></strong>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="Latitude">Latitude</label>
+                    <label for="Latitude">@Localizer["Latitude"]</label>
                     <input type="number" class="form-control" id="Latitude" name="Latitude" step="0.0001" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="Longitude">Longitude</label>
+                    <label for="Longitude">@Localizer["Longitude"]</label>
                     <input type="number" class="form-control" id="Longitude" name="Longitude" step="0.0001" readonly>
                 </div>
             </div>
@@ -155,11 +156,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="Description">Description (Optional)</label>
-                    <textarea class="form-control" id="Description" name="Description" placeholder="Additional information about this city..."></textarea>
+                    <textarea class="form-control" id="Description" name="Description" placeholder="@Localizer["AdditionalInformationAboutThisCity"]"></textarea>
                 </div>
                 <div class="form-group">
                     <label for="PhotoUrl">City Image URL (Optional)</label>
-                    <input type="url" class="form-control" id="PhotoUrl" name="PhotoUrl" placeholder="https://example.com/city-image.jpg">
+                    <input type="url" class="form-control" id="PhotoUrl" name="PhotoUrl" placeholder="@Localizer["CityImageUrl"]">
                 </div>
             </div>
 
@@ -167,7 +168,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-plus"></i> Add City
                 </button>
-                <button type="reset" class="btn btn-outline">Clear</button>
+                <button type="reset" class="btn btn-outline">@Localizer["ClearFilters"]</button>
             </div>
         </form>
     </div>
@@ -175,7 +176,7 @@
     <!-- Search -->
     <div class="search-section">
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by city or country..." class="form-control">
+            <input type="text" id="searchInput" placeholder="@Localizer["SearchByCityOrCountry"]" class="form-control">
             <button class="btn btn-primary" onclick="filterCities()">
                 <i class="bi bi-search"></i> Search
             </button>
@@ -216,15 +217,15 @@
                             }
                             <div class="city-meta">
                                 <div class="meta-item">
-                                    <span class="meta-label">Latitude</span>
+                                    <span class="meta-label">@Localizer["Latitude"]</span>
                                     <span class="meta-value">@city.Latitude.ToString("F4")</span>
                                 </div>
                                 <div class="meta-item">
-                                    <span class="meta-label">Longitude</span>
+                                    <span class="meta-label">@Localizer["Longitude"]</span>
                                     <span class="meta-value">@city.Longitude.ToString("F4")</span>
                                 </div>
                                 <div class="meta-item">
-                                    <span class="meta-label">Added</span>
+                                    <span class="meta-label">@Localizer["CreatedLabel"]</span>
                                     <span class="meta-value">@city.CreatedAt.ToString("MMM dd, yyyy")</span>
                                 </div>
                             </div>
@@ -232,7 +233,7 @@
                         <div style="text-align: right; margin-top: 1rem;">
                             <form method="post" asp-page-handler="Delete" style="display: inline;">
                                 <input type="hidden" name="cityId" value="@city.Id" />
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this city?');">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('@Localizer[\"ConfirmDeleteCity\"]');">
                                     <i class="bi bi-trash"></i> Delete
                                 </button>
                             </form>
@@ -247,7 +248,7 @@
                 <div class="pagination">
                     @if (Model.PageNumber > 1)
                     {
-                        <a href="/admin/cities?pageNumber=1">First</a>
+                        <a href="/admin/cities?pageNumber=1">@Localizer["FirstPage"]</a>
                         <a href="/admin/cities?pageNumber=@(Model.PageNumber - 1)">Previous</a>
                     }
 
@@ -266,7 +267,7 @@
                     @if (Model.PageNumber < Model.TotalPages)
                     {
                         <a href="/admin/cities?pageNumber=@(Model.PageNumber + 1)">Next</a>
-                        <a href="/admin/cities?pageNumber=@Model.TotalPages">Last</a>
+                        <a href="/admin/cities?pageNumber=@Model.TotalPages">@Localizer["LastPage"]</a>
                     }
                 </div>
             }
@@ -276,7 +277,7 @@
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="bi bi-globe"></i></div>
                 <h3>No cities found</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? "Add your first city to get started" : $"No results for \"{Model.SearchTerm}\"")</p>
+                                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["AddYourFirstCityToGetStarted"] : $"No results for \"{Model.SearchTerm}\"")</p>
             </div>
         }
     </div>
