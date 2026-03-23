@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <h1 class="mb-2">@Localizer["Settings"]</h1>
-            <p class="text-muted mb-5">Manage your account, preferences, and more</p>
+            <p class="text-muted mb-5">@Localizer["ManageYourAccountAndPreferences"]</p>
 
             @if (!string.IsNullOrEmpty(Model.SuccessMessage))
             {
@@ -47,10 +47,10 @@
                     <form method="post" asp-page-handler="SetCity" class="row g-3 align-items-end">
                         <div class="col-md-8">
                             <label for="cityId" class="form-label fw-semibold small text-uppercase" style="letter-spacing: 0.05em; color: #6b7280;">
-                                City
+                                @Localizer["CityOrCities"]
                             </label>
                             <select class="form-select form-select-lg" id="cityId" name="cityId" style="border: 2px solid #e5e7eb;" required>
-                                <option value="">Select a city...</option>
+                                <option value="">@Localizer["SelectACity"]</option>
                                 @foreach (var city in Model.AvailableCities)
                                 {
                                     <option value="@city.Id" selected="@(Model.SelectedCityId == city.Id)">
@@ -71,7 +71,7 @@
                         <div class="alert alert-info mt-3 mb-0 py-2 px-3">
                             <small>
                                 <i class="bi bi-info-circle me-2"></i>
-                                This city will be used for Issue Forecasting, SLA Compliance, Campaigns, and other feature pages.
+                                @Localizer["CityPreferenceInfo"]
                             </small>
                         </div>
                     }
@@ -90,7 +90,7 @@
                             <p class="card-text text-muted small mb-0">@Localizer["LinkOAuthProvidersAndManageAuthenticationMethods"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">Google • Microsoft • Facebook • GitHub</small>
+                            <small class="text-muted">@Localizer["AuthProvidersList"]</small>
                         </div>
                     </a>
                 </div>
@@ -106,7 +106,7 @@
                             <p class="card-text text-muted small mb-0">@Localizer["ControlWhichEmailsAndNotificationsYouReceive"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">Health Reports • Hazard Alerts • Reminders</small>
+                            <small class="text-muted">@Localizer["HealthReportsHazardAlerts"]</small>
                         </div>
                     </a>
                 </div>
@@ -122,7 +122,7 @@
                             <p class="card-text text-muted small mb-0">@Localizer["AnonymousReportingHazardAlertsAndProfileVisibility"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">Anonymous Mode • Hazard Mode • Visibility</small>
+                            <small class="text-muted">@Localizer["AnonymousHazardVisibility"]</small>
                         </div>
                     </a>
                 </div>
@@ -138,7 +138,7 @@
                             <p class="card-text text-muted small mb-0">@Localizer["ChangePasswordManageProfileAndAccountSecurity"]</p>
                         </div>
                         <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">Profile • Password • Email</small>
+                            <small class="text-muted">@Localizer["ProfilePasswordEmail"]</small>
                         </div>
                     </a>
                 </div>
@@ -150,9 +150,9 @@
                     <small>
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
-                            <i class="bi bi-check-circle text-success"></i> <strong>Signed in</strong>
+                            <i class="bi bi-check-circle text-success"></i> <strong>@Localizer["SignedIn"]</strong>
                             <br/>
-                            <span class="text-muted">Email notifications: @(Model.User?.EmailNotificationsEnabled == true ? "Enabled" : "Disabled")</span>
+                            <span class="text-muted">@Localizer["EmailNotificationsTitle"]: @(Model.User?.EmailNotificationsEnabled == true ? Localizer["Enabled"] : Localizer["Disabled"])</span>
                         }
                     </small>
                 </div>

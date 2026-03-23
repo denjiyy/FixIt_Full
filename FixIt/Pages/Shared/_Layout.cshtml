@@ -15,13 +15,22 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <!-- Admin Dashboard CSS -->
+    <link rel="stylesheet" href="~/css/utility-tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout-system.css" asp-append-version="true" />
+    <!-- Admin Consolidated CSS -->
     @if (ViewContext.RouteData.Values["area"]?.ToString() == "Admin")
     {
-        <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     }
-    <!-- Leaflet map library CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet map library CSS (conditional) -->
+    @if (ViewData["RequiresMap"] as bool? == true)
+    {
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    }
+
+    <!-- Page-specific CSS -->
+    @await RenderSectionAsync("PageCss", required: false)
 
     <style>
         /* ── Navbar active-link detection ─────────── */
@@ -215,17 +224,17 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-graph-up"></i> Analytics
+                                <i class="bi bi-graph-up"></i> @Localizer["AnalyticsDropdown"]
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" href="/HealthReports">
-                                        <i class="bi bi-heart-pulse"></i> Health Reports
+                                        <i class="bi bi-heart-pulse"></i> @Localizer["HealthReports"]
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="/Cities">
-                                        <i class="bi bi-map"></i> View Heatmaps
+                                        <i class="bi bi-map"></i> @Localizer["ViewHeatmaps"]
                                     </a>
                                 </li>
                             </ul>
@@ -282,14 +291,14 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Settings/Index">
-                                            <i class="bi bi-gear"></i> Settings
+                                            <i class="bi bi-gear"></i> @Localizer["Settings"]
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li class="dropdown-header">@Localizer["QuickActions"]</li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Issues/Create">
-                                            <i class="bi bi-plus-circle"></i> Report an Issue
+                                            <i class="bi bi-plus-circle"></i> @Localizer["ReportAnIssue"]
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
@@ -329,7 +338,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/admin/login" title="Admin and Moderator Login">
+                                <a class="nav-link" href="/admin/login" title="@Localizer["AdminLoginTooltip"]">
                                     <i class="bi bi-shield-lock"></i> @Localizer["Admin"]
                                 </a>
                             </li>
@@ -359,7 +368,7 @@
                         FixIt
                     </a>
                     <p style="font-size: var(--text-sm); color: var(--gray-500); line-height: var(--leading-relaxed); max-width: 300px;">
-                        Empowering communities to report, track, and resolve infrastructure issues together.
+                        @Localizer["FooterTagline"]
                     </p>
 
                     <!-- Mini stats -->
@@ -438,13 +447,13 @@
                         {
                             <a asp-area="" asp-page="/User/Profile"
                                asp-route-userId="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
-                                <i class="bi bi-person-circle"></i> My Profile
+                                <i class="bi bi-person-circle"></i> @Localizer["MyProfile"]
                             </a>
                             <a asp-area="" asp-page="/Issues/Create">
-                                <i class="bi bi-plus-circle"></i> Report Issue
+                                <i class="bi bi-plus-circle"></i> @Localizer["ReportIssue"]
                             </a>
                             <a asp-area="" asp-page="/Settings/Index">
-                                <i class="bi bi-gear"></i> Settings
+                                <i class="bi bi-gear"></i> @Localizer["Settings"]
                             </a>
                         }
                         else
@@ -491,7 +500,10 @@
     <!-- ══ SCRIPTS ═══════════════════════════════════════ -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+
+    <!-- Page-specific scripts -->
+    @await RenderSectionAsync("PageScripts", required: false)
 
     <script>
         /* ── Navbar scroll shadow ────────────────────── */
@@ -514,9 +526,7 @@
         window.addEventListener('scroll', () => {
             scrollBtn.classList.toggle('visible', window.scrollY > 320);
         }, { passive: true });
-        scrollBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        scrol
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

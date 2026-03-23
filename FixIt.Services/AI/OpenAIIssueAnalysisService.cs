@@ -15,6 +15,7 @@ public interface IIssueAnalysisService
 {
     Task<IssueAnalysis> AnalyzeIssueAsync(string issueId);
     Task<IssueAnalysis?> GetAnalysisAsync(string issueId);
+    Task<List<string>> SuggestTagsAsync(string title, string description);
 }
 
 public class OpenAIIssueAnalysisService : IIssueAnalysisService
@@ -342,6 +343,17 @@ Provide response as JSON format with these exact field names.";
             analysis.EstimatedSeverity = 5;
 
         return analysis;
+    }
+
+    public Task<List<string>> SuggestTagsAsync(string title, string description)
+    {
+        var issue = new Issue
+        {
+            Title = title ?? string.Empty,
+            Description = description ?? string.Empty
+        };
+
+        return Task.FromResult(SuggestTags(issue));
     }
 
     /// <summary>

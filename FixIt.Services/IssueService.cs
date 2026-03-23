@@ -89,8 +89,25 @@ public class IssueService : IIssueService
                 if (string.IsNullOrWhiteSpace(tagName))
                     continue;
 
-                var tags = await _tagRepo.FindAsync(t => t.Name == tagName.ToLowerInvariant());
+                var normalized = tagName.Trim().ToLowerInvariant();
+                if (string.IsNullOrEmpty(normalized))
+                    continue;
+
+                var tags = await _tagRepo.FindAsync(t => t.Name == normalized);
                 var tag = tags.FirstOrDefault();
+
+                if (tag == null)
+                {
+                    // Create missing tag automatically and map to issue
+                    tag = await _tagRepo.InsertAsync(new FixIt.Models.Issues.Tag
+                    {
+                        Name = normalized,
+                        IsApproved = true,
+                        UsageCount = 0,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    });
+                }
 
                 if (tag != null)
                 {
@@ -582,6 +599,42 @@ public class IssueService : IIssueService
         var totalPages = Math.Ceiling(totalCount / (double)pageSize);
 
         // Get paginated results
+        var issues = allIssues
+            .OrderByDescending(i => i.CreatedAt)
+            .Skip(skip)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResult<Issue>
+        {
+            Items = issues,
+            Total = totalCount
+        };
+    }
+
+    public async Task<PagedResult<Issue>> GetIssuesByTagAsync(
+        string tagId,
+        int page = 1,
+        int pageSize = 20)
+    {
+        if (string.IsNullOrWhiteSpace(tagId))
+        {
+            throw new ArgumentException("Tag ID is required", nameof(tagId));
+        }
+
+        ValidatePagination(ref page, ref pageSize);
+        var skip = (page - 1) * pageSize;
+
+        var filters = new List<System.Linq.Expressions.Expression<System.Func<Issue, bool>>>
+        {
+            i => !i.IsDeleted && i.TagIds.Contains(tagId)
+        };
+
+        System.Linq.Expressions.Expression<System.Func<Issue, bool>> combinedFilter = filters[0];
+
+        var allIssues = await _issueRepo.FindAsync(combinedFilter);
+        var totalCount = allIssues.Count();
+
         var issues = allIssues
             .OrderByDescending(i => i.CreatedAt)
             .Skip(skip)

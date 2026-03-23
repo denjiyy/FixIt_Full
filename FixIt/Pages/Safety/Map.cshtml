@@ -92,6 +92,9 @@
     const map = L.map('map', { attributionControl: false }).setView([42.7339, 25.4858], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
+    const confirmationLabel = '@Localizer["Confirmations"]';
+    const viewDetailsLabel = '@Localizer["ViewDetails"]';
+
     const hazards = @Html.Raw(Model.HazardsJson);
     const markers = {};
 
@@ -126,9 +129,9 @@
                     <span class="badge bg-${getSeverityClass(hazard.severity)}">${hazard.severity}</span>
                     <p class="mt-2 mb-0 small">${hazard.description}</p>
                     <div class="mt-2">
-                        <small class="text-success"><i class="fas fa-check-circle"></i> ${hazard.confirmations} confirmations</small>
+                        <small class="text-success"><i class="fas fa-check-circle"></i> ${hazard.confirmations} ${confirmationLabel}</small>
                     </div>
-                    <a href="/safety/view?hazardId=${hazard.id}" class="btn btn-sm btn-primary mt-2">View Details</a>
+                    <a href="/safety/view?hazardId=${hazard.id}" class="btn btn-sm btn-primary mt-2">${viewDetailsLabel}</a>
                 </div>
             </div>
         `;

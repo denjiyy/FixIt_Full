@@ -1,4 +1,7 @@
 @using FixIt.Models.Users
 @using FixIt.Models
+@using Microsoft.Extensions.Localization
 @namespace FixIt.Areas.Identity.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@inject IStringLocalizer<SharedResource> Localizer

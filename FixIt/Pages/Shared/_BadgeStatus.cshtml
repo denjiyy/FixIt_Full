@@ -1,0 +1,15 @@
+@using FixIt.Models.Enums
+@model IssueStatus
+
+@{
+    var badgeClass = Model switch
+    {
+        IssueStatus.New        => "badge-status-new",
+        IssueStatus.Confirmed  => "badge-status-confirmed",
+        IssueStatus.InProgress => "badge-status-in-progress",
+        IssueStatus.Fixed      => "badge-status-fixed",
+        _                      => "bg-secondary"
+    };
+}
+
+<span class="badge @badgeClass">@Model</span>

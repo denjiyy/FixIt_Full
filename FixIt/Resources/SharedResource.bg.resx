@@ -101,6 +101,10 @@
   <data name="IssuesResolvedPoints" xml:space="preserve"><value>Разрешени проблеми</value></data>
   <data name="IssuesReporterStat" xml:space="preserve"><value>докладвани проблеми</value></data>
   <data name="CelebratateTopContributors" xml:space="preserve"><value>Празнувайте най-добрите сътрудници, които правят нашите градове по-добри</value></data>
+  <data name="CommunityLeaderboards" xml:space="preserve"><value>Класации на общността</value></data>
+  <data name="Weekly" xml:space="preserve"><value>Седмично</value></data>
+  <data name="Monthly" xml:space="preserve"><value>Месечно</value></data>
+  <data name="HallOfFame" xml:space="preserve"><value>Салон на славата</value></data>
   <data name="SafetyHazardMap" xml:space="preserve"><value>Карта на сигурността на опасностите</value></data>
   <data name="TakePhotoPin" xml:space="preserve"><value>Направете снимка, маркирайте местоположението на карта и подайте подробен доклад за секунди.</value></data>
   <data name="WatchIssuesProgress" xml:space="preserve"><value>Наблюдавайте напредъка на проблемите от докладвани до разрешени с актуализации в реално време.</value></data>
@@ -117,6 +121,10 @@
   <data name="ActiveCommunityMembers" xml:space="preserve"><value>Активни членове на общността</value></data>
   <data name="ReportAndTrackInfrastructure" xml:space="preserve"><value>Докладвайте и проследявайте проблеми с гражданската инфраструктура в вашия район</value></data>
   <data name="ReportIssueBtn" xml:space="preserve"><value>Докладване на проблем</value></data>
+  <data name="SampleIssueTitle" xml:space="preserve"><value>Дупка на Главната улица</value></data>
+  <data name="SampleIssueDescription" xml:space="preserve"><value>Голяма дупка до кръстовището, причиняваща проблеми с трафика…</value></data>
+  <data name="SampleLocation" xml:space="preserve"><value>Център</value></data>
+  <data name="UpvotesCount" xml:space="preserve"><value>12 гласа</value></data>
   <data name="SignInToReport" xml:space="preserve"><value>Влезте за докладване</value></data>
   <data name="TotalIssues" xml:space="preserve"><value>Общо проблеми</value></data>
   <data name="InProgress" xml:space="preserve"><value>В процес</value></data>
@@ -262,6 +270,7 @@
   <data name="Next" xml:space="preserve"><value>Следваща</value></data>
   <data name="SortOptions" xml:space="preserve"><value>Опции за сортиране</value></data>
   <data name="ClearFilter" xml:space="preserve"><value>Изчистване</value></data>
+  <data name="Apply" xml:space="preserve"><value>Приложи</value></data>
   <data name="Active" xml:space="preserve"><value>Активни:</value></data>
   <data name="CityPreference" xml:space="preserve"><value>Предпочитание за град</value></data>
   <data name="SelectYourCityToPersonalizeFeatureContent" xml:space="preserve"><value>Изберете вашия град за персонализиране на съдържанието на функциите</value></data>
@@ -352,6 +361,44 @@
   <data name="ManageYourAuthenticationMethodsAndLinkedProviders" xml:space="preserve"><value>Управлявайте методите на удостоверяване и свързаните доставчици</value></data>
   <data name="TotalPoints" xml:space="preserve"><value>Общо точки</value></data>
   <data name="AchievementsLabel" xml:space="preserve"><value>Постижения</value></data>
+  <data name="TrustLevel" xml:space="preserve"><value>Ниво на доверие</value></data>
+  <data name="NewMember" xml:space="preserve"><value>Нов член</value></data>
+  <data name="MaxTrustLevelAchieved" xml:space="preserve"><value>Достигнато е максимално ниво на доверие! 🎉</value></data>
+  <data name="NoAchievementsYetMessage" xml:space="preserve"><value>Все още няма постижения. Продължавайте да допринасяте, за да отключите постижения!</value></data>
+  <data name="IssueReports" xml:space="preserve"><value>Докладвани проблеми</value></data>
+  <data name="Comments" xml:space="preserve"><value>Коментари</value></data>
+  <data name="CommentsPosted" xml:space="preserve"><value>Публикувани коментари</value></data>
+  <data name="UserNotFoundTitle" xml:space="preserve"><value>Потребителят не е намерен</value></data>
+  <data name="UserNotFoundMessage" xml:space="preserve"><value>Този потребител не съществува или все още няма запис за репутация.</value></data>
+  <data name="TrustLevel_NewMember" xml:space="preserve"><value>Нов член</value></data>
+  <data name="TrustLevel_ActiveCitizen" xml:space="preserve"><value>Активен гражданин</value></data>
+  <data name="TrustLevel_TrustedMember" xml:space="preserve"><value>Доверен член</value></data>
+  <data name="TrustLevel_CommunityLeader" xml:space="preserve"><value>Лидер на общността</value></data>
+  <data name="TrustLevel_Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Achievement" xml:space="preserve"><value>Постижение</value></data>
+  <data name="AchievementUnlocked" xml:space="preserve"><value>Постижение отключено</value></data>
+  <data name="AchievementName_FirstReporter" xml:space="preserve"><value>Първи докладвач</value></data>
+  <data name="AchievementName_HelpfulCommenteer" xml:space="preserve"><value>Полезен коментатор</value></data>
+  <data name="AchievementName_CommunityHelper" xml:space="preserve"><value>Помощник на общността</value></data>
+  <data name="AchievementName_IssueSolver" xml:space="preserve"><value>Решител на проблеми</value></data>
+  <data name="AchievementName_CivicContributor" xml:space="preserve"><value>Граждански допринасящ</value></data>
+  <data name="AchievementName_CommunityChampion" xml:space="preserve"><value>Шампион на общността</value></data>
+  <data name="AchievementName_CivicLeader" xml:space="preserve"><value>Граждански лидер</value></data>
+  <data name="AchievementName_VerifiedCitizen" xml:space="preserve"><value>Верифициран гражданин</value></data>
+  <data name="AchievementName_ConsistentParticipant" xml:space="preserve"><value>Постоянен участник</value></data>
+  <data name="AchievementName_ImpactMaker" xml:space="preserve"><value>Създател на въздействие</value></data>
+  <data name="AchievementName_TopContributor" xml:space="preserve"><value>Топ сътрудник</value></data>
+  <data name="AchievementDescription_FirstReporter" xml:space="preserve"><value>Докладвахте първия си проблем</value></data>
+  <data name="AchievementDescription_HelpfulCommenteer" xml:space="preserve"><value>Публикувахте полезни коментари</value></data>
+  <data name="AchievementDescription_CommunityHelper" xml:space="preserve"><value>Помогнахте на общността</value></data>
+  <data name="AchievementDescription_IssueSolver" xml:space="preserve"><value>Разрешихте проблеми</value></data>
+  <data name="AchievementDescription_CivicContributor" xml:space="preserve"><value>Направихте граждански принос</value></data>
+  <data name="AchievementDescription_CommunityChampion" xml:space="preserve"><value>Шампион на общността</value></data>
+  <data name="AchievementDescription_CivicLeader" xml:space="preserve"><value>Граждански лидер</value></data>
+  <data name="AchievementDescription_VerifiedCitizen" xml:space="preserve"><value>Верифициран гражданин</value></data>
+  <data name="AchievementDescription_ConsistentParticipant" xml:space="preserve"><value>Постоянно участие</value></data>
+  <data name="AchievementDescription_ImpactMaker" xml:space="preserve"><value>Създадохте положително въздействие</value></data>
+  <data name="AchievementDescription_TopContributor" xml:space="preserve"><value>Топ сътрудник</value></data>
   <data name="ReputationProgressLabel" xml:space="preserve"><value>Прогрес на репутацията</value></data>
   <data name="LevelProgressLabel" xml:space="preserve"><value>Прогрес на нивото</value></data>
   <data name="CommunityActivityLabel" xml:space="preserve"><value>Активност на общността</value></data>
@@ -413,6 +460,8 @@
   <data name="RankHeader" xml:space="preserve"><value>Ранг</value></data>
   <data name="UserHeader" xml:space="preserve"><value>Потребител</value></data>
   <data name="PointsHeader" xml:space="preserve"><value>Точки</value></data>
+  <data name="Points" xml:space="preserve"><value>точки</value></data>
+  <data name="PointsUntilNextLevel" xml:space="preserve"><value>{0} точки до {1}</value></data>
   <data name="TrustLevelHeader" xml:space="preserve"><value>Ниво на доверие</value></data>
   <data name="SelectCity" xml:space="preserve"><value>Избирам град</value></data>
   <data name="ClearFilters" xml:space="preserve"><value>Изчистване на филтрите</value></data>
@@ -471,4 +520,55 @@
   <data name="OnlyAdminsAndModeratorsCanAccessThisPanel" xml:space="preserve"><value>Само администраторите и модераторите могат да получат достъп до този панел</value></data>
   <data name="ReportsLabel2" xml:space="preserve"><value>Доклади</value></data>
   <data name="YourReportsWillShowAsAnonymous" xml:space="preserve"><value>Вашите доклади ще се показват като "Анонимни" на картата и в списъци</value></data>
+  <data name="AdminLoginTooltip" xml:space="preserve"><value>Вход за администратори и модератори</value></data>
+  <data name="InfrastructureExplorer" xml:space="preserve"><value>ПРОУЧВАЧ НА ИНФРАСТРУКТУРА</value></data>
+  <data name="InfrastructureIssues" xml:space="preserve"><value>Проблеми с инфраструктурата</value></data>
+  <data name="ExploreInfrastructureIssuesInCity" xml:space="preserve"><value>Открийте проблеми с инфраструктурата и доклади на общността в {0}.</value></data>
+  <data name="NoIssuesInCity" xml:space="preserve"><value>Страхотни новини — този град в момента няма докладвани проблеми с инфраструктурата.</value></data>
+  <data name="FilterByCountry" xml:space="preserve"><value>Филтрирай по държава</value></data>
+  <data name="SelectACity" xml:space="preserve"><value>Избери град...</value></data>
+  <data name="ManageYourAccountAndPreferences" xml:space="preserve"><value>Управлявайте акаунта си, предпочитанията и още</value></data>
+  <data name="CityPreferenceInfo" xml:space="preserve"><value>Този град ще бъде използван за прогнозиране на проблеми, спазване на SLA, кампании и други функционални страници.</value></data>
+  <data name="AuthProvidersList" xml:space="preserve"><value>Google • Microsoft • Facebook • GitHub</value></data>
+  <data name="AnonymousHazardVisibility" xml:space="preserve"><value>Анонимно състояние • Режим опасности • Видимост</value></data>
+  <data name="ProfilePasswordEmail" xml:space="preserve"><value>Профил • Парола • Имейл</value></data>
+  <data name="LogIn" xml:space="preserve"><value>Вход</value></data>
+  <data name="ForgotPassword" xml:space="preserve"><value>Забравена парола?</value></data>
+  <data name="DontHaveAnAccount" xml:space="preserve"><value>Нямате акаунт?</value></data>
+  <data name="CreateOneNow" xml:space="preserve"><value>Създайте такъв сега</value></data>
+  <data name="TakePhotoAddLocation" xml:space="preserve"><value>Направете снимка, добавете местоположение и подайте за секунди</value></data>
+  <data name="SeeRealTimeUpdates" xml:space="preserve"><value>Вижте актуализации в реално време за докладвани проблеми</value></data>
+  <data name="SettingsUpdated" xml:space="preserve"><value>Настройките са актуализирани</value></data>
+  <data name="PrivacyAndSafetySettings" xml:space="preserve"><value>Настройки за поверителност и сигурност</value></data>
+  <data name="ManageYourPrivacyPreferencesAndSafety" xml:space="preserve"><value>Управлявайте настройките за поверителност и сигурност</value></data>
+  <data name="AnonymousReportingMode" xml:space="preserve"><value>Режим на анонимно докладване</value></data>
+  <data name="AnonymousReportingDescription" xml:space="preserve"><value>Докладвайте опасности и проблеми, без да разкривате самоличността си пред обществеността. Вашата информация е видима само за администраторите.</value></data>
+  <data name="EnableAnonymousReporting" xml:space="preserve"><value>Активирай анонимно докладване</value></data>
+  <data name="ReportHazardsAnonymously" xml:space="preserve"><value>Докладвайте опасности и проблеми анонимно</value></data>
+  <data name="NameNotVisiblePublicly" xml:space="preserve"><value>Вашето име и профил няма да бъдат видими публично</value></data>
+  <data name="AdminsCanContactYou" xml:space="preserve"><value>Администраторите могат да се свържат с вас при нужда от допълнителна информация</value></data>
+  <data name="EarnReputationPoints" xml:space="preserve"><value>Все още можете да печелите точки репутация за полезни доклади</value></data>
+  <data name="HazardAlertPreferences" xml:space="preserve"><value>Предпочитания за предупреждения за опасности</value></data>
+  <data name="CustomizeHazardNotifications" xml:space="preserve"><value>Персонализирайте как получавате уведомления за опасности и сигурност</value></data>
+  <data name="AlertTypes" xml:space="preserve"><value>Видове предупреждения</value></data>
+  <data name="CrimeIncidents" xml:space="preserve"><value>Престъпни инциденти</value></data>
+  <data name="BeNotifiedOfCrimeReports" xml:space="preserve"><value>Получавайте уведомления за докладвани престъпления във вашия район</value></data>
+  <data name="TrafficAccidents" xml:space="preserve"><value>Транспортни произшествия</value></data>
+  <data name="BeNotifiedOfTrafficHazards" xml:space="preserve"><value>Получавайте уведомления за произшествия и опасности по пътищата</value></data>
+  <data name="BeNotifiedOfInfrastructureProblems" xml:space="preserve"><value>Получавайте уведомления за дупки, счупено осветление и щети</value></data>
+  <data name="AllHazardTypes" xml:space="preserve"><value>Всички видове опасности</value></data>
+  <data name="NotifyForAllHazards" xml:space="preserve"><value>Получавайте уведомления за всички видове опасности</value></data>
+  <data name="DistanceFromYourLocation" xml:space="preserve"><value>Разстояние от вашето местоположение:</value></data>
+  <data name="AlertsWithinDistance" xml:space="preserve"><value>Ще получавате уведомления за опасности в рамките на това разстояние</value></data>
+  <data name="SeverityThreshold" xml:space="preserve"><value>Праг на тежест</value></data>
+  <data name="AllSeverityLevels" xml:space="preserve"><value>Всички нива на тежест</value></data>
+  <data name="HighAndCriticalOnly" xml:space="preserve"><value>Само високо и критично</value></data>
+  <data name="CriticalOnly" xml:space="preserve"><value>Само критично</value></data>
+  <data name="OnlyBeNotifiedAboveSeverity" xml:space="preserve"><value>Получавайте уведомления само за опасности с това или по-високо ниво</value></data>
+  <data name="ControlWhoCanSeeYourProfile" xml:space="preserve"><value>Контролирайте кой може да види вашия профил и приноси</value></data>
+  <data name="Public" xml:space="preserve"><value>Публичен</value></data>
+  <data name="PublicProfileDescription" xml:space="preserve"><value>Всеки може да види вашия профил и приноси</value></data>
+  <data name="Private" xml:space="preserve"><value>Частен</value></data>
+  <data name="PrivateProfileDescription" xml:space="preserve"><value>Само вие и администраторите можете да видите вашия профил</value></data>
+  <data name="PrivateProfileDoesNotAffectReputation" xml:space="preserve"><value>Направата на вашия профил частен не влияе на вашата репутация или приноси за общността. Влияе само на това кой може да види вашата профилна страница.</value></data>
 </root>

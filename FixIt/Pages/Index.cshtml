@@ -69,22 +69,22 @@
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="position-relative" style="perspective: 1000px;">
                     <div style="transform: rotateY(-10deg) rotateX(5deg); transition: transform 0.5s;">
-                        <div class="p-5" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                        <div class="p-5 glass-lg" style="border-radius: var(--radius-2xl);">
                             <div class="d-flex align-items-center gap-3 mb-4 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                                <div style="width: 48px; height: 48px; background: rgba(249, 115, 22, 0.2); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-exclamation-triangle" style="font-size: 1.5rem; color: #f97316;"></i>
+                                <div class="icon-container-md" style="background: rgba(249, 115, 22, 0.2); border-radius: var(--radius-lg);">
+                                    <i class="bi bi-exclamation-triangle" style="color: var(--accent);"></i>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <div class="fw-semibold" style="color: white;">New Issue Reported</div>
-                                    <div class="small" style="opacity: 0.8;">2 minutes ago</div>
+                                    <div class="fw-semibold" style="color: white;">@Localizer["NewIssueReported"]</div>
+                                    <div class="small" style="opacity: 0.8;">@Localizer["MinutesAgo", 2]</div>
                                 </div>
-                                <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">High Priority</span>
+                                <span class="badge badge-danger-light-solid">@Localizer["HighPriority"]</span>
                             </div>
-                            <h6 class="fw-bold mb-2" style="color: white;">Pothole on Main Street</h6>
-                            <p class="small mb-4" style="opacity: 0.8;">Large pothole near intersection causing traffic issues...</p>
+                            <h6 class="fw-bold mb-2" style="color: white;">@Localizer["SampleIssueTitle"]</h6>
+                            <p class="small mb-4" style="opacity: 0.8;">@Localizer["SampleIssueDescription"]</p>
                             <div class="d-flex gap-2">
-                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.75rem;"><i class="bi bi-geo-alt me-1"></i>Downtown</span>
-                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: 0.75rem;"><i class="bi bi-people me-1"></i>12 upvotes</span>
+                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: var(--text-xs);"><i class="bi bi-geo-alt me-1"></i>@Localizer["SampleLocation"]</span>
+                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: var(--text-xs);"><i class="bi bi-people me-1"></i>@Localizer["UpvotesCount"]</span>
                             </div>
                         </div>
                     </div>
@@ -136,8 +136,8 @@
 
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card h-100">
-                    <div class="feature-number mb-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">3</div>
-                    <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #f59e0b, #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <div class="feature-number mb-3 gradient-warning">3</div>
+                    <div class="feature-icon mb-4 text-gradient-warning">
                         <i class="bi bi-chat-dots"></i>
                     </div>
                     <h5 class="fw-bold mb-3">@Localizer["CommunityEngagement"]</h5>
@@ -149,8 +149,8 @@
 
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card h-100">
-                    <div class="feature-number mb-3" style="background: linear-gradient(135deg, #ef4444, #dc2626);">4</div>
-                    <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <div class="feature-number mb-3 gradient-danger">4</div>
+                    <div class="feature-icon mb-4 text-gradient-danger">
                         <i class="bi bi-check-circle"></i>
                     </div>
                     <h5 class="fw-bold mb-3">@Localizer["SeeResults"]</h5>

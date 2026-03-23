@@ -173,6 +173,33 @@ public class IssueServiceTests
     }
 
     [Fact]
+    public async Task CreateIssueAsync_WithUnknownTag_CreatesNewTagAndAssignsToIssue()
+    {
+        // Arrange
+        var reporter = new UserSummary { Id = "user1", DisplayName = "Test User" };
+        var tagNames = new[] { "newtag" };
+
+        Issue? capturedIssue = null;
+        _issueRepoMock.Setup(r => r.InsertAsync(It.IsAny<Issue>()))
+            .Callback<Issue>(i => capturedIssue = i)
+            .ReturnsAsync((Issue i) => i);
+
+        _tagRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Tag, bool>>>()))
+            .ReturnsAsync(new List<Tag>());
+
+        _tagRepoMock.Setup(r => r.InsertAsync(It.IsAny<Tag>()))
+            .ReturnsAsync((Tag t) => t);
+
+        // Act
+        await _issueService.CreateIssueAsync("Test", "Description", 0, 0, "city1", reporter, tagNames);
+
+        // Assert
+        Assert.NotNull(capturedIssue);
+        Assert.NotEmpty(capturedIssue.TagIds);
+        _tagRepoMock.Verify(r => r.InsertAsync(It.Is<Tag>(t => t.Name == "newtag")), Times.Once);
+    }
+
+    [Fact]
     public async Task CreateIssueAsync_WithAnonymousFlag_CreatesAnonymousIssue()
     {
         // Arrange
@@ -265,7 +292,7 @@ public class IssueServiceTests
             .ReturnsAsync((Vote v) => v);
         _issueRepoMock.Setup(r => r.ReplaceAsync("issue1", It.IsAny<Issue>()))
             .Returns(Task.CompletedTask);
-        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), issueId: It.IsAny<string>()))
+        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -366,7 +393,7 @@ public class IssueServiceTests
             .ReturnsAsync((Comment c) => c);
         _issueRepoMock.Setup(r => r.ReplaceAsync("issue1", It.IsAny<Issue>()))
             .Returns(Task.CompletedTask);
-        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), issueId: It.IsAny<string>()))
+        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
         // Act

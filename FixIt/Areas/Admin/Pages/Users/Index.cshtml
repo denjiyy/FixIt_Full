@@ -7,7 +7,6 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-<link href="~/css/admin-panel.css" rel="stylesheet" />
 
 <style>
     .user-card {
@@ -229,7 +228,7 @@
                             {
                                 <form method="post" asp-page-handler="Unban" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('@Localizer[\"ConfirmUnbanUser\"]');">
+                                    <button type="submit" class="btn btn-sm btn-outline" onclick='return confirm("@Localizer["ConfirmUnbanUser"]");'>
                                         <i class="bi bi-unlock"></i> Unban
                                     </button>
                                 </form>
@@ -238,7 +237,7 @@
                             {
                                 <form method="post" asp-page-handler="Ban" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #991b1b;" onclick="return confirm('@Localizer[\"ConfirmBanUser\"]');">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #991b1b;" onclick='return confirm("@Localizer["ConfirmBanUser"]");'>
                                         <i class="bi bi-ban"></i> Ban
                                     </button>
                                 </form>
@@ -248,7 +247,7 @@
                             {
                                 <form method="post" asp-page-handler="Unrestrict" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('@Localizer[\"ConfirmRemoveRestrictions\"]');">
+                                    <button type="submit" class="btn btn-sm btn-outline" onclick='return confirm("@Localizer["ConfirmRemoveRestrictions"]");'>
                                         <i class="bi bi-check-circle"></i> Unrestrict
                                     </button>
                                 </form>
@@ -257,7 +256,7 @@
                             {
                                 <form method="post" asp-page-handler="Restrict" style="display: inline;">
                                     <input type="hidden" name="userId" value="@user.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #f59e0b;" onclick="return confirm('@Localizer[\"ConfirmRestrictUser\"]');">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #f59e0b;" onclick='return confirm("@Localizer["ConfirmRestrictUser"]");'>
                                         <i class="bi bi-pause-circle"></i> Restrict
                                     </button>
                                 </form>
@@ -270,7 +269,7 @@
 
                             <form method="post" asp-page-handler="Delete" style="display: inline;">
                                 <input type="hidden" name="userId" value="@user.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('@Localizer[\"ConfirmDeleteUser\"]');">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick='return confirm("@Localizer["ConfirmDeleteUser"]");'>
                                     <i class="bi bi-trash"></i> @Localizer["Delete"]
                                 </button>
                             </form>
@@ -314,7 +313,7 @@
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="bi bi-people"></i></div>
                 <h3>@Localizer["NoUsersFound"]</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoUsersInTheSystem"] : $"@Localizer[\"FilterResults\"] \"{Model.SearchTerm}\"")</p>
+                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoUsersInTheSystem"] : $"{Localizer["FilterResults"]} \"{Model.SearchTerm}\"")</p>
             </div>
         }
     </div>

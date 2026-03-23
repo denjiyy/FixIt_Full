@@ -101,6 +101,10 @@
   <data name="IssuesResolvedPoints" xml:space="preserve"><value>Resolved Issues</value></data>
   <data name="IssuesReporterStat" xml:space="preserve"><value>issues reported</value></data>
   <data name="CelebratateTopContributors" xml:space="preserve"><value>Celebrate the top contributors making our cities better</value></data>
+  <data name="CommunityLeaderboards" xml:space="preserve"><value>Community Leaderboards</value></data>
+  <data name="Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Monthly" xml:space="preserve"><value>Monthly</value></data>
+  <data name="HallOfFame" xml:space="preserve"><value>Hall of Fame</value></data>
   <data name="SafetyHazardMap" xml:space="preserve"><value>Safety Hazard Map</value></data>
   <data name="TakePhotoPin" xml:space="preserve"><value>Take a photo, pin the location on a map, and submit a detailed report in seconds.</value></data>
   <data name="WatchIssuesProgress" xml:space="preserve"><value>Watch issues progress from reported to resolved with live status updates.</value></data>
@@ -117,6 +121,10 @@
   <data name="ActiveCommunityMembers" xml:space="preserve"><value>Active Community Members</value></data>
   <data name="ReportAndTrackInfrastructure" xml:space="preserve"><value>Report and track civic infrastructure problems in your area</value></data>
   <data name="ReportIssueBtn" xml:space="preserve"><value>Report Issue</value></data>
+  <data name="SampleIssueTitle" xml:space="preserve"><value>Pothole on Main Street</value></data>
+  <data name="SampleIssueDescription" xml:space="preserve"><value>Large pothole near intersection causing traffic issues...</value></data>
+  <data name="SampleLocation" xml:space="preserve"><value>Downtown</value></data>
+  <data name="UpvotesCount" xml:space="preserve"><value>12 upvotes</value></data>
   <data name="SignInToReport" xml:space="preserve"><value>Sign In to Report</value></data>
   <data name="TotalIssues" xml:space="preserve"><value>Total Issues</value></data>
   <data name="InProgress" xml:space="preserve"><value>In Progress</value></data>
@@ -259,6 +267,7 @@
   <data name="Next" xml:space="preserve"><value>Next</value></data>
   <data name="SortOptions" xml:space="preserve"><value>Sort options</value></data>
   <data name="ClearFilter" xml:space="preserve"><value>Clear</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
   <data name="Active" xml:space="preserve"><value>Active:</value></data>
   <data name="CityPreference" xml:space="preserve"><value>City Preference</value></data>
   <data name="SelectYourCityToPersonalizeFeatureContent" xml:space="preserve"><value>Select your city to personalize feature content</value></data>
@@ -349,6 +358,44 @@
   <data name="ManageYourAuthenticationMethodsAndLinkedProviders" xml:space="preserve"><value>Manage your authentication methods and linked providers</value></data>
   <data name="TotalPoints" xml:space="preserve"><value>Total Points</value></data>
   <data name="AchievementsLabel" xml:space="preserve"><value>Achievements</value></data>
+  <data name="TrustLevel" xml:space="preserve"><value>Trust Level</value></data>
+  <data name="NewMember" xml:space="preserve"><value>New Member</value></data>
+  <data name="MaxTrustLevelAchieved" xml:space="preserve"><value>Maximum trust level achieved! 🎉</value></data>
+  <data name="NoAchievementsYetMessage" xml:space="preserve"><value>No achievements yet. Keep contributing to unlock achievements!</value></data>
+  <data name="IssueReports" xml:space="preserve"><value>Issue Reports</value></data>
+  <data name="Comments" xml:space="preserve"><value>Comments</value></data>
+  <data name="CommentsPosted" xml:space="preserve"><value>Comments Posted</value></data>
+  <data name="UserNotFoundTitle" xml:space="preserve"><value>User Not Found</value></data>
+  <data name="UserNotFoundMessage" xml:space="preserve"><value>This user does not exist or has no reputation record yet.</value></data>
+  <data name="TrustLevel_NewMember" xml:space="preserve"><value>New Member</value></data>
+  <data name="TrustLevel_ActiveCitizen" xml:space="preserve"><value>Active Citizen</value></data>
+  <data name="TrustLevel_TrustedMember" xml:space="preserve"><value>Trusted Member</value></data>
+  <data name="TrustLevel_CommunityLeader" xml:space="preserve"><value>Community Leader</value></data>
+  <data name="TrustLevel_Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Achievement" xml:space="preserve"><value>Achievement</value></data>
+  <data name="AchievementUnlocked" xml:space="preserve"><value>Achievement unlocked</value></data>
+  <data name="AchievementName_FirstReporter" xml:space="preserve"><value>First Reporter</value></data>
+  <data name="AchievementName_HelpfulCommenteer" xml:space="preserve"><value>Helpful Commenter</value></data>
+  <data name="AchievementName_CommunityHelper" xml:space="preserve"><value>Community Helper</value></data>
+  <data name="AchievementName_IssueSolver" xml:space="preserve"><value>Issue Solver</value></data>
+  <data name="AchievementName_CivicContributor" xml:space="preserve"><value>Civic Contributor</value></data>
+  <data name="AchievementName_CommunityChampion" xml:space="preserve"><value>Champion</value></data>
+  <data name="AchievementName_CivicLeader" xml:space="preserve"><value>Civic Leader</value></data>
+  <data name="AchievementName_VerifiedCitizen" xml:space="preserve"><value>Verified</value></data>
+  <data name="AchievementName_ConsistentParticipant" xml:space="preserve"><value>Consistent</value></data>
+  <data name="AchievementName_ImpactMaker" xml:space="preserve"><value>Impact Maker</value></data>
+  <data name="AchievementName_TopContributor" xml:space="preserve"><value>Top Contributor</value></data>
+  <data name="AchievementDescription_FirstReporter" xml:space="preserve"><value>Reported your first issue</value></data>
+  <data name="AchievementDescription_HelpfulCommenteer" xml:space="preserve"><value>Posted helpful comments</value></data>
+  <data name="AchievementDescription_CommunityHelper" xml:space="preserve"><value>Helped the community</value></data>
+  <data name="AchievementDescription_IssueSolver" xml:space="preserve"><value>Resolved issues</value></data>
+  <data name="AchievementDescription_CivicContributor" xml:space="preserve"><value>Made civic contributions</value></data>
+  <data name="AchievementDescription_CommunityChampion" xml:space="preserve"><value>Community champion</value></data>
+  <data name="AchievementDescription_CivicLeader" xml:space="preserve"><value>Civic leader</value></data>
+  <data name="AchievementDescription_VerifiedCitizen" xml:space="preserve"><value>Verified citizen</value></data>
+  <data name="AchievementDescription_ConsistentParticipant" xml:space="preserve"><value>Consistent participation</value></data>
+  <data name="AchievementDescription_ImpactMaker" xml:space="preserve"><value>Made positive impact</value></data>
+  <data name="AchievementDescription_TopContributor" xml:space="preserve"><value>Top contributor</value></data>
   <data name="ReputationProgressLabel" xml:space="preserve"><value>Reputation Progress</value></data>
   <data name="LevelProgressLabel" xml:space="preserve"><value>Level Progress</value></data>
   <data name="CommunityActivityLabel" xml:space="preserve"><value>Community Activity</value></data>
@@ -410,6 +457,8 @@
   <data name="RankHeader" xml:space="preserve"><value>Rank</value></data>
   <data name="UserHeader" xml:space="preserve"><value>User</value></data>
   <data name="PointsHeader" xml:space="preserve"><value>Points</value></data>
+  <data name="Points" xml:space="preserve"><value>points</value></data>
+  <data name="PointsUntilNextLevel" xml:space="preserve"><value>{0} points until {1}</value></data>
   <data name="TrustLevelHeader" xml:space="preserve"><value>Trust Level</value></data>
   <data name="SelectCity" xml:space="preserve"><value>Select City</value></data>
   <data name="ClearFilters" xml:space="preserve"><value>Clear Filters</value></data>
@@ -468,4 +517,55 @@
   <data name="OnlyAdminsAndModeratorsCanAccessThisPanel" xml:space="preserve"><value>Only admins and moderators can access this panel</value></data>
   <data name="ReportsLabel2" xml:space="preserve"><value>Reports</value></data>
   <data name="YourReportsWillShowAsAnonymous" xml:space="preserve"><value>Your reports will show as "Anonymous" on the map and in lists</value></data>
+  <data name="AdminLoginTooltip" xml:space="preserve"><value>Admin and Moderator Login</value></data>
+  <data name="InfrastructureExplorer" xml:space="preserve"><value>INFRASTRUCTURE EXPLORER</value></data>
+  <data name="InfrastructureIssues" xml:space="preserve"><value>Infrastructure Issues</value></data>
+  <data name="ExploreInfrastructureIssuesInCity" xml:space="preserve"><value>Explore infrastructure issues and community reports in {0}.</value></data>
+  <data name="NoIssuesInCity" xml:space="preserve"><value>Great news — this city currently has no reported infrastructure issues.</value></data>
+  <data name="FilterByCountry" xml:space="preserve"><value>Filter by Country</value></data>
+  <data name="SelectACity" xml:space="preserve"><value>Select a city...</value></data>
+  <data name="ManageYourAccountAndPreferences" xml:space="preserve"><value>Manage your account, preferences, and more</value></data>
+  <data name="CityPreferenceInfo" xml:space="preserve"><value>This city will be used for Issue Forecasting, SLA Compliance, Campaigns, and other feature pages.</value></data>
+  <data name="AuthProvidersList" xml:space="preserve"><value>Google • Microsoft • Facebook • GitHub</value></data>
+  <data name="AnonymousHazardVisibility" xml:space="preserve"><value>Anonymous Mode • Hazard Mode • Visibility</value></data>
+  <data name="ProfilePasswordEmail" xml:space="preserve"><value>Profile • Password • Email</value></data>
+  <data name="LogIn" xml:space="preserve"><value>Log in</value></data>
+  <data name="ForgotPassword" xml:space="preserve"><value>Forgot password?</value></data>
+  <data name="DontHaveAnAccount" xml:space="preserve"><value>Don't have an account?</value></data>
+  <data name="CreateOneNow" xml:space="preserve"><value>Create one now</value></data>
+  <data name="TakePhotoAddLocation" xml:space="preserve"><value>Take a photo, add location, and submit in seconds</value></data>
+  <data name="SeeRealTimeUpdates" xml:space="preserve"><value>See real-time updates on reported issues</value></data>
+  <data name="SettingsUpdated" xml:space="preserve"><value>Settings Updated</value></data>
+  <data name="PrivacyAndSafetySettings" xml:space="preserve"><value>Privacy &amp; Safety Settings</value></data>
+  <data name="ManageYourPrivacyPreferencesAndSafety" xml:space="preserve"><value>Manage your privacy preferences and safety features</value></data>
+  <data name="AnonymousReportingMode" xml:space="preserve"><value>Anonymous Reporting Mode</value></data>
+  <data name="AnonymousReportingDescription" xml:space="preserve"><value>Report hazards and issues without revealing your identity to the public. Your information is only visible to administrators.</value></data>
+  <data name="EnableAnonymousReporting" xml:space="preserve"><value>Enable Anonymous Reporting</value></data>
+  <data name="ReportHazardsAnonymously" xml:space="preserve"><value>Report hazards and issues anonymously</value></data>
+  <data name="NameNotVisiblePublicly" xml:space="preserve"><value>Your name and profile will not be visible publicly</value></data>
+  <data name="AdminsCanContactYou" xml:space="preserve"><value>Administrators can contact you if they need more information</value></data>
+  <data name="EarnReputationPoints" xml:space="preserve"><value>You can still earn reputation points for helpful reports</value></data>
+  <data name="HazardAlertPreferences" xml:space="preserve"><value>Hazard Alert Preferences</value></data>
+  <data name="CustomizeHazardNotifications" xml:space="preserve"><value>Customize how you receive hazard and safety notifications</value></data>
+  <data name="AlertTypes" xml:space="preserve"><value>Alert Types</value></data>
+  <data name="CrimeIncidents" xml:space="preserve"><value>Crime Incidents</value></data>
+  <data name="BeNotifiedOfCrimeReports" xml:space="preserve"><value>Be notified of reported crimes in your area</value></data>
+  <data name="TrafficAccidents" xml:space="preserve"><value>Traffic Accidents</value></data>
+  <data name="BeNotifiedOfTrafficHazards" xml:space="preserve"><value>Be notified of accidents and traffic hazards</value></data>
+  <data name="BeNotifiedOfInfrastructureProblems" xml:space="preserve"><value>Be notified of potholes, broken lights, and damage</value></data>
+  <data name="AllHazardTypes" xml:space="preserve"><value>All Hazard Types</value></data>
+  <data name="NotifyForAllHazards" xml:space="preserve"><value>Receive notifications for all types of hazards</value></data>
+  <data name="DistanceFromYourLocation" xml:space="preserve"><value>Distance from your location:</value></data>
+  <data name="AlertsWithinDistance" xml:space="preserve"><value>You'll receive alerts for hazards within this distance</value></data>
+  <data name="SeverityThreshold" xml:space="preserve"><value>Severity Threshold</value></data>
+  <data name="AllSeverityLevels" xml:space="preserve"><value>All Severity Levels</value></data>
+  <data name="HighAndCriticalOnly" xml:space="preserve"><value>High &amp; Critical Only</value></data>
+  <data name="CriticalOnly" xml:space="preserve"><value>Critical Only</value></data>
+  <data name="OnlyBeNotifiedAboveSeverity" xml:space="preserve"><value>Only be notified of hazards at or above this severity level</value></data>
+  <data name="ControlWhoCanSeeYourProfile" xml:space="preserve"><value>Control who can see your profile and contributions</value></data>
+  <data name="Public" xml:space="preserve"><value>Public</value></data>
+  <data name="PublicProfileDescription" xml:space="preserve"><value>Anyone can view your profile and contributions</value></data>
+  <data name="Private" xml:space="preserve"><value>Private</value></data>
+  <data name="PrivateProfileDescription" xml:space="preserve"><value>Only you and administrators can view your profile</value></data>
+  <data name="PrivateProfileDoesNotAffectReputation" xml:space="preserve"><value>Making your profile private doesn't affect your reputation or contributions to the community. It only affects who can see your profile page.</value></data>
 </root>

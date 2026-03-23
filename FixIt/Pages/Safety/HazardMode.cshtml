@@ -10,15 +10,15 @@
     <div class="hazard-header">
         <div class="header-content">
             <h5 class="mb-0">
-                <i class="bi bi-exclamation-triangle-fill text-danger"></i> Hazard Mode
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i> @Localizer["HazardMode"]
             </h5>
-            <small class="text-muted">Real-time safety alerts for your area</small>
+            <small class="text-muted">@Localizer["HazardModeSubtitle"]</small>
         </div>
         <div class="header-controls">
             <button class="btn btn-sm btn-outline-primary" id="myLocationBtn">
-                <i class="bi bi-geo-alt-fill"></i> My Location
+                <i class="bi bi-geo-alt-fill"></i> @Localizer["MyLocation"]
             </button>
-            <small class="text-muted ms-2"><i class="bi bi-info-circle"></i> Click on map to report a hazard</small>
+            <small class="text-muted ms-2"><i class="bi bi-info-circle"></i> @Localizer["ClickToReportHazard"]</small>
         </div>
     </div>
 
@@ -29,32 +29,32 @@
         <!-- Sidebar - Hazard List -->
         <div class="hazard-sidebar">
             <div class="sidebar-header">
-                <h6 class="mb-3">Nearby Hazards</h6>
+                <h6 class="mb-3">@Localizer["NearbyHazards"]</h6>
                 <div class="filter-controls">
                     <input type="text" class="form-control form-control-sm mb-2" 
                            id="hazardFilter" placeholder='@Localizer["FilterHazards"]'
                            onkeyup="filterHazards(this.value)">
                     <select class="form-select form-select-sm mb-2" id="severityFilter" 
                             onchange="filterBySeverity(this.value)">
-                        <option value="">All Severities</option>
-                        <option value="Critical">Critical</option>
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
+                        <option value="">@Localizer["AllSeverities"]</option>
+                        <option value="Critical">@Localizer["Critical"]</option>
+                        <option value="High">@Localizer["High"]</option>
+                        <option value="Medium">@Localizer["Medium"]</option>
+                        <option value="Low">@Localizer["Low"]</option>
                     </select>
                     <select class="form-select form-select-sm" id="typeFilter" 
                             onchange="filterByType(this.value)">
-                        <option value="">All Types</option>
-                        <option value="Crime">Crime</option>
-                        <option value="Accident">Accident</option>
-                        <option value="Construction">Construction</option>
-                        <option value="Pothole">Pothole</option>
-                        <option value="Flooding">Flooding</option>
-                        <option value="DamagedInfrastructure">Infrastructure Damage</option>
-                        <option value="StreetLight">Street Light</option>
-                        <option value="Debris">Debris</option>
-                        <option value="TrafficCongestion">Traffic</option>
-                        <option value="Other">Other</option>
+                        <option value="">@Localizer["AllTypes"]</option>
+                        <option value="Crime">@Localizer["Crime"]</option>
+                        <option value="Accident">@Localizer["Accident"]</option>
+                        <option value="Construction">@Localizer["Construction"]</option>
+                        <option value="Pothole">@Localizer["Pothole"]</option>
+                        <option value="Flooding">@Localizer["Flooding"]</option>
+                        <option value="DamagedInfrastructure">@Localizer["DamagedInfrastructure"]</option>
+                        <option value="StreetLight">@Localizer["StreetLight"]</option>
+                        <option value="Debris">@Localizer["Debris"]</option>
+                        <option value="TrafficCongestion">@Localizer["TrafficCongestion"]</option>
+                        <option value="Other">@Localizer["Other"]</option>
                     </select>
                 </div>
             </div>
@@ -62,15 +62,15 @@
             <div class="sidebar-stats mb-3">
                 <div class="stat-pill">
                     <span class="stat-value" id="totalHazardsCount">0</span>
-                    <span class="stat-label">Total</span>
+                    <span class="stat-label">@Localizer["TotalHazards"]</span>
                 </div>
                 <div class="stat-pill critical">
                     <span class="stat-value" id="criticalCount">0</span>
-                    <span class="stat-label">Critical</span>
+                    <span class="stat-label">@Localizer["Critical"]</span>
                 </div>
                 <div class="stat-pill high">
                     <span class="stat-value" id="highCount">0</span>
-                    <span class="stat-label">High</span>
+                    <span class="stat-label">@Localizer["High"]</span>
                 </div>
             </div>
 
@@ -98,18 +98,18 @@
             </div>
             <div class="modal-footer border-top-0" id="hazardDetailFooter">
                 <button type="button" class="btn btn-outline-primary" id="confirmBtn" onclick="confirmHazard()">
-                    <i class="bi bi-check-circle"></i> Confirm
+                    <i class="bi bi-check-circle"></i> @Localizer["Confirm"]
                 </button>
                 <button type="button" class="btn btn-warning d-none" id="editBtn" onclick="openEditModal()">
-                    <i class="bi bi-pencil-square"></i> Edit
+                    <i class="bi bi-pencil-square"></i> @Localizer["Edit"]
                 </button>
                 <button type="button" class="btn btn-danger d-none" id="deleteBtn" onclick="deleteHazard()">
-                    <i class="bi bi-trash"></i> Delete
+                    <i class="bi bi-trash"></i> @Localizer["Delete"]
                 </button>
                 <button type="button" class="btn btn-success d-none" id="restoreBtn" onclick="restoreHazard()">
-                    <i class="bi bi-arrow-counterclockwise"></i> Restore
+                    <i class="bi bi-arrow-counterclockwise"></i> @Localizer["Restore"]
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
             </div>
         </div>
     </div>
@@ -119,64 +119,64 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Edit Hazard</h5>
+                            <h5 class="modal-title">@Localizer["EditHazard"]</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <form id="editHazardForm">
                                 <input type="hidden" id="editHazardId" />
                                 <div class="mb-2">
-                                    <label class="form-label">Type</label>
+                                    <label class="form-label">@Localizer["Type"]</label>
                                     <select id="editType" class="form-select">
-                                        <option value="">-- Select type --</option>
-                                        <option value="Crime">Crime</option>
-                                        <option value="Accident">Accident</option>
-                                        <option value="Construction">Construction</option>
-                                        <option value="Pothole">Pothole</option>
-                                        <option value="Flooding">Flooding</option>
-                                        <option value="DamagedInfrastructure">Infrastructure Damage</option>
-                                        <option value="StreetLight">Street Light</option>
-                                        <option value="Debris">Debris</option>
-                                        <option value="TrafficCongestion">Traffic</option>
-                                        <option value="Other">Other</option>
+                                        <option value="">@Localizer["SelectType"]</option>
+                                        <option value="Crime">@Localizer["Crime"]</option>
+                                        <option value="Accident">@Localizer["Accident"]</option>
+                                        <option value="Construction">@Localizer["Construction"]</option>
+                                        <option value="Pothole">@Localizer["Pothole"]</option>
+                                        <option value="Flooding">@Localizer["Flooding"]</option>
+                                        <option value="DamagedInfrastructure">@Localizer["DamagedInfrastructure"]</option>
+                                        <option value="StreetLight">@Localizer["StreetLight"]</option>
+                                        <option value="Debris">@Localizer["Debris"]</option>
+                                        <option value="TrafficCongestion">@Localizer["TrafficCongestion"]</option>
+                                        <option value="Other">@Localizer["Other"]</option>
                                     </select>
                                 </div>
                                 <div class="mb-2">
-                                    <label class="form-label">Severity</label>
+                                    <label class="form-label">@Localizer["Severity"]</label>
                                     <select id="editSeverity" class="form-select">
-                                        <option value="">-- Select severity --</option>
-                                        <option value="Critical">Critical</option>
-                                        <option value="High">High</option>
-                                        <option value="Medium">Medium</option>
-                                        <option value="Low">Low</option>
+                                        <option value="">@Localizer["SelectSeverity"]</option>
+                                        <option value="Critical">@Localizer["Critical"]</option>
+                                        <option value="High">@Localizer["High"]</option>
+                                        <option value="Medium">@Localizer["Medium"]</option>
+                                        <option value="Low">@Localizer["Low"]</option>
                                     </select>
                                 </div>
                                 <div class="mb-2">
-                                    <label class="form-label">Title</label>
+                                    <label class="form-label">@Localizer["Title"]</label>
                                     <input id="editTitle" class="form-control" />
                                 </div>
                                 <div class="mb-2">
-                                    <label class="form-label">Description</label>
+                                    <label class="form-label">@Localizer["Description"]</label>
                                     <textarea id="editDescription" class="form-control" rows="3"></textarea>
                                 </div>
                                 <div class="mb-2">
-                                    <label class="form-label">Address</label>
+                                    <label class="form-label">@Localizer["Address"]</label>
                                     <input id="editAddress" class="form-control" />
                                 </div>
                                 <div class="row">
                                     <div class="col-6 mb-2">
-                                        <label class="form-label">Latitude</label>
+                                        <label class="form-label">@Localizer["Latitude"]</label>
                                         <input id="editLatitude" class="form-control" />
                                     </div>
                                     <div class="col-6 mb-2">
-                                        <label class="form-label">Longitude</label>
+                                        <label class="form-label">@Localizer["Longitude"]</label>
                                         <input id="editLongitude" class="form-control" />
                                     </div>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
                             <button type="button" class="btn btn-primary" onclick="submitHazardUpdate()">@Localizer["SaveChanges"]</button>
                         </div>
                     </div>
@@ -189,67 +189,67 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-flag"></i> Report Hazard</h5>
+                <h5 class="modal-title"><i class="bi bi-flag"></i> @Localizer["ReportHazard"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="quickReportForm">
                     <div class="alert alert-info mb-3">
-                        <strong>Location Selected:</strong><br>
-                        <small id="reportLocationDisplay">Click on map to select location</small>
+                        <strong>@Localizer["LocationSelected"]</strong><br>
+                        <small id="reportLocationDisplay">@Localizer["ClickOnMapToSelectLocation"]</small>
                     </div>
 
                     <div class="mb-3">
-                        <label for="reportType" class="form-label">Hazard Type <span class="text-danger">*</span></label>
+                        <label for="reportType" class="form-label">@Localizer["HazardType"] <span class="text-danger">*</span></label>
                         <select class="form-select" id="reportType" required>
-                            <option value="">-- Select type --</option>
-                            <option value="Crime">Crime</option>
-                            <option value="Accident">Accident</option>
-                            <option value="Construction">Construction</option>
-                            <option value="Pothole">Pothole</option>
-                            <option value="Flooding">Flooding</option>
-                            <option value="DamagedInfrastructure">Infrastructure Damage</option>
-                            <option value="StreetLight">Street Light</option>
-                            <option value="Debris">Debris</option>
-                            <option value="TrafficCongestion">Traffic</option>
-                            <option value="Other">Other</option>
+                            <option value="">@Localizer["SelectType"]</option>
+                            <option value="Crime">@Localizer["Crime"]</option>
+                            <option value="Accident">@Localizer["Accident"]</option>
+                            <option value="Construction">@Localizer["Construction"]</option>
+                            <option value="Pothole">@Localizer["Pothole"]</option>
+                            <option value="Flooding">@Localizer["Flooding"]</option>
+                            <option value="DamagedInfrastructure">@Localizer["DamagedInfrastructure"]</option>
+                            <option value="StreetLight">@Localizer["StreetLight"]</option>
+                            <option value="Debris">@Localizer["Debris"]</option>
+                            <option value="TrafficCongestion">@Localizer["TrafficCongestion"]</option>
+                            <option value="Other">@Localizer["Other"]</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="reportSeverity" class="form-label">Severity <span class="text-danger">*</span></label>
+                        <label for="reportSeverity" class="form-label">@Localizer["Severity"] <span class="text-danger">*</span></label>
                         <select class="form-select" id="reportSeverity" required>
-                            <option value="">-- Select severity --</option>
-                            <option value="Critical">🔴 Critical</option>
-                            <option value="High">🟠 High</option>
-                            <option value="Medium">🟡 Medium</option>
-                            <option value="Low">🟢 Low</option>
+                            <option value="">@Localizer["SelectSeverity"]</option>
+                            <option value="Critical">🔴 @Localizer["Critical"]</option>
+                            <option value="High">🟠 @Localizer["High"]</option>
+                            <option value="Medium">🟡 @Localizer["Medium"]</option>
+                            <option value="Low">🟢 @Localizer["Low"]</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="reportTitle" class="form-label">Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="reportTitle" required placeholder="Brief description of the hazard">
+                        <label for="reportTitle" class="form-label">@Localizer["Title"] <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="reportTitle" required placeholder="@Localizer["HazardTitlePlaceholder"]">
                     </div>
 
                     <div class="mb-3">
-                        <label for="reportDescription" class="form-label">Details <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="reportDescription" rows="3" required placeholder="Additional details that would help others..."></textarea>
+                        <label for="reportDescription" class="form-label">@Localizer["Details"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="reportDescription" rows="3" required placeholder="@Localizer["HazardDetailsPlaceholder"]"></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label for="reportLocationInput" class="form-label">Location <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="reportLocationInput" readonly placeholder="Click on map to select location">
-                        <small class="form-text text-muted">Selected from map: Click anywhere on the map to update</small>
+                        <label for="reportLocationInput" class="form-label">@Localizer["Location"] <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="reportLocationInput" readonly placeholder="@Localizer["ClickOnMapToSelectLocation"]">
+                        <small class="form-text text-muted">@Localizer["SelectedFromMapInstructions"]</small>
                     </div>
 
 
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
                 <button type="button" class="btn btn-danger" onclick="submitQuickReport()">
-                    <i class="bi bi-check-circle"></i> Submit Report
+                    <i class="bi bi-check-circle"></i> @Localizer["SubmitReport"]
                 </button>
             </div>
         </div>
@@ -271,18 +271,18 @@
             </div>
             <div class="modal-footer border-top-0" id="hazardDetailFooter">
                 <button type="button" class="btn btn-outline-primary" id="confirmBtn" onclick="confirmHazard()">
-                    <i class="bi bi-check-circle"></i> Confirm
+                    <i class="bi bi-check-circle"></i> @Localizer["Confirm"]
                 </button>
                 <button type="button" class="btn btn-warning d-none" id="editBtn" onclick="openEditModal()">
-                    <i class="bi bi-pencil-square"></i> Edit
+                    <i class="bi bi-pencil-square"></i> @Localizer["Edit"]
                 </button>
                 <button type="button" class="btn btn-danger d-none" id="deleteBtn" onclick="deleteHazard()">
-                    <i class="bi bi-trash"></i> Delete
+                    <i class="bi bi-trash"></i> @Localizer["Delete"]
                 </button>
                 <button type="button" class="btn btn-success d-none" id="restoreBtn" onclick="restoreHazard()">
-                    <i class="bi bi-arrow-counterclockwise"></i> Restore
+                    <i class="bi bi-arrow-counterclockwise"></i> @Localizer["Restore"]
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
             </div>
         </div>
     </div>
@@ -327,6 +327,35 @@
         'Low': 'ℹ️'
     };
 
+    const localized = {
+        yourLocation: @System.Text.Json.JsonSerializer.Serialize(Localizer["YourLocation"].Value),
+        latitudeLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Latitude"].Value),
+        longitudeLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Longitude"].Value),
+        locationSelected: @System.Text.Json.JsonSerializer.Serialize(Localizer["LocationSelected"].Value),
+        noHazardsNearby: @System.Text.Json.JsonSerializer.Serialize(Localizer["NoHazardsNearby"].Value),
+        failedToLoadHazards: @System.Text.Json.JsonSerializer.Serialize(Localizer["FailedToLoadHazards"].Value),
+        viewDetails: @System.Text.Json.JsonSerializer.Serialize(Localizer["ViewDetails"].Value),
+        typeLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Type"].Value),
+        severityLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Severity"].Value),
+        descriptionLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Description"].Value),
+        locationLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Location"].Value),
+        confirmationsLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Confirmations"].Value),
+        reportedLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Reported"].Value),
+        hazardConfirmed: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardConfirmed"].Value),
+        fillAllRequiredFields: @System.Text.Json.JsonSerializer.Serialize(Localizer["FillAllRequiredFields"].Value),
+        clickOnMapToSelectLocation: @System.Text.Json.JsonSerializer.Serialize(Localizer["ClickOnMapToSelectLocation"].Value),
+        reportSubmitted: @System.Text.Json.JsonSerializer.Serialize(Localizer["ReportSubmitted"].Value),
+        errorSubmittingReport: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorSubmittingReport"].Value),
+        hazardUpdated: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardUpdated"].Value),
+        errorUpdatingHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorUpdatingHazard"].Value),
+        hazardDeleted: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardDeleted"].Value),
+        errorDeletingHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorDeletingHazard"].Value),
+        hazardRestored: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardRestored"].Value),
+        errorRestoringHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorRestoringHazard"].Value),
+        confirmDeleteHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ConfirmDeleteHazard"].Value),
+        confirmRestoreHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ConfirmRestoreHazard"].Value)
+    };
+
     document.addEventListener('DOMContentLoaded', function () {
         initializeMap();
         loadNearbyHazards();
@@ -365,7 +394,7 @@
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(map);
-        userMarker.bindPopup('Your Location');
+        userMarker.bindPopup(localized.yourLocation);
 
         // Map click handler for reporting hazards
         map.on('click', function (e) {
@@ -373,7 +402,7 @@
             reportLocationLng = e.latlng.lng;
             
             // Show loading state
-            const coordDisplay = `Latitude: ${reportLocationLat.toFixed(6)}, Longitude: ${reportLocationLng.toFixed(6)}`;
+            const coordDisplay = `${localized.latitudeLabel}: ${reportLocationLat.toFixed(6)}, ${localized.longitudeLabel}: ${reportLocationLng.toFixed(6)}`;
             document.getElementById('reportLocationDisplay').textContent = coordDisplay;
                             document.getElementById('reportLocationInput').value = '@Localizer["LoadingAddress"]';
             document.getElementById('reportLocationInput').style.color = '#999';
@@ -524,7 +553,7 @@
         }
         
         if (parts.length === 0) {
-            return 'Location selected';
+            return localized.locationSelected;
         }
         
         return parts.join(', ');
@@ -562,7 +591,7 @@
             }
         } catch (error) {
             console.error('Error loading hazards:', error);
-            document.getElementById('hazardsList').innerHTML = '<div class="alert alert-danger p-2"><small>Failed to load hazards. Please try again.</small></div>';
+            document.getElementById('hazardsList').innerHTML = `<div class="alert alert-danger p-2"><small>${localized.failedToLoadHazards}</small></div>`;
         }
     }
 
@@ -574,7 +603,7 @@
         // Update sidebar
         const hazardsList = document.getElementById('hazardsList');
         if (hazards.length === 0) {
-            hazardsList.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-check-circle"></i> No hazards nearby</div>';
+            hazardsList.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-check-circle"></i> ${localized.noHazardsNearby}</div>`;
             return;
         }
 
@@ -589,7 +618,7 @@
                 </div>
                 <div class="hazard-item-footer">
                     <span class="badge bg-${getSeverityBadgeClass(hazard.severity)}">${hazard.severity}</span>
-                    <span class="badge bg-light text-dark">${hazard.confirmations} confirmations</span>
+                    <span class="badge bg-light text-dark">${hazard.confirmations} ${localized.confirmationsLabel}</span>
                 </div>
             </div>
         `).join('');
@@ -607,9 +636,9 @@
 
             marker.bindPopup(`
                 <strong>${hazard.title}</strong><br/>
-                ${hazard.severity} • ${hazard.confirmations} confirmations<br/>
+                ${hazard.severity} • ${hazard.confirmations} ${localized.confirmationsLabel}<br/>
                 <button class="btn btn-sm btn-primary mt-2" onclick="showHazardDetail('${hazard.id}')">
-                    View Details
+                    ${localized.viewDetails}
                 </button>
             `);
 
@@ -648,27 +677,27 @@
                 document.getElementById('hazardDetailContent').innerHTML = `
                     <div class="hazard-detail">
                         <div class="detail-row">
-                            <label>Type:</label>
+                            <label>${localized.typeLabel}:</label>
                             <span>${hazard.type}</span>
                         </div>
                         <div class="detail-row">
-                            <label>Severity:</label>
+                            <label>${localized.severityLabel}:</label>
                             <span class="badge bg-${getSeverityBadgeClass(hazard.severity)}">${hazard.severity}</span>
                         </div>
                         <div class="detail-row">
-                            <label>Description:</label>
+                            <label>${localized.descriptionLabel}:</label>
                             <p>${hazard.description}</p>
                         </div>
                         <div class="detail-row">
-                            <label>Location:</label>
+                            <label>${localized.locationLabel}:</label>
                             <span>${hazard.address}</span>
                         </div>
                         <div class="detail-row">
-                            <label>Confirmations:</label>
+                            <label>${localized.confirmationsLabel}:</label>
                             <span>${hazard.confirmations}</span>
                         </div>
                         <div class="detail-row">
-                            <label>Reported:</label>
+                            <label>${localized.reportedLabel}:</label>
                             <span>${new Date(hazard.createdAt).toLocaleString()}</span>
                         </div>
                     </div>
@@ -702,7 +731,7 @@
             });
 
             if (response.ok) {
-                alert('Hazard confirmed! Thank you for helping keep your community safe.');
+                alert(localized.hazardConfirmed);
                 
                 // Close the modal first
                 const modalInstance = bootstrap.Modal.getInstance(document.getElementById('hazardDetailModal'));
@@ -725,7 +754,7 @@
         const description = document.getElementById('reportDescription').value;
 
         if (!type || !severity || !title || !description) {
-            alert('Please fill in all required fields');
+            alert(localized.fillAllRequiredFields);
             return;
         }
 

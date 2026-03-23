@@ -11,7 +11,13 @@
     var hasFilters     = !string.IsNullOrEmpty(Model.SearchQuery) || Model.SelectedStatus >= 0 || Model.SelectedPriority >= 0;
 }
 
-<style>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-index.css" asp-append-version="true" />
+}
+
+@*
+REMOVED: 513 lines of inline CSS now in wwwroot/css/pages/issues-index.css
+Markup continues below. For historical reference: <style>
 /* ═══════════════════════════════════════════════════
    Issues Index — Production
    All colours via site.css design tokens
@@ -524,7 +530,7 @@
     .stats-row { grid-template-columns: 1fr 1fr; }
     .sort-group { display: none; }
 }
-</style>
+*@
 
 <div class="container-fluid px-md-4">
 
@@ -689,17 +695,17 @@
 
                 <!-- Apply -->
                 <div class="filter-field">
-                    <label style="visibility:hidden;">Apply</label>
+                    <label style="visibility:hidden;">@Localizer["Apply"]</label>
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-search me-1"></i>Search
+                        <i class="bi bi-search me-1"></i>@Localizer["Search"]
                     </button>
                 </div>
 
                 <!-- Clear -->
                 <div class="filter-field">
-                    <label style="visibility:hidden;">Clear</label>
+                    <label style="visibility:hidden;">@Localizer["ClearFilter"]</label>
                     <a href="/issues" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-x-lg me-1"></i>Clear
+                        <i class="bi bi-x-lg me-1"></i>@Localizer["ClearFilter"]
                     </a>
                 </div>
 
@@ -716,7 +722,7 @@
                     }
                     @if (Model.SelectedStatus >= 0)
                     {
-                        var statusLabel = Model.SelectedStatus switch { 0 => "New", 1 => "Confirmed", 2 => "In Progress", 3 => "Fixed", _ => "" };
+                        var statusLabel = Model.SelectedStatus switch { 0 => Localizer["New"], 1 => Localizer["Confirmed"], 2 => Localizer["InProgress"], 3 => Localizer["Fixed"], _ => "" };
                         if (!string.IsNullOrEmpty(statusLabel))
                         {
                             <span class="filter-pill"><i class="bi bi-circle-half"></i> @statusLabel</span>
@@ -724,7 +730,7 @@
                     }
                     @if (Model.SelectedPriority >= 0)
                     {
-                        var priorityLabel = Model.SelectedPriority switch { 0 => "Low", 1 => "Medium", 2 => "High", 3 => "Critical", _ => "" };
+                        var priorityLabel = Model.SelectedPriority switch { 0 => Localizer["Low"], 1 => Localizer["Medium"], 2 => Localizer["High"], 3 => Localizer["Critical"], _ => "" };
                         if (!string.IsNullOrEmpty(priorityLabel))
                         {
                             <span class="filter-pill"><i class="bi bi-flag"></i> @priorityLabel</span>
@@ -762,132 +768,21 @@
         <div class="issues-grid">
             @foreach (var issue in Model.Issues)
             {
-                var priorityStr = issue.Priority switch
-                    {
-                        FixIt.Models.Enums.IssuePriority.Critical => "critical",
-                        FixIt.Models.Enums.IssuePriority.High     => "high",
-                        FixIt.Models.Enums.IssuePriority.Medium   => "medium",
-                        FixIt.Models.Enums.IssuePriority.Low      => "low",
-                        _ => "low"
-                    };
-
-                var statusBadgeClass = issue.Status switch
-                    {
-                        FixIt.Models.Enums.IssueStatus.New        => "badge-status-new",
-                        FixIt.Models.Enums.IssueStatus.Confirmed  => "badge-status-confirmed",
-                        FixIt.Models.Enums.IssueStatus.InProgress => "badge-status-in-progress",
-                        FixIt.Models.Enums.IssueStatus.Fixed      => "badge-status-fixed",
-                        _ => "bg-secondary"
-                    };
-
-                <a href="/issues/@issue.Id" class="issue-card-link">
-                    <article class="issue-card" data-priority="@priorityStr">
-
-                        <!-- Card head: badges + priority dot -->
-                        <div class="issue-card-head">
-                            <div class="issue-badges">
-                                <span class="badge @statusBadgeClass">@issue.Status</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="priority-dot @priorityStr" title="@issue.Priority Priority"></span>
-                                <span style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-semibold);">@issue.Priority</span>
-                            </div>
-                        </div>
-
-                        <!-- Card body -->
-                        <div class="issue-card-body">
-                            <h3 class="issue-card-title">@issue.Title</h3>
-
-                            @if (!string.IsNullOrEmpty(issue.Address))
-                            {
-                                <div class="issue-location">
-                                    <i class="bi bi-geo-alt-fill"></i>
-                                    @issue.Address
-                                </div>
-                            }
-
-                            <p class="issue-card-desc">@issue.Description</p>
-                        </div>
-
-                        <!-- Card footer: stats + date -->
-                        <div class="issue-card-foot">
-                            <div class="d-flex align-items-center gap-3">
-                                <span class="issue-stat">
-                                    <i class="bi bi-eye"></i>@issue.ViewCount
-                                </span>
-                                <span class="issue-stat">
-                                    <i class="bi bi-chat"></i>@issue.CommentCount
-                                </span>
-                                <span class="issue-stat votes">
-                                    <i class="bi bi-hand-thumbs-up-fill"></i>@issue.Upvotes
-                                </span>
-                            </div>
-                            <span class="issue-date">@issue.CreatedAt.ToString("MMM d, yyyy")</span>
-                        </div>
-
-                    </article>
-                </a>
+                <partial name="_IssueCard" model="issue" />
             }
         </div>
 
         <!-- ── Pagination ──────────────────────────────── -->
         @if (Model.TotalPages > 1)
         {
-            var startPage = Math.Max(1, Model.CurrentPage - 2);
-            var endPage   = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
-            var baseUrl   = $"/issues?searchQuery={Uri.EscapeDataString(Model.SearchQuery ?? "")}&status={Model.SelectedStatus}&priority={Model.SelectedPriority}";
-            
-            <nav aria-label="Issue pages" class="pagination-wrap">
-
-                <!-- Prev -->
-                @if (Model.CurrentPage > 1)
-                {
-                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage - 1)" aria-label='@Localizer["Previous"]'>
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                }
-                else
-                {
-                    <span class="page-link disabled" aria-disabled="true"><i class="bi bi-chevron-left"></i></span>
-                }
-
-                @if (startPage > 1)
-                {
-                    <a class="page-link" href="@baseUrl&page=1">1</a>
-                    @if (startPage > 2) { <span class="page-ellipsis">…</span> }
-                }
-
-                @for (int i = startPage; i <= endPage; i++)
-                {
-                    @if (i == Model.CurrentPage)
-                    {
-                        <span class="page-link active" aria-current="page">@i</span>
-                    }
-                    else
-                    {
-                        <a class="page-link" href="@baseUrl&page=@i">@i</a>
-                    }
-                }
-
-                @if (endPage < Model.TotalPages)
-                {
-                    @if (endPage < Model.TotalPages - 1) { <span class="page-ellipsis">…</span> }
-                    <a class="page-link" href="@baseUrl&page=@Model.TotalPages">@Model.TotalPages</a>
-                }
-
-                <!-- Next -->
-                @if (Model.CurrentPage < Model.TotalPages)
-                {
-                    <a class="page-link" href="@baseUrl&page=@(Model.CurrentPage + 1)" aria-label='@Localizer["Next"]'>
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                }
-                else
-                {
-                    <span class="page-link disabled" aria-disabled="true"><i class="bi bi-chevron-right"></i></span>
-                }
-
-            </nav>
+            var baseUrl = $"/issues?searchQuery={Uri.EscapeDataString(Model.SearchQuery ?? "")}&status={Model.SelectedStatus}&priority={Model.SelectedPriority}";
+            var paginationModel = new FixIt.ViewModels.PaginationViewModel
+            {
+                CurrentPage = Model.CurrentPage,
+                TotalPages = Model.TotalPages,
+                BaseUrl = baseUrl
+            };
+            <partial name="_Pagination" model="paginationModel" />
         }
     }
     else
@@ -933,7 +828,7 @@
 
 </div>
 
-@section Scripts {
+@section PageScripts {
 <script>
 /* ── Sort buttons (client-side visual only, hook to server sort param as needed) ── */
 document.querySelectorAll('.sort-btn').forEach(btn => {

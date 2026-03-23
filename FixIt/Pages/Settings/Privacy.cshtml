@@ -1,27 +1,27 @@
 @page "/settings/privacy"
 @model FixIt.Pages.Settings.PrivacyModel
 @{
-    ViewData["Title"] = "Privacy & Safety Settings";
+    ViewData["Title"] = Localizer["PrivacyAndSafetySettings"];
 }
 
 <div class="container py-5">
     <div class="row">
         <div class="col-lg-10 mx-auto">
-            <h1 class="mb-4">Privacy & Safety Settings</h1>
-            <p class="text-muted mb-4">Manage your privacy preferences and safety features</p>
+            <h1 class="mb-4">@Localizer["PrivacyAndSafetySettings"]</h1>
+            <p class="text-muted mb-4">@Localizer["ManageYourPrivacyPreferencesAndSafety"]</p>
 
             <div class="row">
                 <!-- Settings Navigation -->
                 <div class="col-md-3">
                     <div class="list-group sticky-top" style="top: 1rem;">
                         <a href="#anonymous-mode" class="list-group-item list-group-item-action active" data-bs-toggle="list">
-                            <i class="bi bi-incognito"></i> Anonymous Mode
+                            <i class="bi bi-incognito"></i> @Localizer["AnonymousMode"]
                         </a>
                         <a href="#hazard-mode" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="bi bi-exclamation-triangle"></i> Hazard Alerts
+                            <i class="bi bi-exclamation-triangle"></i> @Localizer["HazardAlerts"]
                         </a>
                         <a href="#profile-visibility" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="bi bi-eye"></i> Profile Visibility
+                            <i class="bi bi-eye"></i> @Localizer["ProfileVisibility"]
                         </a>
                     </div>
                 </div>
@@ -33,16 +33,16 @@
                         <div id="anonymous-mode" class="settings-section card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">
-                                    <i class="bi bi-incognito text-danger"></i> Anonymous Reporting Mode
+                                    <i class="bi bi-incognito text-danger"></i> @Localizer["AnonymousReportingMode"]
                                 </h5>
-                                <p class="text-muted">Report hazards and issues without revealing your identity to the public. Your information is only visible to administrators.</p>
+                                <p class="text-muted">@Localizer["AnonymousReportingDescription"]</p>
 
                                 <div class="card bg-light border-0 mb-4">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1">Enable Anonymous Reporting</h6>
-                                                <small class="text-muted">Report hazards and issues anonymously</small>
+                                                <h6 class="mb-1">@Localizer["EnableAnonymousReporting"]</h6>
+                                                <small class="text-muted">@Localizer["ReportHazardsAnonymously"]</small>
                                             </div>
                                             <div>
                                                 <form id="anonymousToggleForm" class="d-inline">
@@ -62,10 +62,10 @@
                                         <i class="bi bi-info-circle"></i> How Anonymous Mode Works
                                     </h6>
                                     <ul class="mb-0">
-                                        <li>Your name and profile will not be visible publicly</li>
-                                        <li>Your reports will show as "Anonymous" on the map and in lists</li>
-                                        <li>Administrators can contact you if they need more information</li>
-                                        <li>You can still earn reputation points for helpful reports</li>
+                                        <li>@Localizer["NameNotVisiblePublicly"]</li>
+                                        <li>@Localizer["YourReportsWillShowAsAnonymous"]</li>
+                                        <li>@Localizer["AdminsCanContactYou"]</li>
+                                        <li>@Localizer["EarnReputationPoints"]</li>
                                     </ul>
                                 </div>
                             </div>
@@ -75,20 +75,20 @@
                         <div id="hazard-mode" class="settings-section card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">
-                                    <i class="bi bi-exclamation-triangle text-warning"></i> Hazard Alert Preferences
+                                    <i class="bi bi-exclamation-triangle text-warning"></i> @Localizer["HazardAlertPreferences"]
                                 </h5>
-                                <p class="text-muted">Customize how you receive hazard and safety notifications</p>
+                                <p class="text-muted">@Localizer["CustomizeHazardNotifications"]</p>
 
                                 <div class="mb-4">
-                                    <h6 class="mb-3">Alert Types</h6>
+                                    <h6 class="mb-3">@Localizer["AlertTypes"]</h6>
                                     
                                     <div class="form-check mb-2">
                                         <input class="form-check-input" type="checkbox" id="crimeAlerts" 
                                                @if(Model.AlertPreferences?.CrimeAlerts == true) { <text>checked</text> }
                                                onchange="saveAlertPreference('crimeAlerts', this.checked)">
                                         <label class="form-check-label" for="crimeAlerts">
-                                            <strong>Crime Incidents</strong>
-                                            <small class="d-block text-muted">Be notified of reported crimes in your area</small>
+                                            <strong>@Localizer["CrimeIncidents"]</strong>
+                                            <small class="d-block text-muted">@Localizer["BeNotifiedOfCrimeReports"]</small>
                                         </label>
                                     </div>
 
@@ -97,8 +97,8 @@
                                                @if(Model.AlertPreferences?.AccidentAlerts == true) { <text>checked</text> }
                                                onchange="saveAlertPreference('accidentAlerts', this.checked)">
                                         <label class="form-check-label" for="accidentAlerts">
-                                            <strong>Traffic Accidents</strong>
-                                            <small class="d-block text-muted">Be notified of accidents and traffic hazards</small>
+                                            <strong>@Localizer["TrafficAccidents"]</strong>
+                                            <small class="d-block text-muted">@Localizer["BeNotifiedOfTrafficHazards"]</small>
                                         </label>
                                     </div>
 
@@ -107,8 +107,8 @@
                                                @if(Model.AlertPreferences?.InfrastructureAlerts == true) { <text>checked</text> }
                                                onchange="saveAlertPreference('infrastructureAlerts', this.checked)">
                                         <label class="form-check-label" for="infrastructureAlerts">
-                                            <strong>Infrastructure Issues</strong>
-                                            <small class="d-block text-muted">Be notified of potholes, broken lights, and damage</small>
+                                            <strong>@Localizer["InfrastructureIssues"]</strong>
+                                            <small class="d-block text-muted">@Localizer["BeNotifiedOfInfrastructureProblems"]</small>
                                         </label>
                                     </div>
 
@@ -117,8 +117,8 @@
                                                @if(Model.AlertPreferences?.AllHazards == true) { <text>checked</text> }
                                                onchange="saveAlertPreference('allHazards', this.checked)">
                                         <label class="form-check-label" for="allHazards">
-                                            <strong>All Hazard Types</strong>
-                                            <small class="d-block text-muted">Receive notifications for all types of hazards</small>
+                                            <strong>@Localizer["AllHazardTypes"]</strong>
+                                            <small class="d-block text-muted">@Localizer["NotifyForAllHazards"]</small>
                                         </label>
                                     </div>
                                 </div>
@@ -127,7 +127,7 @@
                                     <h6 class="mb-3">Alert Radius</h6>
                                     <div class="form-group">
                                         <label for="alertRadius" class="form-label">
-                                            Distance from your location: 
+                                            @Localizer["DistanceFromYourLocation"]
                                             <span class="badge bg-primary" id="radiusDisplay">
                                                 @(Model.AlertPreferences?.AlertRadiusKm ?? 5) km
                                             </span>
@@ -137,24 +137,24 @@
                                                value="@(Model.AlertPreferences?.AlertRadiusKm ?? 5)"
                                                onchange="updateAlertRadius(this.value)">
                                         <small class="form-text text-muted">
-                                            You'll receive alerts for hazards within this distance
+                                            @Localizer["AlertsWithinDistance"]
                                         </small>
                                     </div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <h6 class="mb-3">Severity Threshold</h6>
+                                    <h6 class="mb-3">@Localizer["SeverityThreshold"]</h6>
                                     <select class="form-select" id="severityThreshold" 
                                             onchange="saveSeverityThreshold(this.value)">
-                                        <option value="All">All Severity Levels</option>
-                                        <option value="High">High & Critical Only</option>
-                                        <option value="Critical">Critical Only</option>
+                                        <option value="All">@Localizer["AllSeverityLevels"]</option>
+                                        <option value="High">@Localizer["HighAndCriticalOnly"]</option>
+                                        <option value="Critical">@Localizer["CriticalOnly"]</option>
                                     </select>
                                     <script>
                                         document.getElementById('severityThreshold').value = '@(Model.AlertPreferences?.SeverityThreshold ?? "All")';
                                     </script>
                                     <small class="form-text text-muted d-block mt-2">
-                                        Only be notified of hazards at or above this severity level
+                                        @Localizer["OnlyBeNotifiedAboveSeverity"]
                                     </small>
                                 </div>
                             </div>
@@ -164,20 +164,20 @@
                         <div id="profile-visibility" class="settings-section card mb-4">
                             <div class="card-body">
                                 <h5 class="card-title mb-4">
-                                    <i class="bi bi-eye text-info"></i> Profile Visibility
+                                    <i class="bi bi-eye text-info"></i> @Localizer["ProfileVisibility"]
                                 </h5>
-                                <p class="text-muted">Control who can see your profile and contributions</p>
+                                <p class="text-muted">@Localizer["ControlWhoCanSeeYourProfile"]</p>
 
                                 <div class="card bg-light border-0 mb-4">
                                     <div class="card-body">
-                                        <h6 class="mb-3">Profile Visibility</h6>
+                                        <h6 class="mb-3">@Localizer["ProfileVisibility"]</h6>
                                         <div class="form-check mb-2">
                                             <input class="form-check-input" type="radio" name="profileVisibility" 
                                                    id="visibilityPublic" value="public"
                                                    @if(Model.ProfileVisibility != "private") { <text>checked</text> }
                                                    onchange="saveProfileVisibility('public')">
                                             <label class="form-check-label" for="visibilityPublic">
-                                                <strong>Public</strong> - Anyone can view your profile and contributions
+                                                <strong>@Localizer["Public"]</strong> - @Localizer["PublicProfileDescription"]
                                             </label>
                                         </div>
 
@@ -187,7 +187,7 @@
                                                    @if(Model.ProfileVisibility == "private") { <text>checked</text> }
                                                    onchange="saveProfileVisibility('private')">
                                             <label class="form-check-label" for="visibilityPrivate">
-                                                <strong>Private</strong> - Only you and administrators can view your profile
+                                                <strong>@Localizer["Private"]</strong> - @Localizer["PrivateProfileDescription"]
                                             </label>
                                         </div>
                                     </div>
@@ -195,9 +195,9 @@
 
                                 <div class="alert alert-warning mb-0">
                                     <h6 class="mb-2">
-                                        <i class="bi bi-exclamation-triangle"></i> Note
+                                        <i class="bi bi-exclamation-triangle"></i> @Localizer["Note"]
                                     </h6>
-                                    <p class="mb-0">Making your profile private doesn't affect your reputation or contributions to the community. It only affects who can see your profile page.</p>
+                                    <p class="mb-0">@Localizer["PrivateProfileDoesNotAffectReputation"]</p>
                                 </div>
                             </div>
                         </div>
@@ -213,11 +213,11 @@
     <div id="settingsToast" class="toast" role="alert">
         <div class="toast-header bg-success text-white">
             <i class="bi bi-check-circle me-2"></i>
-            <strong class="me-auto">Settings Updated</strong>
+            <strong class="me-auto">@Localizer["SettingsUpdated"]</strong>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
         </div>
         <div class="toast-body" id="toastMessage">
-            Your settings have been saved successfully.
+            @Localizer["SettingsSavedSuccessfully"]
         </div>
     </div>
 </div>

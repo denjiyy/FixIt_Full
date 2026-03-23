@@ -426,12 +426,12 @@
                 <div class="col-lg-8">
                     <div class="badge bg-white text-primary px-3 py-2 mb-4"
                          style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        INFRASTRUCTURE EXPLORER
+                        @Localizer["InfrastructureExplorer"]
                     </div>
                     <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
                         @Localizer["ExploreCities"] <br/>
                         <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.65)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                            Infrastructure Issues
+                            @Localizer["InfrastructureIssues"]
                         </span>
                     </h1>
                     <p class="lead mb-0" style="color: rgba(255,255,255,0.9); max-width: 580px; font-size: 1.15rem;">
@@ -441,7 +441,7 @@
                 <div class="col-lg-4 d-none d-lg-flex justify-content-end align-items-center">
                     <div style="background: rgba(255,255,255,0.12); backdrop-filter: blur(20px); border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.2); padding: 1.75rem; min-width: 200px; text-align: center;">
                         <div style="font-size: 3rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 0.25rem;">@Model.TotalCities</div>
-                        <div style="color: rgba(255,255,255,0.8); font-size: 0.875rem; font-weight: 500;">@(Model.TotalCities == 1 ? "City" : "Cities") in @Model.SelectedCountry</div>
+                        <div style="color: rgba(255,255,255,0.8); font-size: 0.875rem; font-weight: 500;">@((Model.TotalCities == 1) ? Localizer["CityOrCities"] : Localizer["CitiesPlural"]) in @Model.SelectedCountry</div>
                     </div>
                 </div>
             </div>
@@ -450,7 +450,7 @@
 
     <!-- ── Country Selector ──────────────────────────────── -->
     <div class="country-selector">
-        <h3><i class="bi bi-flag-fill"></i> Filter by Country</h3>
+        <h3><i class="bi bi-flag-fill"></i> @Localizer["FilterByCountry"]</h3>
         <div class="country-tabs">
             @foreach (var country in Model.Countries)
             {
@@ -507,7 +507,7 @@
                             }
                             else
                             {
-                                <p class="city-description">Explore infrastructure issues and community reports in @city.Name.</p>
+                                <p class="city-description">@Localizer["ExploreInfrastructureIssuesInCity", city.Name]</p>
                             }
                             <div class="city-actions">
                                 <a href="/Heatmaps/@city.Id" class="city-action-btn btn-primary">
@@ -644,7 +644,7 @@
                     <i class="bi bi-check-circle-fill"></i>
                 </div>
                 <h3>All Clear in @Model.SelectedCity</h3>
-                <p>Great news — this city currently has no reported infrastructure issues.</p>
+                <p>@Localizer["NoIssuesInCity"]</p>
                 <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
                     <i class="bi bi-plus-circle me-2"></i> Report an Issue
                 </a>

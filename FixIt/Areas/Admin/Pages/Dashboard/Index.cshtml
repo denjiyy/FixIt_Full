@@ -7,7 +7,6 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-<link href="~/css/admin-panel.css" rel="stylesheet" />
 
 <style>
     .stat-card {
@@ -198,8 +197,23 @@
         </div>
     </div>
 
+    <!-- AI Suggestions Section -->
+    <div class="data-container mt-4">
+        <div style="padding: 1.5rem;">
+            <h2 class="section-title">
+                <i class="bi bi-lightbulb"></i> AI Suggestions
+            </h2>
+            <div id="dashboardSuggestions" class="suggestions-container">
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading suggestions...</span>
+                </div>
+                <span class="ms-2">Loading AI suggestions...</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Management Areas -->
-    <div class="data-container">
+    <div class="data-container mt-4">
         <div style="padding: 1.5rem;">
             <h2 class="section-title">
                 <i class="bi bi-lightning-charge"></i> Management Areas
@@ -250,3 +264,4 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/modules/admin-suggestions.js" defer></script>

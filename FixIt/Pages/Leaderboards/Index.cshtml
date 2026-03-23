@@ -13,7 +13,7 @@
                 <h1 class="display-5 fw-bold mb-3">
                     <i class="bi bi-trophy text-gradient" style="font-size: 3.5rem;"></i>
                 </h1>
-                <h1 class="h2 mb-2">Community Leaderboards</h1>
+                <h1 class="h2 mb-2">@Localizer["CommunityLeaderboards"]</h1>
                 <p class="text-muted">@Localizer["CelebratateTopContributors"]</p>
             </div>
         </div>
@@ -24,13 +24,13 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link active px-4 py-2" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" 
                     type="button" role="tab" style="border-radius: 2rem; font-weight: 600;">
-                <i class="bi bi-calendar-week"></i> Weekly
+                <i class="bi bi-calendar-week"></i> @Localizer["Weekly"]
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link px-4 py-2" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" 
                     type="button" role="tab" style="border-radius: 2rem; font-weight: 600;">
-                <i class="bi bi-calendar-month"></i> Monthly
+                <i class="bi bi-calendar-month"></i> @Localizer["Monthly"]
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -55,7 +55,7 @@
 
         <!-- All Time Leaderboard -->
         <div class="tab-pane fade" id="alltime" role="tabpanel">
-            @RenderLeaderboard(Model.AllTimeLeaderboard, "Hall of Fame")
+            @RenderLeaderboard(Model.AllTimeLeaderboard, Localizer["HallOfFame"])
         </div>
     </div>
 </div>
@@ -92,7 +92,7 @@
                             <div class="mb-3" style="font-size: 4rem;">🥈</div>
                             <h5 class="mb-2">@top3[1].UserDisplayName</h5>
                             <div class="display-6 fw-bold text-secondary mb-3">@top3[1].Points</div>
-                            <small class="text-muted d-block">Points</small>
+                            <small class="text-muted d-block">@Localizer["Points"]</small>
                             <div class="mt-3">
                                 <span class="badge bg-@GetTrustLevelColor(top3[1].TrustLevel)">
                                     @GetTrustLevelLabel(top3[1].TrustLevel)
@@ -109,7 +109,7 @@
                             <div class="mb-3" style="font-size: 5rem;">👑</div>
                             <h4 class="mb-2 fw-bold">@top3[0].UserDisplayName</h4>
                             <div class="display-4 fw-bold mb-3" style="color: #fbbf24;">@top3[0].Points</div>
-                            <small class="text-muted d-block">Points</small>
+                            <small class="text-muted d-block">@Localizer["Points"]</small>
                             <div class="mt-3">
                                 <span class="badge bg-@GetTrustLevelColor(top3[0].TrustLevel) px-3 py-2">
                                     @GetTrustLevelLabel(top3[0].TrustLevel)
@@ -126,7 +126,7 @@
                             <div class="mb-3" style="font-size: 3.5rem;">🥉</div>
                             <h6 class="mb-2">@top3[2].UserDisplayName</h6>
                             <div class="h4 fw-bold mb-3" style="color: #cd7f32;">@top3[2].Points</div>
-                            <small class="text-muted d-block">Points</small>
+                            <small class="text-muted d-block">@Localizer["Points"]</small>
                             <div class="mt-3">
                                 <span class="badge bg-@GetTrustLevelColor(top3[2].TrustLevel)">
                                     @GetTrustLevelLabel(top3[2].TrustLevel)
@@ -172,7 +172,7 @@
                                             </td>
                                             <td class="py-3 text-center">
                                                 <span class="badge" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 0.5rem 1rem; font-size: 0.9rem;">
-                                                    @entry.Points pts
+                                                    @entry.Points @Localizer["Points"]
                                                 </span>
                                             </td>
                                             <td class="py-3 text-end pe-4">
@@ -197,11 +197,11 @@
 @functions {
     private string GetTrustLevelLabel(int level) => level switch
     {
-        0 => "New",
-        1 => "Active",
-        2 => "Trusted",
-        3 => "Leader",
-        _ => "Unknown"
+        0 => Localizer["TrustLevel_NewMember"],
+        1 => Localizer["TrustLevel_ActiveCitizen"],
+        2 => Localizer["TrustLevel_TrustedMember"],
+        3 => Localizer["TrustLevel_CommunityLeader"],
+        _ => Localizer["TrustLevel_Unknown"]
     };
 
     private string GetTrustLevelColor(int level) => level switch

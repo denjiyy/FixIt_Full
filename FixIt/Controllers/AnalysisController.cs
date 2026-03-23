@@ -99,6 +99,36 @@ public class AnalysisController : ControllerBase
             return StatusCode(500, new { error = "Failed to retrieve analysis" });
         }
     }
+
+    /// <summary>
+    /// Suggest tags for an issue draft (title + description)
+    /// </summary>
+    [HttpPost("suggest-tags")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<string>>> SuggestTags([FromBody] TagSuggestionRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Title) && string.IsNullOrWhiteSpace(request.Description))
+        {
+            return BadRequest(new { error = "Title or description is required to suggest tags" });
+        }
+
+        try
+        {
+            var tags = await _analysisService.SuggestTagsAsync(request.Title ?? string.Empty, request.Description ?? string.Empty);
+            return Ok(tags);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to suggest tags");
+            return StatusCode(500, new { error = "Failed to suggest tags" });
+        }
+    }
+}
+
+public class TagSuggestionRequest
+{
+    public string? Title { get; set; }
+    public string? Description { get; set; }
 }
 
 /// <summary>

@@ -10,8 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Bootstrap Icons from CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-    <!-- Admin Dashboard CSS -->
-    <link rel="stylesheet" href="/css/admin-dashboard.css" />
+    <!-- Admin Consolidated CSS -->
+    <link rel="stylesheet" href="/css/admin.css" />
     <style>
         @@media (max-width: 768px) {
             .sidebar {
@@ -62,15 +62,25 @@
                 <a href="/admin/dashboard" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Dashboard" ? "active" : "")">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
-                <a href="/admin/users" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Users" ? "active" : "")">
-                    <i class="bi bi-people"></i> Users
-                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="/admin/users" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Users" ? "active" : "")">
+                        <i class="bi bi-people"></i> Users
+                    </a>
+                }
                 <a href="/admin/issues" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Issues" ? "active" : "")">
                     <i class="bi bi-exclamation-triangle"></i> Issues
                 </a>
                 <a href="/admin/reports" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Reports" ? "active" : "")">
                     <i class="bi bi-flag"></i> Reports
                 </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <hr class="border-secondary" />
+                    <a href="/admin/cities" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "Cities" ? "active" : "")">
+                        <i class="bi bi-globe"></i> Cities
+                    </a>
+                }
                 <hr class="border-secondary" />
                 <a href="/settings/index" class="nav-link">
                     <i class="bi bi-gear"></i> Settings

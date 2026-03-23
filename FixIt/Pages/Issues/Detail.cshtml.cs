@@ -123,6 +123,12 @@ public class IssueDetailModel : PageModel
             // Load comments
             Comments = await _issueService.GetCommentsForIssueAsync(Id);
             
+            // Set flag for Leaflet CSS loading in _Layout.cshtml
+            if (Issue?.Location?.Coordinates != null && Issue.Location.Coordinates.Values?.Count >= 2)
+            {
+                ViewData["RequiresMap"] = true;
+            }
+            
             return Page();
         }
         catch (Exception ex)

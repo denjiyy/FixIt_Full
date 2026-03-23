@@ -64,6 +64,8 @@ public class CreateIssueModel : PageModel
 
         public string? Address { get; set; }
 
+        public string? TagNames { get; set; }
+
         public List<IFormFile>? Photos { get; set; }
     }
 
@@ -123,6 +125,14 @@ public class CreateIssueModel : PageModel
             bool isAnonymous = user?.AnonymousReportingEnabled ?? false;
 
             // Create the issue
+            var tagNames = !string.IsNullOrWhiteSpace(Input.TagNames)
+                ? Input.TagNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Select(t => t.Trim().ToLowerInvariant())
+                    .Distinct()
+                    .ToList()
+                : new List<string>();
+
             var issue = await _issueService.CreateIssueAsync(
                 title: Input.Title ?? "",
                 description: Input.Description ?? "",
@@ -130,7 +140,7 @@ public class CreateIssueModel : PageModel
                 latitude: Input.Latitude,
                 cityId: Input.CityId,
                 reporter: reporter,
-                tagNames: null,
+                tagNames: tagNames,
                 isAnonymous: isAnonymous
             );
 

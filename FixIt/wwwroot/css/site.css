@@ -138,6 +138,50 @@
     --z-fixed:    1030;
     --z-modal:    1050;
     --z-tooltip:  1070;
+
+    /* ── Size Tokens (for components) ─────────────────── */
+    --size-xs:   24px;   /* 1.5rem */
+    --size-sm:   32px;   /* 2rem */
+    --size-md:   48px;   /* 3rem */
+    --size-lg:   64px;   /* 4rem */
+    --size-xl:   80px;   /* 5rem */
+
+    /* ── Map & Large Content ──────────────────────────── */
+    --height-map: 400px;
+
+    /* ── Display Text (Headings/Numbers) ──────────────── */
+    --text-display-5: 2.125rem;  /* 34px equivalent */
+    --text-display-4: 2.5rem;    /* 40px equivalent */
+    --text-display-3: 3.5rem;    /* Often used for big numbers */
+    --text-display-2: 4rem;      /* Even bigger */
+
+    /* ── Letter Spacing ────────────────────────────────── */
+    --tracking-tight:   -0.05em;
+    --tracking-normal:  0;
+    --tracking-wide:    0.025em;   /* 0.4px at 16px font */
+    --tracking-wider:   0.05em;    /* 0.8px at 16px font */
+    --tracking-widest:  0.1em;     /* 1.6px at 16px font */
+    --tracking-emphasis: 0.06em;   /* Common in headings */
+
+    /* ── Backdrop Effects ─────────────────────────────── */
+    --backdrop-blur-xs: blur(4px);
+    --backdrop-blur-sm: blur(8px);
+    --backdrop-blur-base: blur(10px);
+    --backdrop-blur-md: blur(12px);
+    --backdrop-blur-lg: blur(20px);
+
+    /* ── Extended Color Palette (for gradients/cards) ──── */
+    /* Gold/Medal tones */
+    --gold:     #fbbf24;
+    --gold-light: #fef3c7;
+    --silver:   #d1d5db;
+    --bronze:   #cd7f32;
+
+    /* Secondary semantic variants */
+    --success-50:  #f0fdf4;
+    --warning-50:  #fffbeb;
+    --danger-50:   #faf5f5;
+    --info-50:     #f0f9ff;
 }
 
 /* ============================================================

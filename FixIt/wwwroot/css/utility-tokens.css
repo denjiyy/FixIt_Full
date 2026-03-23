@@ -1,0 +1,255 @@
+/* ============================================================
+   Utility Token Classes — Hardcoded to Token Mapping
+   Replace inline style attributes with CSS classes
+   ============================================================ */
+
+/* ── Icon Container Sizes ────────────────────────────── */
+.icon-container-xs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-xs);
+    height: var(--size-xs);
+}
+
+.icon-container-sm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-sm);
+    height: var(--size-sm);
+}
+
+.icon-container-md {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-md);
+    height: var(--size-md);
+}
+
+.icon-container-lg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-lg);
+    height: var(--size-lg);
+}
+
+.icon-container-xl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-xl);
+    height: var(--size-xl);
+}
+
+/* Icon sizing within containers */
+.icon-container-xs i { font-size: 1rem; }
+.icon-container-sm i { font-size: 1.25rem; }
+.icon-container-md i { font-size: 1.5rem; }
+.icon-container-lg i { font-size: 2rem; }
+.icon-container-xl i { font-size: 2.5rem; }
+
+/* ── Gradient Backgrounds ────────────────────────────── */
+.gradient-primary {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+}
+
+.gradient-primary-light {
+    background: linear-gradient(135deg, var(--primary-100), var(--primary-50));
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+}
+
+.gradient-warning {
+    background: linear-gradient(135deg, var(--warning), #d97706);
+}
+
+.gradient-danger {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+}
+
+.gradient-accent {
+    background: linear-gradient(135deg, #f97316, #c2410c);
+}
+
+.gradient-gold {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 193, 7, 0.3));
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+}
+
+.gradient-silver {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.2), rgba(169, 169, 169, 0.2));
+    transform: translateY(20px);
+}
+
+.gradient-bronze {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.2));
+    transform: translateY(40px);
+}
+
+/* ── Text Gradient (for icons/text clip) ──────────────– */
+.text-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-warning {
+    background: linear-gradient(135deg, var(--warning), #d97706);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-danger {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── Backdrop/Glass Effects ──────────────────────────– */
+.glass-sm {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: var(--backdrop-blur-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-base {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: var(--backdrop-blur-base);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-lg {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: var(--backdrop-blur-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark-sm {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: var(--backdrop-blur-sm);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ── Semantic Color Backgrounds ──────────────────────– */
+.bg-success-light-gradient {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(167, 243, 208, 0.1));
+}
+
+.bg-warning-light-gradient {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(249, 115, 22, 0.1));
+}
+
+.bg-danger-light-gradient {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+}
+
+.bg-danger-light-soft {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+}
+
+.bg-warning-light-soft {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.2), rgba(249, 115, 22, 0.2));
+}
+
+.bg-info-light-soft {
+    background: linear-gradient(135deg, rgba(224, 242, 254, 1), rgba(240, 249, 255, 1));
+}
+
+/* ── Sizing Utilities ────────────────────────────────– */
+.w-48 { width: var(--size-md); }
+.w-64 { width: var(--size-lg); }
+.h-48 { height: var(--size-md); }
+.h-64 { height: var(--size-lg); }
+
+/* ── Display Utilities ───────────────────────────────– */
+.display-emoji-lg { font-size: 5rem; }
+.display-emoji-md { font-size: 4rem; }
+.display-emoji-sm { font-size: 3.5rem; }
+
+/* ── Font Size Utilities ─────────────────────────────– */
+.text-display-5 { font-size: var(--text-display-5); }
+.text-display-4 { font-size: var(--text-display-4); }
+.text-display-3 { font-size: var(--text-display-3); }
+.text-display-2 { font-size: var(--text-display-2); }
+
+/* ── Shadow & Border Utilities ───────────────────────– */
+.elevation-card {
+    background: var(--white);
+    border: none;
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.elevation-subtle {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+
+/* ── Responsive Select Width ─────────────────────────– */
+.select-narrow {
+    width: 160px;
+}
+
+@media (max-width: 768px) {
+    .select-narrow {
+        width: auto;
+    }
+}
+
+/* ── Full-Width Overlay/Hero ─────────────────────────– */
+.hero-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    color: var(--white);
+}
+
+/* ── Badge Color Utilities ───────────────────────────– */
+.badge-warning-light-solid {
+    background: var(--warning-light);
+    color: var(--warning-dark);
+    border: 1px solid var(--warning-light);
+}
+
+.badge-danger-light-solid {
+    background: var(--danger-light);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-success-light-solid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-info-light-solid {
+    background: var(--info-light);
+    color: var(--info-dark);
+}
+
+/* ── Gold/Medal Color Utilities ──────────────────────– */
+.text-gold {
+    color: var(--gold);
+}
+
+.text-bronze {
+    color: var(--bronze);
+}
+
+/* ── Max Width Utility ───────────────────────────────– */
+.max-w-600 {
+    max-width: 600px;
+}
+
+.max-w-400 {
+    max-width: 400px;
+}

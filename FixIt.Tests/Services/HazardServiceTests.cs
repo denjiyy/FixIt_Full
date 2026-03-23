@@ -192,7 +192,7 @@ public class HazardServiceTests
             .ReturnsAsync(hazard);
         _hazardRepoMock.Setup(r => r.ReplaceAsync("hazard1", It.IsAny<Hazard>()))
             .Returns(Task.CompletedTask);
-        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), issueId: It.IsAny<string>()))
+        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -217,7 +217,7 @@ public class HazardServiceTests
             .ReturnsAsync(hazard);
         _hazardRepoMock.Setup(r => r.ReplaceAsync("hazard1", It.IsAny<Hazard>()))
             .Returns(Task.CompletedTask);
-        _reputationServiceMock.Setup(r => r.AddPointsAsync("reporter1", 10, "hazard_confirmed", issueId: "hazard1"))
+        _reputationServiceMock.Setup(r => r.AddPointsAsync("reporter1", 10, "hazard_confirmed", "hazard1", null))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -225,7 +225,7 @@ public class HazardServiceTests
 
         // Assert
         _reputationServiceMock.Verify(
-            r => r.AddPointsAsync("reporter1", 10, "hazard_confirmed", issueId: "hazard1"),
+            r => r.AddPointsAsync("reporter1", 10, "hazard_confirmed", "hazard1", null),
             Times.Once);
     }
 

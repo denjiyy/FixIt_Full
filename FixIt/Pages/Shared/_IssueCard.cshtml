@@ -1,0 +1,56 @@
+@using FixIt.Models.Issues
+@model Issue
+
+@{
+    var priorityStr = Model.Priority switch
+    {
+        FixIt.Models.Enums.IssuePriority.Critical => "critical",
+        FixIt.Models.Enums.IssuePriority.High     => "high",
+        FixIt.Models.Enums.IssuePriority.Medium   => "medium",
+        FixIt.Models.Enums.IssuePriority.Low      => "low",
+        _ => "low"
+    };
+}
+
+<a href="/issues/@Model.Id" class="issue-card-link">
+    <article class="issue-card" data-priority="@priorityStr">
+        <!-- Card head: badges + priority dot -->
+        <div class="issue-card-head">
+            <div class="issue-badges">
+                <partial name="_BadgeStatus" model="Model.Status" />
+            </div>
+            <partial name="_BadgePriority" model="Model.Priority" />
+        </div>
+
+        <!-- Card body -->
+        <div class="issue-card-body">
+            <h3 class="issue-card-title">@Model.Title</h3>
+
+            @if (!string.IsNullOrEmpty(Model.Address))
+            {
+                <div class="issue-location">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    @Model.Address
+                </div>
+            }
+
+            <p class="issue-card-desc">@Model.Description</p>
+        </div>
+
+        <!-- Card footer: stats + date -->
+        <div class="issue-card-foot">
+            <div class="d-flex align-items-center gap-3">
+                <span class="issue-stat">
+                    <i class="bi bi-eye"></i>@Model.ViewCount
+                </span>
+                <span class="issue-stat">
+                    <i class="bi bi-chat"></i>@Model.CommentCount
+                </span>
+                <span class="issue-stat votes">
+                    <i class="bi bi-hand-thumbs-up-fill"></i>@Model.Upvotes
+                </span>
+            </div>
+            <span class="issue-date">@Model.CreatedAt.ToString("MMM d, yyyy")</span>
+        </div>
+    </article>
+</a>

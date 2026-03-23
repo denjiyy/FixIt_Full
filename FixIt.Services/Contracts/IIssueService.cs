@@ -75,6 +75,11 @@ public interface IIssueService
         int page = 1,
         int pageSize = 20);
 
+    Task<PagedResult<Issue>> GetIssuesByTagAsync(
+        string tagId,
+        int page = 1,
+        int pageSize = 20);
+
     Task UpdateIssueAsync(Issue issue);
 
     Task<FixIt.Models.Engagement.Comment> AddCommentAsync(

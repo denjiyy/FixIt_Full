@@ -7,7 +7,7 @@ using FixIt.Data.Repository.Contracts;
 
 namespace FixIt.Areas.Admin.Pages.Issues;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,Moderator")]
 public class IndexModel : PageModel
 {
     private readonly IRepository<Issue> _issueRepository;
@@ -120,6 +120,14 @@ public class IndexModel : PageModel
     {
         try
         {
+            // Only admins can delete issues
+            if (!User.IsInRole("Admin"))
+            {
+                _logger.LogWarning($"Moderator {User?.Identity?.Name} attempted to delete issue {issueId}");
+                TempData["ErrorMessage"] = "Only admins can delete issues.";
+                return RedirectToPage(new { pageNumber = PageNumber });
+            }
+
             var issue = await _issueRepository.GetByIdAsync(issueId);
             if (issue == null)
                 return NotFound();

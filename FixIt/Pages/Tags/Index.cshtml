@@ -1,0 +1,114 @@
+@page "/tags/{tag}"
+@model TagIssuesModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
+@{
+    var normalizedTag = Model.Tag?.Trim() ?? string.Empty;
+    ViewData["Title"] = !string.IsNullOrWhiteSpace(normalizedTag)
+        ? $"#{normalizedTag} - {Localizer["Issues"]}"
+        : Localizer["Issues"];
+
+    var totalIssues = Model.Issues?.Count ?? 0;
+    var resolvedCount = Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.Fixed) ?? 0;
+    var inProgressCount = Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.InProgress) ?? 0;
+    var newCount = Model.Issues?.Count(i => i.Status == FixIt.Models.Enums.IssueStatus.New) ?? 0;
+    var hasIssues = Model.Issues?.Any() == true;
+}
+
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-index.css" asp-append-version="true" />
+}
+
+<div class="container-fluid px-md-4">
+    <div class="page-header anim-1">
+        <div class="page-header-left">
+            <div class="page-header-icon">
+                <i class="bi bi-tag-fill"></i>
+            </div>
+            <div>
+                <h1 class="page-title">#@normalizedTag</h1>
+                <p class="page-subtitle">@Localizer["IssuesTaggedWith"] #@normalizedTag</p>
+            </div>
+        </div>
+        <div>
+            <a href="/issues" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="bi bi-arrow-left me-2"></i>@Localizer["BackToIssues"]
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-row anim-2">
+        <div class="stat-card total">
+            <div class="stat-icon"><i class="bi bi-flag-fill"></i></div>
+            <div>
+                <div class="stat-num">@totalIssues</div>
+                <div class="stat-lbl">@Localizer["TaggedIssues"]</div>
+            </div>
+        </div>
+        <div class="stat-card resolved">
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div>
+                <div class="stat-num">@resolvedCount</div>
+                <div class="stat-lbl">@Localizer["Resolved"]</div>
+            </div>
+        </div>
+        <div class="stat-card progress">
+            <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
+            <div>
+                <div class="stat-num">@inProgressCount</div>
+                <div class="stat-lbl">@Localizer["InProgress"]</div>
+            </div>
+        </div>
+        <div class="stat-card new-s">
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div>
+                <div class="stat-num">@newCount</div>
+                <div class="stat-lbl">@Localizer["New"]</div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.TagFound)
+    {
+        <div class="empty-state anim-3">
+            <div class="empty-icon"><i class="bi bi-exclamation-circle"></i></div>
+            <h2 class="empty-title">@Localizer["TagNotFound"]</h2>
+            <p class="empty-text">@Localizer["NoIssuesFoundForTag"]</p>
+        </div>
+    }
+    else if (hasIssues)
+    {
+        <div class="results-header anim-4">
+            <p class="results-count mb-0">
+                @Localizer["Showing"] <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? Localizer["Issue"] : Localizer["IssuePlural"]) ·
+                @Localizer["PageOf"] <strong>@Model.CurrentPage</strong> @Localizer["Of"] <strong>@Model.TotalPages</strong>
+            </p>
+        </div>
+
+        <div class="issues-grid">
+            @foreach (var issue in Model.Issues)
+            {
+                <partial name="_IssueCard" model="issue" />
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            var baseUrl = $"/tags/{Uri.EscapeDataString(normalizedTag)}?";
+            var paginationModel = new FixIt.ViewModels.PaginationViewModel
+            {
+                CurrentPage = Model.CurrentPage,
+                TotalPages = Model.TotalPages,
+                BaseUrl = baseUrl
+            };
+            <partial name="_Pagination" model="paginationModel" />
+        }
+    }
+    else
+    {
+        <div class="empty-state anim-3">
+            <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+            <h2 class="empty-title">@Localizer["NoIssuesFoundEmptyState"]</h2>
+            <p class="empty-text">@Localizer["NoIssuesFoundForTag"]</p>
+        </div>
+    }
+</div>

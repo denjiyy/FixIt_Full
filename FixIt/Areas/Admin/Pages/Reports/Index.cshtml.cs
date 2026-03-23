@@ -7,7 +7,7 @@ using FixIt.Data.Repository.Contracts;
 
 namespace FixIt.Areas.Admin.Pages.Reports;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,Moderator")]
 public class IndexModel : PageModel
 {
     private readonly IRepository<ContentReport> _reportRepository;
@@ -120,6 +120,14 @@ public class IndexModel : PageModel
     {
         try
         {
+            // Only admins can delete reports
+            if (!User.IsInRole("Admin"))
+            {
+                _logger.LogWarning($"Moderator {User?.Identity?.Name} attempted to delete report {reportId}");
+                TempData["ErrorMessage"] = "Only admins can delete reports.";
+                return RedirectToPage(new { pageNumber = PageNumber });
+            }
+
             var report = await _reportRepository.GetByIdAsync(reportId);
             if (report == null)
                 return NotFound();

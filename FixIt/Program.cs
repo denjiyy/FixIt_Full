@@ -309,6 +309,13 @@ builder.Services.AddScoped<IRepository<FixIt.Models.AI.IssueAnalysis>>(sp =>
     return new Repository<FixIt.Models.AI.IssueAnalysis>(db, "issueAnalyses");
 });
 
+// Admin Suggestions repository
+builder.Services.AddScoped<IRepository<FixIt.Models.AI.AdminSuggestion>>(sp =>
+{
+    var db = sp.GetRequiredService<IMongoDatabase>();
+    return new Repository<FixIt.Models.AI.AdminSuggestion>(db, "adminSuggestions");
+});
+
 // Media repositories
 builder.Services.AddScoped<IRepository<FixIt.Models.Media.Media>>(sp =>
 {
@@ -363,6 +370,7 @@ builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IReputationService, ReputationService>();
 builder.Services.AddScoped<IIssueAnalysisService, OpenAIIssueAnalysisService>();
+builder.Services.AddScoped<FixIt.Services.AI.IAdminSuggestionsService, FixIt.Services.AI.AdminSuggestionsService>();
 builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IHeatmapService, HeatmapService>();
