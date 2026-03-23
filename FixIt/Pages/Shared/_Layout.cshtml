@@ -1,304 +1,187 @@
-﻿<!DOCTYPE html>
-<html lang="@CultureInfo.CurrentUICulture.Name">
-@using System.Globalization
+﻿@using System.Globalization
 @using Microsoft.AspNetCore.Identity
 @using FixIt.Models.Users
 @inject UserManager<ApplicationUser> UserManager
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.Name">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0284c7" />
     <title>@ViewData["Title"] - FixIt</title>
 
-    <!-- Icons & Fonts loaded by site.css @@import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    @* Icons *@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    @* Core CSS *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/utility-tokens.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/layout-system.css" asp-append-version="true" />
-    <!-- Admin Consolidated CSS -->
+
     @if (ViewContext.RouteData.Values["area"]?.ToString() == "Admin")
     {
         <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     }
-    
-    <!-- Leaflet map library CSS (conditional) -->
+
     @if (ViewData["RequiresMap"] as bool? == true)
     {
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
     }
 
-    <!-- Page-specific CSS -->
     @await RenderSectionAsync("PageCss", required: false)
-
-    <style>
-        /* ── Navbar active-link detection ─────────── */
-        .nav-link.active {
-            color: var(--primary-600) !important;
-            background: var(--primary-100);
-            font-weight: var(--font-semibold);
-        }
-
-        /* ── Notification dot (future use) ────────── */
-        .nav-dot {
-            width: 7px; height: 7px;
-            background: var(--accent);
-            border-radius: 50%;
-            position: absolute;
-            top: 4px; right: 4px;
-            border: 1.5px solid var(--white);
-        }
-
-        /* ── Report Issue CTA in nav ───────────────── */
-        .nav-report-btn {
-            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-            color: var(--white) !important;
-            border: none;
-            border-radius: var(--radius-lg);
-            padding: var(--space-2) var(--space-4);
-            font-size: var(--text-sm);
-            font-weight: var(--font-semibold);
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            transition: all var(--transition-base);
-            box-shadow: 0 2px 8px rgba(14,165,233,.25);
-            text-decoration: none;
-        }
-        .nav-report-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(14,165,233,.3);
-            color: var(--white) !important;
-        }
-
-        /* ── Main wrapper ──────────────────────────── */
-        .main-content {
-            min-height: calc(100vh - 380px);
-            padding-top: var(--space-8);
-            padding-bottom: var(--space-8);
-        }
-
-        /* ── Footer link columns ───────────────────── */
-        .footer-links a {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-1) 0;
-            color: var(--gray-500);
-            font-size: var(--text-sm);
-            transition: color var(--transition-fast);
-        }
-        .footer-links a:hover { color: var(--primary-600); }
-        .footer-links a i { color: var(--gray-400); font-size: var(--text-base); }
-
-        /* ── Footer bottom strip ───────────────────── */
-        .footer-bottom {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-            font-size: var(--text-sm);
-            color: var(--gray-400);
-        }
-
-        /* ── Flash toast container ─────────────────── */
-        .toast-stack {
-            position: fixed;
-            bottom: var(--space-6);
-            right: var(--space-6);
-            z-index: var(--z-tooltip);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-3);
-            pointer-events: none;
-        }
-
-        /* ── Scroll-to-top button ──────────────────── */
-        #scrollTopBtn {
-            position: fixed;
-            bottom: var(--space-6);
-            left: var(--space-6);
-            width: 42px; height: 42px;
-            background: var(--white);
-            border: 1.5px solid var(--gray-200);
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--gray-500);
-            box-shadow: var(--shadow-md);
-            opacity: 0;
-            transform: translateY(12px);
-            transition: all var(--transition-base);
-            pointer-events: none;
-            z-index: var(--z-fixed);
-        }
-        #scrollTopBtn.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: all;
-        }
-        #scrollTopBtn:hover {
-            background: var(--primary-500);
-            color: var(--white);
-            border-color: var(--primary-500);
-        }
-    </style>
 </head>
 <body>
 
-    <!-- ══ NAVBAR ════════════════════════════════════════ -->
+    @* ══ NAVBAR ══════════════════════════════════════════ *@
     <header>
-        <nav class="navbar navbar-expand-lg" id="mainNav">
+        <nav class="navbar navbar-expand-lg" id="mainNav" aria-label="Main navigation">
             <div class="container-fluid px-4">
 
-                <!-- Brand -->
-                <a class="navbar-brand" asp-area="" asp-page="/Index">
-                    <i class="bi bi-tools"></i>
+                <a class="navbar-brand" asp-area="" asp-page="/Index" aria-label="FixIt home">
+                    <i class="bi bi-tools" aria-hidden="true"></i>
                     FixIt
                 </a>
 
-                <!-- Mobile toggler -->
                 <button class="navbar-toggler border-0" type="button"
                         data-bs-toggle="collapse" data-bs-target="#navMain"
                         aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="bi bi-list" style="font-size: 1.5rem; color: var(--gray-600);"></i>
+                    <i class="bi bi-list fs-4 text-secondary" aria-hidden="true"></i>
                 </button>
 
                 <div class="navbar-collapse collapse" id="navMain">
 
-                    <!-- Primary nav -->
+                    @* Primary navigation *@
                     <ul class="navbar-nav me-auto gap-1">
-
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Index">
-                                <i class="bi bi-house-door"></i> @Localizer["Home"]
+                                <i class="bi bi-house-door" aria-hidden="true"></i>
+                                <span>@Localizer["Home"]</span>
                             </a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Issues/Index">
-                                <i class="bi bi-list-check"></i> @Localizer["Issues"]
+                                <i class="bi bi-list-check" aria-hidden="true"></i>
+                                <span>@Localizer["Issues"]</span>
                             </a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Cities">
-                                <i class="bi bi-geo-alt"></i> @Localizer["Cities"]
+                                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                                <span>@Localizer["Cities"]</span>
                             </a>
                         </li>
-
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Leaderboards/Index">
-                                <i class="bi bi-trophy"></i> @Localizer["Leaderboards"]
+                                <i class="bi bi-trophy" aria-hidden="true"></i>
+                                <span>@Localizer["Leaderboards"]</span>
                             </a>
                         </li>
 
-                        <!-- Safety dropdown -->
+                        @* Safety dropdown *@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-shield-check"></i> @Localizer["Safety"]
+                                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                                <span>@Localizer["Safety"]</span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li class="dropdown-header"><i class="bi bi-exclamation-triangle me-1"></i> @Localizer["HazardTools"]</li>
+                                <li><span class="dropdown-header"><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>@Localizer["HazardTools"]</span></li>
                                 <li>
                                     <a class="dropdown-item" href="/safety/hazard-mode">
-                                        <i class="bi bi-map"></i> @Localizer["HazardMap"]
+                                        <i class="bi bi-map" aria-hidden="true"></i>
+                                        @Localizer["HazardMap"]
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li class="dropdown-header"><i class="bi bi-lock me-1"></i> Privacy</li>
+                                <li><span class="dropdown-header"><i class="bi bi-lock me-1" aria-hidden="true"></i>Privacy</span></li>
                                 <li>
                                     <a class="dropdown-item" href="/settings/privacy">
-                                        <i class="bi bi-incognito"></i> @Localizer["PrivacySettings"]
+                                        <i class="bi bi-incognito" aria-hidden="true"></i>
+                                        @Localizer["PrivacySettings"]
                                     </a>
                                 </li>
                             </ul>
                         </li>
 
-                        <!-- Analytics dropdown -->
+                        @* Analytics dropdown *@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-graph-up"></i> @Localizer["AnalyticsDropdown"]
+                                <i class="bi bi-graph-up" aria-hidden="true"></i>
+                                <span>@Localizer["AnalyticsDropdown"]</span>
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <a class="dropdown-item" href="/HealthReports">
-                                        <i class="bi bi-heart-pulse"></i> @Localizer["HealthReports"]
+                                        <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+                                        @Localizer["HealthReports"]
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="/Cities">
-                                        <i class="bi bi-map"></i> @Localizer["ViewHeatmaps"]
+                                        <i class="bi bi-map" aria-hidden="true"></i>
+                                        @Localizer["ViewHeatmaps"]
                                     </a>
                                 </li>
                             </ul>
                         </li>
                     </ul>
 
-                    <!-- Auth / user section -->
+                    @* Auth / user section *@
                     <ul class="navbar-nav ms-auto align-items-center gap-2">
 
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
-                            <!-- Report issue CTA -->
                             <li class="nav-item d-none d-lg-flex">
                                 <a class="nav-report-btn" asp-area="" asp-page="/Issues/Create">
-                                    <i class="bi bi-plus-circle-fill"></i> @Localizer["ReportIssue"]
+                                    <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
+                                    @Localizer["ReportIssue"]
                                 </a>
                             </li>
 
-                            <!-- User dropdown -->
                             <li class="nav-item dropdown">
                                 @{
                                     var currentUser = await UserManager.GetUserAsync(User);
                                     var displayText = currentUser?.DisplayName ?? User.Identity?.Name ?? "User";
-                                    var avatarChar = displayText.FirstOrDefault().ToString().ToUpper() ?? "?";
+                                    var avatarChar = displayText.Length > 0
+                                        ? displayText[0].ToString().ToUpper()
+                                        : "?";
                                 }
                                 <a class="nav-link p-0 dropdown-toggle user-chip text-decoration-none"
                                    href="#" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <div class="user-avatar">
-                                        @avatarChar
-                                    </div>
-                                    <span class="user-name">
-                                        @displayText
-                                    </span>
+                                   data-bs-toggle="dropdown" aria-expanded="false"
+                                   aria-label="Account menu for @displayText">
+                                    <div class="user-avatar" aria-hidden="true">@avatarChar</div>
+                                    <span class="user-name">@displayText</span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li class="dropdown-header">@Localizer["MyAccount"]</li>
+                                    <li><span class="dropdown-header">@Localizer["MyAccount"]</span></li>
                                     <li>
                                         <a class="dropdown-item"
                                            asp-area="" asp-page="/User/Profile"
                                            asp-route-userId="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
-                                            <i class="bi bi-person-circle"></i> @Localizer["ViewProfile"]
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-page="/Settings/ConnectedAccounts">
-                                            <i class="bi bi-link-45deg"></i> @Localizer["ConnectedAccounts"]
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-page="/Settings/Privacy">
-                                            <i class="bi bi-shield-lock"></i> @Localizer["PrivacyAndSafety"]
+                                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                                            @Localizer["ViewProfile"]
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Settings/Index">
-                                            <i class="bi bi-gear"></i> @Localizer["Settings"]
+                                            <i class="bi bi-gear" aria-hidden="true"></i>
+                                            @Localizer["Settings"]
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li class="dropdown-header">@Localizer["QuickActions"]</li>
+                                    <li><span class="dropdown-header">@Localizer["QuickActions"]</span></li>
                                     <li>
                                         <a class="dropdown-item" asp-area="" asp-page="/Issues/Create">
-                                            <i class="bi bi-plus-circle"></i> @Localizer["ReportAnIssue"]
+                                            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                                            @Localizer["ReportAnIssue"]
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
@@ -306,7 +189,8 @@
                                     {
                                         <li>
                                             <a class="dropdown-item" href="/admin/dashboard">
-                                                <i class="bi bi-shield-lock text-danger"></i> <strong>@Localizer["AdminPanel"]</strong>
+                                                <i class="bi bi-shield-lock text-danger" aria-hidden="true"></i>
+                                                <strong>@Localizer["AdminPanel"]</strong>
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
@@ -318,7 +202,8 @@
                                               asp-route-returnUrl="@Url.Page("/Index", new { area = "" })">
                                             <button type="submit"
                                                     class="dropdown-item text-danger w-100 text-start border-0 bg-transparent">
-                                                <i class="bi bi-box-arrow-right"></i> Sign Out
+                                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                                Sign Out
                                             </button>
                                         </form>
                                     </li>
@@ -329,50 +214,57 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> @Localizer["SignIn"]
+                                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                                    @Localizer["SignIn"]
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-report-btn" asp-area="Identity" asp-page="/Account/Register">
-                                    <i class="bi bi-person-plus-fill"></i> @Localizer["GetStarted"]
+                                    <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+                                    @Localizer["GetStarted"]
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/admin/login" title="@Localizer["AdminLoginTooltip"]">
-                                    <i class="bi bi-shield-lock"></i> @Localizer["Admin"]
+                                <a class="nav-link text-muted" href="/admin/login" title="@Localizer["AdminLoginTooltip"]">
+                                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                    <span class="d-none d-xl-inline">@Localizer["Admin"]</span>
                                 </a>
                             </li>
                         }
                     </ul>
-                </div><!-- /collapse -->
-            </div><!-- /container -->
+
+                </div>@* /collapse *@
+            </div>@* /container *@
         </nav>
     </header>
 
-    <!-- ══ MAIN ══════════════════════════════════════════ -->
-    <div class="container main-content">
+    @*
+        ══ MAIN ══════════════════════════════════════════════
+        No container here — each page owns its own layout width.
+        Pages that need a centred container use .container/.container-fluid themselves.
+        This lets full-width pages (maps, admin) work without overrides.
+    *@
+    <div class="main-content">
         <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <!-- ══ FOOTER ════════════════════════════════════════ -->
-    <footer>
+    @* ══ FOOTER ════════════════════════════════════════ *@
+    <footer role="contentinfo">
         <div class="container">
             <div class="row g-5 mb-4">
 
-                <!-- Brand column -->
+                @* Brand + stats *@
                 <div class="col-lg-4">
                     <a href="/" class="footer-brand">
-                        <i class="bi bi-tools"></i>
+                        <i class="bi bi-tools" aria-hidden="true"></i>
                         FixIt
                     </a>
                     <p style="font-size: var(--text-sm); color: var(--gray-500); line-height: var(--leading-relaxed); max-width: 300px;">
                         @Localizer["FooterTagline"]
                     </p>
-
-                    <!-- Mini stats -->
-                    <div class="d-flex gap-4 mt-4">
+                    <div class="d-flex gap-4 mt-3">
                         <div>
                             <div style="font-size: var(--text-xl); font-weight: var(--font-extrabold); color: var(--gray-800); letter-spacing: -0.03em;">10K+</div>
                             <div style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-medium);">@Localizer["IssuesReported"]</div>
@@ -388,145 +280,145 @@
                     </div>
                 </div>
 
-                <!-- Platform links -->
+                @* Platform links *@
                 <div class="col-6 col-lg-2">
                     <h6>@Localizer["Platform"]</h6>
-                    <nav class="footer-links d-flex flex-column gap-1">
-                        <a asp-area="" asp-page="/Index">
-                            <i class="bi bi-house-door"></i> @Localizer["Home"]
-                        </a>
-                        <a asp-area="" asp-page="/Issues/Index">
-                            <i class="bi bi-list-check"></i> @Localizer["BrowseIssues"]
-                        </a>
-                        <a asp-area="" asp-page="/Cities">
-                            <i class="bi bi-geo-alt"></i> @Localizer["Cities"]
-                        </a>
-                        <a asp-area="" asp-page="/Leaderboards/Index">
-                            <i class="bi bi-trophy"></i> @Localizer["Leaderboards"]
-                        </a>
+                    <nav class="footer-links d-flex flex-column gap-1" aria-label="Platform links">
+                        <a asp-area="" asp-page="/Index"><i class="bi bi-house-door" aria-hidden="true"></i> @Localizer["Home"]</a>
+                        <a asp-area="" asp-page="/Issues/Index"><i class="bi bi-list-check" aria-hidden="true"></i> @Localizer["BrowseIssues"]</a>
+                        <a asp-area="" asp-page="/Cities"><i class="bi bi-geo-alt" aria-hidden="true"></i> @Localizer["Cities"]</a>
+                        <a asp-area="" asp-page="/Leaderboards/Index"><i class="bi bi-trophy" aria-hidden="true"></i> @Localizer["Leaderboards"]</a>
                     </nav>
                 </div>
 
-                <!-- Insights links -->
+                @* Insights links *@
                 <div class="col-6 col-lg-2">
                     <h6>@Localizer["Insights"]</h6>
-                    <nav class="footer-links d-flex flex-column gap-1">
-                        <a href="/HealthReports">
-                            <i class="bi bi-heart-pulse"></i> @Localizer["HealthReports"]
-                        </a>
-                        <a href="/Cities">
-                            <i class="bi bi-map"></i> @Localizer["Heatmaps"]
-                        </a>
-                        <a href="/safety/hazard-mode">
-                            <i class="bi bi-exclamation-triangle"></i> @Localizer["HazardMode"]
-                        </a>
+                    <nav class="footer-links d-flex flex-column gap-1" aria-label="Insights links">
+                        <a href="/HealthReports"><i class="bi bi-heart-pulse" aria-hidden="true"></i> @Localizer["HealthReports"]</a>
+                        <a href="/Cities"><i class="bi bi-map" aria-hidden="true"></i> @Localizer["Heatmaps"]</a>
+                        <a href="/safety/hazard-mode"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> @Localizer["HazardMode"]</a>
                     </nav>
                 </div>
 
-                <!-- Support links -->
+                @* Support links *@
                 <div class="col-6 col-lg-2">
                     <h6>@Localizer["Support"]</h6>
-                    <nav class="footer-links d-flex flex-column gap-1">
-                        <a asp-area="" asp-page="/Privacy">
-                            <i class="bi bi-shield-check"></i> @Localizer["PrivacyPolicy"]
-                        </a>
-                        <a href="mailto:support@fixit.local">
-                            <i class="bi bi-envelope"></i> @Localizer["ContactUs"]
-                        </a>
-                        <a href="#">
-                            <i class="bi bi-question-circle"></i> @Localizer["HelpCenter"]
-                        </a>
+                    <nav class="footer-links d-flex flex-column gap-1" aria-label="Support links">
+                        <a asp-area="" asp-page="/Privacy"><i class="bi bi-shield-check" aria-hidden="true"></i> @Localizer["PrivacyPolicy"]</a>
+                        <a href="mailto:support@fixit.local"><i class="bi bi-envelope" aria-hidden="true"></i> @Localizer["ContactUs"]</a>
+                        <a href="#"><i class="bi bi-question-circle" aria-hidden="true"></i> @Localizer["HelpCenter"]</a>
                     </nav>
                 </div>
 
-                <!-- Account links -->
+                @* Account links *@
                 <div class="col-6 col-lg-2">
                     <h6>@Localizer["Account"]</h6>
-                    <nav class="footer-links d-flex flex-column gap-1">
+                    <nav class="footer-links d-flex flex-column gap-1" aria-label="Account links">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
                             <a asp-area="" asp-page="/User/Profile"
                                asp-route-userId="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value">
-                                <i class="bi bi-person-circle"></i> @Localizer["MyProfile"]
+                                <i class="bi bi-person-circle" aria-hidden="true"></i> @Localizer["MyProfile"]
                             </a>
-                            <a asp-area="" asp-page="/Issues/Create">
-                                <i class="bi bi-plus-circle"></i> @Localizer["ReportIssue"]
-                            </a>
-                            <a asp-area="" asp-page="/Settings/Index">
-                                <i class="bi bi-gear"></i> @Localizer["Settings"]
-                            </a>
+                            <a asp-area="" asp-page="/Issues/Create"><i class="bi bi-plus-circle" aria-hidden="true"></i> @Localizer["ReportIssue"]</a>
+                            <a asp-area="" asp-page="/Settings/Index"><i class="bi bi-gear" aria-hidden="true"></i> @Localizer["Settings"]</a>
                         }
                         else
                         {
-                            <a asp-area="Identity" asp-page="/Account/Login">
-                                <i class="bi bi-box-arrow-in-right"></i> @Localizer["SignIn"]
-                            </a>
-                            <a asp-area="Identity" asp-page="/Account/Register">
-                                <i class="bi bi-person-plus"></i> @Localizer["CreateAccount"]
-                            </a>
+                            <a asp-area="Identity" asp-page="/Account/Login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> @Localizer["SignIn"]</a>
+                            <a asp-area="Identity" asp-page="/Account/Register"><i class="bi bi-person-plus" aria-hidden="true"></i> @Localizer["CreateAccount"]</a>
                         }
                     </nav>
                 </div>
 
-            </div><!-- /row -->
+            </div>@* /row *@
 
             <hr>
 
             <div class="footer-bottom">
-                <span>&copy; 2026 FixIt — @Localizer["CommunityInfrastructureSolutions"]</span>
-                <div style="display: flex; align-items: center; gap: 2rem;">
+                <span>&copy; @DateTime.Now.Year FixIt — @Localizer["CommunityInfrastructureSolutions"]</span>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-globe"></i> @Localizer["Language"]
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe" aria-hidden="true"></i> @Localizer["Language"]
                         </button>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="/SetLanguage?culture=en-US&returnUrl=@Context.Request.Path">English</a></li>
                             <li><a class="dropdown-item" href="/SetLanguage?culture=bg-BG&returnUrl=@Context.Request.Path">Български</a></li>
                         </ul>
                     </div>
-                    <span style="display: flex; align-items: center; gap: var(--space-1);">
-                        @Localizer["MadeWithLove"] <i class="bi bi-heart-fill" style="color: var(--danger); font-size: 11px;"></i>
+                    <span style="display: flex; align-items: center; gap: 0.25rem; font-size: var(--text-sm); color: var(--gray-400);">
+                        @Localizer["MadeWithLove"] <i class="bi bi-heart-fill" style="color: var(--danger); font-size: 11px;" aria-hidden="true"></i>
                     </span>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- ══ SCROLL-TO-TOP ═════════════════════════════════ -->
-    <button id="scrollTopBtn" aria-label="Back to top">
-        <i class="bi bi-arrow-up" style="font-size: var(--text-base);"></i>
+    @* ══ SCROLL-TO-TOP ════════════════════════════════ *@
+    <button id="scrollTopBtn" aria-label="Back to top" title="Back to top">
+        <i class="bi bi-arrow-up" aria-hidden="true"></i>
     </button>
 
-    <!-- ══ SCRIPTS ═══════════════════════════════════════ -->
+    @* ══ SCRIPTS ═══════════════════════════════════════ *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true" defer></script>
 
-    <!-- Page-specific scripts -->
     @await RenderSectionAsync("PageScripts", required: false)
 
     <script>
-        /* ── Navbar scroll shadow ────────────────────── */
-        const nav = document.getElementById('mainNav');
-        const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
-        window.addEventListener('scroll', onScroll, { passive: true });
+    (function () {
+        'use strict';
 
-        /* ── Active nav link ─────────────────────────── */
-        const currentPath = window.location.pathname.toLowerCase();
-        document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-            const href = link.getAttribute('href') || link.getAttribute('asp-page') || '';
-            const norm = href.toLowerCase().replace(/\/+$/, '');
-            if (norm && currentPath.startsWith(norm) && norm !== '/') {
+        var nav        = document.getElementById('mainNav');
+        var scrollBtn  = document.getElementById('scrollTopBtn');
+
+        // ── Navbar shadow on scroll ───────────────────
+        function handleNavScroll() {
+            nav.classList.toggle('scrolled', window.scrollY > 12);
+        }
+        window.addEventListener('scroll', handleNavScroll, { passive: true });
+
+        // ── Active nav link ───────────────────────────
+        // Match on the start of the path so /issues/create marks the /issues link active.
+        // Excludes dropdowns (they have their own trigger element).
+        var path = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+
+        document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)').forEach(function (link) {
+            var href = (link.getAttribute('href') || '').toLowerCase().replace(/\/$/, '');
+            if (!href || href === '#') return;
+
+            // Exact match for root (/), prefix match for everything else
+            var isActive = (href === '/')
+                ? path === '/'
+                : path === href || path.startsWith(href + '/');
+
+            if (isActive) {
                 link.classList.add('active');
+                link.setAttribute('aria-current', 'page');
             }
         });
 
-        /* ── Scroll-to-top button ────────────────────── */
-        const scrollBtn = document.getElementById('scrollTopBtn');
-        window.addEventListener('scroll', () => {
+        // ── Scroll-to-top button ──────────────────────
+        function handleScroll() {
+            if (!scrollBtn) return;
             scrollBtn.classList.toggle('visible', window.scrollY > 320);
-        }, { passive: true });
-        scrol
+        }
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        if (scrollBtn) {
+            scrollBtn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // Run once on load to set initial state
+        handleNavScroll();
+        handleScroll();
+    }());
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

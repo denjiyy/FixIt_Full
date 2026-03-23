@@ -6,28 +6,27 @@
 }
 
 <!-- Hero Section -->
-<section class="hero position-relative">
-    <div class="container position-relative" style="z-index: 2;">
+<section class="app-hero">
+    <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-5 mb-lg-0">
-                <div class="badge bg-white text-primary px-3 py-2 mb-4" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                <div class="badge bg-white text-primary mb-4 badge-pill-md">
                      @Localizer["CommunityPoweredPlatform"]
                 </div>
-                <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
+                <h1 class="app-hero-title">
                     @Localizer["ReportAndFix"]<br />
-                    <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">@Localizer["CommunityIssues"]</span>
+                    <span class="gradient-text">@Localizer["CommunityIssues"]</span>
                 </h1>
-                <p class="lead mb-4" style="font-size: 1.25rem; color: rgba(255, 255, 255, 0.95); line-height: 1.7;">
+                <p class="app-hero-subtitle">
                     @Localizer["JoinThousands"]
                 </p>
-                <div class="d-flex gap-3 flex-wrap">
+                <div class="app-hero-actions d-flex gap-3 flex-wrap">
                     @if (User?.Identity?.IsAuthenticated ?? false)
                     {
                         <a asp-page="/Issues/Create" class="btn btn-accent btn-lg px-5">
                             <i class="bi bi-plus-circle me-2"></i>@Localizer["ReportNewIssue"]
                         </a>
-                        <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5" 
-                           style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px);">
+                        <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5">
                             <i class="bi bi-list-check me-2"></i>@Localizer["BrowseIssues"]
                         </a>
                     }
@@ -36,8 +35,7 @@
                         <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-accent btn-lg px-5">
                             <i class="bi bi-person-plus me-2"></i>@Localizer["GetStartedFree"]
                         </a>
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-lg px-5"
-                           style="background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: white; backdrop-filter: blur(10px);">
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-lg px-5">
                             <i class="bi bi-box-arrow-in-right me-2"></i>@Localizer["SignIn"]
                         </a>
                     }
@@ -47,44 +45,44 @@
                 <div class="row g-4 mt-4">
                     <div class="col-4">
                         <div class="text-center">
-                            <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">10K+</div>
-                            <div class="small" style="opacity: 0.9;">@Localizer["IssuesReported"]</div>
+                            <div class="h3 fw-bold mb-0 hero-stat-value">10K+</div>
+                            <div class="small hero-stat-label">@Localizer["IssuesReported"]</div>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="text-center">
-                            <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">7.5K+</div>
-                            <div class="small" style="opacity: 0.9;">@Localizer["IssuesResolved"]</div>
+                            <div class="h3 fw-bold mb-0 hero-stat-value">7.5K+</div>
+                            <div class="small hero-stat-label">@Localizer["IssuesResolved"]</div>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="text-center">
-                            <div class="h3 fw-bold mb-0" style="color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">50+</div>
-                            <div class="small" style="opacity: 0.9;">@Localizer["Cities"]</div>
+                            <div class="h3 fw-bold mb-0 hero-stat-value">50+</div>
+                            <div class="small hero-stat-label">@Localizer["Cities"]</div>
                         </div>
                     </div>
                 </div>
             </div>
             
             <div class="col-lg-6 d-none d-lg-block">
-                <div class="position-relative" style="perspective: 1000px;">
-                    <div style="transform: rotateY(-10deg) rotateX(5deg); transition: transform 0.5s;">
-                        <div class="p-5 glass-lg" style="border-radius: var(--radius-2xl);">
-                            <div class="d-flex align-items-center gap-3 mb-4 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                                <div class="icon-container-md" style="background: rgba(249, 115, 22, 0.2); border-radius: var(--radius-lg);">
-                                    <i class="bi bi-exclamation-triangle" style="color: var(--accent);"></i>
+                <div class="position-relative perspective-3d">
+                    <div class="glass-tilt">
+                        <div class="glass-panel">
+                            <div class="panel-heading d-flex align-items-center gap-3 mb-4 pb-4">
+                                <div class="icon-container-md">
+                                    <i class="bi bi-exclamation-triangle text-accent"></i>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <div class="fw-semibold" style="color: white;">@Localizer["NewIssueReported"]</div>
-                                    <div class="small" style="opacity: 0.8;">@Localizer["MinutesAgo", 2]</div>
+                                    <div class="fw-semibold text-white">@Localizer["NewIssueReported"]</div>
+                                    <div class="small text-white-70">@Localizer["MinutesAgo", 2]</div>
                                 </div>
                                 <span class="badge badge-danger-light-solid">@Localizer["HighPriority"]</span>
                             </div>
-                            <h6 class="fw-bold mb-2" style="color: white;">@Localizer["SampleIssueTitle"]</h6>
-                            <p class="small mb-4" style="opacity: 0.8;">@Localizer["SampleIssueDescription"]</p>
+                            <h6 class="fw-bold mb-2 text-white">@Localizer["SampleIssueTitle"]</h6>
+                            <p class="small mb-4 text-white-70">@Localizer["SampleIssueDescription"]</p>
                             <div class="d-flex gap-2">
-                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: var(--text-xs);"><i class="bi bi-geo-alt me-1"></i>@Localizer["SampleLocation"]</span>
-                                <span class="badge bg-white text-dark px-3 py-2" style="font-size: var(--text-xs);"><i class="bi bi-people me-1"></i>@Localizer["UpvotesCount"]</span>
+                                <span class="badge bg-white text-dark px-3 py-2 small-text-xs"><i class="bi bi-geo-alt me-1"></i>@Localizer["SampleLocation"]</span>
+                                <span class="badge bg-white text-dark px-3 py-2 small-text-xs"><i class="bi bi-people me-1"></i>@Localizer["UpvotesCount"]</span>
                             </div>
                         </div>
                     </div>
@@ -98,7 +96,7 @@
 <section class="py-5 mb-5">
     <div class="container">
         <div class="text-center mb-5">
-            <span class="badge bg-primary text-white px-3 py-2 mb-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;">
+            <span class="badge bg-primary text-white badge-pill-md mb-3">
                 @Localizer["HowItWorks"]
             </span>
             <h2 class="h1 fw-bold mb-3">@Localizer["SimpleTransparentEffective"]</h2>
@@ -111,52 +109,44 @@
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card h-100">
                     <div class="feature-number mb-3">1</div>
-                    <div class="feature-icon mb-4">
+                    <div class="feature-icon mb-4 feature-icon--info">
                         <i class="bi bi-camera"></i>
                     </div>
                     <h5 class="fw-bold mb-3">@Localizer["ReportIssues"]</h5>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        @Localizer["TakePhotoPin"]
-                    </p>
+                    <p class="feature-description mb-0">@Localizer["TakePhotoPin"]</p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card h-100">
-                    <div class="feature-number mb-3" style="background: linear-gradient(135deg, #10b981, #059669);">2</div>
-                    <div class="feature-icon mb-4" style="background: linear-gradient(135deg, #10b981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <div class="feature-number mb-3">2</div>
+                    <div class="feature-icon mb-4 feature-icon--success">
                         <i class="bi bi-graph-up"></i>
                     </div>
                     <h5 class="fw-bold mb-3">@Localizer["RealTimeTracking"]</h5>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        @Localizer["WatchIssuesProgress"]
-                    </p>
+                    <p class="feature-description mb-0">@Localizer["WatchIssuesProgress"]</p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card h-100">
-                    <div class="feature-number mb-3 gradient-warning">3</div>
-                    <div class="feature-icon mb-4 text-gradient-warning">
+                    <div class="feature-number mb-3">3</div>
+                    <div class="feature-icon mb-4 feature-icon--warning">
                         <i class="bi bi-chat-dots"></i>
                     </div>
                     <h5 class="fw-bold mb-3">@Localizer["CommunityEngagement"]</h5>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        @Localizer["UpvoteIssuesComment"]
-                    </p>
+                    <p class="feature-description mb-0">@Localizer["UpvoteIssuesComment"]</p>
                 </div>
             </div>
 
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card h-100">
-                    <div class="feature-number mb-3 gradient-danger">4</div>
-                    <div class="feature-icon mb-4 text-gradient-danger">
+                    <div class="feature-number mb-3">4</div>
+                    <div class="feature-icon mb-4 feature-icon--danger">
                         <i class="bi bi-check-circle"></i>
                     </div>
                     <h5 class="fw-bold mb-3">@Localizer["SeeResults"]</h5>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem; line-height: 1.6;">
-                        @Localizer["GetNotifiedWhenResolved"]
-                    </p>
+                    <p class="feature-description mb-0">@Localizer["GetNotifiedWhenResolved"]</p>
                 </div>
             </div>
         </div>
@@ -168,7 +158,7 @@
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
-                <span class="badge bg-primary text-white px-3 py-2 mb-3" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;">
+                <span class="badge bg-primary text-white badge-pill-md mb-3">
                     @Localizer["WhyItMatters"]
                 </span>
                 <h2 class="h1 fw-bold mb-4">@Localizer["BuildingStrongerCommunities"]</h2>
@@ -180,8 +170,8 @@
                     <div class="col-md-6">
                         <div class="d-flex gap-3">
                             <div class="flex-shrink-0">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-shield-check" style="font-size: 1.5rem; color: #0ea5e9;"></i>
+                                <div class="icon-box icon-box--blue">
+                                    <i class="bi bi-shield-check" style="font-size: 1.5rem;"></i>
                                 </div>
                             </div>
                             <div>
@@ -194,8 +184,8 @@
                     <div class="col-md-6">
                         <div class="d-flex gap-3">
                             <div class="flex-shrink-0">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-lightning" style="font-size: 1.5rem; color: #10b981;"></i>
+                                <div class="icon-box icon-box--green">
+                                    <i class="bi bi-lightning" style="font-size: 1.5rem;"></i>
                                 </div>
                             </div>
                             <div>
@@ -208,8 +198,8 @@
                     <div class="col-md-6">
                         <div class="d-flex gap-3">
                             <div class="flex-shrink-0">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-people" style="font-size: 1.5rem; color: #f59e0b;"></i>
+                                <div class="icon-box icon-box--yellow">
+                                    <i class="bi bi-people" style="font-size: 1.5rem;"></i>
                                 </div>
                             </div>
                             <div>
@@ -222,8 +212,8 @@
                     <div class="col-md-6">
                         <div class="d-flex gap-3">
                             <div class="flex-shrink-0">
-                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #fee2e2, #fecaca); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                    <i class="bi bi-bar-chart" style="font-size: 1.5rem; color: #ef4444;"></i>
+                                <div class="icon-box icon-box--red">
+                                    <i class="bi bi-bar-chart" style="font-size: 1.5rem;"></i>
                                 </div>
                             </div>
                             <div>
@@ -237,26 +227,26 @@
 
             <div class="col-lg-6">
                 <div class="position-relative">
-                    <div class="card border-0" style="box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1); border-radius: 1.5rem; overflow: hidden;">
-                        <div style="background: linear-gradient(135deg, #0ea5e9, #0284c7); padding: 2rem; color: white;">
+                    <div class="feature-stat-section">
+                        <div class="feature-stat-header">
                             <h4 class="fw-bold mb-3">@Localizer["LiveCommunityImpact"]</h4>
                             <div class="row g-3">
                                 <div class="col-6">
-                                    <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
+                                    <div class="feature-stat-card">
                                         <div class="h2 fw-bold mb-1">75%</div>
-                                        <div class="small" style="opacity: 0.9;">@Localizer["ResolutionRate"]</div>
+                                        <div class="small">@Localizer["ResolutionRate"]</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
+                                    <div class="feature-stat-card">
                                         <div class="h2 fw-bold mb-1">48h</div>
-                                        <div class="small" style="opacity: 0.9;">@Localizer["AvgResponseTime"]</div>
+                                        <div class="small">@Localizer["AvgResponseTime"]</div>
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <div style="background: rgba(255,255,255,0.15); padding: 1.25rem; border-radius: 0.75rem; backdrop-filter: blur(10px);">
+                                    <div class="feature-stat-card">
                                         <div class="h2 fw-bold mb-1">25K+</div>
-                                        <div class="small" style="opacity: 0.9;">@Localizer["ActiveCommunityMembers"]</div>
+                                        <div class="small">@Localizer["ActiveCommunityMembers"]</div>
                                     </div>
                                 </div>
                             </div>
