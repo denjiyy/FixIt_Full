@@ -66,9 +66,9 @@ public class IndexModel : PageModel
             AvailableCities = cities.ToList();
             User = user;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            ErrorMessage = $"Failed to update city: {ex.Message}";
+            ErrorMessage = "Failed to update city";
         }
 
         return Page();

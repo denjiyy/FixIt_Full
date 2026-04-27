@@ -1,6 +1,7 @@
 using MongoDB.Driver;
 using FixIt.Data.Configuration.Contracts;
 using FixIt.Models.Media;
+using FixIt.Models.Infrastructure;
 
 namespace FixIt.Data.Configuration;
 
@@ -8,7 +9,7 @@ public class MediaConfiguration : ICollectionConfigurator
 {
     public async Task ConfigureAsync(IMongoDatabase db)
     {
-        var media = db.GetCollection<Media>("media");
+        var media = db.GetCollection<Media>(MongoCollectionNames.Media);
 
         // For finding all media owned by a user
         var ownerIndex = new CreateIndexModel<Media>(
@@ -19,7 +20,7 @@ public class MediaConfiguration : ICollectionConfigurator
         );
         await media.Indexes.CreateOneAsync(ownerIndex);
 
-        var mediaRefs = db.GetCollection<MediaReference>("media_references");
+        var mediaRefs = db.GetCollection<MediaReference>(MongoCollectionNames.MediaReferences);
 
         // For finding all places a media file is used
         var mediaIdIndex = new CreateIndexModel<MediaReference>(

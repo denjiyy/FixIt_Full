@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Models.Users;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Identity.Pages.Account;
 
+[EnableRateLimiting(RateLimitPolicyNames.AuthStrict)]
 public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -65,7 +68,7 @@ public class LoginModel : PageModel
                     // Create a new principal with DisplayName claim
                     var claims = new List<System.Security.Claims.Claim>
                     {
-                        new System.Security.Claims.Claim("DisplayName", user.DisplayName),
+                        new System.Security.Claims.Claim(CustomClaimTypes.DisplayName, user.DisplayName),
                         new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, user.Email ?? "")
                     };
                     

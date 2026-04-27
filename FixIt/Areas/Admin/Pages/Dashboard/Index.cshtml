@@ -3,25 +3,47 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Admin Dashboard";
+    var resolutionRate = Model.TotalIssues == 0 ? 0 : Math.Round(Model.ResolvedIssues / (double)Model.TotalIssues * 100);
+    var reportClearanceRate = Model.TotalReports == 0 ? 0 : Math.Round((Model.TotalReports - Model.PendingReports) / (double)Model.TotalReports * 100);
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-<link rel="stylesheet" href="~/css/admin/admin-dashboard.css" />
-
-<div class="container-fluid my-4">
-    <!-- Header -->
-    <div class="admin-header">
-        <div class="admin-header-content">
-            <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
-            <p class="admin-header-subtitle">@Localizer["SystemOverviewAndManagement"]</p>
+<div class="admin-page py-4">
+    <section class="admin-hero">
+        <div class="admin-hero__row">
+            <div>
+                <p class="admin-hero__eyebrow"><i class="bi bi-shield-lock"></i> FixIt Operations</p>
+                <h1 class="admin-hero__title">Admin Dashboard</h1>
+                <p class="admin-hero__subtitle">@Localizer["SystemOverviewAndManagement"] Track incoming activity, moderation workload, and the health of the platform from one control surface.</p>
+            </div>
+            <div class="admin-hero__actions">
+                <a href="/" class="btn btn-outline">
+                    <i class="bi bi-arrow-left"></i> Back to App
+                </a>
+                <a href="/admin/reports" class="btn btn-primary">
+                    <i class="bi bi-flag"></i> Review Reports
+                </a>
+            </div>
         </div>
-        <a href="/" class="btn btn-outline">
-            <i class="bi bi-arrow-left"></i> Back to App
-        </a>
-    </div>
+        <div class="admin-hero__stats">
+            <div class="admin-hero-stat">
+                <strong>@Model.PendingReports</strong>
+                <span>Pending Reports</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@Model.ActiveModerators</strong>
+                <span>Moderators Active</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@Model.ResolvedIssues</strong>
+                <span>Issues Resolved</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@Model.TotalUsers</strong>
+                <span>Accounts Managed</span>
+            </div>
+        </div>
+    </section>
 
-    <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-6 col-lg-3">
             <div class="stat-card">
@@ -76,12 +98,49 @@
         </div>
     </div>
 
-    <!-- AI Suggestions Section -->
-    <div class="data-container mt-4">
-        <div style="padding: 1.5rem;">
-            <h2 class="section-title">
-                <i class="bi bi-lightbulb"></i> AI Suggestions
-            </h2>
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-broadcast"></i> Operations Pulse
+                </h2>
+                <p class="admin-section-shell__copy">A quick read on response capacity, moderation throughput, and where attention should move next.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="status-box">
+                        <div class="status-title"><i class="bi bi-check2-circle"></i> Resolution momentum</div>
+                        <p class="status-text">@resolutionRate% of recorded issues are currently resolved.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="status-box info">
+                        <div class="status-title"><i class="bi bi-flag"></i> Report clearance</div>
+                        <p class="status-text">@reportClearanceRate% of submitted reports have already moved out of the pending queue.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="status-box">
+                        <div class="status-title"><i class="bi bi-people"></i> Moderator coverage</div>
+                        <p class="status-text">@Model.ActiveModerators moderators are actively assigned to operational review.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-lightbulb"></i> AI Suggestions
+                </h2>
+                <p class="admin-section-shell__copy">Recommended moderation actions generated from current platform activity.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
             <div id="dashboardSuggestions" class="suggestions-container">
                 <div class="spinner-border spinner-border-sm" role="status">
                     <span class="visually-hidden">Loading suggestions...</span>
@@ -89,14 +148,18 @@
                 <span class="ms-2">Loading AI suggestions...</span>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Management Areas -->
-    <div class="data-container mt-4">
-        <div style="padding: 1.5rem;">
-            <h2 class="section-title">
-                <i class="bi bi-lightning-charge"></i> Management Areas
-            </h2>
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-lightning-charge"></i> Management Areas
+                </h2>
+                <p class="admin-section-shell__copy">Jump into the moderation surfaces that require attention today.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
             <div class="management-grid">
                 <a href="/admin/users" class="management-btn">
                     <i class="bi bi-people"></i>
@@ -116,14 +179,49 @@
                 </a>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- System Status -->
-    <div class="data-container mt-4">
-        <div style="padding: 1.5rem;">
-            <h2 class="section-title">
-                <i class="bi bi-activity"></i> System Status
-            </h2>
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-kanban"></i> Queue Priorities
+                </h2>
+                <p class="admin-section-shell__copy">Use these shortcuts to clear backlog in the highest-risk areas first.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
+            <div class="management-grid">
+                <a href="/admin/reports" class="management-btn">
+                    <i class="bi bi-flag-fill"></i>
+                    <span>Pending Reports: @Model.PendingReports</span>
+                </a>
+                <a href="/admin/issues" class="management-btn">
+                    <i class="bi bi-exclamation-diamond"></i>
+                    <span>Open Issue Queue: @(Model.TotalIssues - Model.ResolvedIssues)</span>
+                </a>
+                <a href="/admin/users" class="management-btn">
+                    <i class="bi bi-person-lines-fill"></i>
+                    <span>User Base: @Model.TotalUsers</span>
+                </a>
+                <a href="/admin/cities" class="management-btn">
+                    <i class="bi bi-buildings"></i>
+                    <span>City Coverage & taxonomy</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-activity"></i> System Status
+                </h2>
+                <p class="admin-section-shell__copy">Live operational signals for core platform services.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="status-box">
@@ -139,8 +237,9 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/modules/admin-suggestions.js" defer></script>
+@section PageScripts {
+    <script src="~/js/modules/admin-suggestions.js" defer></script>
+}

@@ -3,27 +3,47 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Issues Management";
+    var resolvedVisible = Model.Issues.Count(i => i.Status == IssueStatus.Fixed);
+    var activeVisible = Model.Issues.Count(i => i.Status != IssueStatus.Fixed);
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-<link rel="stylesheet" href="~/css/admin/admin-issues.css" />
-
-<div class="container-fluid my-4">
-    <!-- Header -->
-    <div class="admin-header">
-        <div class="admin-header-content">
+<div class="admin-page py-4">
+    <section class="admin-hero">
+        <div class="admin-hero__row">
             <div>
-                <h1><i class="bi bi-exclamation-triangle"></i> Issues Management</h1>
-                <p class="admin-header-subtitle">@Localizer["ReviewAndManageReportedIssues"]</p>
+                <p class="admin-hero__eyebrow"><i class="bi bi-exclamation-triangle"></i> Moderation workspace</p>
+                <h1 class="admin-hero__title">Issues Management</h1>
+                <p class="admin-hero__subtitle">@Localizer["ReviewAndManageReportedIssues"] Triage reports, resolve stale items, and act on AI-generated recommendations without leaving the queue.</p>
             </div>
-            <a href="/admin/dashboard" class="btn btn-outline">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
+            <div class="admin-hero__actions">
+                <a href="/admin/dashboard" class="btn btn-outline">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <a href="/issues" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-up-right"></i> Open public feed
+                </a>
+            </div>
         </div>
-    </div>
+        <div class="admin-hero__stats">
+            <div class="admin-hero-stat">
+                <strong>@Model.TotalIssues</strong>
+                <span>Total issues</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@Model.Issues.Count</strong>
+                <span>Visible in view</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@activeVisible</strong>
+                <span>Action needed</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@resolvedVisible</strong>
+                <span>Resolved here</span>
+            </div>
+        </div>
+    </section>
 
-    <!-- Messages -->
     @if (!string.IsNullOrEmpty(TempData["SuccessMessage"]?.ToString()))
     {
         <div class="alert alert-success">
@@ -31,169 +51,167 @@
         </div>
     }
 
-    <!-- Search -->
-    <div class="search-section">
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="@Localizer["SearchByTitle"]" class="form-control">
-            <button class="btn btn-primary" onclick="filterIssues()">
-                <i class="bi bi-search"></i> Search
-            </button>
-            @if (!string.IsNullOrEmpty(Model.SearchTerm))
-            {
-                <button class="btn btn-outline" onclick="window.location='/admin/issues'">
-                    <i class="bi bi-x"></i> Clear
+    <form method="get" class="admin-toolbar">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <input type="text" id="searchInput" name="SearchTerm" value="@Model.SearchTerm" placeholder="@Localizer["SearchByTitle"]" class="form-control">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Search
                 </button>
-            }
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                {
+                    <a href="/admin/issues" class="btn btn-outline">
+                        <i class="bi bi-x"></i> Clear
+                    </a>
+                }
+            </div>
         </div>
-        <div class="search-results mt-2">
+        <div class="admin-toolbar__meta">
             Found <strong>@Model.Issues.Count</strong> of <strong>@Model.TotalIssues</strong> issues
         </div>
-    </div>
+    </form>
 
-    <!-- Issues List -->
-    <div class="data-container">
-        @if (Model.Issues.Any())
-        {
-            <div style="padding: 1.5rem;">
-                @foreach (var issue in Model.Issues)
-                {
-                    <div class="issue-card">
-                        <div class="issue-header">
-                            <h3 class="issue-title">@issue.Title</h3>
-                            <span class="badge-status badge-@issue.Status.ToString().ToLower()">
-                                @issue.Status.ToString().Replace("Inprogress", "In Progress")
-                            </span>
-                        </div>
-
-                        <p class="issue-description">
-                            @(issue.Description.Length > 150 ? issue.Description.Substring(0, 150) + "..." : issue.Description)
-                        </p>
-
-                        <div class="issue-meta">
-                            <div class="meta-item">
-                                <span class="meta-label">@Localizer["CreatedLabel"]</span>
-                                <span class="meta-value">@issue.CreatedAt.ToString("MMM dd, yyyy")</span>
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-list-task"></i> Moderation Queue
+                </h2>
+                <p class="admin-section-shell__copy">Each issue surfaces status, age, and AI context before you decide what happens next.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
+            @if (Model.Issues.Any())
+            {
+                <div>
+                    @foreach (var issue in Model.Issues)
+                    {
+                        <article class="issue-card">
+                            <div class="issue-header">
+                                <div>
+                                    <h3 class="issue-title">@issue.Title</h3>
+                                    <p class="issue-description mb-0">
+                                        @(issue.Description.Length > 170 ? issue.Description.Substring(0, 170) + "..." : issue.Description)
+                                    </p>
+                                </div>
+                                <span class="badge-status badge-@issue.Status.ToString().ToLower()">
+                                    @issue.Status.ToString().Replace("Inprogress", "In Progress")
+                                </span>
                             </div>
-                            @if (issue.Status != IssueStatus.Fixed)
-                            {
+
+                            <div class="issue-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">@Localizer["CreatedLabel"]</span>
+                                    <span class="meta-value">@issue.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
                                 <div class="meta-item">
                                     <span class="meta-label">@Localizer["AgeLabel"]</span>
                                     <span class="meta-value">@((DateTime.UtcNow - issue.CreatedAt).Days) days</span>
                                 </div>
-                            }
-                            <div class="meta-item">
-                                <span class="meta-label">@Localizer["ReportsLabel"]</span>
-                                <span class="meta-value">-</span>
+                                <div class="meta-item">
+                                    <span class="meta-label">@Localizer["StatusLabel"]</span>
+                                    <span class="meta-value">@issue.Status</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- AI Suggestions -->
-                        <div id="issue-suggestions-@issue.Id" class="mb-3">
-                            <!-- Suggestions will be loaded here -->
-                        </div>
+                            <div id="issue-suggestions-@issue.Id" class="mb-3">
+                            </div>
 
-                        <div class="issue-actions">
-                            @if (issue.Status != IssueStatus.Fixed)
+                            <details id="issue-summary-@issue.Id" class="ai-summary-details d-none">
+                                <summary>
+                                    <span>Issue summary</span>
+                                    <span class="ai-summary-badge">AI-generated</span>
+                                </summary>
+                                <div class="ai-summary-details__body"></div>
+                            </details>
+
+                            <div class="issue-actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        data-summary-trigger
+                                        data-summary-type="issue"
+                                        data-summary-id="@issue.Id">
+                                    <i class="bi bi-stars"></i> Summarize
+                                </button>
+                                @if (issue.Status != IssueStatus.Fixed)
+                                {
+                                    <form method="post" asp-page-handler="Resolve" class="admin-inline-form">
+                                        <input type="hidden" name="issueId" value="@issue.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" data-confirm-message="Mark this issue as resolved?">
+                                            <i class="bi bi-check-circle"></i> Resolve
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-page-handler="Reopen" class="admin-inline-form">
+                                        <input type="hidden" name="issueId" value="@issue.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" data-confirm-message="Reopen this issue?">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Reopen
+                                        </button>
+                                    </form>
+                                }
+
+                                <a href="/issues/@issue.Id" class="btn btn-sm btn-outline">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form method="post" asp-page-handler="Delete" class="admin-inline-form">
+                                        <input type="hidden" name="issueId" value="@issue.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger" data-confirm-message="@Localizer["ConfirmDeleteIssue"]">
+                                            <i class="bi bi-trash"></i> @Localizer["Delete"]
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pagination">
+                        @if (Model.PageNumber > 1)
+                        {
+                            <a href="/admin/issues?pageNumber=1&amp;SearchTerm=@Model.SearchTerm">@Localizer["FirstPage"]</a>
+                            <a href="/admin/issues?pageNumber=@(Model.PageNumber - 1)&amp;SearchTerm=@Model.SearchTerm">Previous</a>
+                        }
+
+                        @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+                        {
+                            if (i == Model.PageNumber)
                             {
-                                <form method="post" asp-page-handler="Resolve" style="display: inline;">
-                                    <input type="hidden" name="issueId" value="@issue.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #10b981;" onclick="return confirm('Mark as resolved?');">
-                                        <i class="bi bi-check-circle"></i> Resolve
-                                    </button>
-                                </form>
+                                <span class="active">@i</span>
                             }
                             else
                             {
-                                <form method="post" asp-page-handler="Reopen" style="display: inline;">
-                                    <input type="hidden" name="issueId" value="@issue.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" onclick="return confirm('Reopen this issue?');">
-                                        <i class="bi bi-arrow-counterclockwise"></i> Reopen
-                                    </button>
-                                </form>
+                                <a href="/admin/issues?pageNumber=@i&amp;SearchTerm=@Model.SearchTerm">@i</a>
                             }
+                        }
 
-                            <a href="#" class="btn btn-sm btn-outline">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <form method="post" asp-page-handler="Delete" style="display: inline;">
-                                    <input type="hidden" name="issueId" value="@issue.Id" />
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick='return confirm("@Localizer["ConfirmDeleteIssue"]");'>
-                                        <i class="bi bi-trash"></i> @Localizer["Delete"]
-                                    </button>
-                                </form>
-                            }
-                        </div>
+                        @if (Model.PageNumber < Model.TotalPages)
+                        {
+                            <a href="/admin/issues?pageNumber=@(Model.PageNumber + 1)&amp;SearchTerm=@Model.SearchTerm">Next</a>
+                            <a href="/admin/issues?pageNumber=@Model.TotalPages&amp;SearchTerm=@Model.SearchTerm">@Localizer["LastPage"]</a>
+                        }
                     </div>
                 }
-            </div>
-
-            <!-- Pagination -->
-            @if (Model.TotalPages > 1)
+            }
+            else
             {
-                <div class="pagination">
-                    @if (Model.PageNumber > 1)
-                    {
-                        <a href="/admin/issues?pageNumber=1">@Localizer["FirstPage"]</a>
-                        <a href="/admin/issues?pageNumber=@(Model.PageNumber - 1)">Previous</a>
-                    }
-
-                    @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
-                    {
-                        if (i == Model.PageNumber)
-                        {
-                            <span class="active">@i</span>
-                        }
-                        else
-                        {
-                            <a href="/admin/issues?pageNumber=@i">@i</a>
-                        }
-                    }
-
-                    @if (Model.PageNumber < Model.TotalPages)
-                    {
-                        <a href="/admin/issues?pageNumber=@(Model.PageNumber + 1)">Next</a>
-                        <a href="/admin/issues?pageNumber=@Model.TotalPages">@Localizer["LastPage"]</a>
-                    }
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                    <h3>@Localizer["NoIssuesReportedYet"]</h3>
+                    <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoIssuesInTheSystem"] : $"{Localizer["FilterResults"]} \"{Model.SearchTerm}\"")</p>
                 </div>
             }
-        }
-        else
-        {
-            <div class="empty-state">
-                <div class="empty-state-icon"><i class="bi bi-exclamation-triangle"></i></div>
-                <h3>@Localizer["NoIssuesReportedYet"]</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoIssuesInTheSystem"] : $"{Localizer["FilterResults"]} \"{Model.SearchTerm}\"")</p>
-            </div>
-        }
-    </div>
+        </div>
+    </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/modules/admin-suggestions.js" defer></script>
-<script>
-    function filterIssues() {
-        const search = document.getElementById('searchInput').value;
-        if (search.trim()) {
-            window.location = `/admin/issues?SearchTerm=${encodeURIComponent(search)}`;
-        }
-    }
-
-    // Load suggestions for each issue
-    document.addEventListener('DOMContentLoaded', async () => {
-        const issueCards = document.querySelectorAll('[id^="issue-suggestions-"]');
-        for (const card of issueCards) {
-            const issueId = card.id.replace('issue-suggestions-', '');
-            try {
-                const suggestions = await AdminSuggestions.generateIssueSuggestions(issueId);
-                if (suggestions && suggestions.length > 0) {
-                    AdminSuggestions.displaySuggestionList(suggestions, card.id);
-                }
-            } catch (err) {
-                console.error(`Error loading suggestions for issue ${issueId}:`, err);
-            }
-        }
-    });
-</script>
+@section PageScripts {
+    <script src="~/js/modules/admin-suggestions.js" defer></script>
+    <script src="~/js/pages/admin-issues.js" asp-append-version="true" defer></script>
+}

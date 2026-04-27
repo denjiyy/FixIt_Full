@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FixIt.Services.Contracts;
+using FixIt.Services.Constants;
 using FixIt.ViewModels;
 
 namespace FixIt.Controllers;
@@ -117,7 +118,7 @@ public class MediaController : ControllerBase
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             
             // Only owner or admin can delete
-            if (media.OwnerId != userId && !User.IsInRole("Admin"))
+            if (media.OwnerId != userId && !User.IsInRole(RoleNames.Admin))
             {
                 return Forbid();
             }

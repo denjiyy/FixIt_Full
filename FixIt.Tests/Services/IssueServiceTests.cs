@@ -3,11 +3,12 @@ using Moq;
 using FixIt.Services;
 using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
-using FixIt.Services.AI;
+using FixIt.Services.Background;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Common;
 using FixIt.Models.Enums;
+using FixIt.Models.AI;
 using FixIt.Models.Users;
 using FixIt.Models.Engagement;
 using Microsoft.AspNetCore.Identity;
@@ -25,8 +26,9 @@ public class IssueServiceTests
     private readonly Mock<IRepository<ViewEvent>> _viewEventRepoMock;
     private readonly Mock<IRepository<Comment>> _commentRepoMock;
     private readonly Mock<IReputationService> _reputationServiceMock;
-    private readonly Mock<IIssueAnalysisService> _analysisServiceMock;
+    private readonly Mock<IIssueAnalysisQueue> _analysisQueueMock;
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
+    private readonly Mock<ILogger<IssueService>> _loggerMock;
     private readonly IssueService _issueService;
 
     public IssueServiceTests()
@@ -37,7 +39,8 @@ public class IssueServiceTests
         _viewEventRepoMock = new Mock<IRepository<ViewEvent>>();
         _commentRepoMock = new Mock<IRepository<Comment>>();
         _reputationServiceMock = new Mock<IReputationService>();
-        _analysisServiceMock = new Mock<IIssueAnalysisService>();
+        _analysisQueueMock = new Mock<IIssueAnalysisQueue>();
+        _loggerMock = new Mock<ILogger<IssueService>>();
         
         var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
@@ -58,8 +61,9 @@ public class IssueServiceTests
             _viewEventRepoMock.Object,
             _commentRepoMock.Object,
             _reputationServiceMock.Object,
-            _analysisServiceMock.Object,
-            _userManagerMock.Object
+            _analysisQueueMock.Object,
+            _userManagerMock.Object,
+            _loggerMock.Object
         );
     }
 
@@ -503,5 +507,116 @@ public class IssueServiceTests
         // Assert
         Assert.Equal(2, result.Total);
     }
-}
 
+    [Fact]
+    public async Task GetAllIssuesAsync_WithMostViewedSort_ReturnsIssuesOrderedByViews()
+    {
+        // Arrange
+        var issues = new List<Issue>
+        {
+            new() { Id = "i1", Title = "Issue 1", ViewCount = 5, LastActivityAt = DateTime.UtcNow.AddHours(-3) },
+            new() { Id = "i2", Title = "Issue 2", ViewCount = 25, LastActivityAt = DateTime.UtcNow.AddHours(-2) },
+            new() { Id = "i3", Title = "Issue 3", ViewCount = 10, LastActivityAt = DateTime.UtcNow.AddHours(-1) }
+        };
+
+        _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr) => issues.Where(expr.Compile()).ToList());
+
+        // Act
+        var result = await _issueService.GetAllIssuesAsync(sort: IssueSortOption.MostViewed);
+
+        // Assert
+        Assert.Equal(new[] { "i2", "i3", "i1" }, result.Items.Select(issue => issue.Id));
+    }
+
+    [Fact]
+    public async Task GetAllIssuesAsync_WithCategoryAndDateRange_FiltersCorrectly()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var issues = new List<Issue>
+        {
+            new() { Id = "i1", Title = "Road", Category = IssueCategory.Infrastructure, CreatedAt = now.AddDays(-2), LastActivityAt = now.AddDays(-2) },
+            new() { Id = "i2", Title = "Safety", Category = IssueCategory.PublicSafety, CreatedAt = now.AddDays(-1), LastActivityAt = now.AddDays(-1) },
+            new() { Id = "i3", Title = "Old Road", Category = IssueCategory.Infrastructure, CreatedAt = now.AddDays(-40), LastActivityAt = now.AddDays(-40) }
+        };
+
+        _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr) => issues.Where(expr.Compile()).ToList());
+
+        // Act
+        var result = await _issueService.GetAllIssuesAsync(
+            category: IssueCategory.Infrastructure,
+            fromUtc: now.AddDays(-10),
+            toUtc: now);
+
+        // Assert
+        Assert.Single(result.Items);
+        Assert.Equal("i1", result.Items.First().Id);
+    }
+
+    [Fact]
+    public async Task CreateIssueAsync_WithPriorityCategoryDepartment_PersistsOptionalFields()
+    {
+        // Arrange
+        var reporter = new UserSummary { Id = "user1", DisplayName = "Test User" };
+        Issue? capturedIssue = null;
+
+        _issueRepoMock.Setup(r => r.InsertAsync(It.IsAny<Issue>()))
+            .Callback<Issue>(issue => capturedIssue = issue)
+            .ReturnsAsync((Issue issue) => issue);
+
+        _tagRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Tag, bool>>>()))
+            .ReturnsAsync(new List<Tag>());
+
+        // Act
+        await _issueService.CreateIssueAsync(
+            "Water leakage",
+            "Major pipe break in the street",
+            0,
+            0,
+            "city1",
+            reporter,
+            priority: IssuePriority.High,
+            category: IssueCategory.Utilities,
+            department: "Utilities Department");
+
+        // Assert
+        Assert.NotNull(capturedIssue);
+        Assert.Equal(IssuePriority.High, capturedIssue!.Priority);
+        Assert.Equal(IssueCategory.Utilities, capturedIssue.Category);
+        Assert.Equal("Utilities Department", capturedIssue.Department);
+    }
+
+    [Fact]
+    public async Task GetPublicIssueOverviewAsync_ReturnsCountsAndFeaturedIssues()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var issues = new List<Issue>
+        {
+            new() { Id = "i1", Title = "New", CityId = "city1", Status = IssueStatus.New, Priority = IssuePriority.High, LastActivityAt = now.AddHours(-4), CreatedAt = now.AddDays(-5) },
+            new() { Id = "i2", Title = "Confirmed", CityId = "city2", Status = IssueStatus.Confirmed, Priority = IssuePriority.Medium, LastActivityAt = now.AddHours(-1), CreatedAt = now.AddDays(-4) },
+            new() { Id = "i3", Title = "In Progress", CityId = "city2", Status = IssueStatus.InProgress, Priority = IssuePriority.Critical, LastActivityAt = now.AddHours(-2), CreatedAt = now.AddDays(-3) },
+            new() { Id = "i4", Title = "Fixed", CityId = "city3", Status = IssueStatus.Fixed, Priority = IssuePriority.Low, LastActivityAt = now.AddHours(-3), CreatedAt = now.AddDays(-2) },
+            new() { Id = "i5", Title = "Archived", CityId = "city3", Status = IssueStatus.Archived, Priority = IssuePriority.Low, LastActivityAt = now.AddHours(-5), CreatedAt = now.AddDays(-1) }
+        };
+
+        _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr) => issues.Where(expr.Compile()).ToList());
+
+        // Act
+        var result = await _issueService.GetPublicIssueOverviewAsync(2);
+
+        // Assert
+        Assert.Equal(5, result.TotalIssues);
+        Assert.Equal(1, result.NewIssues);
+        Assert.Equal(1, result.ConfirmedIssues);
+        Assert.Equal(1, result.InProgressIssues);
+        Assert.Equal(1, result.FixedIssues);
+        Assert.Equal(1, result.CriticalIssues);
+        Assert.Equal(3, result.CitiesCovered);
+        Assert.Equal(3, result.ActiveIssues);
+        Assert.Equal(new[] { "i2", "i3" }, result.FeaturedIssues.Select(issue => issue.Id));
+    }
+}

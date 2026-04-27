@@ -3,157 +3,244 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Connected Accounts";
+    var linkedProviders = Model.User?.ExternalIdentities.Count ?? 0;
 }
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8">
-            <h1>@Localizer["ConnectedAccounts"]</h1>
-            <p class="text-muted">@Localizer["ManageYourAuthenticationMethodsAndLinkedProviders"]</p>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-            @if (Model.SuccessMessage != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @Model.SuccessMessage
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-
-            @if (Model.ErrorMessage != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @Model.ErrorMessage
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-
-            <!-- OAuth Providers -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">@Localizer["OAuthProvidersLabel"]</h5>
-                </div>
-                <div class="card-body">
-                    @if (Model.User?.ExternalIdentities.Count == 0)
-                    {
-                        <p class="text-muted mb-0">@Localizer["NoOAuthProvidersLinked"]</p>
-                    }
-                    else
-                    {
-                        @foreach (var identity in Model.User!.ExternalIdentities.OrderByDescending(e => e.ConnectedAt))
-                        {
-                            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-                                <div>
-                                    <h6 class="mb-1">
-                                        @if (identity.Provider == "Google")
-                                        {
-                                            <i class="fab fa-google text-danger"></i>
-                                        }
-                                        else if (identity.Provider == "Microsoft")
-                                        {
-                                            <i class="fab fa-microsoft text-primary"></i>
-                                        }
-                                        else if (identity.Provider == "Facebook")
-                                        {
-                                            <i class="fab fa-facebook text-info"></i>
-                                        }
-                                        else if (identity.Provider == "GitHub")
-                                        {
-                                            <i class="fab fa-github text-dark"></i>
-                                        }
-                                        @identity.Provider
-                                    </h6>
-                                    <p class="mb-0 text-muted small">
-                                        @if (!string.IsNullOrEmpty(identity.ProviderDisplayName))
-                                        {
-                                            <span>@identity.ProviderDisplayName</span>
-                                        }
-                                    </p>
-                                    <p class="mb-0 text-muted small">
-                                        Linked: @identity.ConnectedAt.ToString("yyyy-MM-dd HH:mm")
-                                    </p>
-                                    @if (identity.LastSignInAt.HasValue)
-                                    {
-                                        <p class="mb-0 text-muted small">
-                                            Last sign-in: @identity.LastSignInAt.Value.ToString("yyyy-MM-dd HH:mm")
-                                        </p>
-                                    }
-                                </div>
-                                <form method="post" asp-page-handler="Unlink" 
-                                      onsubmit="return confirm('Are you sure?');" 
-                                      style="display: inline;">
-                                    <input type="hidden" name="provider" value="@identity.Provider" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        Unlink
-                                    </button>
-                                </form>
-                            </div>
-                        }
-                    }
-
-                    <div class="mt-3">
-                        <h6>Link more providers:</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            <form method="post" action="/api/auth/link-provider/google" style="display: inline;">
-                                @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "Google") != true)
-                                {
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fab fa-google"></i> Link Google
-                                    </button>
-                                }
-                            </form>
-                            <form method="post" action="/api/auth/link-provider/microsoft" style="display: inline;">
-                                @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "Microsoft") != true)
-                                {
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">
-                                        <i class="fab fa-microsoft"></i> Link Microsoft
-                                    </button>
-                                }
-                            </form>
-                            <form method="post" action="/api/auth/link-provider/facebook" style="display: inline;">
-                                @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "Facebook") != true)
-                                {
-                                    <button type="submit" class="btn btn-sm btn-outline-info">
-                                        <i class="fab fa-facebook"></i> Link Facebook
-                                    </button>
-                                }
-                            </form>
-                            <form method="post" action="/api/auth/link-provider/github" style="display: inline;">
-                                @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "GitHub") != true)
-                                {
-                                    <button type="submit" class="btn btn-sm btn-outline-dark">
-                                        <i class="fab fa-github"></i> Link GitHub
-                                    </button>
-                                }
-                            </form>
-                        </div>
-                    </div>
-                </div>
+<div class="account-page py-4">
+    <section class="account-surface-hero mb-4">
+        <div class="account-surface-hero__row">
+            <div class="account-surface-hero__copy">
+                <span class="account-surface-hero__eyebrow">
+                    <i class="bi bi-link-45deg"></i>
+                    Sign-in methods
+                </span>
+                <h1 class="account-surface-hero__title">@Localizer["ConnectedAccounts"]</h1>
+                <p class="account-surface-hero__subtitle">
+                    Link trusted identity providers, keep recovery options healthy, and make sure you always have a safe path back into your FixIt account.
+                </p>
             </div>
-
-            <!-- Password Authentication -->
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Password Authentication</h5>
+            <div class="account-surface-hero__meta">
+                <div class="account-surface-hero__meta-card">
+                    <span>Linked providers</span>
+                    <strong>@linkedProviders</strong>
+                    <small>External identities currently connected</small>
                 </div>
-                <div class="card-body">
-                    @if (Model.User?.HasPasswordAuth == true)
-                    {
-                        <p><span class="badge bg-success">Enabled</span></p>
-                        <p class="text-muted">You can sign in with email and password</p>
-                        <a href="/Account/Manage/ChangePassword" class="btn btn-sm btn-primary">
-                            Change Password
-                        </a>
-                    }
-                    else
-                    {
-                        <p><span class="badge bg-secondary">Disabled</span></p>
-                        <p class="text-muted">You're using OAuth providers to sign in</p>
-                        <a href="/Account/Register" class="btn btn-sm btn-primary">
-                            Set up Password
-                        </a>
-                    }
+                <div class="account-surface-hero__meta-card">
+                    <span>Password fallback</span>
+                    <strong>@(Model.User?.HasPasswordAuth == true ? "Ready" : "Missing")</strong>
+                    <small>@(Model.User?.HasPasswordAuth == true ? "Email + password available" : "Add a password for stronger recovery")</small>
                 </div>
             </div>
         </div>
+    </section>
+
+    @if (Model.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="settings-shell-grid">
+        <aside class="settings-sidepanel">
+            <div>
+                <h2 class="settings-sidepanel__title">Account recovery guidance</h2>
+                <p class="settings-sidepanel__copy">Keep at least one external provider and one fallback sign-in method whenever possible.</p>
+            </div>
+            <div class="settings-sidepanel__links">
+                <a href="#linked-providers" class="settings-link active">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Linked providers</span>
+                </a>
+                <a href="#add-provider" class="settings-link">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add another provider</span>
+                </a>
+                <a href="#password-auth" class="settings-link">
+                    <i class="bi bi-key"></i>
+                    <span>Password backup</span>
+                </a>
+            </div>
+            <div class="settings-sidepanel__stat">
+                <span>Best practice</span>
+                <strong>2 ways in</strong>
+                <small>One linked provider plus password auth gives the most resilient recovery setup.</small>
+            </div>
+        </aside>
+
+        <div class="settings-stack">
+            <section id="linked-providers" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-diagram-3"></i> Linked providers</span>
+                        <h2 class="settings-panel__title">@Localizer["OAuthProvidersLabel"]</h2>
+                        <p class="settings-panel__copy">Review which providers are active and remove any identity you no longer trust.</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    @if (Model.User?.ExternalIdentities.Count == 0)
+                    {
+                        <div class="empty-achievements">
+                            <i class="bi bi-link-45deg"></i>
+                            <p>@Localizer["NoOAuthProvidersLinked"]</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="provider-list">
+                            @foreach (var identity in Model.User!.ExternalIdentities.OrderByDescending(e => e.ConnectedAt))
+                            {
+                                <article class="provider-item">
+                                    <div class="provider-item__header">
+                                        <div>
+                                            <div class="provider-item__title">
+                                                <span class="provider-item__icon @GetProviderIconClass(identity.Provider)">
+                                                    <i class="@GetProviderIcon(identity.Provider)"></i>
+                                                </span>
+                                                <div>
+                                                    <h6>@identity.Provider</h6>
+                                                    <p class="provider-item__meta">
+                                                        @if (!string.IsNullOrEmpty(identity.ProviderDisplayName))
+                                                        {
+                                                            <span>@identity.ProviderDisplayName</span>
+                                                            <span class="mx-1">·</span>
+                                                        }
+                                                        <span>Linked @identity.ConnectedAt.ToString("dd MMM yyyy, HH:mm")</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            @if (identity.LastSignInAt.HasValue)
+                                            {
+                                                <p class="provider-item__meta mt-2">Last sign-in: @identity.LastSignInAt.Value.ToString("dd MMM yyyy, HH:mm")</p>
+                                            }
+                                        </div>
+
+                                        <form method="post" asp-page-handler="Unlink" class="provider-inline-form">
+                                            <input type="hidden" name="provider" value="@identity.Provider" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" data-confirm-message="Are you sure you want to unlink this provider?">
+                                                Unlink
+                                            </button>
+                                        </form>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section id="add-provider" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-plus-circle"></i> Add another provider</span>
+                        <h2 class="settings-panel__title">Expand your recovery options</h2>
+                        <p class="settings-panel__copy">Connect another identity provider for convenience and an extra path back into your account.</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    <div class="provider-actions">
+                        @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "Google") != true)
+                        {
+                            <form method="post" action="/api/auth/link-provider/google">
+                                <button type="submit" class="btn btn-outline-danger w-100">
+                                    <i class="bi bi-google me-2"></i>Link Google
+                                </button>
+                            </form>
+                        }
+
+                        @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "Microsoft") != true)
+                        {
+                            <form method="post" action="/api/auth/link-provider/microsoft">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-microsoft me-2"></i>Link Microsoft
+                                </button>
+                            </form>
+                        }
+
+                        @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "Facebook") != true)
+                        {
+                            <form method="post" action="/api/auth/link-provider/facebook">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-facebook me-2"></i>Link Facebook
+                                </button>
+                            </form>
+                        }
+
+                        @if (Model.User?.ExternalIdentities.Any(e => e.Provider == "GitHub") != true)
+                        {
+                            <form method="post" action="/api/auth/link-provider/github">
+                                <button type="submit" class="btn btn-outline-dark w-100">
+                                    <i class="bi bi-github me-2"></i>Link GitHub
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <section id="password-auth" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-key"></i> Password authentication</span>
+                        <h2 class="settings-panel__title">Keep a direct sign-in fallback</h2>
+                        <p class="settings-panel__copy">Email and password remain the best backup when an external provider is temporarily unavailable.</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    @if (Model.User?.HasPasswordAuth == true)
+                    {
+                        <span class="security-status security-status--success mb-3"><i class="bi bi-check-circle"></i> Enabled</span>
+                        <p class="text-muted">You can sign in with your email and password in addition to linked providers.</p>
+                        <div class="settings-inline-actions">
+                            <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-primary">Change password</a>
+                            <a href="/Account/Manage" class="btn btn-outline-secondary">Open account management</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="security-status security-status--muted mb-3"><i class="bi bi-dash-circle"></i> Not configured</span>
+                        <p class="text-muted">Your account currently depends on linked providers. Add a password to strengthen recovery and reduce lockout risk.</p>
+                        <div class="settings-inline-actions">
+                            <a href="/Account/Register" class="btn btn-primary">Set up password</a>
+                            <a href="/Account/Manage" class="btn btn-outline-secondary">Review account settings</a>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
     </div>
 </div>
+
+@functions {
+    private static string GetProviderIconClass(string provider) => provider.ToLowerInvariant() switch
+    {
+        "google" => "provider-item__icon--google",
+        "microsoft" => "provider-item__icon--microsoft",
+        "facebook" => "provider-item__icon--facebook",
+        "github" => "provider-item__icon--github",
+        _ => "provider-item__icon--github"
+    };
+
+    private static string GetProviderIcon(string provider) => provider.ToLowerInvariant() switch
+    {
+        "google" => "bi bi-google",
+        "microsoft" => "bi bi-microsoft",
+        "facebook" => "bi bi-facebook",
+        "github" => "bi bi-github",
+        _ => "bi bi-link-45deg"
+    };
+}

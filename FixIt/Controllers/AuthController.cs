@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Services.Authentication;
 using FixIt.Services.Contracts;
 using FixIt.Models.Users;
@@ -9,6 +10,7 @@ using FixIt.ViewModels;
 using FixIt.ViewModels.Auth;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using FixIt.Services.Constants;
 
 namespace FixIt.Controllers;
 
@@ -20,6 +22,7 @@ namespace FixIt.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[EnableRateLimiting(RateLimitPolicyNames.AuthStrict)]
 public class AuthController : ControllerBase
 {
     private readonly IOAuthService _oauthService;
@@ -115,7 +118,7 @@ public class AuthController : ControllerBase
         // Sign in the user with custom claims
         var claims = new List<Claim>
         {
-            new Claim("DisplayName", user.DisplayName),
+            new Claim(CustomClaimTypes.DisplayName, user.DisplayName),
             new Claim(ClaimTypes.Email, user.Email ?? "")
         };
         
@@ -127,7 +130,7 @@ public class AuthController : ControllerBase
 
         // Log admin logins for audit compliance
         var userRoles = await _userManager.GetRolesAsync(user);
-        if (userRoles.Contains("Admin") || userRoles.Contains("Moderator"))
+        if (userRoles.Contains(RoleNames.Admin) || userRoles.Contains(RoleNames.Moderator))
         {
             await _auditService.LogEventAsync(
                 eventType: "AdminLogin",

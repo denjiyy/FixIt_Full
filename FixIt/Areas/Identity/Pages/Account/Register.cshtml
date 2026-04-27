@@ -2,111 +2,139 @@
 @model FixIt.Areas.Identity.Pages.Account.RegisterModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = Localizer["CreateAccount"];
 }
 
-<!-- Font Awesome for OAuth icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@fortawesome/fontawesome-free@@6.5.1/css/all.min.css" />
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card" style="border: none; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <div class="mb-3">
-                            <i class="bi bi-tools text-gradient" style="font-size: 3rem;"></i>
-                        </div>
-                        <h1 class="h3 mb-2">@Localizer["CreateAccount"]</h1>
-                        <p class="text-muted">@Localizer["JoinThousands"]</p>
+<section class="account-page account-page--compact py-4">
+    <div class="auth-shell auth-shell--split">
+        <div class="card auth-card border-0">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="auth-card__icon">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <h1 class="h3 mb-2">@Localizer["CreateAccount"]</h1>
+                    <p class="text-muted mb-0">Create your FixIt profile so you can report issues, follow progress, and contribute to your community.</p>
+                </div>
+
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Email" class="form-label">Email address</label>
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder='@Localizer["YourAtEmailComPlaceholder"]' />
+                        <span asp-validation-for="Input.Email" class="text-danger small d-block mt-2"></span>
                     </div>
 
-                    <section>
-                        <form method="post">
-                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                            
-                            <div class="mb-3">
-                                <label asp-for="Input.Email" class="form-label">@Localizer["EmailAddress"]</label>
-                                <input asp-for="Input.Email" class="form-control form-control-lg" 
-                                       autocomplete="username" aria-required="true" 
-                                       placeholder='@Localizer["YourAtEmailComPlaceholder"]' />
-                                <span asp-validation-for="Input.Email" class="text-danger small"></span>
-                            </div>
+                    <div class="mb-3">
+                        <label asp-for="Input.DisplayName" class="form-label">@Localizer["DisplayNameField"]</label>
+                        <input asp-for="Input.DisplayName" class="form-control" aria-required="true" placeholder='@Localizer["HowShouldWeCallYouPlaceholder"]' />
+                        <span asp-validation-for="Input.DisplayName" class="text-danger small d-block mt-2"></span>
+                        <small class="text-muted">@Localizer["ThisIsHowOtherUsersWillSeeYou"]</small>
+                    </div>
 
-                            <div class="mb-3">
-                                <label asp-for="Input.DisplayName" class="form-label">@Localizer["DisplayNameField"]</label>
-                                <input asp-for="Input.DisplayName" class="form-control form-control-lg" 
-                                       aria-required="true" placeholder='@Localizer["HowShouldWeCallYouPlaceholder"]' />
-                                <span asp-validation-for="Input.DisplayName" class="text-danger small"></span>
-                                <small class="text-muted">@Localizer["ThisIsHowOtherUsersWillSeeYou"]</small>
-                            </div>
+                    <div class="mb-3">
+                        <label asp-for="Input.Password" class="form-label">@Localizer["PasswordLabel"]</label>
+                        <input asp-for="Input.Password" type="password" class="form-control" autocomplete="new-password" aria-required="true" placeholder='@Localizer["PasswordPlaceholder"]' />
+                        <span asp-validation-for="Input.Password" class="text-danger small d-block mt-2"></span>
+                        <small class="text-muted">Use at least 8 characters with a mix of upper-case letters and numbers.</small>
+                    </div>
 
-                            <div class="mb-3">
-                                <label asp-for="Input.Password" class="form-label">@Localizer["PasswordLabel"]</label>
-                                <input asp-for="Input.Password" type="password" class="form-control form-control-lg" 
-                                       autocomplete="new-password" aria-required="true" 
-                                       placeholder='@Localizer["PasswordPlaceholder"]' />
-                                <span asp-validation-for="Input.Password" class="text-danger small"></span>
-                                <small class="text-muted">At least 8 characters with uppercase and numbers</small>
-                            </div>
+                    <div class="mb-4">
+                        <label asp-for="Input.ConfirmPassword" class="form-label">@Localizer["ConfirmPassword"]</label>
+                        <input asp-for="Input.ConfirmPassword" type="password" class="form-control" autocomplete="new-password" aria-required="true" placeholder='@Localizer["PasswordPlaceholder"]' />
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small d-block mt-2"></span>
+                    </div>
 
-                            <div class="mb-4">
-                                <label asp-for="Input.ConfirmPassword" class="form-label">@Localizer["ConfirmPassword"]</label>
-                                <input asp-for="Input.ConfirmPassword" type="password" class="form-control form-control-lg" 
-                                       autocomplete="new-password" aria-required="true" 
-                                       placeholder='@Localizer["PasswordPlaceholder"]' />
-                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
-                            </div>
+                    <div class="d-grid gap-3 mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>@Localizer["CreateAccount"]
+                        </button>
+                    </div>
 
-                            <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-primary btn-lg">@Localizer["CreateAccount"]</button>
-                                    <i class="bi bi-person-plus"></i> Create Account
+                    <p class="text-center text-muted small mb-0">
+                        @Localizer["TermsOfService"]
+                    </p>
+                </form>
+
+                @if (Model.ExternalLogins.Any())
+                {
+                    <div class="auth-divider mt-4">
+                        <span>@Localizer["OrSignUpWith"]</span>
+                    </div>
+
+                    <div class="auth-provider-list mb-4">
+                        @foreach (var provider in Model.ExternalLogins)
+                        {
+                            var iconClass = provider.Name switch
+                            {
+                                "Google" => "bi-google",
+                                "Microsoft" => "bi-microsoft",
+                                "Facebook" => "bi-facebook",
+                                "GitHub" => "bi-github",
+                                _ => "bi-box-arrow-in-right"
+                            };
+
+                            <form method="post" action="@Url.Page("/Account/ExternalLogin", new { area = "Identity", returnUrl = Model.ReturnUrl })">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="provider" value="@provider.Name" />
+                                <button type="submit" class="btn btn-outline-secondary auth-provider-button">
+                                    <i class="bi @iconClass"></i>
+                                    <span>@provider.DisplayName</span>
                                 </button>
-                            </div>
-                            
-                            <div class="text-center">
-                                <small class="text-muted">
-                                    By creating an account, you agree to our @Localizer["TermsOfService"]
-                                </small>
-                            </div>
-                        </form>
-                    </section>
+                            </form>
+                        }
+                    </div>
+                }
 
-                    @if (Model.ExternalLogins.Any())
-                    {
-                        <hr class="my-4">
-                        <div>
-                            <p class="mb-2 text-center text-muted" style="font-size: 0.875rem;">@Localizer["OrSignUpWith"]</p>
-                            <div class="d-grid gap-2">
-                                @foreach (var provider in Model.ExternalLogins)
-                                {
-                                    <form method="post" action="@Url.Page("/Account/ExternalLogin", new { area = "Identity", returnUrl = Model.ReturnUrl })" style="display: contents;">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="provider" value="@provider.Name" />
-                                        <button type="submit" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-2" 
-                                                style="border-width: 1px; font-weight: 500; font-size: 0.875rem;">
-                                            <i class="fab fa-google text-danger"></i>
-                                            <span>@provider.DisplayName</span>
-                                        </button>
-                                    </form>
-                                }
-                            </div>
-                        </div>
-                    }
+                <a asp-page="./Login" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>@Localizer["LogIn"]
+                </a>
+            </div>
+        </div>
 
-                    <hr class="my-4">
+        <div class="d-none d-lg-block">
+            <div class="account-surface-hero">
+                <div class="account-surface-hero__copy">
+                    <span class="account-surface-hero__eyebrow">
+                        <i class="bi bi-stars"></i>
+                        Community-powered platform
+                    </span>
+                    <h2 class="account-surface-hero__title">Start improving your city in minutes</h2>
+                    <p class="account-surface-hero__subtitle">A FixIt account lets you report issues, build credibility through helpful participation, and stay informed as things get fixed.</p>
+                </div>
+            </div>
 
-                    <div class="text-center">
-                        <p class="mb-2 text-muted small">Already have an account?</p>
-                        <a asp-page="./Login" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-box-arrow-in-right"></i> Log In
-                        </a>
+            <div class="auth-benefits mt-4">
+                <div class="auth-benefit">
+                    <span class="auth-benefit__icon auth-benefit__icon--blue"><i class="bi bi-flag"></i></span>
+                    <div>
+                        <h6 class="mb-1">Report faster</h6>
+                        <p class="small mb-0">Save a city preference, upload evidence, and create higher-quality reports with less friction.</p>
+                    </div>
+                </div>
+                <div class="auth-benefit">
+                    <span class="auth-benefit__icon auth-benefit__icon--green"><i class="bi bi-graph-up-arrow"></i></span>
+                    <div>
+                        <h6 class="mb-1">Track impact</h6>
+                        <p class="small mb-0">Follow progress, view community health signals, and see how your reports contribute over time.</p>
+                    </div>
+                </div>
+                <div class="auth-benefit">
+                    <span class="auth-benefit__icon auth-benefit__icon--amber"><i class="bi bi-shield-check"></i></span>
+                    <div>
+                        <h6 class="mb-1">Control privacy</h6>
+                        <p class="small mb-0">Adjust anonymity, profile visibility, and safety alerts as soon as your account is ready.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section PageScripts {
     <partial name="_ValidationScriptsPartial" />

@@ -3,167 +3,164 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Settings";
+    var emailState = Model.User?.EmailNotificationsEnabled == true ? "Enabled" : "Disabled";
+    var cityConfigured = !string.IsNullOrEmpty(Model.SelectedCityId);
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <h1 class="mb-2">@Localizer["Settings"]</h1>
-            <p class="text-muted mb-5">@Localizer["ManageYourAccountAndPreferences"]</p>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
-            {
-                <div class="alert alert-success border-0 rounded-lg p-4" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46;">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-check-circle me-3" style="font-size: 1.5rem;"></i>
-                        <p class="mb-0">@Model.SuccessMessage</p>
-                    </div>
-                </div>
-            }
-
-            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <div class="alert alert-danger border-0 rounded-lg p-4" style="background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b;">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
-                        <p class="mb-0">@Model.ErrorMessage</p>
-                    </div>
-                </div>
-            }
-
-            <!-- City Preference Card -->
-            <div class="card border-0 mb-4" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border-radius: 1rem;">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center gap-3 mb-4">
-                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-map" style="font-size: 1.5rem; color: #1e40af;"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0">@Localizer["CityPreference"]</h5>
-                            <p class="text-muted small mb-0">@Localizer["SelectYourCityToPersonalizeFeatureContent"]</p>
-                        </div>
-                    </div>
-
-                    <form method="post" asp-page-handler="SetCity" class="row g-3 align-items-end">
-                        <div class="col-md-8">
-                            <label for="cityId" class="form-label fw-semibold small text-uppercase" style="letter-spacing: 0.05em; color: #6b7280;">
-                                @Localizer["CityOrCities"]
-                            </label>
-                            <select class="form-select form-select-lg" id="cityId" name="cityId" style="border: 2px solid #e5e7eb;" required>
-                                <option value="">@Localizer["SelectACity"]</option>
-                                @foreach (var city in Model.AvailableCities)
-                                {
-                                    <option value="@city.Id" selected="@(Model.SelectedCityId == city.Id)">
-                                        @city.Name
-                                    </option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="bi bi-save me-2"></i>Save
-                            </button>
-                        </div>
-                    </form>
-
-                    @if (!string.IsNullOrEmpty(Model.SelectedCityId))
-                    {
-                        <div class="alert alert-info mt-3 mb-0 py-2 px-3">
-                            <small>
-                                <i class="bi bi-info-circle me-2"></i>
-                                @Localizer["CityPreferenceInfo"]
-                            </small>
-                        </div>
-                    }
-                </div>
+<section class="account-page account-page--compact py-4">
+    <section class="account-surface-hero mb-4">
+        <div class="account-surface-hero__row">
+            <div class="account-surface-hero__copy">
+                <span class="account-surface-hero__eyebrow">
+                    <i class="bi bi-sliders"></i>
+                    Preferences hub
+                </span>
+                <h1 class="account-surface-hero__title">@Localizer["Settings"]</h1>
+                <p class="account-surface-hero__subtitle">
+                    Control your city context, privacy choices, linked sign-in methods, and communication preferences from one calm, focused workspace.
+                </p>
             </div>
-
-            <div class="row g-4">
-                <!-- Connected Accounts -->
-                <div class="col-md-6">
-                    <a href="/settings/connected-accounts" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <i class="bi bi-link-45deg" style="font-size: 2rem; color: #0d6efd;"></i>
-                            </div>
-                            <h5 class="card-title">@Localizer["ConnectedAccounts"]</h5>
-                            <p class="card-text text-muted small mb-0">@Localizer["LinkOAuthProvidersAndManageAuthenticationMethods"]</p>
-                        </div>
-                        <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">@Localizer["AuthProvidersList"]</small>
-                        </div>
-                    </a>
+            <div class="account-surface-hero__meta">
+                <div class="account-surface-hero__meta-card">
+                    <span>City context</span>
+                    <strong>@(cityConfigured ? "Set" : "Open")</strong>
+                    <small>@(cityConfigured ? "Used to personalize reporting and alerts" : "Choose a preferred city to personalize content")</small>
                 </div>
-
-                <!-- Email Preferences -->
-                <div class="col-md-6">
-                    <a href="/settings/email-preferences" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <i class="bi bi-envelope" style="font-size: 2rem; color: #dc3545;"></i>
-                            </div>
-                            <h5 class="card-title">@Localizer["EmailPreferencesPage"]</h5>
-                            <p class="card-text text-muted small mb-0">@Localizer["ControlWhichEmailsAndNotificationsYouReceive"]</p>
-                        </div>
-                        <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">@Localizer["HealthReportsHazardAlerts"]</small>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Privacy & Safety -->
-                <div class="col-md-6">
-                    <a href="/settings/privacy" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <i class="bi bi-shield-lock" style="font-size: 2rem; color: #198754;"></i>
-                            </div>
-                            <h5 class="card-title">@Localizer["PrivacyAndSafety"]</h5>
-                            <p class="card-text text-muted small mb-0">@Localizer["AnonymousReportingHazardAlertsAndProfileVisibility"]</p>
-                        </div>
-                        <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">@Localizer["AnonymousHazardVisibility"]</small>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Account Management -->
-                <div class="col-md-6">
-                    <a href="/Account/Manage" class="card h-100 text-decoration-none text-dark hover-lift" style="transition: all 0.3s;">
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <i class="bi bi-person-circle" style="font-size: 2rem; color: #6f42c1;"></i>
-                            </div>
-                            <h5 class="card-title">@Localizer["MyAccount"]</h5>
-                            <p class="card-text text-muted small mb-0">@Localizer["ChangePasswordManageProfileAndAccountSecurity"]</p>
-                        </div>
-                        <div class="card-footer bg-light border-top-0">
-                            <small class="text-muted">@Localizer["ProfilePasswordEmail"]</small>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            <div class="mt-5 pt-4 border-top">
-                <h6 class="text-muted mb-3">@Localizer["AccountStatus"]</h6>
-                <div class="alert alert-info mb-3">
-                    <small>
-                        @if (User?.Identity?.IsAuthenticated ?? false)
-                        {
-                            <i class="bi bi-check-circle text-success"></i> <strong>@Localizer["SignedIn"]</strong>
-                            <br/>
-                            <span class="text-muted">@Localizer["EmailNotificationsTitle"]: @(Model.User?.EmailNotificationsEnabled == true ? Localizer["Enabled"] : Localizer["Disabled"])</span>
-                        }
-                    </small>
+                <div class="account-surface-hero__meta-card">
+                    <span>Email updates</span>
+                    <strong>@emailState</strong>
+                    <small>Digest and alert delivery preference</small>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<style>
-    .hover-lift:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success mb-4">
+            <i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage
+        </div>
     }
-</style>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mb-4">
+            <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+        </div>
+    }
+
+    <section class="settings-dashboard-grid mb-4" aria-label="Settings summary">
+        <article class="settings-dashboard-card">
+            <span class="settings-dashboard-card__icon settings-dashboard-card__icon--blue"><i class="bi bi-geo-alt"></i></span>
+            <span class="settings-dashboard-card__label">Preferred city</span>
+            <strong class="settings-dashboard-card__value">@(cityConfigured ? "1" : "0")</strong>
+            <p class="settings-dashboard-card__copy">Set a city to tailor issue feeds, health reports, and alerts to your area.</p>
+        </article>
+        <article class="settings-dashboard-card">
+            <span class="settings-dashboard-card__icon settings-dashboard-card__icon--green"><i class="bi bi-envelope-check"></i></span>
+            <span class="settings-dashboard-card__label">Inbox status</span>
+            <strong class="settings-dashboard-card__value">@emailState</strong>
+            <p class="settings-dashboard-card__copy">Weekly reports and urgent hazard notices follow the preferences you choose below.</p>
+        </article>
+        <article class="settings-dashboard-card">
+            <span class="settings-dashboard-card__icon settings-dashboard-card__icon--amber"><i class="bi bi-shield-lock"></i></span>
+            <span class="settings-dashboard-card__label">Privacy controls</span>
+            <strong class="settings-dashboard-card__value">3</strong>
+            <p class="settings-dashboard-card__copy">Anonymous reporting, visibility, and safety alerts all live under one privacy surface.</p>
+        </article>
+    </section>
+
+    <section class="settings-panel mb-4">
+        <div class="settings-panel__head">
+            <div>
+                <span class="settings-panel__eyebrow"><i class="bi bi-pin-map"></i> Local context</span>
+                <h2 class="settings-panel__title">@Localizer["CityPreference"]</h2>
+                <p class="settings-panel__copy">@Localizer["SelectYourCityToPersonalizeFeatureContent"]</p>
+            </div>
+        </div>
+        <div class="settings-panel__body">
+            <form method="post" asp-page-handler="SetCity" class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label for="cityId" class="form-label">@Localizer["CityOrCities"]</label>
+                    <select class="form-select" id="cityId" name="cityId" required>
+                        <option value="">@Localizer["SelectACity"]</option>
+                        @foreach (var city in Model.AvailableCities)
+                        {
+                            <option value="@city.Id" selected="@(Model.SelectedCityId == city.Id)">
+                                @city.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-save me-2"></i>Save city
+                    </button>
+                </div>
+            </form>
+
+            <div class="settings-note-panel">
+                <h6 class="mb-2"><i class="bi bi-info-circle me-2"></i>Why this matters</h6>
+                <p class="mb-0">
+                    @(cityConfigured
+                        ? Localizer["CityPreferenceInfo"]
+                        : "A preferred city lets FixIt show more relevant issue activity, analytics, and notification defaults.")
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="settings-hub-grid">
+        <a href="/settings/connected-accounts" class="settings-hub-card">
+            <span class="settings-hub-card__icon settings-hub-card__icon--blue"><i class="bi bi-link-45deg"></i></span>
+            <div>
+                <div class="settings-hub-card__title">@Localizer["ConnectedAccounts"]</div>
+                <p class="settings-hub-card__copy">@Localizer["LinkOAuthProvidersAndManageAuthenticationMethods"]</p>
+            </div>
+            <div class="settings-hub-card__foot">
+                <i class="bi bi-arrow-right"></i>
+                Review sign-in methods
+            </div>
+        </a>
+
+        <a href="/settings/email-preferences" class="settings-hub-card">
+            <span class="settings-hub-card__icon settings-hub-card__icon--green"><i class="bi bi-envelope"></i></span>
+            <div>
+                <div class="settings-hub-card__title">@Localizer["EmailPreferencesPage"]</div>
+                <p class="settings-hub-card__copy">@Localizer["ControlWhichEmailsAndNotificationsYouReceive"]</p>
+            </div>
+            <div class="settings-hub-card__foot">
+                <i class="bi bi-arrow-right"></i>
+                Tune inbox delivery
+            </div>
+        </a>
+
+        <a href="/settings/privacy" class="settings-hub-card">
+            <span class="settings-hub-card__icon settings-hub-card__icon--amber"><i class="bi bi-shield-lock"></i></span>
+            <div>
+                <div class="settings-hub-card__title">@Localizer["PrivacyAndSafety"]</div>
+                <p class="settings-hub-card__copy">@Localizer["AnonymousReportingHazardAlertsAndProfileVisibility"]</p>
+            </div>
+            <div class="settings-hub-card__foot">
+                <i class="bi bi-arrow-right"></i>
+                Manage safety controls
+            </div>
+        </a>
+
+        <a href="/Account/Manage" class="settings-hub-card">
+            <span class="settings-hub-card__icon settings-hub-card__icon--blue"><i class="bi bi-person-circle"></i></span>
+            <div>
+                <div class="settings-hub-card__title">@Localizer["MyAccount"]</div>
+                <p class="settings-hub-card__copy">@Localizer["ChangePasswordManageProfileAndAccountSecurity"]</p>
+            </div>
+            <div class="settings-hub-card__foot">
+                <i class="bi bi-arrow-right"></i>
+                Open account management
+            </div>
+        </a>
+    </section>
+</section>

@@ -5,32 +5,77 @@
 const AdminSuggestions = (() => {
     'use strict';
 
+    const messages = {
+        loading: 'Loading suggestions...',
+        empty: 'No suggestions available.',
+        loadError: 'Unable to load suggestions right now.',
+        actionError: 'Could not update suggestion status.'
+    };
+    const notify = (message, tone = 'info') => {
+        if (typeof window.FixItNotify === 'function') {
+            window.FixItNotify(message, tone);
+        }
+    };
+
+    function setContainerState(containerId, state, message) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (state === 'loading') {
+            container.innerHTML = `
+                <div class=\"app-inline-state app-inline-state--loading\" role=\"status\">
+                    <span class=\"app-skeleton\" style=\"width: 1.25rem; height: 1.25rem;\"></span>
+                    <span>${message || messages.loading}</span>
+                </div>
+            `;
+            return;
+        }
+
+        if (state === 'error') {
+            container.innerHTML = `<div class="alert alert-danger">${message || messages.loadError}</div>`;
+            return;
+        }
+
+        if (state === 'empty') {
+            container.innerHTML = `<div class="alert alert-info">${message || messages.empty}</div>`;
+        }
+    }
+
+    function showActionError(message) {
+        const noticeId = 'adminSuggestionsActionNotice';
+        let notice = document.getElementById(noticeId);
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = noticeId;
+            notice.className = 'alert alert-danger my-3';
+            const dashboardContainer = document.getElementById('dashboardSuggestions');
+            if (dashboardContainer?.parentElement) {
+                dashboardContainer.parentElement.insertBefore(notice, dashboardContainer);
+            } else {
+                document.body.prepend(notice);
+            }
+        }
+
+        notice.textContent = message || messages.actionError;
+        notify(notice.textContent, 'error');
+    }
+
     /**
      * Fetch pending suggestions for dashboard
      */
     async function getPending(limit = 10) {
-        try {
-            const res = await fetch(`/api/suggestions/pending?limit=${limit}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch (err) {
-            console.error('Error fetching pending suggestions:', err);
-            return [];
-        }
+        const res = await fetch(`/api/suggestions/pending?limit=${limit}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
     }
 
     /**
      * Fetch suggestions for a specific entity (report, issue, user)
      */
     async function getForEntity(entityId, entityType) {
-        try {
-            const res = await fetch(`/api/suggestions/entity/${entityId}?entityType=${encodeURIComponent(entityType)}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch (err) {
-            console.error(`Error fetching suggestions for ${entityType} ${entityId}:`, err);
-            return [];
-        }
+        const res = await fetch(`/api/suggestions/entity/${entityId}?entityType=${encodeURIComponent(entityType)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
     }
 
     /**
@@ -43,7 +88,7 @@ const AdminSuggestions = (() => {
             if (res.status === 204) return null;
             return await res.json();
         } catch (err) {
-            console.error(`Error generating report suggestion for ${reportId}:`, err);
+            showActionError(messages.actionError);
             return null;
         }
     }
@@ -57,7 +102,7 @@ const AdminSuggestions = (() => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return await res.json();
         } catch (err) {
-            console.error(`Error generating issue suggestions for ${issueId}:`, err);
+            showActionError(messages.actionError);
             return [];
         }
     }
@@ -72,7 +117,7 @@ const AdminSuggestions = (() => {
             if (res.status === 204) return null;
             return await res.json();
         } catch (err) {
-            console.error(`Error generating user moderation suggestion for ${userId}:`, err);
+            showActionError(messages.actionError);
             return null;
         }
     }
@@ -90,7 +135,7 @@ const AdminSuggestions = (() => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return await res.json();
         } catch (err) {
-            console.error(`Error marking suggestion ${suggestionId} as acted:`, err);
+            showActionError(messages.actionError);
             return null;
         }
     }
@@ -104,7 +149,7 @@ const AdminSuggestions = (() => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return await res.json();
         } catch (err) {
-            console.error(`Error invalidating suggestion ${suggestionId}:`, err);
+            showActionError(messages.actionError);
             return null;
         }
     }
@@ -123,8 +168,8 @@ const AdminSuggestions = (() => {
         const typeIcon = getTypeIcon(suggestion.type);
 
         const html = `
-            <div class="suggestion-card alert alert-${confidenceClass} d-flex align-items-start gap-3" style="border-left: 4px solid var(--${confidenceClass});">
-                <i class="bi ${typeIcon} mt-1" style="font-size: 1.25rem;"></i>
+            <div class="suggestion-card suggestion-card--${confidenceClass} alert alert-${confidenceClass} d-flex align-items-start gap-3">
+                <i class="bi ${typeIcon} mt-1 suggestion-card__icon"></i>
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                         <h5 class="mb-0">${escapeHtml(suggestion.title)}</h5>
@@ -136,15 +181,20 @@ const AdminSuggestions = (() => {
                         <strong>Reasoning:</strong> ${escapeHtml(suggestion.reasoning)}
                     </div>
                     ${suggestion.supportingData?.length ? `
-                        <div class="supporting-data mb-3 small" style="background: rgba(0,0,0,0.05); padding: 0.75rem; border-radius: 0.375rem;">
+                        <div class="supporting-data mb-3 small">
                             ${suggestion.supportingData.map(d => `<div><i class="bi bi-check2"></i> ${escapeHtml(d)}</div>`).join('')}
                         </div>
                     ` : ''}
                     <div class="suggestion-actions d-flex gap-2 flex-wrap">
-                        <button class="btn btn-sm btn-outline-primary" onclick="AdminSuggestions.actOn('${suggestion.id}', '${suggestion.recommendedAction}')">
+                        <button class="btn btn-sm btn-outline-primary"
+                                data-suggestion-action="accept"
+                                data-suggestion-id="${escapeHtml(suggestion.id)}"
+                                data-recommended-action="${escapeHtml(suggestion.recommendedAction)}">
                             <i class="bi bi-check-circle"></i> Accept
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="AdminSuggestions.invalidate('${suggestion.id}')">
+                        <button class="btn btn-sm btn-outline-secondary"
+                                data-suggestion-action="dismiss"
+                                data-suggestion-id="${escapeHtml(suggestion.id)}">
                             <i class="bi bi-x-circle"></i> Dismiss
                         </button>
                     </div>
@@ -170,7 +220,7 @@ const AdminSuggestions = (() => {
         const html = `
             <div class="suggestions-list">
                 ${suggestions.map(s => `
-                    <div class="suggestion-card-compact alert alert-light border-left" style="border-left: 4px solid var(--primary); margin-bottom: 0.75rem; padding: 0.75rem;">
+                    <div class="suggestion-card-compact suggestion-card-compact--${s.confidenceLevel === 'VeryHigh' ? 'success' : s.confidenceLevel === 'High' ? 'info' : 'warning'} alert alert-light">
                         <div class="d-flex justify-content-between align-items-start gap-2">
                             <div>
                                 <h6 class="mb-1">${escapeHtml(s.title)}</h6>
@@ -222,16 +272,36 @@ const AdminSuggestions = (() => {
      * Load and display pending suggestions on dashboard
      */
     async function loadDashboardSuggestions(containerId = 'dashboardSuggestions') {
-        const suggestions = await getPending(5);
-        displaySuggestionList(suggestions, containerId);
+        setContainerState(containerId, 'loading');
+        try {
+            const suggestions = await getPending(5);
+            if (!suggestions || suggestions.length === 0) {
+                setContainerState(containerId, 'empty');
+                return;
+            }
+
+            displaySuggestionList(suggestions, containerId);
+        } catch (err) {
+            setContainerState(containerId, 'error');
+        }
     }
 
     /**
      * Load and display suggestions for an entity
      */
     async function loadEntitySuggestions(entityId, entityType, containerId) {
-        const suggestions = await getForEntity(entityId, entityType);
-        displaySuggestionList(suggestions, containerId);
+        setContainerState(containerId, 'loading');
+        try {
+            const suggestions = await getForEntity(entityId, entityType);
+            if (!suggestions || suggestions.length === 0) {
+                setContainerState(containerId, 'empty');
+                return;
+            }
+
+            displaySuggestionList(suggestions, containerId);
+        } catch (err) {
+            setContainerState(containerId, 'error');
+        }
     }
 
     // Public API
@@ -254,5 +324,27 @@ const AdminSuggestions = (() => {
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('dashboardSuggestions')) {
         AdminSuggestions.loadDashboardSuggestions();
+    }
+});
+
+document.addEventListener('click', async (event) => {
+    const actionButton = event.target.closest('[data-suggestion-action]');
+    if (!actionButton) return;
+
+    const suggestionId = actionButton.getAttribute('data-suggestion-id');
+    if (!suggestionId) return;
+
+    if (actionButton.getAttribute('data-suggestion-action') === 'accept') {
+        const actionTaken = actionButton.getAttribute('data-recommended-action') || '';
+        const result = await AdminSuggestions.actOn(suggestionId, actionTaken);
+        if (result) {
+            actionButton.closest('.suggestion-card')?.remove();
+        }
+        return;
+    }
+
+    const result = await AdminSuggestions.invalidate(suggestionId);
+    if (result) {
+        actionButton.closest('.suggestion-card')?.remove();
     }
 });

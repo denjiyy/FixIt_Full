@@ -4,10 +4,50 @@
     ViewData["Title"] = "Log out";
 }
 
-<h1>@ViewData["Title"]</h1>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-<div class="alert alert-info">
-    <p>You have been successfully logged out.</p>
-    <p><a asp-page="./Login">Log in again</a></p>
-    <p><a asp-page="/">Return to home</a></p>
-</div>
+<section class="account-page account-page--narrow">
+    <div class="auth-shell">
+        <div class="card auth-card border-0">
+            <div class="card-body text-center">
+                <div class="auth-card__icon">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <h1 class="h3 mb-3">@ViewData["Title"]</h1>
+                <p class="text-muted mb-4">You have been signed out successfully. Your session has ended on this browser.</p>
+
+                <div class="d-grid gap-3">
+                    <a asp-page="./Login" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Log in again
+                    </a>
+                    <a asp-page="/Index" class="btn btn-outline-primary">Return to home</a>
+                </div>
+            </div>
+        </div>
+
+        <aside class="auth-glance-card p-4">
+            <span class="page-heading__eyebrow mb-3">Session ended</span>
+            <h2 class="h4 mb-3">You can safely leave this device</h2>
+            <p class="text-muted mb-4">If you were using a shared or public computer, your account is no longer active in this browser session.</p>
+
+            <div class="auth-benefits">
+                <div class="auth-benefit">
+                    <span class="auth-benefit__icon auth-benefit__icon--blue"><i class="bi bi-shield-lock"></i></span>
+                    <div>
+                        <h6 class="mb-1">Security first</h6>
+                        <p class="small mb-0">Signing out protects your reports, settings, and moderation permissions from unauthorized access.</p>
+                    </div>
+                </div>
+                <div class="auth-benefit">
+                    <span class="auth-benefit__icon auth-benefit__icon--amber"><i class="bi bi-arrow-repeat"></i></span>
+                    <div>
+                        <h6 class="mb-1">Return whenever you’re ready</h6>
+                        <p class="small mb-0">Your issue history, settings, and profile activity will be waiting the next time you sign in.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

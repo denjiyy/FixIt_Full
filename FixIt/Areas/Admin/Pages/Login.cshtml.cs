@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Admin.Pages;
 
+[EnableRateLimiting(RateLimitPolicyNames.AuthStrict)]
 public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -56,8 +59,8 @@ public class LoginModel : PageModel
                 return Page();
             }
 
-            // Check if user is admin or moderator
-            if (user.Role != UserRole.Admin && user.Role != UserRole.Moderator)
+            // Admin area access is restricted to admins only.
+            if (user.Role != UserRole.Admin)
             {
                 _logger.LogWarning($"Non-admin login attempt: {Input.Username} (Role: {user.Role})");
                 ModelState.AddModelError(string.Empty, "You don't have permission to access the admin panel");
@@ -69,7 +72,7 @@ public class LoginModel : PageModel
 
             if (result.Succeeded)
             {
-                _logger.LogInformation($"Admin/Moderator {user.Email} ({user.Role}) signed in");
+                _logger.LogInformation($"Admin {user.Email} ({user.Role}) signed in");
                 return LocalRedirect(returnUrl);
             }
 

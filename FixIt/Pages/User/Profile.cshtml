@@ -5,538 +5,184 @@
     ViewData["Title"] = Localizer["ViewProfile"];
 }
 
-<style>
-    /* Professional Profile Design */
-    .profile-header {
-        background: white;
-        border-radius: 8px;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e5e7eb;
-    }
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-    .profile-main {
-        display: flex;
-        align-items: start;
-        gap: 2rem;
-    }
-
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        background: linear-gradient(135deg, #5b6fd8, #7c89e8);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        color: white;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-
-    .profile-info {
-        flex-grow: 1;
-    }
-
-    .profile-username {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-    }
-
-    .trust-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: #f3f4f6;
-        color: #4b5563;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 0.9375rem;
-        border: 1px solid #e5e7eb;
-    }
-
-    .trust-badge.level-0 { background: #f3f4f6; color: #6b7280; }
-    .trust-badge.level-1 { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
-    .trust-badge.level-2 { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
-    .trust-badge.level-3 { background: #fef3c7; color: #92400e; border-color: #fde68a; }
-
-    .profile-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
-
-    .stat-box {
-        text-align: center;
-        padding: 1.25rem;
-        background: #f9fafb;
-        border-radius: 6px;
-        border: 1px solid #e5e7eb;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #5b6fd8;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-label {
-        font-size: 0.875rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    /* Card Styles */
-    .profile-card {
-        background: white;
-        border-radius: 8px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e5e7eb;
-    }
-
-    .card-header-custom {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .card-header-custom h5 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin: 0;
-    }
-
-    .card-header-custom i {
-        font-size: 1.375rem;
-        color: #5b6fd8;
-    }
-
-    /* Progress Bar */
-    .progress-container {
-        margin-bottom: 1.5rem;
-    }
-
-    .progress-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.75rem;
-    }
-
-    .progress-title {
-        font-weight: 600;
-        color: #4b5563;
-        font-size: 0.9375rem;
-    }
-
-    .progress-stats {
-        font-size: 0.875rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
-
-    .progress {
-        height: 24px;
-        border-radius: 6px;
-        background: #e5e7eb;
-    }
-
-    .progress-bar {
-        background: linear-gradient(90deg, #5b6fd8, #7c89e8);
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 0.8125rem;
-        transition: width 0.6s ease;
-    }
-
-    .progress-info {
-        margin-top: 0.75rem;
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
-
-    /* Achievements */
-    .achievements-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        gap: 1.25rem;
-    }
-
-    .achievement-badge {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 1.25rem 1rem;
-        text-align: center;
-        transition: all 0.2s ease;
-        cursor: default;
-    }
-
-    .achievement-badge:hover {
-        border-color: #5b6fd8;
-        box-shadow: 0 2px 8px rgba(91, 111, 216, 0.1);
-    }
-
-    .badge-icon {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-
-    .badge-name {
-        font-weight: 600;
-        color: #1f2937;
-        font-size: 0.8125rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .badge-date {
-        font-size: 0.75rem;
-        color: #9ca3af;
-    }
-
-    /* Activity Stats */
-    .activity-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .activity-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 6px;
-        border: 1px solid #e5e7eb;
-    }
-
-    .activity-label {
-        font-weight: 500;
-        color: #4b5563;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .activity-label i {
-        color: #6b7280;
-        font-size: 1.125rem;
-    }
-
-    .activity-value {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #5b6fd8;
-    }
-
-    /* Points List */
-    .points-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .points-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 6px;
-        border: 1px solid #e5e7eb;
-    }
-
-    .points-label {
-        font-weight: 500;
-        color: #4b5563;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .points-label i {
-        color: #6b7280;
-    }
-
-    .points-value {
-        font-weight: 600;
-        color: #10b981;
-        font-size: 1.0625rem;
-    }
-
-    /* Empty State */
-    .empty-achievements {
-        text-align: center;
-        padding: 2.5rem 2rem;
-        background: #f9fafb;
-        border-radius: 6px;
-        border: 1px dashed #d1d5db;
-    }
-
-    .empty-achievements i {
-        font-size: 3rem;
-        color: #d1d5db;
-        margin-bottom: 1rem;
-    }
-
-    .empty-achievements p {
-        color: #6b7280;
-        font-size: 0.9375rem;
-        margin: 0;
-    }
-
-    /* Not Found */
-    .not-found-container {
-        text-align: center;
-        padding: 4rem 2rem;
-    }
-
-    .not-found-icon {
-        font-size: 5rem;
-        color: #d1d5db;
-        margin-bottom: 1.5rem;
-    }
-
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .profile-main {
-            flex-direction: column;
-        }
-
-        .profile-username {
-            font-size: 1.5rem;
-        }
-
-        .profile-stats {
-            grid-template-columns: 1fr;
-        }
-
-        .achievements-grid {
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        }
-
-        .profile-card {
-            padding: 1.5rem;
-        }
-    }
-</style>
-
-<div class="container py-4">
+<div class="account-page py-4">
     @if (Model.UserProfile != null)
     {
-        <!-- Profile Header -->
-        <div class="profile-header">
-            <div class="profile-main">
-                <div class="profile-avatar">
-                    @Model.UserProfile?.UserName?.Substring(0, 1).ToUpper()
+        <section class="account-surface-hero mb-4">
+            <div class="account-surface-hero__row">
+                <div class="profile-main">
+                    <div class="profile-avatar">
+                        @Model.UserProfile.UserName?.Substring(0, 1).ToUpper()
+                    </div>
+                    <div class="profile-info">
+                        <span class="account-surface-hero__eyebrow">
+                            <i class="bi bi-person-badge"></i>
+                            @Localizer["ViewProfile"]
+                        </span>
+                        <h1 class="profile-username">@Model.UserProfile.UserName</h1>
+
+                        @if (Model.UserReputation != null)
+                        {
+                            <span class="trust-badge level-@Model.UserReputation.TrustLevel mb-3">
+                                <i class="bi bi-award"></i>
+                                @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="trust-badge level-0 mb-3">
+                                <i class="bi bi-award"></i>
+                                @Localizer["NewMember"]
+                            </span>
+                        }
+                    </div>
                 </div>
-                <div class="profile-info">
-                    <h1 class="profile-username">@Model.UserProfile?.UserName</h1>
-                    @if (Model.UserReputation != null)
-                    {
-                        <span class="trust-badge level-@Model.UserReputation.TrustLevel">
-                            <i class="bi bi-award"></i>
-                            @GetTrustLevelLabel(Model.UserReputation.TrustLevel)
-                        </span>
-                        <div class="profile-stats">
-                            <div class="stat-box">
-                                <div class="stat-value">@Model.UserReputation.TotalPoints</div>
-                                <div class="stat-label">@Localizer["TotalPoints"]</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">@Model.UserReputation.Achievements.Count</div>
-                                <div class="stat-label">@Localizer["AchievementsLabel"]</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">@Model.UserReputation.TrustLevel</div>
-                                <div class="stat-label">@Localizer["TrustLevel"]</div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <span class="trust-badge level-0">
-                            <i class="bi bi-award"></i>
-                            @Localizer["NewMember"]
-                        </span>
-                        <div class="profile-stats">
-                            <div class="stat-box">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">@Localizer["TotalPoints"]</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">@Localizer["AchievementsLabel"]</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-value">0</div>
-                                <div class="stat-label">@Localizer["TrustLevel"]</div>
-                            </div>
-                        </div>
-                    }
+
+                <div class="account-surface-hero__meta">
+                    <div class="account-surface-hero__meta-card">
+                        <span>Total points</span>
+                        <strong>@(Model.UserReputation?.TotalPoints ?? 0)</strong>
+                        <small>Community reputation earned so far</small>
+                    </div>
+                    <div class="account-surface-hero__meta-card">
+                        <span>Achievements</span>
+                        <strong>@(Model.UserReputation?.Achievements.Count ?? 0)</strong>
+                        <small>Milestones unlocked through participation</small>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         @if (Model.UserReputation != null)
         {
-            <!-- Reputation Progress -->
-        <div class="profile-card">
-            <div class="card-header-custom">
-                <i class="bi bi-graph-up"></i>
-                <h5>@Localizer["ReputationProgressLabel"]</h5>
-            </div>
-            <div class="progress-container">
-                @{
-                    // Calculate current level bounds
-                    var (currentMin, nextThreshold) = Model.UserReputation.TrustLevel switch
-                    {
-                        0 => (0, 11),      // Level 0: 0-10 points, next at 11
-                        1 => (11, 51),     // Level 1: 11-50 points, next at 51
-                        2 => (51, 151),    // Level 2: 51-150 points, next at 151
-                        _ => (151, int.MaxValue)  // Level 3: 151+ points
-                    };
-                    
-                    var progress = Model.UserReputation.TotalPoints - currentMin;
-                    var levelSize = nextThreshold - currentMin;
-                    var progressPercent = Model.UserReputation.TrustLevel >= 3 ? 100 : 
-                        Math.Min(100, Math.Max(0, (progress / (double)levelSize) * 100));
-                    var pointsNeeded = Math.Max(0, nextThreshold - Model.UserReputation.TotalPoints);
-                }
-                <div class="progress-header">
-                    <span class="progress-title">@Localizer["LevelProgressLabel"]</span>
-                    <span class="progress-stats">@Math.Max(0, progress) / @(levelSize) @Localizer["Points"]</span>
-                </div>
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" style="width: @progressPercent%">
-                        @(((int)progressPercent))%
-                    </div>
-                </div>
-                <div class="progress-info">
-                    @if (Model.UserReputation.TrustLevel < 3)
-                    {
-                        <span>@Localizer["PointsUntilNextLevel", pointsNeeded, GetTrustLevelLabel(Model.UserReputation.TrustLevel + 1)]</span>
-                    }
-                    else
-                    {
-                        <span>@Localizer["MaxTrustLevelAchieved"]</span>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- Achievements -->
-        <div class="profile-card">
-            <div class="card-header-custom">
-                <i class="bi bi-trophy"></i>
-                <h5>@Localizer["AchievementsLabel"] (@Model.UserReputation.Achievements.Count)</h5>
-            </div>
-            @if (Model.UserReputation.Achievements.Any())
+            var (currentMin, nextThreshold) = Model.UserReputation.TrustLevel switch
             {
-                <div class="achievements-grid">
-                    @foreach (var achievement in Model.UserReputation.Achievements)
-                    {
-                        <div class="achievement-badge" title="@GetAchievementDescription(achievement.Type.ToString())">
-                            <span class="badge-icon">@GetAchievementIcon(achievement.Type.ToString())</span>
-                            <div class="badge-name">@GetAchievementName(achievement.Type.ToString())</div>
-                            <div class="badge-date">@achievement.EarnedAt.ToString("MMM yyyy")</div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="empty-achievements">
-                    <i class="bi bi-trophy"></i>
-                    <p>@Localizer["NoAchievementsYetMessage"]</p>
-                </div>
-            }
-        </div>
+                0 => (0, 11),
+                1 => (11, 51),
+                2 => (51, 151),
+                _ => (151, int.MaxValue)
+            };
+            var progress = Model.UserReputation.TotalPoints - currentMin;
+            var levelSize = nextThreshold - currentMin;
+            var progressPercent = Model.UserReputation.TrustLevel >= 3
+                ? 100
+                : Math.Min(100, Math.Max(0, (progress / (double)levelSize) * 100));
+            var pointsNeeded = Math.Max(0, nextThreshold - Model.UserReputation.TotalPoints);
 
-        <!-- Activity & Points -->
-        <div class="row">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <div class="profile-card">
-                    <div class="card-header-custom">
-                        <i class="bi bi-activity"></i>
-                        <h5>@Localizer["CommunityActivityLabel"]</h5>
-                    </div>
-                    <div class="activity-list">
-                        <div class="activity-item">
-                            <span class="activity-label">
-                                <i class="bi bi-flag"></i>
-                                @Localizer["IssuesReported"]
-                            </span>
-                            <span class="activity-value">@Model.UserReputation.IssuesReported</span>
-                        </div>
-                        <div class="activity-item">
-                            <span class="activity-label">
-                                <i class="bi bi-chat-left-text"></i>
-                                @Localizer["CommentsPosted"]
-                            </span>
-                            <span class="activity-value">@Model.UserReputation.CommentsPosted</span>
-                        </div>
-                        <div class="activity-item">
-                            <span class="activity-label">
-                                <i class="bi bi-check-circle"></i>
-                                @Localizer["IssuesResolved"]
-                            </span>
-                            <span class="activity-value">@Model.UserReputation.IssuesResolved</span>
+            <div class="settings-stack">
+                <section class="settings-panel">
+                    <div class="settings-panel__head">
+                        <div>
+                            <span class="settings-panel__eyebrow"><i class="bi bi-graph-up"></i> Reputation</span>
+                            <h2 class="settings-panel__title">@Localizer["ReputationProgressLabel"]</h2>
+                            <p class="settings-panel__copy">Track progress toward the next trust milestone and see how close this citizen is to the next credibility tier.</p>
                         </div>
                     </div>
+                    <div class="settings-panel__body">
+                        <div class="profile-progress">
+                            <div class="progress-header">
+                                <span class="progress-title">@Localizer["LevelProgressLabel"]</span>
+                                <span class="progress-stats">@Math.Max(0, progress) / @levelSize @Localizer["Points"]</span>
+                            </div>
+                            <div class="profile-progress__bar" role="progressbar" aria-valuenow="@((int)progressPercent)" aria-valuemin="0" aria-valuemax="100">
+                                <div class="profile-progress__fill" data-progress-width="@progressPercent"></div>
+                            </div>
+                            <div class="progress-info">
+                                @if (Model.UserReputation.TrustLevel < 3)
+                                {
+                                    <span>@Localizer["PointsUntilNextLevel", pointsNeeded, GetTrustLevelLabel(Model.UserReputation.TrustLevel + 1)]</span>
+                                }
+                                else
+                                {
+                                    <span>@Localizer["MaxTrustLevelAchieved"]</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="profile-grid">
+                    <section class="settings-panel">
+                        <div class="settings-panel__head">
+                            <div>
+                                <span class="settings-panel__eyebrow"><i class="bi bi-trophy"></i> Milestones</span>
+                                <h2 class="settings-panel__title">@Localizer["AchievementsLabel"] (@Model.UserReputation.Achievements.Count)</h2>
+                                <p class="settings-panel__copy">Milestones earned through consistent and constructive civic participation.</p>
+                            </div>
+                        </div>
+                        <div class="settings-panel__body">
+                            @if (Model.UserReputation.Achievements.Any())
+                            {
+                                <div class="achievements-grid">
+                                    @foreach (var achievement in Model.UserReputation.Achievements)
+                                    {
+                                        <div class="achievement-badge" title="@GetAchievementDescription(achievement.Type.ToString())">
+                                            <span class="badge-icon">@GetAchievementIcon(achievement.Type.ToString())</span>
+                                            <div class="badge-name">@GetAchievementName(achievement.Type.ToString())</div>
+                                            <div class="badge-date">@achievement.EarnedAt.ToString("MMM yyyy")</div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-achievements">
+                                    <i class="bi bi-trophy"></i>
+                                    <p>@Localizer["NoAchievementsYetMessage"]</p>
+                                </div>
+                            }
+                        </div>
+                    </section>
+
+                    <section class="settings-panel">
+                        <div class="settings-panel__head">
+                            <div>
+                                <span class="settings-panel__eyebrow"><i class="bi bi-activity"></i> Activity</span>
+                                <h2 class="settings-panel__title">@Localizer["CommunityActivityLabel"]</h2>
+                                <p class="settings-panel__copy">A snapshot of how this citizen contributes across reporting, discussion, and resolution.</p>
+                            </div>
+                        </div>
+                        <div class="settings-panel__body">
+                            <div class="activity-list mb-4">
+                                <div class="activity-item">
+                                    <span class="activity-label"><i class="bi bi-flag"></i>@Localizer["IssuesReported"]</span>
+                                    <span class="activity-value">@Model.UserReputation.IssuesReported</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-label"><i class="bi bi-chat-left-text"></i>@Localizer["CommentsPosted"]</span>
+                                    <span class="activity-value">@Model.UserReputation.CommentsPosted</span>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="activity-label"><i class="bi bi-check-circle"></i>@Localizer["IssuesResolved"]</span>
+                                    <span class="activity-value">@Model.UserReputation.IssuesResolved</span>
+                                </div>
+                            </div>
+
+                            <div class="settings-note-panel">
+                                <h6 class="mb-3"><i class="bi bi-star me-2 text-warning"></i>@Localizer["PointBreakdownLabel"]</h6>
+                                <div class="points-list">
+                                    <div class="points-item">
+                                        <span class="points-label"><i class="bi bi-flag"></i>@Localizer["IssueReports"]</span>
+                                        <span class="points-value">+@(Model.UserReputation.IssuesReported * 5)</span>
+                                    </div>
+                                    <div class="points-item">
+                                        <span class="points-label"><i class="bi bi-chat-left-text"></i>@Localizer["Comments"]</span>
+                                        <span class="points-value">+@(Model.UserReputation.CommentsPosted * 2)</span>
+                                    </div>
+                                    <div class="points-item">
+                                        <span class="points-label"><i class="bi bi-check-circle"></i>@Localizer["ResolvedIssues"]</span>
+                                        <span class="points-value">+@(Model.UserReputation.IssuesResolved * 10)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="profile-card">
-                    <div class="card-header-custom">
-                        <i class="bi bi-star"></i>
-                        <h5>@Localizer["PointBreakdownLabel"]</h5>
-                    </div>
-                    <div class="points-list">
-                        <div class="points-item">
-                            <span class="points-label">
-                                <i class="bi bi-flag"></i>
-                                @Localizer["IssueReports"]
-                            </span>
-                            <span class="points-value">+@(Model.UserReputation.IssuesReported * 5)</span>
-                        </div>
-                        <div class="points-item">
-                            <span class="points-label">
-                                <i class="bi bi-chat-left-text"></i>
-                                @Localizer["Comments"]
-                            </span>
-                            <span class="points-value">+@(Model.UserReputation.CommentsPosted * 2)</span>
-                        </div>
-                        <div class="points-item">
-                            <span class="points-label">
-                                <i class="bi bi-check-circle"></i>
-                                @Localizer["ResolvedIssues"]
-                            </span>
-                            <span class="points-value">+@(Model.UserReputation.IssuesResolved * 10)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         }
     }
     else
@@ -546,7 +192,7 @@
                 <i class="bi bi-person-x"></i>
             </div>
             <div class="alert alert-info d-inline-block">
-                <h4><i class="bi bi-info-circle"></i> @Localizer["UserNotFoundTitle"]</h4>
+                <h4><i class="bi bi-info-circle me-2"></i>@Localizer["UserNotFoundTitle"]</h4>
                 <p class="mb-0">@Localizer["UserNotFoundMessage"]</p>
             </div>
         </div>
@@ -561,15 +207,6 @@
         2 => Localizer["TrustLevel_TrustedMember"],
         3 => Localizer["TrustLevel_CommunityLeader"],
         _ => Localizer["TrustLevel_Unknown"]
-    };
-
-    private int GetMaxPointsForLevel(int level) => level switch
-    {
-        0 => 10,
-        1 => 50,
-        2 => 150,
-        3 => int.MaxValue,
-        _ => 0
     };
 
     private string GetAchievementName(string type)

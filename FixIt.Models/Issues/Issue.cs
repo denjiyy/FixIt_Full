@@ -1,5 +1,6 @@
 using FixIt.Models.Enums;
 using FixIt.Models.Common;
+using FixIt.Models.AI;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.GeoJsonObjectModel;
@@ -38,6 +39,10 @@ public class Issue
     public List<IssueStatusHistory> StatusHistory { get; set; } = new();
 
     public IssuePriority Priority { get; set; } = IssuePriority.Medium;
+
+    public IssueCategory? Category { get; set; }
+
+    public string? Department { get; set; }
 
     public int Upvotes { get; set; }
     public int Downvotes { get; set; }

@@ -1,26 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <xsd:schema id="root" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata" type="xsd:string" minOccurs="0" />
-          <xsd:element name="assembly" type="xsd:string" minOccurs="0" />
-          <xsd:element name="data" minOccurs="0" maxOccurs="unbounded">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="xml:space" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata" type="xsd:string" minOccurs="0" />
+          <xs:element name="assembly" type="xsd:string" minOccurs="0" />
+          <xs:element name="data" minOccurs="0" maxOccurs="unbounded">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" use="required" type="xsd:string" />
+              <xs:attribute name="xml:space" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
@@ -229,21 +229,11 @@
   <data name="SubmitReport" xml:space="preserve"><value>Submit Report</value></data>
   <data name="MonitorHealthMetrics" xml:space="preserve"><value>Monitor community engagement and infrastructure health metrics</value></data>
   <data name="IssueToDeleteHeading" xml:space="preserve"><value>Issue to Delete:</value></data>
-  <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
   <data name="OnDate" xml:space="preserve"><value>on</value></data>
   <data name="DeletingThisIssue" xml:space="preserve"><value>Deleting this issue will remove it from public view, but your deletion will be recorded.</value></data>
   <data name="WhenYouDeleteThisIssueColon" xml:space="preserve"><value>When you delete this issue:</value></data>
   <data name="ItWillNoLongerAppearInIssueListings" xml:space="preserve"><value>It will no longer appear in issue listings</value></data>
-  <data name="OtherUsersWillNotBeSeeIt" xml:space="preserve"><value>Other users will not be able to see it</value></data>
-  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Comments and votes will be preserved internally</value></data>
-  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Admins can restore deleted issues if needed</value></data>
   <data name="ConfirmDeletionOf" xml:space="preserve"><value>Confirm deletion of:</value></data>
-  <data name="DeleteIssuePermanently" xml:space="preserve"><value>Delete Issue Permanently</value></data>
-  <data name="CancelDeletion" xml:space="preserve"><value>Cancel Deletion</value></data>
-  <data name="NeedHelp" xml:space="preserve"><value>Need help?</value></data>
-  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Learn more about issues</value></data>
-  <data name="Note" xml:space="preserve"><value>Note:</value></data>
-  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>If you delete this by mistake, please contact an administrator. They may be able to restore it.</value></data>
   <data name="IssueNotFoundMessage" xml:space="preserve"><value>Issue not found or has already been deleted.</value></data>
   <data name="GoToIssuesList" xml:space="preserve"><value>Go to Issues List</value></data>
   <data name="BriefTitleOfTheIssueEdit" xml:space="preserve"><value>Brief title of the issue</value></data>
@@ -251,8 +241,6 @@
   <data name="CharactersText" xml:space="preserve"><value>characters</value></data>
   <data name="IssueInfoEdit" xml:space="preserve"><value>Issue Info:</value></data>
   <data name="CommunityHealthScore" xml:space="preserve"><value>Community Health Score</value></data>
-  <data name="OverallScore" xml:space="preserve"><value>Overall Score</value></data>
-  <data name="Resolved" xml:space="preserve"><value>Resolved</value></data>
   <data name="Newest" xml:space="preserve"><value>Newest</value></data>
   <data name="MostVoted" xml:space="preserve"><value>Most Voted</value></data>
   <data name="MostViewed" xml:space="preserve"><value>Most Viewed</value></data>
@@ -342,12 +330,10 @@
   <data name="BeTheFirstToContributeAndClaimYourSpot" xml:space="preserve"><value>Be the first to contribute and claim your spot!</value></data>
   <data name="NoUsersFound" xml:space="preserve"><value>No users found</value></data>
   <data name="NoReportsFound" xml:space="preserve"><value>No reports found</value></data>
-  <data name="NoCitiesFound" xml:space="preserve"><value>No cities found</value></data>
   <data name="AddYourFirstCityToGetStarted" xml:space="preserve"><value>Add your first city to get started</value></data>
   <data name="ThisIsHowOtherUsersWillSeeYou" xml:space="preserve"><value>This is how other users will see you</value></data>
   <data name="SignInToJoinTheConversation" xml:space="preserve"><value>Sign in to join the conversation</value></data>
   <data name="SignInToCastYourVote" xml:space="preserve"><value>Sign in to cast your vote</value></data>
-  <data name="SignInToReport" xml:space="preserve"><value>Sign In to Report</value></data>
   <data name="CompleteYourRegistration" xml:space="preserve"><value>Complete Your Registration</value></data>
   <data name="SigningInWith" xml:space="preserve"><value>Signing in with</value></data>
   <data name="PasswordAuthentication" xml:space="preserve"><value>Password Authentication</value></data>
@@ -403,7 +389,6 @@
   <data name="AnonymousUser" xml:space="preserve"><value>Anonymous User</value></data>
   <data name="IdentityHiddenForPrivacy" xml:space="preserve"><value>Identity hidden for privacy</value></data>
   <data name="AgeLabel" xml:space="preserve"><value>Age</value></data>
-  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Issue Not Found</value></data>
   <data name="AnalysisLabel" xml:space="preserve"><value>Analysis</value></data>
   <data name="CategoryLabel" xml:space="preserve"><value>Category</value></data>
   <data name="SeverityLabel" xml:space="preserve"><value>Severity</value></data>
@@ -447,12 +432,10 @@
   <data name="DevelopmentModeTitle" xml:space="preserve"><value>Development Mode</value></data>
   <data name="SwappingToDevelopmentEnvironment" xml:space="preserve"><value>Swapping to the Development environment displays detailed information about the error that occurred.</value></data>
   <data name="PasswordLabel" xml:space="preserve"><value>Password</value></data>
-  <data name="ConnectedAccounts" xml:space="preserve"><value>Connected Accounts</value></data>
   <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
   <data name="DisplayNameField" xml:space="preserve"><value>Display Name</value></data>
   <data name="UpvoteLabel" xml:space="preserve"><value>Upvote</value></data>
   <data name="DownvoteLabel" xml:space="preserve"><value>Downvote</value></data>
-  <data name="UpvotesCount" xml:space="preserve"><value>Upvotes</value></data>
   <data name="DownvotesCount" xml:space="preserve"><value>Downvotes</value></data>
   <data name="RankHeader" xml:space="preserve"><value>Rank</value></data>
   <data name="UserHeader" xml:space="preserve"><value>User</value></data>
@@ -460,25 +443,16 @@
   <data name="Points" xml:space="preserve"><value>points</value></data>
   <data name="PointsUntilNextLevel" xml:space="preserve"><value>{0} points until {1}</value></data>
   <data name="TrustLevelHeader" xml:space="preserve"><value>Trust Level</value></data>
-  <data name="SelectCity" xml:space="preserve"><value>Select City</value></data>
   <data name="ClearFilters" xml:space="preserve"><value>Clear Filters</value></data>
   <data name="NoResultsMatchYourCurrentFilters" xml:space="preserve"><value>No results match your current filters. Try adjusting your search or clearing the filters.</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Edit" xml:space="preserve"><value>Edit</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
-  <data name="SaveChanges" xml:space="preserve"><value>Save Changes</value></data>
   <data name="Submit" xml:space="preserve"><value>Submit</value></data>
   <data name="Filter" xml:space="preserve"><value>Filter</value></data>
-  <data name="Search" xml:space="preserve"><value>Search</value></data>
   <data name="Loading" xml:space="preserve"><value>Loading</value></data>
   <data name="LoadingHazards" xml:space="preserve"><value>Loading hazards...</value></data>
   <data name="LoadingAddress" xml:space="preserve"><value>Loading address...</value></data>
-  <data name="DropFilesHereOrBrowseToUpload" xml:space="preserve"><value>Drop files here or browse to upload</value></data>
-  <data name="UploadFileInfo" xml:space="preserve"><value>Max 10 files, 50MB each (JPG, PNG, WEBP, MP4)</value></data>
-  <data name="PinOnMap" xml:space="preserve"><value>Pin on Map</value></data>
-  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Click the map to place a pin</value></data>
-  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Reverse geocoded from your map pin</value></data>
-  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Usually auto-selected from your map pin</value></data>
   <data name="ConfirmDeleteReport" xml:space="preserve"><value>Delete this report?</value></data>
   <data name="ConfirmDeleteCity" xml:space="preserve"><value>Delete this city?</value></data>
   <data name="ConfirmDeleteUser" xml:space="preserve"><value>Delete this user permanently?</value></data>
@@ -495,8 +469,6 @@
   <data name="FilterResults" xml:space="preserve"><value>No results for</value></data>
   <data name="TermsOfService" xml:space="preserve"><value>Terms of Service</value></data>
   <data name="ByCreatingAnAccountYouAgreeTo" xml:space="preserve"><value>By creating an account, you agree to our</value></data>
-  <data name="HealthReports" xml:space="preserve"><value>Health Reports</value></data>
-  <data name="ViewHeatmaps" xml:space="preserve"><value>View Heatmaps</value></data>
   <data name="Reports" xml:space="preserve"><value>Reports</value></data>
   <data name="ReportsLabel" xml:space="preserve"><value>Reports</value></data>
   <data name="Unban" xml:space="preserve"><value>Unban</value></data>
@@ -505,12 +477,9 @@
   <data name="RestrictUser" xml:space="preserve"><value>Restrict User</value></data>
   <data name="Approve" xml:space="preserve"><value>Approve</value></data>
   <data name="Dismiss" xml:space="preserve"><value>Dismiss</value></data>
-  <data name="GoToHazardMode" xml:space="preserve"><value>Go to Hazard Mode</value></data>
-  <data name="SafetyHazardMap" xml:space="preserve"><value>Safety Hazard Map</value></data>
   <data name="FilterHazards" xml:space="preserve"><value>Filter hazards...</value></data>
   <data name="ErrorLoadingHazards" xml:space="preserve"><value>Error loading hazards</value></data>
   <data name="ErrorLoadingHazardDetail" xml:space="preserve"><value>Error loading hazard detail</value></data>
-  <data name="Error" xml:space="preserve"><value>Error</value></data>
   <data name="FailedToUpdateSettings" xml:space="preserve"><value>Failed to update settings</value></data>
   <data name="ErrorUpdatingSettings" xml:space="preserve"><value>Error updating settings</value></data>
   <data name="PleaseSelectACity" xml:space="preserve"><value>Please select a city — try clicking a location on the map first</value></data>
@@ -523,7 +492,6 @@
   <data name="ExploreInfrastructureIssuesInCity" xml:space="preserve"><value>Explore infrastructure issues and community reports in {0}.</value></data>
   <data name="NoIssuesInCity" xml:space="preserve"><value>Great news — this city currently has no reported infrastructure issues.</value></data>
   <data name="FilterByCountry" xml:space="preserve"><value>Filter by Country</value></data>
-  <data name="SelectACity" xml:space="preserve"><value>Select a city...</value></data>
   <data name="ManageYourAccountAndPreferences" xml:space="preserve"><value>Manage your account, preferences, and more</value></data>
   <data name="CityPreferenceInfo" xml:space="preserve"><value>This city will be used for Issue Forecasting, SLA Compliance, Campaigns, and other feature pages.</value></data>
   <data name="AuthProvidersList" xml:space="preserve"><value>Google • Microsoft • Facebook • GitHub</value></data>
@@ -568,4 +536,104 @@
   <data name="Private" xml:space="preserve"><value>Private</value></data>
   <data name="PrivateProfileDescription" xml:space="preserve"><value>Only you and administrators can view your profile</value></data>
   <data name="PrivateProfileDoesNotAffectReputation" xml:space="preserve"><value>Making your profile private doesn't affect your reputation or contributions to the community. It only affects who can see your profile page.</value></data>
+  <data name="AddressLabel" xml:space="preserve"><value>Address</value></data>
+  <data name="AiAnalysisLabel" xml:space="preserve"><value>AI Analysis</value></data>
+  <data name="AnalysisNotesLabel" xml:space="preserve"><value>Analysis Notes</value></data>
+  <data name="AnalysisUnavailableCopy" xml:space="preserve"><value>We couldn't load analysis details right now. Please try again in a moment.</value></data>
+  <data name="AnalyzedAtLabel" xml:space="preserve"><value>Analyzed</value></data>
+  <data name="AnonymousReporter" xml:space="preserve"><value>Anonymous Reporter</value></data>
+  <data name="AnonymousVisibility" xml:space="preserve"><value>Anonymous report</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="BeforeYouSubmit" xml:space="preserve"><value>Before you submit</value></data>
+  <data name="CitiesCovered" xml:space="preserve"><value>Cities Covered</value></data>
+  <data name="CloseLabel" xml:space="preserve"><value>Close</value></data>
+  <data name="CommentPlaceholder" xml:space="preserve"><value>Add context, updates, or helpful details for your neighbors and city teams...</value></data>
+  <data name="CommentsLabel" xml:space="preserve"><value>Comments</value></data>
+  <data name="CommunityMember" xml:space="preserve"><value>Community member</value></data>
+  <data name="CommunityVoteLabel" xml:space="preserve"><value>Community vote</value></data>
+  <data name="CompleteLabel" xml:space="preserve"><value>Complete</value></data>
+  <data name="ConfidenceSuffix" xml:space="preserve"><value>confidence</value></data>
+  <data name="CreateDescriptionValidation" xml:space="preserve"><value>Please add a little more detail so others can understand the issue.</value></data>
+  <data name="BreadcrumbLabel" xml:space="preserve"><value>Breadcrumb</value></data>
+  <data name="CreateTitleValidation" xml:space="preserve"><value>Add a clear title with at least 3 characters.</value></data>
+  <data name="CreatedAtLabel" xml:space="preserve"><value>Reported</value></data>
+  <data name="DeleteCommentConfirm" xml:space="preserve"><value>Delete this comment?</value></data>
+  <data name="DeleteCommentError" xml:space="preserve"><value>Something went wrong while deleting the comment.</value></data>
+  <data name="DeleteCommentFailed" xml:space="preserve"><value>We couldn't delete that comment right now.</value></data>
+  <data name="DeleteOwnCommentsOnly" xml:space="preserve"><value>You can only delete your own comments.</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>Description</value></data>
+  <data name="Duplicate" xml:space="preserve"><value>Duplicate</value></data>
+  <data name="EditChecklistAddress" xml:space="preserve"><value>Confirm the location still points people to the right place.</value></data>
+  <data name="EditChecklistDescription" xml:space="preserve"><value>Make sure the description reflects the latest context and impact.</value></data>
+  <data name="EditGuidanceCopy" xml:space="preserve"><value>Use this space to clarify what changed, improve context, or make the report easier for others to act on.</value></data>
+  <data name="EditGuidanceTitle" xml:space="preserve"><value>Helpful guidance</value></data>
+  <data name="EditIssueCopy" xml:space="preserve"><value>Refine the report so neighbors, city teams, and moderators can understand it quickly.</value></data>
+  <data name="EditIssueFormCopy" xml:space="preserve"><value>Keep the report precise, current, and easy to scan.</value></data>
+  <data name="FeaturedCommunityActivity" xml:space="preserve"><value>Featured community activity</value></data>
+  <data name="FeaturedCommunityActivityCopy" xml:space="preserve"><value>Follow recent reports, active fixes, and the places where residents are already making progress together.</value></data>
+  <data name="FeaturedIssueUpdates" xml:space="preserve"><value>Featured issue updates</value></data>
+  <data name="FilesSelectedLabel" xml:space="preserve"><value>files selected</value></data>
+  <data name="FiltersLabel" xml:space="preserve"><value>Filters</value></data>
+  <data name="GeneratingAiAnalysisCopy" xml:space="preserve"><value>Our system is reviewing the report and preparing a structured summary of the issue.</value></data>
+  <data name="GeneratingAiAnalysisTitle" xml:space="preserve"><value>Generating AI analysis</value></data>
+  <data name="HomeHeroDescription" xml:space="preserve"><value>Help your city move faster. Report infrastructure problems, rally community attention, and follow progress from first report to final fix.</value></data>
+  <data name="HomeProcessCopy" xml:space="preserve"><value>Designed to make reporting simple for residents and actionable for teams, with every step visible from submission to resolution.</value></data>
+  <data name="HomeTrustCopy" xml:space="preserve"><value>Clear reporting, visible progress, and shared accountability help communities solve more problems with less friction.</value></data>
+  <data name="ImageUploadLimit" xml:space="preserve"><value>You can upload up to 8 images.</value></data>
+  <data name="ImageViewer" xml:space="preserve"><value>Image viewer</value></data>
+  <data name="InvalidFileType" xml:space="preserve"><value>This file type is not supported. Please upload images or videos only.</value></data>
+  <data name="IssuePhotoLabel" xml:space="preserve"><value>Issue photo</value></data>
+  <data name="IssuesDiscoveryCopy" xml:space="preserve"><value>Explore reports from across the community, find the problems that matter most, and filter the feed to the issues you can help move forward.</value></data>
+  <data name="KeywordsLabel" xml:space="preserve"><value>Keywords</value></data>
+  <data name="LastUpdatedLabel" xml:space="preserve"><value>Updated</value></data>
+  <data name="LivePlatformPulse" xml:space="preserve"><value>Live platform pulse</value></data>
+  <data name="LocationLabel" xml:space="preserve"><value>Location</value></data>
+  <data name="LocationPending" xml:space="preserve"><value>Waiting for map pin</value></data>
+  <data name="MediaLabel" xml:space="preserve"><value>Media</value></data>
+  <data name="MoreLabel" xml:space="preserve"><value>more</value></data>
+  <data name="NextLabel" xml:space="preserve"><value>Next</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Next page</value></data>
+  <data name="NoMediaSelected" xml:space="preserve"><value>No files selected yet</value></data>
+  <data name="NoSuggestionsAvailableYet" xml:space="preserve"><value>Suggestions will appear after you add a title and description.</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="OnlyFirstTenFiles" xml:space="preserve"><value>Only the first 10 files will be included.</value></data>
+  <data name="OpenIssue" xml:space="preserve"><value>Open issue</value></data>
+  <data name="PaginationLabel" xml:space="preserve"><value>Pagination</value></data>
+  <data name="PendingLabel" xml:space="preserve"><value>Pending</value></data>
+  <data name="PhotosLabel" xml:space="preserve"><value>photos</value></data>
+  <data name="PositiveVotesLabel" xml:space="preserve"><value>positive</value></data>
+  <data name="PostCommentLabel" xml:space="preserve"><value>Post comment</value></data>
+  <data name="PreviousLabel" xml:space="preserve"><value>Previous</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Previous page</value></data>
+  <data name="ProgressOverview" xml:space="preserve"><value>Progress overview</value></data>
+  <data name="PublicIssue" xml:space="preserve"><value>Public report</value></data>
+  <data name="ReadyToMakeADifference" xml:space="preserve"><value>Ready to make a difference?</value></data>
+  <data name="ReadyToMakeADifferenceCopy" xml:space="preserve"><value>Start a report in minutes, support the issues that matter near you, and help your community turn visibility into action.</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="ReportSnapshot" xml:space="preserve"><value>Report snapshot</value></data>
+  <data name="ReportedByLabel" xml:space="preserve"><value>Reported by</value></data>
+  <data name="Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="ScoreLabel" xml:space="preserve"><value>Score</value></data>
+  <data name="SignInToDislikeComments" xml:space="preserve"><value>Sign in to downvote comments.</value></data>
+  <data name="SignInToLikeComments" xml:space="preserve"><value>Sign in to upvote comments.</value></data>
+  <data name="SimilarIssuesDetectedLabel" xml:space="preserve"><value>Similar issues detected</value></data>
+  <data name="SnapshotLabel" xml:space="preserve"><value>Snapshot</value></data>
+  <data name="SortByLabel" xml:space="preserve"><value>Sort by</value></data>
+  <data name="StatusHistoryLabel" xml:space="preserve"><value>Status history</value></data>
+  <data name="SubmittingReport" xml:space="preserve"><value>Submitting report...</value></data>
+  <data name="SuggestedTagsHint" xml:space="preserve"><value>Suggested from your description and title.</value></data>
+  <data name="SuggestedTagsLabel" xml:space="preserve"><value>Suggested tags</value></data>
+  <data name="TagsHint" xml:space="preserve"><value>Separate tags with commas to help categorize the report.</value></data>
+  <data name="TagsLabel" xml:space="preserve"><value>Tags</value></data>
+  <data name="TagsPlaceholder" xml:space="preserve"><value>pothole, lighting, sidewalk</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="UpdatedShortLabel" xml:space="preserve"><value>Updated</value></data>
+  <data name="VideoPreviewUnavailable" xml:space="preserve"><value>Video preview unavailable</value></data>
+  <data name="VideoUploadLimit" xml:space="preserve"><value>You can upload up to 2 videos.</value></data>
+  <data name="VideosLabel" xml:space="preserve"><value>videos</value></data>
+  <data name="ViewsLabel" xml:space="preserve"><value>Views</value></data>
+  <data name="VisibilityLabel" xml:space="preserve"><value>Visibility</value></data>
+  <data name="VoteFailed" xml:space="preserve"><value>We couldn't save your vote.</value></data>
+  <data name="VoteRecorded" xml:space="preserve"><value>Vote recorded</value></data>
+  <data name="VotesTotalLabel" xml:space="preserve"><value>total votes</value></data>
 </root>

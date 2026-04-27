@@ -3,153 +3,165 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["EditIssue"];
+    ViewData["BodyClass"] = "page-issue-edit";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Header -->
-            <div class="mb-5">
-                <a href="/issues/@Model.Id" class="text-decoration-none text-muted">
-                    <i class="bi bi-chevron-left"></i> @Localizer["BackToIssue"]
-                </a>
-                <h1 class="h2 fw-bold mt-2">@Localizer["EditIssue"]</h1>
-                <p class="text-muted">@Localizer["UpdateTheIssueDetails"]</p>
-            </div>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/issue-manage.css" asp-append-version="true" />
+}
 
-            @if (Model.Issue != null)
-            {
-                <form method="post" class="needs-validation">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body p-4">
-                            <!-- Title -->
-                            <div class="mb-4">
-                                <label for="Input_Title" class="form-label fw-semibold">
-                                    <i class="bi bi-pencil-square me-2"></i>@Localizer["Title"]
-                                </label>
-                                <input type="text" 
-                                       class="form-control @(ModelState.IsValid ? "" : "is-invalid")"
-                                       id="Input_Title"
-                                       asp-for="Input.Title"
-                                       placeholder="@Localizer["BriefTitleOfTheIssueEdit"]"
-                                       maxlength="200">
-                                <small class="text-muted d-block mt-1">
-                                    <span id="charCount">@Model.Input.Title?.Length ?? 0</span>/200 @Localizer["CharactersText"]
-                                </small>
-                                <span asp-validation-for="Input.Title" class="invalid-feedback"></span>
-                            </div>
-
-                            <!-- Description -->
-                            <div class="mb-4">
-                                <label for="Input_Description" class="form-label fw-semibold">
-                                    <i class="bi bi-file-text me-2"></i>@Localizer["Description"]
-                                </label>
-                                <textarea class="form-control @(ModelState.IsValid ? "" : "is-invalid")"
-                                          id="Input_Description"
-                                          asp-for="Input.Description"
-                                          rows="6"
-                                          placeholder="@Localizer["DetailedDescriptionOfTheIssueEdit"]"
-                                          maxlength="5000"></textarea>
-                                <small class="text-muted d-block mt-1">
-                                    <span id="descCharCount">@Model.Input.Description?.Length ?? 0</span>/5000 @Localizer["CharactersText"]
-                                </small>
-                                <span asp-validation-for="Input.Description" class="invalid-feedback"></span>
-                            </div>
-
-                            <!-- Address -->
-                            <div class="mb-4">
-                                <label for="Input_Address" class="form-label fw-semibold">
-                                    <i class="bi bi-geo-alt me-2"></i>@Localizer["Address"]
-                                </label>
-                                <input type="text" 
-                                       class="form-control"
-                                       id="Input_Address"
-                                       asp-for="Input.Address"
-                                       placeholder="@Localizer["LocationOrStreetAddress"]"
-                                       maxlength="300">
-                            </div>
-
-                            <!-- Original Info -->
-                            <div class="alert alert-info" role="alert">
-                                <i class="bi bi-info-circle me-2"></i>
-                                <strong>@Localizer["IssueInfoEdit"]</strong> @Localizer["CreatedBy"] @Model.Issue.Reporter.DisplayName @Localizer["OnDate"] @Model.Issue.CreatedAt.ToString("MMMM d, yyyy")
-                            </div>
-
-                            <!-- Form Actions -->
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-circle me-2"></i>@Localizer["SaveChanges"]
-                                </button>
-                                <a href="/issues/@Model.Id" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle me-2"></i>@Localizer["Cancel"]
-                                </a>
-                                <a href="/issues/@Model.Id/delete" class="btn btn-outline-danger ms-auto">
-                                    <i class="bi bi-trash me-2"></i>@Localizer["DeleteIssue"]
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            }
-            else
-            {
-                <div class="alert alert-warning" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    @Localizer["IssueNotFoundMessage"]
-                </div>
-            }
+<div class="issue-page issue-page--compact issue-edit-page" id="issueEditRoot">
+    <header class="issue-page-header">
+        <div class="issue-page-header__content">
+            <span class="issue-page-header__eyebrow">
+                <i class="bi bi-pencil-square"></i>
+                @Localizer["EditIssue"]
+            </span>
+            <h1 class="issue-page-header__title">@Localizer["EditIssue"]</h1>
+            <p class="issue-page-header__copy">@Localizer["EditIssueCopy"]</p>
         </div>
-    </div>
+
+        <div class="issue-page-actions">
+            <a href="/issues/@Model.Id" class="app-link-btn">
+                <i class="bi bi-arrow-left"></i>
+                <span>@Localizer["BackToIssue"]</span>
+            </a>
+        </div>
+    </header>
+
+    @if (Model.Issue != null)
+    {
+        <div class="issue-manage-layout">
+            <section class="issue-surface issue-manage-card">
+                <div class="issue-manage-card__header">
+                    <div>
+                        <span class="issue-manage-card__eyebrow">01</span>
+                        <h2 class="issue-manage-card__title">@Localizer["BasicInformation"]</h2>
+                        <p class="issue-manage-card__copy">@Localizer["EditIssueFormCopy"]</p>
+                    </div>
+                </div>
+
+                <div class="issue-manage-card__body">
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Any()))
+                    {
+                        <div asp-validation-summary="All" class="alert alert-danger rounded-4 mb-4" role="alert">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        </div>
+                    }
+
+                    <form method="post" class="issue-manage-form" novalidate>
+                        <div class="issue-manage-field">
+                            <label for="Input_Title" class="issue-manage-label">@Localizer["IssueTitle"]</label>
+                            <input asp-for="Input.Title"
+                                   class="issue-manage-input @(ModelState.IsValid ? "" : "is-invalid")"
+                                   id="Input_Title"
+                                   maxlength="200"
+                                   placeholder="@Localizer["BriefTitleOfTheIssueEdit"]" />
+                            <div class="issue-manage-support">
+                                <span>@Localizer["SpecificAndDescriptive"]</span>
+                                <span class="issue-manage-counter"><span id="charCount">@Model.Input.Title?.Length ?? 0</span>/200</span>
+                            </div>
+                            <span asp-validation-for="Input.Title" class="invalid-feedback"></span>
+                        </div>
+
+                        <div class="issue-manage-field">
+                            <label for="Input_Description" class="issue-manage-label">@Localizer["Description"]</label>
+                            <textarea asp-for="Input.Description"
+                                      class="issue-manage-textarea @(ModelState.IsValid ? "" : "is-invalid")"
+                                      id="Input_Description"
+                                      rows="7"
+                                      maxlength="5000"
+                                      placeholder="@Localizer["DetailedDescriptionOfTheIssueEdit"]"></textarea>
+                            <div class="issue-manage-support">
+                                <span>@Localizer["DescribeTheIssueInDetail"]</span>
+                                <span class="issue-manage-counter"><span id="descCharCount">@Model.Input.Description?.Length ?? 0</span>/5000</span>
+                            </div>
+                            <span asp-validation-for="Input.Description" class="invalid-feedback"></span>
+                        </div>
+
+                        <div class="issue-manage-field">
+                            <label for="Input_Address" class="issue-manage-label">@Localizer["AddressLabel"]</label>
+                            <input asp-for="Input.Address"
+                                   class="issue-manage-input"
+                                   id="Input_Address"
+                                   maxlength="300"
+                                   placeholder="@Localizer["LocationOrStreetAddress"]" />
+                        </div>
+
+                        <div class="issue-manage-note">
+                            <strong>@Localizer["EditGuidanceTitle"]</strong>
+                            <p>@Localizer["EditGuidanceCopy"]</p>
+                        </div>
+
+                        <div class="issue-manage-actions">
+                            <button type="submit" class="nav-report-btn">
+                                <i class="bi bi-check-circle"></i>
+                                <span>@Localizer["SaveChanges"]</span>
+                            </button>
+                            <a href="/issues/@Model.Id" class="app-link-btn">
+                                <i class="bi bi-x-circle"></i>
+                                <span>@Localizer["Cancel"]</span>
+                            </a>
+                            <a href="/issues/@Model.Id/delete" class="app-link-btn issue-manage-danger">
+                                <i class="bi bi-trash3"></i>
+                                <span>@Localizer["DeleteIssue"]</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <aside class="issue-manage-sidebar">
+                <section class="issue-surface issue-manage-sidebar-card">
+                    <h2>@Localizer["ReportSnapshot"]</h2>
+                    <dl class="issue-manage-summary">
+                        <div>
+                            <dt>@Localizer["Status"]</dt>
+                            <dd><partial name="_BadgeStatus" model="Model.Issue.Status" /></dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["Priority"]</dt>
+                            <dd><partial name="_BadgePriority" model="Model.Issue.Priority" /></dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["CreatedBy"]</dt>
+                            <dd>@(Model.Issue.Reporter?.DisplayName ?? Localizer["AnonymousUser"])</dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["CreatedAtLabel"]</dt>
+                            <dd>@Model.Issue.CreatedAt.ToString("MMMM d, yyyy")</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section class="issue-surface issue-manage-sidebar-card">
+                    <h2>@Localizer["BeforeYouSubmit"]</h2>
+                    <ul class="issue-manage-checklist">
+                        <li>@Localizer["SpecificAndDescriptive"]</li>
+                        <li>@Localizer["EditChecklistDescription"]</li>
+                        <li>@Localizer["EditChecklistAddress"]</li>
+                    </ul>
+                </section>
+            </aside>
+        </div>
+    }
+    else
+    {
+        <section class="issue-surface issue-empty-state">
+            <div class="issue-empty-state__icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <h2 class="issue-empty-state__title">@Localizer["IssueNotFoundMessage"]</h2>
+            <p class="issue-empty-state__copy">@Localizer["IssueNotFoundMessage"]</p>
+            <a href="/issues" class="app-link-btn">
+                <i class="bi bi-arrow-left"></i>
+                <span>@Localizer["GoToIssuesList"]</span>
+            </a>
+        </section>
+    }
 </div>
 
 @section PageScripts {
-    <script>
-        // Character counter for title
-        document.getElementById('Input_Title').addEventListener('input', function() {
-            document.getElementById('charCount').textContent = this.value.length;
-        });
-
-        // Character counter for description
-        document.getElementById('Input_Description').addEventListener('input', function() {
-            document.getElementById('descCharCount').textContent = this.value.length;
-        });
-    </script>
+    <script src="~/js/modules/issue-edit.js" asp-append-version="true" defer></script>
 }
-
-<style>
-    .card {
-        transition: box-shadow 0.3s ease;
-    }
-
-    .card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .form-label {
-        color: #2d3748;
-        margin-bottom: 0.75rem;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #0ea5e9;
-        box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #0ea5e9, #0284c7);
-        border: none;
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #0284c7, #0369a1);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-    }
-
-    .alert-info {
-        background-color: #f0f9ff;
-        border-color: #bfdbfe;
-        color: #1e40af;
-    }
-</style>

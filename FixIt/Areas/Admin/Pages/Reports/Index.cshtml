@@ -3,113 +3,47 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Reports Management";
+    var pendingVisible = Model.Reports.Count(r => r.Status == ReportStatus.Pending);
+    var reviewedVisible = Model.Reports.Count(r => r.Status != ReportStatus.Pending);
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
-
-<style>
-    .report-card {
-        background: white;
-        border: 1px solid var(--border);
-        border-left: 4px solid #f59e0b;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        transition: all 0.2s ease;
-    }
-
-    .report-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .report-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .report-reason {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text);
-        margin: 0;
-    }
-
-    .report-details {
-        color: var(--secondary);
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-        line-height: 1.5;
-    }
-
-    .report-meta {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border);
-        font-size: 0.875rem;
-    }
-
-    .meta-item {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .meta-label {
-        font-size: 0.75rem;
-        color: var(--secondary);
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-    .meta-value {
-        font-weight: 600;
-        color: var(--text);
-    }
-
-    .report-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .badge-status {
-        display: inline-block;
-        padding: 0.375rem 0.75rem;
-        border-radius: 0.375rem;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .badge-pending { background: #fef08a; color: #713f12; }
-    .badge-underreview { background: #dbeafe; color: #1e40af; }
-    .badge-upheld { background: #d1fae5; color: #065f46; }
-    .badge-dismissed { background: #fee2e2; color: #991b1b; }
-    .badge-autoresolved { background: #f3f4f6; color: #374151; }
-</style>
-
-<div class="container-fluid my-4">
-    <!-- Header -->
-    <div class="admin-header">
-        <div class="admin-header-content">
+<div class="admin-page py-4">
+    <section class="admin-hero">
+        <div class="admin-hero__row">
             <div>
-                <h1><i class="bi bi-flag"></i> Reports Management</h1>
-                <p class="admin-header-subtitle">@Localizer["ReviewAndManageUserReports"]</p>
+                <p class="admin-hero__eyebrow"><i class="bi bi-flag"></i> Trust and safety</p>
+                <h1 class="admin-hero__title">Reports Management</h1>
+                <p class="admin-hero__subtitle">@Localizer["ReviewAndManageUserReports"] Review abuse signals, uphold valid reports, and dismiss noise with clearer operational context.</p>
             </div>
-            <a href="/admin/dashboard" class="btn btn-outline">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
+            <div class="admin-hero__actions">
+                <a href="/admin/dashboard" class="btn btn-outline">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <a href="/admin/users" class="btn btn-primary">
+                    <i class="bi bi-people"></i> Review users
+                </a>
+            </div>
         </div>
-    </div>
+        <div class="admin-hero__stats">
+            <div class="admin-hero-stat">
+                <strong>@Model.TotalReports</strong>
+                <span>Total reports</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@Model.Reports.Count</strong>
+                <span>Visible in view</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@pendingVisible</strong>
+                <span>Pending review</span>
+            </div>
+            <div class="admin-hero-stat">
+                <strong>@reviewedVisible</strong>
+                <span>Reviewed here</span>
+            </div>
+        </div>
+    </section>
 
-    <!-- Messages -->
     @if (!string.IsNullOrEmpty(TempData["SuccessMessage"]?.ToString()))
     {
         <div class="alert alert-success">
@@ -117,165 +51,180 @@
         </div>
     }
 
-    <!-- Search -->
-    <div class="search-section">
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="@Localizer["SearchByReason"]" class="form-control">
-            <button class="btn btn-primary" onclick="filterReports()">
-                <i class="bi bi-search"></i> Search
-            </button>
-            @if (!string.IsNullOrEmpty(Model.SearchTerm))
-            {
-                <button class="btn btn-outline" onclick="window.location='/admin/reports'">
-                    <i class="bi bi-x"></i> Clear
+    <form method="get" class="admin-toolbar">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <input type="text" id="searchInput" name="SearchTerm" value="@Model.SearchTerm" placeholder="@Localizer["SearchByReason"]" class="form-control">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Search
                 </button>
-            }
-        </div>
-        <div class="search-results mt-2">
-            Found <strong>@Model.Reports.Count</strong> of <strong>@Model.TotalReports</strong> reports
-        </div>
-    </div>
-
-    <!-- Reports List -->
-    <div class="data-container">
-        @if (Model.Reports.Any())
-        {
-            <div style="padding: 1.5rem;">
-                @foreach (var report in Model.Reports)
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
                 {
-                    <div class="report-card">
-                        <div class="report-header">
-                            <h3 class="report-reason">@(report.Reason.ToString()) reported</h3>
-                            <span class="badge-status badge-@report.Status.ToString().ToLower()">
-                                @report.Status.ToString().Replace("Underreview", "Under Review")
-                            </span>
-                        </div>
-
-                        <p class="report-details">
-                            @(string.IsNullOrEmpty(report.Details) ? "No details provided" : (report.Details.Length > 150 ? report.Details.Substring(0, 150) + "..." : report.Details))
-                        </p>
-
-                        <div class="report-meta">
-                            <div class="meta-item">
-                                <span class="meta-label">@Localizer["TargetLabel"]</span>
-                                <span class="meta-value">@report.TargetType</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-label">@Localizer["CreatedLabel"]</span>
-                                <span class="meta-value">@report.CreatedAt.ToString("MMM dd, yyyy")</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-label">@Localizer["StatusLabel"]</span>
-                                <span class="meta-value">@report.Status</span>
-                            </div>
-                        </div>
-
-                        <!-- AI Suggestions -->
-                        <div id="suggestions-@report.Id" class="mb-3" style="display: none;">
-                            <div class="alert alert-info" role="alert">
-                                <small class="text-muted">
-                                    <i class="bi bi-lightbulb"></i> AI Suggestion
-                                </small>
-                                <div style="margin-top: 0.5rem;"></div>
-                            </div>
-                        </div>
-
-                        <div class="report-actions">
-                            @if (report.Status == ReportStatus.Pending)
-                            {
-                                <form method="post" asp-page-handler="Approve" style="display: inline;">
-                                    <input type="hidden" name="reportId" value="@report.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #10b981;" onclick='return confirm("@Localizer["ConfirmApproveReport"]");'>
-                                        <i class="bi bi-check-circle"></i> Uphold
-                                    </button>
-                                </form>
-                                <form method="post" asp-page-handler="Reject" style="display: inline;">
-                                    <input type="hidden" name="reportId" value="@report.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline" style="color: #ef4444;" onclick='return confirm("@Localizer["ConfirmDismissReport"]");'>
-                                        <i class="bi bi-x-circle"></i> Dismiss
-                                    </button>
-                                </form>
-                            }
-
-                            <a href="#" class="btn btn-sm btn-outline">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <form method="post" asp-page-handler="Delete" style="display: inline;">
-                                    <input type="hidden" name="reportId" value="@report.Id" />
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick='return confirm("@Localizer["ConfirmDeleteReport"]");'>
-                                        <i class="bi bi-trash"></i> @Localizer["Delete"]
-                                    </button>
-                                </form>
-                            }
-                        </div>
-                    </div>
+                    <a href="/admin/reports" class="btn btn-outline">
+                        <i class="bi bi-x"></i> Clear
+                    </a>
                 }
             </div>
+        </div>
+        <div class="admin-toolbar__meta">
+            Found <strong>@Model.Reports.Count</strong> of <strong>@Model.TotalReports</strong> reports
+        </div>
+    </form>
 
-            <!-- Pagination -->
-            @if (Model.TotalPages > 1)
+    <section class="admin-section-shell">
+        <div class="admin-section-shell__head">
+            <div>
+                <h2 class="section-title mb-0">
+                    <i class="bi bi-list-check"></i> Review Queue
+                </h2>
+                <p class="admin-section-shell__copy">Each report includes its target, current status, and AI guidance before you act.</p>
+            </div>
+        </div>
+        <div class="admin-section-shell__body">
+            @if (Model.Reports.Any())
             {
-                <div class="pagination">
-                    @if (Model.PageNumber > 1)
+                <div>
+                    @foreach (var report in Model.Reports)
                     {
-                        <a href="/admin/reports?pageNumber=1">@Localizer["FirstPage"]</a>
-                        <a href="/admin/reports?pageNumber=@(Model.PageNumber - 1)">Previous</a>
-                    }
-
-                    @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
-                    {
-                        if (i == Model.PageNumber)
+                        var targetUrl = report.TargetType switch
                         {
-                            <span class="active">@i</span>
-                        }
-                        else
-                        {
-                            <a href="/admin/reports?pageNumber=@i">@i</a>
-                        }
-                    }
+                            FixIt.Models.Enums.ModerationTargetType.Issue => $"/issues/{report.TargetId}",
+                            FixIt.Models.Enums.ModerationTargetType.User => $"/user/{report.TargetId}",
+                            _ => string.Empty
+                        };
 
-                    @if (Model.PageNumber < Model.TotalPages)
-                    {
-                        <a href="/admin/reports?pageNumber=@(Model.PageNumber + 1)">Next</a>
-                        <a href="/admin/reports?pageNumber=@Model.TotalPages">@Localizer["LastPage"]</a>
+                        <article class="report-card">
+                            <div class="report-header">
+                                <div>
+                                    <h3 class="report-reason">@(report.Reason.ToString()) reported</h3>
+                                    <p class="report-details mb-0">
+                                        @(string.IsNullOrEmpty(report.Details) ? "No details provided" : (report.Details.Length > 170 ? report.Details.Substring(0, 170) + "..." : report.Details))
+                                    </p>
+                                </div>
+                                <span class="badge-status badge-@report.Status.ToString().ToLower()">
+                                    @report.Status.ToString().Replace("Underreview", "Under Review")
+                                </span>
+                            </div>
+
+                            <div class="report-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">@Localizer["TargetLabel"]</span>
+                                    <span class="meta-value">@report.TargetType</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">@Localizer["CreatedLabel"]</span>
+                                    <span class="meta-value">@report.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">@Localizer["StatusLabel"]</span>
+                                    <span class="meta-value">@report.Status</span>
+                                </div>
+                            </div>
+
+                            <div id="suggestions-@report.Id" class="mb-3 d-none">
+                                <div class="alert alert-info" role="alert">
+                                    <small class="text-muted">
+                                        <i class="bi bi-lightbulb"></i> AI Suggestion
+                                    </small>
+                                    <div class="suggestion-spacer"></div>
+                                </div>
+                            </div>
+
+                            <details id="report-summary-@report.Id" class="ai-summary-details d-none">
+                                <summary>
+                                    <span>Report summary</span>
+                                    <span class="ai-summary-badge">AI-generated</span>
+                                </summary>
+                                <div class="ai-summary-details__body"></div>
+                            </details>
+
+                            <div class="report-actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        data-summary-trigger
+                                        data-summary-type="report"
+                                        data-summary-id="@report.Id">
+                                    <i class="bi bi-stars"></i> Summarize
+                                </button>
+                                @if (report.Status == ReportStatus.Pending)
+                                {
+                                    <form method="post" asp-page-handler="Approve" class="admin-inline-form">
+                                        <input type="hidden" name="reportId" value="@report.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-success" data-confirm-message="@Localizer["ConfirmApproveReport"]">
+                                            <i class="bi bi-check-circle"></i> Uphold
+                                        </button>
+                                    </form>
+                                    <form method="post" asp-page-handler="Reject" class="admin-inline-form">
+                                        <input type="hidden" name="reportId" value="@report.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm-message="@Localizer["ConfirmDismissReport"]">
+                                            <i class="bi bi-x-circle"></i> Dismiss
+                                        </button>
+                                    </form>
+                                }
+
+                                @if (!string.IsNullOrEmpty(targetUrl))
+                                {
+                                    <a href="@targetUrl" class="btn btn-sm btn-outline">
+                                        <i class="bi bi-eye"></i> View target
+                                    </a>
+                                }
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form method="post" asp-page-handler="Delete" class="admin-inline-form">
+                                        <input type="hidden" name="reportId" value="@report.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger" data-confirm-message="@Localizer["ConfirmDeleteReport"]">
+                                            <i class="bi bi-trash"></i> @Localizer["Delete"]
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </article>
                     }
                 </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pagination">
+                        @if (Model.PageNumber > 1)
+                        {
+                            <a href="/admin/reports?pageNumber=1&amp;SearchTerm=@Model.SearchTerm">@Localizer["FirstPage"]</a>
+                            <a href="/admin/reports?pageNumber=@(Model.PageNumber - 1)&amp;SearchTerm=@Model.SearchTerm">Previous</a>
+                        }
+
+                        @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+                        {
+                            if (i == Model.PageNumber)
+                            {
+                                <span class="active">@i</span>
+                            }
+                            else
+                            {
+                                <a href="/admin/reports?pageNumber=@i&amp;SearchTerm=@Model.SearchTerm">@i</a>
+                            }
+                        }
+
+                        @if (Model.PageNumber < Model.TotalPages)
+                        {
+                            <a href="/admin/reports?pageNumber=@(Model.PageNumber + 1)&amp;SearchTerm=@Model.SearchTerm">Next</a>
+                            <a href="/admin/reports?pageNumber=@Model.TotalPages&amp;SearchTerm=@Model.SearchTerm">@Localizer["LastPage"]</a>
+                        }
+                    </div>
+                }
             }
-        }
-        else
-        {
-            <div class="empty-state">
-                <div class="empty-state-icon"><i class="bi bi-flag"></i></div>
-                <h3>@Localizer["NoReportsFound"]</h3>
-                <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoReportsInTheSystem"] : $"{Localizer["FilterResults"]} \"{Model.SearchTerm}\"")</p>
-            </div>
-        }
-    </div>
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-flag"></i></div>
+                    <h3>@Localizer["NoReportsFound"]</h3>
+                    <p>@(string.IsNullOrEmpty(Model.SearchTerm) ? Localizer["NoReportsInTheSystem"] : $"{Localizer["FilterResults"]} \"{Model.SearchTerm}\"")</p>
+                </div>
+            }
+        </div>
+    </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/modules/admin-suggestions.js" defer></script>
-<script>
-    function filterReports() {
-        const search = document.getElementById('searchInput').value;
-        if (search.trim()) {
-            window.location = `/admin/reports?SearchTerm=${encodeURIComponent(search)}`;
-        }
-    }
-
-    // Load suggestions for each report
-    document.addEventListener('DOMContentLoaded', async () => {
-        const reportCards = document.querySelectorAll('[id^="suggestions-"]');
-        for (const card of reportCards) {
-            const reportId = card.id.replace('suggestions-', '');
-            const suggestion = await AdminSuggestions.generateReportSuggestion(reportId);
-            if (suggestion) {
-                card.style.display = 'block';
-                AdminSuggestions.displaySuggestion(suggestion, card.id);
-            }
-        }
-    });
-</script>
+@section PageScripts {
+    <script src="~/js/modules/admin-suggestions.js" defer></script>
+    <script src="~/js/pages/admin-reports.js" asp-append-version="true" defer></script>
+}

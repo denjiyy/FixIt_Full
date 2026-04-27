@@ -1,6 +1,8 @@
 using FixIt.Models;
+using FixIt.Models.Infrastructure;
 using FixIt.Services.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -21,10 +23,17 @@ namespace FixIt.Services
 
         public MongoDbAuditService(
             IMongoClient mongoClient,
-            IHttpContextAccessor httpContextAccessor
+            IHttpContextAccessor httpContextAccessor,
+            IOptions<MongoDbSettings> mongoSettingsOptions
         )
         {
-            var database = mongoClient.GetDatabase("fixit");
+            var mongoSettings = mongoSettingsOptions.Value;
+            if (string.IsNullOrWhiteSpace(mongoSettings.DatabaseName))
+            {
+                throw new InvalidOperationException("MongoDB database name is not configured for audit logging.");
+            }
+
+            var database = mongoClient.GetDatabase(mongoSettings.DatabaseName);
             _auditLogsCollection = database.GetCollection<AuditLog>("audit-logs");
             _httpContextAccessor = httpContextAccessor;
             

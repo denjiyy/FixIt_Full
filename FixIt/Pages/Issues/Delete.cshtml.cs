@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using FixIt.Services.Contracts;
 using FixIt.Models.Issues;
 using System.Security.Claims;
+using FixIt.Services.Constants;
 
 namespace FixIt.Pages.Issues;
 
@@ -44,7 +45,7 @@ public class DeleteIssueModel : PageModel
 
             // Check if user is the owner or admin
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (Issue.Reporter.Id != userId && !User.IsInRole("Admin"))
+            if (Issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
             {
                 return Forbid();
             }
@@ -80,7 +81,7 @@ public class DeleteIssueModel : PageModel
             }
 
             // Check ownership or admin
-            if (issue.Reporter.Id != userId && !User.IsInRole("Admin"))
+            if (issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
             {
                 return Forbid();
             }

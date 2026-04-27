@@ -1,296 +1,290 @@
 @page "/issues/{id}"
+@using System.Globalization
 @model IssueDetailModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
-    ViewData["Title"] = Model.Issue?.Title ?? "Issue";
+    ViewData["Title"] = Model.Issue?.Title ?? Localizer["Issue"];
+    ViewData["RequiresMap"] = Model.Issue?.Location?.Coordinates != null;
+    ViewData["BodyClass"] = "page-issue-detail";
 }
 
 @section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/issue-detail.css" asp-append-version="true" />
 }
 
-@*
-REMOVED: ~1070 lines of inline CSS now in wwwroot/css/pages/issue-detail.css
-Markup continues below.
-*@
-
 @if (Model.Issue != null)
 {
-    var statusBadgeClass = Model.Issue.Status switch
-    {
-        FixIt.Models.Enums.IssueStatus.New => "badge-status-new",
-        FixIt.Models.Enums.IssueStatus.Confirmed => "badge-status-confirmed",
-        FixIt.Models.Enums.IssueStatus.InProgress => "badge-status-in-progress",
-        FixIt.Models.Enums.IssueStatus.Fixed => "badge-status-fixed",
-        _ => "bg-secondary"
-    };
-    var priorityBadgeClass = Model.Issue.Priority switch
-    {
-        FixIt.Models.Enums.IssuePriority.Low => "badge-priority-low",
-        FixIt.Models.Enums.IssuePriority.Medium => "badge-priority-medium",
-        FixIt.Models.Enums.IssuePriority.High => "badge-priority-high",
-        FixIt.Models.Enums.IssuePriority.Critical => "badge-priority-critical",
-        _ => "bg-secondary"
-    };
-    var severityColor = Model.Analysis != null ? (
-        Model.Analysis.EstimatedSeverity >= 8 ? "#ef4444" :
-        Model.Analysis.EstimatedSeverity >= 5 ? "#f59e0b" :
-        "#10b981") : "#10b981";
-    var severityBgClass = Model.Analysis != null ? (
-        Model.Analysis.EstimatedSeverity >= 8 ? "bg-danger" :
-        Model.Analysis.EstimatedSeverity >= 5 ? "bg-warning" :
-        "bg-success") : "bg-success";
     var totalVotes = Model.Issue.Upvotes + Model.Issue.Downvotes;
     var upvotePct = totalVotes > 0 ? (int)Math.Round((double)Model.Issue.Upvotes / totalVotes * 100) : 50;
+    var reporterName = Model.Issue.IsAnonymous
+        ? Localizer["AnonymousUser"].Value
+        : (Model.Issue.Reporter?.DisplayName ?? Localizer["CommunityMember"].Value);
+    var imageList = Model.MediaList.Where(m => m.Type == FixIt.Models.Enums.MediaType.Image).ToList();
+    var videoList = Model.MediaList.Where(m => m.Type == FixIt.Models.Enums.MediaType.Video).ToList();
 
-    <div class="container mt-4 pb-5">
+    <div class="issue-page issue-detail-page"
+         id="issueDetailRoot"
+         data-issue-id="@Model.Id"
+         data-current-user="@(User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty)"
+         data-locale="@CultureInfo.CurrentUICulture.Name"
+         data-vote-success="@Localizer["VoteRecorded"]"
+         data-vote-failure="@Localizer["VoteFailed"]"
+         data-vote-error="@Localizer["UnexpectedError"]"
+         data-positive-label="@Localizer["PositiveVotesLabel"]"
+         data-total-label="@Localizer["VotesTotalLabel"]"
+         data-delete-comment-confirm="@Localizer["DeleteCommentConfirm"]"
+         data-delete-own-only="@Localizer["DeleteOwnCommentsOnly"]"
+         data-delete-comment-failed="@Localizer["DeleteCommentFailed"]"
+         data-delete-comment-error="@Localizer["DeleteCommentError"]"
+         data-sign-in-like="@Localizer["SignInToLikeComments"]"
+         data-sign-in-dislike="@Localizer["SignInToDislikeComments"]"
+         data-lightbox-label="@Localizer["ImageViewer"]"
+         data-close-label="@Localizer["CloseLabel"]"
+         data-previous-label="@Localizer["PreviousLabel"]"
+         data-next-label="@Localizer["NextLabel"]"
+         data-photo-label="@Localizer["IssuePhotoLabel"]"
+         data-analysis-title="@Localizer["AiAnalysisLabel"]"
+         data-analysis-pending="@Localizer["PendingLabel"]"
+         data-analysis-complete="@Localizer["CompleteLabel"]"
+         data-analysis-unavailable="@Localizer["AnalysisUnavailable"]"
+         data-analysis-error-copy="@Localizer["AnalysisUnavailableCopy"]"
+         data-analysis-retry="@Localizer["Retry"]"
+         data-analysis-generating-title="@Localizer["GeneratingAiAnalysisTitle"]"
+         data-analysis-generating-copy="@Localizer["GeneratingAiAnalysisCopy"]"
+         data-analysis-category-label="@Localizer["CategoryLabel"]"
+         data-analysis-severity-label="@Localizer["SeverityLabel"]"
+         data-analysis-keywords-label="@Localizer["KeywordsLabel"]"
+         data-analysis-suggested-tags-label="@Localizer["SuggestedTagsLabel"]"
+         data-analysis-notes-label="@Localizer["AnalysisNotesLabel"]"
+         data-analysis-similar-issues-label="@Localizer["SimilarIssuesDetectedLabel"]"
+         data-analysis-more-label="@Localizer["MoreLabel"]"
+         data-analysis-confidence-suffix="@Localizer["ConfidenceSuffix"]"
+         data-analysis-analyzed-label="@Localizer["AnalyzedAtLabel"]"
+         data-video-preview-unavailable="@Localizer["VideoPreviewUnavailable"]">
+        <input type="hidden" id="issueId" value="@Model.Id" />
 
-        <!-- ── Breadcrumb ─────────────────────────────── -->
-        <div class="breadcrumb-row anim-1">
-            <a href="/"><i class="bi bi-house-fill"></i></a>
-            <span class="sep">›</span>
-            <a href="/Issues">Issues</a>
-            <span class="sep">›</span>
-            <span class="current">@Model.Issue.Title</span>
-        </div>
+        <nav class="detail-breadcrumb" aria-label="@Localizer["BreadcrumbLabel"]">
+            <a href="/"><i class="bi bi-house-door"></i></a>
+            <span>/</span>
+            <a href="/issues">@Localizer["Issues"]</a>
+            <span>/</span>
+            <span>@Model.Issue.Title</span>
+        </nav>
 
-        <div class="row g-4">
-
-            <!-- ══ MAIN COLUMN ════════════════════════════ -->
-            <div class="col-lg-8">
-
-                <!-- ── Issue Header ───────────────────────── -->
-                <div class="issue-header-card anim-1">
-                    <div class="issue-header-top">
-                        <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div class="flex-grow-1">
-                                <div class="issue-badges">
-                                    <span class="badge @statusBadgeClass">@Model.Issue.Status</span>
-                                    <span class="badge @priorityBadgeClass">@Model.Issue.Priority Priority</span>
-                                </div>
-                                <h1 class="issue-title-h1">@Model.Issue.Title</h1>
-                                <div class="issue-meta-row">
-                                    <span>
-                                        <i class="bi bi-person-circle"></i>
-                                        <strong>@(Model.Issue.IsAnonymous ? "Anonymous User" : (Model.Issue.Reporter?.DisplayName ?? "Anonymous"))</strong>
-                                    </span>
-                                    <span>
-                                        <i class="bi bi-calendar3"></i>
-                                        @Model.Issue.CreatedAt.ToString("MMMM d, yyyy")
-                                    </span>
-                                    @if (!string.IsNullOrEmpty(Model.Issue.Address))
-                                    {
-                                        <span>
-                                            <i class="bi bi-geo-alt-fill" style="color: var(--danger);"></i>
-                                            @Model.Issue.Address
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                            @if (User?.Identity?.IsAuthenticated ?? false)
-                            {
-                                <div class="dropdown flex-shrink-0">
-                                    <button class="issue-dots-btn" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="/issues/@Model.Issue.Id/edit">
-                                                <i class="bi bi-pencil"></i> Edit Issue
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <a class="dropdown-item text-danger" href="/issues/@Model.Issue.Id/delete">
-                                                <i class="bi bi-trash"></i> Delete Issue
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Stats bar -->
-                    <div class="stats-bar">
-                        <div class="stat-item">
-                            <div class="stat-num" id="statViews">@Model.Issue.ViewCount</div>
-                            <div class="stat-lbl"><i class="bi bi-eye"></i> Views</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-num">@Model.Issue.CommentCount</div>
-                            <div class="stat-lbl"><i class="bi bi-chat"></i> Comments</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-num" id="statScore">@(Model.Issue.Upvotes - Model.Issue.Downvotes)</div>
-                            <div class="stat-lbl"><i class="bi bi-arrow-up-circle"></i> Score</div>
-                        </div>
-                    </div>
+        <section class="issue-surface issue-surface--glass detail-hero">
+            <div class="detail-hero__main">
+                <div class="issue-badges">
+                    <partial name="_BadgeStatus" model="Model.Issue.Status" />
+                    <partial name="_BadgePriority" model="Model.Issue.Priority" />
                 </div>
 
-                <!-- ── Description ────────────────────────── -->
-                <div class="detail-card anim-2">
-                    <div class="detail-card-header">
-                        <h6><i class="bi bi-file-text"></i> Description</h6>
-                    </div>
-                    <div class="detail-card-body">
-                        <p class="description-text">@Model.Issue.Description</p>
-                    </div>
-                </div>
+                <h1 class="detail-hero__title">@Model.Issue.Title</h1>
 
-                <!-- ── Media Gallery (MOVED ABOVE MAP) ──────── -->
-                @if (Model.MediaList?.Any() == true)
+                <div class="detail-hero__meta">
+                    <span>
+                        <i class="bi bi-person-circle"></i>
+                        <strong>@reporterName</strong>
+                    </span>
+                    <span>
+                        <i class="bi bi-calendar3"></i>
+                        @Model.Issue.CreatedAt.ToString("MMMM d, yyyy")
+                    </span>
+                    <span>
+                        <i class="bi bi-clock-history"></i>
+                        @Localizer["LastUpdatedLabel"] @Model.Issue.LastActivityAt.ToString("MMM d, yyyy")
+                    </span>
+                    @if (!string.IsNullOrWhiteSpace(Model.Issue.Address))
+                    {
+                        <span>
+                            <i class="bi bi-geo-alt-fill"></i>
+                            @Model.Issue.Address
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-hero__side">
+                @if (Model.CanManageIssue)
                 {
-                    var imageList = Model.MediaList.Where(m => m.Type == FixIt.Models.Enums.MediaType.Image).ToList();
-                    var videoList = Model.MediaList.Where(m => m.Type == FixIt.Models.Enums.MediaType.Video).ToList();
+                    <div class="detail-hero__actions">
+                        <a href="/issues/@Model.Issue.Id/edit" class="app-link-btn">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>@Localizer["EditIssue"]</span>
+                        </a>
+                        <a href="/issues/@Model.Issue.Id/delete" class="app-link-btn detail-hero__danger">
+                            <i class="bi bi-trash3"></i>
+                            <span>@Localizer["DeleteIssue"]</span>
+                        </a>
+                    </div>
+                }
 
-                    <div class="detail-card anim-2">
-                        <div class="detail-card-header" style="justify-content: space-between;">
-                            <h6>
-                                <i class="bi bi-images"></i> Media
-                                <span class="badge bg-secondary ms-1" style="font-size: 10px;">@Model.MediaList.Count</span>
-                            </h6>
-                            @if (imageList.Count > 0 && videoList.Count > 0)
-                            {
-                                <small class="text-muted" style="font-size: var(--text-xs);">
-                                    @imageList.Count photo@(imageList.Count != 1 ? "s" : "") · @videoList.Count video@(videoList.Count != 1 ? "s" : "")
-                                </small>
-                            }
+                <div class="detail-stats">
+                    <article class="detail-stat">
+                        <span>@Localizer["ViewsLabel"]</span>
+                        <strong id="statViews">@Model.Issue.ViewCount</strong>
+                    </article>
+                    <article class="detail-stat">
+                        <span>@Localizer["CommentsLabel"]</span>
+                        <strong>@Model.Issue.CommentCount</strong>
+                    </article>
+                    <article class="detail-stat">
+                        <span>@Localizer["ScoreLabel"]</span>
+                        <strong id="statScore">@(Model.Issue.Upvotes - Model.Issue.Downvotes)</strong>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <div class="detail-layout">
+            <main class="detail-main">
+                <section class="issue-surface detail-card">
+                    <div class="detail-card__header">
+                        <h2>@Localizer["DescriptionLabel"]</h2>
+                    </div>
+                    <div class="detail-card__body">
+                        <p class="detail-description">@Model.Issue.Description</p>
+                    </div>
+                </section>
+
+                @if (Model.MediaList.Any())
+                {
+                    <section class="issue-surface detail-card">
+                        <div class="detail-card__header detail-card__header--split">
+                            <h2>@Localizer["MediaLabel"]</h2>
+                            <span class="detail-card__caption">
+                                @if (imageList.Any())
+                                {
+                                    <text>@imageList.Count @Localizer["PhotosLabel"]</text>
+                                }
+                                @if (imageList.Any() && videoList.Any())
+                                {
+                                    <text> · </text>
+                                }
+                                @if (videoList.Any())
+                                {
+                                    <text>@videoList.Count @Localizer["VideosLabel"]</text>
+                                }
+                            </span>
                         </div>
-                        <div class="detail-card-body">
-                            @if (imageList.Count > 0)
+                        <div class="detail-card__body">
+                            @if (imageList.Any())
                             {
-                                <div class="media-grid" id="mediaGrid">
+                                <div class="detail-media-grid" id="mediaGrid">
                                     @for (int idx = 0; idx < imageList.Count; idx++)
                                     {
                                         var media = imageList[idx];
-                                        <div class="media-thumb"
-                                             data-media-index="@idx"
-                                             data-media-src="/api/media/@media.Id"
-                                             onclick="openLightbox(@idx)">
-                                            <img src="/api/media/@media.Id" alt="Issue photo @(idx + 1)" loading="lazy">
-                                            <div class="media-overlay">
+                                        <button type="button"
+                                                class="detail-media-thumb"
+                                                data-media-index="@idx"
+                                                data-media-src="/api/media/@media.Id"
+                                                data-lightbox-index="@idx">
+                                            <img src="/api/media/@media.Id"
+                                                 alt="@Localizer["IssuePhotoLabel"] @(idx + 1)"
+                                                 loading="lazy"
+                                                 decoding="async" />
+                                            <span class="detail-media-thumb__overlay">
                                                 <i class="bi bi-arrows-fullscreen"></i>
-                                            </div>
-                                        </div>
+                                            </span>
+                                        </button>
                                     }
                                 </div>
                             }
 
-                            @if (videoList.Count > 0)
+                            @if (videoList.Any())
                             {
-                                <div class="@(imageList.Count > 0 ? "mt-4" : "")">
-                                    @if (imageList.Count > 0)
+                                <div class="detail-video-list @(imageList.Any() ? "detail-video-list--spaced" : string.Empty)">
+                                    @foreach (var media in videoList)
                                     {
-                                        <div style="font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .06em; color: var(--gray-400); margin-bottom: var(--space-3);">
-                                            <i class="bi bi-play-circle me-1"></i>Videos
+                                        <div class="detail-video-card">
+                                            <div class="video-wrapper">
+                                                <video controls controlsList="nodownload" preload="metadata" data-video-preview>
+                                                    <source src="/api/media/@media.Id" type="@media.MimeType" />
+                                                </video>
+                                            </div>
+                                            <div class="detail-video-meta">
+                                                <i class="bi bi-file-play"></i>
+                                                <span>@Localizer["VideosLabel"] · @(media.SizeBytes / (1024 * 1024)) MB</span>
+                                            </div>
                                         </div>
                                     }
-                                    <div class="row g-3">
-                                        @foreach (var media in videoList)
-                                        {
-                                            <div class="col-12 col-sm-6">
-                                                <div class="video-wrapper">
-                                                    <video controls
-                                                           controlsList="nodownload"
-                                                           preload="metadata"
-                                                           onerror="handleVideoError(this)">
-                                                        <source src="/api/media/@media.Id" type="@media.MimeType" />
-                                                    </video>
-                                                </div>
-                                                <div class="video-meta">
-                                                    <i class="bi bi-file-play"></i>
-                                                    Video · @(media.SizeBytes / (1024 * 1024)) MB
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
                                 </div>
                             }
                         </div>
-                    </div>
+                    </section>
                 }
 
-                <!-- ── Location Map (MOVED BELOW MEDIA) ─────── -->
-                @if (Model.Issue?.Location?.Coordinates != null && Model.Issue.Location.Coordinates.Values?.Count >= 2)
+                @if (Model.Issue.Location?.Coordinates?.Values?.Count >= 2)
                 {
-                    <div class="detail-card anim-3">
-                        <div class="detail-card-header">
-                            <h6><i class="bi bi-geo-alt"></i> Location</h6>
+                    <section class="issue-surface detail-card">
+                        <div class="detail-card__header">
+                            <h2>@Localizer["LocationLabel"]</h2>
                         </div>
-                        <div class="detail-card-body">
-                            <div id="detailMap" 
+                        <div class="detail-card__body">
+                            <div id="detailMap"
                                  data-latitude="@Model.Issue.Location.Coordinates.Values[1]"
                                  data-longitude="@Model.Issue.Location.Coordinates.Values[0]"
-                                 style="height: var(--height-map); border: 2px solid var(--gray-300); border-radius: var(--radius-lg); margin-bottom: var(--space-4);"></div>
-                            <div class="mt-3 p-3" style="background: var(--gray-50); border-radius: var(--radius-base);">
-                                <small class="text-muted">
-                                    <i class="bi bi-crosshair"></i> Coordinates: 
-                                    <span class="text-primary fw-bold">@Model.Issue.Location.Coordinates.Values[1].ToString("F5"), @Model.Issue.Location.Coordinates.Values[0].ToString("F5")</span>
-                                </small>
+                                 class="detail-map"></div>
+                            <div class="detail-map__meta">
+                                <strong>@Localizer["Coordinates"]</strong>
+                                <span>@Model.Issue.Location.Coordinates.Values[1].ToString("F5"), @Model.Issue.Location.Coordinates.Values[0].ToString("F5")</span>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 }
 
-                <!-- ── AI Analysis ────────────────────────── -->
                 @if (Model.Analysis != null)
                 {
-                    <div class="ai-card anim-3">
-                        <div class="ai-card-header">
-                            <div class="ai-card-header-left">
-                                <i class="bi bi-stars"></i>
-                                AI Analysis
-                            </div>
-                            <span class="badge bg-success" style="font-size: var(--text-xs);">
-                                <i class="bi bi-check-circle-fill me-1"></i>Complete
-                            </span>
+                    var severityToneClass = Model.Analysis.EstimatedSeverity >= 8
+                        ? "detail-metric__icon--danger"
+                        : Model.Analysis.EstimatedSeverity >= 5
+                            ? "detail-metric__icon--warning"
+                            : "detail-metric__icon--success";
+                    var severityFillClass = Model.Analysis.EstimatedSeverity >= 8
+                        ? "detail-progress__bar--danger"
+                        : Model.Analysis.EstimatedSeverity >= 5
+                            ? "detail-progress__bar--warning"
+                            : "detail-progress__bar--success";
+
+                    <section class="issue-surface detail-card detail-card--accent">
+                        <div class="detail-card__header detail-card__header--split">
+                            <h2>@Localizer["AiAnalysisLabel"]</h2>
+                            <span class="detail-status detail-status--success">@Localizer["CompleteLabel"]</span>
                         </div>
-                        <div class="ai-card-body">
-                            <!-- Metrics row -->
-                            <div class="row g-3 mb-4">
-                                <div class="col-sm-6">
-                                    <div class="ai-metric">
-                                        <div class="ai-metric-icon" style="background: var(--info-light); color: var(--info);">
-                                            <i class="bi bi-tag-fill"></i>
-                                        </div>
-                                        <div>
-                                            <div class="ai-metric-label">@Localizer["CategoryLabel"]</div>
-                                            <div class="ai-metric-value">@Model.Analysis.Category</div>
-                                            <div class="ai-metric-sub">@Model.Analysis.ConfidenceScore% confidence</div>
+                        <div class="detail-card__body">
+                            <div class="detail-metric-grid">
+                                <article class="detail-metric">
+                                    <div class="detail-metric__icon">
+                                        <i class="bi bi-tag-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span>@Localizer["CategoryLabel"]</span>
+                                        <strong>@Model.Analysis.Category</strong>
+                                        <small>@Model.Analysis.ConfidenceScore% @Localizer["ConfidenceSuffix"]</small>
+                                    </div>
+                                </article>
+                                <article class="detail-metric">
+                                    <div class="detail-metric__icon @severityToneClass">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span>@Localizer["SeverityLabel"]</span>
+                                        <strong>@Model.Analysis.EstimatedSeverity / 10</strong>
+                                        <div class="detail-progress">
+                                            <div class="detail-progress__bar @severityFillClass severity-fill" data-width="@(Model.Analysis.EstimatedSeverity * 10)"></div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="ai-metric">
-                                        <div class="ai-metric-icon" style="background: @(Model.Analysis.EstimatedSeverity >= 8 ? "var(--danger-light)" : Model.Analysis.EstimatedSeverity >= 5 ? "var(--warning-light)" : "var(--success-light)"); color: @severityColor;">
-                                            <i class="bi bi-exclamation-triangle-fill"></i>
-                                        </div>
-                                        <div>
-                                            <div class="ai-metric-label">@Localizer["SeverityLabel"]</div>
-                                            <div class="ai-metric-value">@Model.Analysis.EstimatedSeverity <span style="font-size: var(--text-sm); color: var(--gray-400);">/ 10</span></div>
-                                            <div class="severity-track">
-                                                <div class="severity-fill @severityBgClass" style="width: @(Model.Analysis.EstimatedSeverity * 10)%;"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                </article>
                             </div>
 
                             @if (Model.Analysis.Keywords?.Any() == true)
                             {
-                                <div class="mb-4">
-                                    <div style="font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .06em; color: var(--gray-400); margin-bottom: var(--space-2);">
-                                        <i class="bi bi-key-fill me-1"></i>Keywords
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-2">
+                                <div class="detail-chip-block">
+                                    <span class="detail-chip-block__label">@Localizer["KeywordsLabel"]</span>
+                                    <div class="detail-chip-list">
                                         @foreach (var keyword in Model.Analysis.Keywords.Take(6))
                                         {
-                                            <span class="badge" style="background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-200); font-size: var(--text-xs); font-weight: var(--font-medium); text-transform: none; letter-spacing: 0;">@keyword</span>
-                                        }
-                                        @if (Model.Analysis.Keywords.Count > 6)
-                                        {
-                                            <span class="badge" style="background: var(--gray-100); color: var(--gray-400); border: 1px solid var(--gray-200);">+@(Model.Analysis.Keywords.Count - 6) more</span>
+                                            <span class="detail-chip">@keyword</span>
                                         }
                                     </div>
                                 </div>
@@ -298,401 +292,324 @@ Markup continues below.
 
                             @if (Model.Analysis.SuggestedTags?.Any() == true)
                             {
-                                <div class="mb-4">
-                                    <div style="font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .06em; color: var(--gray-400); margin-bottom: var(--space-2);">
-                                        <i class="bi bi-hash me-1"></i>Suggested Tags
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-2">
+                                <div class="detail-chip-block">
+                                    <span class="detail-chip-block__label">@Localizer["SuggestedTagsLabel"]</span>
+                                    <div class="detail-chip-list">
                                         @foreach (var tag in Model.Analysis.SuggestedTags.Take(5))
                                         {
-                                            <a href="/tags/@tag" class="badge" style="background: var(--primary-50); color: var(--primary-700); border: 1px solid var(--primary-200); text-decoration: none; font-weight: var(--font-medium); text-transform: none; letter-spacing: 0; font-size: var(--text-xs);">#@tag</a>
-                                        }
-                                        @if (Model.Analysis.SuggestedTags.Count > 5)
-                                        {
-                                            <span class="badge" style="background: var(--gray-100); color: var(--gray-400); border: 1px solid var(--gray-200);">+@(Model.Analysis.SuggestedTags.Count - 5) more</span>
+                                            <a href="/tags/@tag" class="detail-chip detail-chip--link">#@tag</a>
                                         }
                                     </div>
                                 </div>
                             }
 
-                            @if (!string.IsNullOrEmpty(Model.Analysis.Reasoning))
+                            @if (!string.IsNullOrWhiteSpace(Model.Analysis.Reasoning))
                             {
-                                <div class="ai-reasoning mb-4">
-                                    <div class="label"><i class="bi bi-chat-right-quote-fill"></i> Analysis Notes</div>
-                                    @Model.Analysis.Reasoning
+                                <div class="detail-note">
+                                    <strong>@Localizer["AnalysisNotesLabel"]</strong>
+                                    <p>@Model.Analysis.Reasoning</p>
                                 </div>
                             }
 
                             @if (Model.Analysis.PotentialDuplicates?.Any() == true)
                             {
-                                <div class="mb-3">
-                                    <div style="font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; letter-spacing: .06em; color: var(--warning); margin-bottom: var(--space-3); display: flex; align-items: center; gap: var(--space-2);">
-                                        <i class="bi bi-exclamation-circle-fill"></i> Similar Issues Detected
-                                    </div>
-                                    @foreach (var dup in Model.Analysis.PotentialDuplicates.Take(3))
+                                <div class="detail-duplicates">
+                                    <span class="detail-chip-block__label">@Localizer["SimilarIssuesDetectedLabel"]</span>
+                                    @foreach (var duplicate in Model.Analysis.PotentialDuplicates.Take(3))
                                     {
-                                        <a href="/issues/@dup.IssueId" class="duplicate-item">
-                                            <i class="bi bi-link-45deg" style="color: var(--warning); margin-top: 2px; flex-shrink: 0;"></i>
-                                            <div class="flex-grow-1">
-                                                <div style="font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--gray-800);">@dup.IssueTitle</div>
-                                                <div style="font-size: var(--text-xs); color: var(--gray-500); margin-top: 2px;">@dup.Reason</div>
+                                        <a href="/issues/@duplicate.IssueId" class="detail-duplicate-card">
+                                            <div>
+                                                <strong>@duplicate.IssueTitle</strong>
+                                                <span>@duplicate.Reason</span>
                                             </div>
-                                            <span class="dup-match-badge">@dup.SimilarityScore% match</span>
+                                            <em>@duplicate.SimilarityScore%</em>
                                         </a>
-                                    }
-                                    @if (Model.Analysis.PotentialDuplicates.Count > 3)
-                                    {
-                                        <div style="font-size: var(--text-xs); color: var(--gray-400); padding-left: var(--space-1);">
-                                            +@(Model.Analysis.PotentialDuplicates.Count - 3) more similar issues
-                                        </div>
                                     }
                                 </div>
                             }
 
-                            <div style="font-size: var(--text-xs); color: var(--gray-400); border-top: 1px solid var(--gray-100); padding-top: var(--space-3); margin-top: var(--space-2);">
-                                <i class="bi bi-clock me-1"></i>
-                                Analyzed @Model.Analysis.AnalyzedAt.ToString("MMMM d, yyyy 'at' h:mm tt")
+                            <div class="detail-analysis-meta">
+                                <i class="bi bi-clock-history"></i>
+                                <span>@Localizer["AnalyzedAtLabel"] @Model.Analysis.AnalyzedAt.ToString("MMMM d, yyyy '•' HH:mm")</span>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 }
                 else
                 {
-                    <div class="ai-card anim-3" id="analysisPlaceholder">
-                        <div class="ai-card-header">
-                            <div class="ai-card-header-left">
-                                <i class="bi bi-stars"></i>
-                                AI Analysis
-                            </div>
-                            <span class="badge" style="background: var(--warning-light); color: var(--warning-dark); border: 1px solid var(--warning-light); font-size: var(--text-xs);">
-                                <i class="bi bi-hourglass-split me-1"></i>Pending
-                            </span>
+                    <section class="issue-surface detail-card detail-card--accent" id="analysisPlaceholder">
+                        <div class="detail-card__header detail-card__header--split">
+                            <h2>@Localizer["AiAnalysisLabel"]</h2>
+                            <span class="detail-status detail-status--warning">@Localizer["PendingLabel"]</span>
                         </div>
-                        <div class="ai-card-body">
-                            <div class="ai-loading" id="analysisLoading">
-                                <div class="ai-pulse-ring">
+                        <div class="detail-card__body">
+                            <div class="detail-analysis-loading">
+                                <div class="detail-analysis-loading__icon">
                                     <i class="bi bi-stars"></i>
                                 </div>
-                                <div style="font-weight: var(--font-semibold); color: var(--gray-700); margin-bottom: var(--space-1);">Generating AI Analysis...</div>
-                                <div style="font-size: var(--text-sm); color: var(--gray-400);">This may take 15–30 seconds on first load</div>
-                            </div>
-                            <div id="analysisError" style="display: none; text-align: center; padding: var(--space-8);">
-                                <div style="width: 56px; height: 56px; background: var(--warning-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); font-size: 1.5rem; color: var(--warning);">
-                                    <i class="bi bi-exclamation-triangle-fill"></i>
-                                </div>
-                                <div style="font-weight: var(--font-semibold); color: var(--gray-700); margin-bottom: var(--space-1);">@Localizer["AnalysisUnavailable"]</div>
-                                <div style="font-size: var(--text-sm); color: var(--gray-400); margin-bottom: var(--space-4);">Could not generate AI analysis at this time.</div>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="retryAnalysis('@Model.Id')">
-                                    <i class="bi bi-arrow-clockwise me-1"></i>Retry
-                                </button>
+                                <h3>@Localizer["GeneratingAiAnalysisTitle"]</h3>
+                                <p>@Localizer["GeneratingAiAnalysisCopy"]</p>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 }
 
-                <!-- ── Comments ───────────────────────────── -->
-                <div class="detail-card anim-4">
-                    <div class="detail-card-header" style="display: flex; align-items: center; justify-content: space-between;">
-                        <h6 style="margin: 0;">
-                            <i class="bi bi-chat-dots-fill"></i> Comments
-                            <span style="color: var(--gray-700); font-weight: var(--font-bold); text-transform: none; letter-spacing: 0; font-size: var(--text-sm);">(@Model.Issue?.CommentCount)</span>
-                        </h6>
-                        @if (Model.Comments?.Any() == true)
+                <section class="issue-surface detail-card">
+                    <div class="detail-card__header detail-card__header--split">
+                        <h2>@Localizer["CommentsLabel"]</h2>
+                        @if (Model.Comments.Any())
                         {
-                            <select id="commentSortDropdown" class="form-select form-select-sm select-sm-width" style=\"margin-left: auto;\">
+                            <select id="commentSortDropdown" class="detail-comment-sort">
                                 <option value="newest">@Localizer["NewestFirstOption"]</option>
                                 <option value="oldest">@Localizer["OldestFirstOption"]</option>
                                 <option value="mostLiked">@Localizer["MostLikedOption"]</option>
                             </select>
                         }
                     </div>
-                    <div class="detail-card-body">
+                    <div class="detail-card__body">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
-                            <form method="post" class="mb-5">
-                                <div class="comment-form-area">
-                                    <div class="comment-avatar-sm">
-                                        <i class="bi bi-person-fill"></i>
-                                    </div>
-                                    <div class="comment-input-wrap">
-                                        <textarea id="commentText"
-                                                  name="commentText"
-                                                  class="comment-textarea"
-                                                  rows="3"
-                                                  placeholder="Share your thoughts or additional information…"></textarea>
-                                        <div class="comment-actions">
-                                            <button type="submit" asp-page-handler="AddComment" class="btn btn-primary btn-sm">
-                                                <i class="bi bi-send-fill me-1"></i>Post Comment
-                                            </button>
-                                        </div>
+                            <form method="post" class="detail-comment-form">
+                                <div class="detail-comment-form__avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div class="detail-comment-form__body">
+                                    <textarea id="commentText"
+                                              name="commentText"
+                                              class="detail-comment-textarea"
+                                              rows="4"
+                                              placeholder="@Localizer["CommentPlaceholder"]"></textarea>
+                                    <div class="detail-comment-form__actions">
+                                        <button type="submit" asp-page-handler="AddComment" class="nav-report-btn nav-report-btn--compact">
+                                            <i class="bi bi-send-fill"></i>
+                                            <span>@Localizer["PostCommentLabel"]</span>
+                                        </button>
                                     </div>
                                 </div>
                             </form>
                         }
 
-                        @if (Model.Comments?.Any() == true)
+                        @if (Model.Comments.Any())
                         {
-                            <div id="commentsList">
+                            <div id="commentsList" class="detail-comments">
                                 @foreach (var comment in Model.Comments)
                                 {
-                                    <div class="comment-item" data-comment-id="@comment.Id" data-author-id="@comment.AuthorId" data-date="@comment.CreatedAt.ToString("O")" data-likes="@(comment.LikedBy?.Count ?? 0)" data-dislikes="@(comment.DislikedBy?.Count ?? 0)">
-                                        <div class="comment-user-avatar">
+                                    <article class="detail-comment-item comment-item"
+                                             data-comment-id="@comment.Id"
+                                             data-author-id="@comment.AuthorId"
+                                             data-date="@comment.CreatedAt.ToString("O")"
+                                             data-likes="@(comment.LikedBy?.Count ?? 0)"
+                                             data-dislikes="@(comment.DislikedBy?.Count ?? 0)">
+                                        <div class="comment-user-avatar detail-comment-item__avatar">
                                             @if (comment.IsAnonymous)
                                             {
-                                                <i class="bi bi-incognito" style="opacity: .6;"></i>
+                                                <i class="bi bi-incognito comment-user-avatar-icon-muted"></i>
                                             }
                                             else
                                             {
                                                 <i class="bi bi-person-fill"></i>
                                             }
                                         </div>
-                                        <div class="comment-body" style="width: 100%;">
-                                            <div class="comment-header">
-                                                <span class="comment-author">@(comment.IsAnonymous ? "Anonymous User" : (comment.Author?.DisplayName ?? "User"))</span>
-                                                <span class="comment-time">
-                                                    <i class="bi bi-clock"></i>
-                                                    @comment.CreatedAt.ToString("MMM d, yyyy 'at' h:mm tt")
-                                                </span>
+                                        <div class="comment-body detail-comment-item__body">
+                                            <div class="detail-comment-item__header">
+                                                <div>
+                                                    <strong class="comment-author">@(comment.IsAnonymous ? Localizer["AnonymousUser"] : comment.Author?.DisplayName ?? Localizer["CommunityMember"])</strong>
+                                                    <span class="detail-comment-item__time">@comment.CreatedAt.ToString("MMM d, yyyy '•' HH:mm")</span>
+                                                </div>
                                             </div>
-                                            <p class="comment-text">@comment.Text</p>
-                                            <div class="comment-actions-row" style="display: flex; gap: var(--space-3); align-items: center; margin-top: var(--space-2); font-size: var(--text-sm);">
-                                                <button class="comment-like-btn" type="button" title="Like comment" data-comment-id="@comment.Id">
+                                            <p class="comment-text detail-comment-item__text">@comment.Text</p>
+                                            <div class="detail-comment-item__actions comment-actions-row">
+                                                <button class="comment-like-btn" type="button" title="@Localizer["UpvoteLabel"]" data-comment-id="@comment.Id">
                                                     <i class="bi bi-hand-thumbs-up"></i>
                                                     <span class="like-count">@(comment.LikedBy?.Count ?? 0)</span>
                                                 </button>
-                                                <button class="comment-dislike-btn" type="button" title="Dislike comment" data-comment-id="@comment.Id">
+                                                <button class="comment-dislike-btn" type="button" title="@Localizer["DownvoteLabel"]" data-comment-id="@comment.Id">
                                                     <i class="bi bi-hand-thumbs-down"></i>
                                                     <span class="dislike-count">@(comment.DislikedBy?.Count ?? 0)</span>
                                                 </button>
                                                 @if (User?.Identity?.IsAuthenticated ?? false)
                                                 {
-                                                    <button class="comment-delete-btn" type="button" title="Delete comment" data-comment-id="@comment.Id" data-author-id="@comment.AuthorId" style="margin-left: auto;">
+                                                    <button class="comment-delete-btn" type="button" title="@Localizer["DeleteIssue"]" data-comment-id="@comment.Id" data-author-id="@comment.AuthorId">
                                                         <i class="bi bi-trash3"></i>
                                                     </button>
                                                 }
                                             </div>
                                         </div>
-                                    </div>
+                                    </article>
                                 }
                             </div>
                         }
                         else if (!(User?.Identity?.IsAuthenticated ?? false))
                         {
-                            <div class="alert alert-info" style="border-radius: var(--radius-lg);">
-                                <i class="bi bi-info-circle me-2"></i>
+                            <div class="detail-empty-inline">
                                 <a asp-area="Identity" asp-page="/Account/Login">@Localizer["SignIn"]</a> @Localizer["SignInToJoinTheConversation"].
                             </div>
                         }
                         else
                         {
-                            <div style="text-align: center; padding: var(--space-10); color: var(--gray-400);">
-                                <div style="font-size: 2.5rem; margin-bottom: var(--space-3); opacity: .4;">
-                                    <i class="bi bi-chat-square-dots"></i>
-                                </div>
-                                <div style="font-weight: var(--font-semibold); color: var(--gray-500);">@Localizer["NoCommentsYet"]</div>
-                                <div style="font-size: var(--text-sm);">@Localizer["BeTheFirstToShareYourThoughts"]</div>
+                            <div class="detail-empty-inline">
+                                @Localizer["BeTheFirstToShareYourThoughts"]
                             </div>
                         }
                     </div>
-                </div>
+                </section>
+            </main>
 
-            </div><!-- /col-lg-8 -->
-
-            <!-- ══ SIDEBAR ════════════════════════════════ -->
-            <div class="col-lg-4">
-                <div class="sticky-top" style="top: 90px;">
-
-                    <!-- ── Vote Card ───────────────────────── -->
-                    <div class="vote-card anim-2">
-                        <div class="vote-header">
-                            <i class="bi bi-hand-thumbs-up"></i> Community Vote
-                        </div>
-                        <div class="vote-body">
-                            @if (User?.Identity?.IsAuthenticated ?? false)
-                            {
-                                <div class="vote-buttons">
-                                    <button type="button" class="vote-btn upvote" id="upvoteBtn" onclick="vote(1)">
-                                        <i class="bi bi-hand-thumbs-up-fill"></i>
-                                        <span class="vote-count" id="upvoteCount">@Model.Issue?.Upvotes</span>
-                                        <span style="font-size: var(--text-xs); font-weight: var(--font-medium); opacity: .7; position: relative; z-index: 1;">@Localizer["UpvoteLabel"]</span>
-                                    </button>
-                                    <button type="button" class="vote-btn downvote" id="downvoteBtn" onclick="vote(-1)">
-                                        <i class="bi bi-hand-thumbs-down-fill"></i>
-                                        <span class="vote-count" id="downvoteCount">@Model.Issue?.Downvotes</span>
-                                        <span style="font-size: var(--text-xs); font-weight: var(--font-medium); opacity: .7; position: relative; z-index: 1;">@Localizer["DownvoteLabel"]</span>
-                                    </button>
-                                </div>
-                                <div class="vote-score-bar">
-                                    <div class="vote-score-fill" id="scoreBar" style="width: @upvotePct%;"></div>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); color: var(--gray-400); margin-top: var(--space-2);">
-                                    <span id="upvotePct">@upvotePct% positive</span>
-                                    <span id="totalVoteCount">@totalVotes total</span>
-                                </div>
-                                <div id="voteMessage"></div>
-                            }
-                            else
-                            {
-                                <div class="vote-display-guest">
-                                    <div class="vote-display-box up-box">
-                                        <i class="bi bi-hand-thumbs-up-fill"></i>
-                                        <strong>@Model.Issue?.Upvotes</strong>
-                                        <small>@Localizer["UpvotesCount"]</small>
-                                    </div>
-                                    <div class="vote-display-box down-box">
-                                        <i class="bi bi-hand-thumbs-down-fill"></i>
-                                        <strong>@Model.Issue?.Downvotes</strong>
-                                        <small>@Localizer["DownvotesCount"]</small>
-                                    </div>
-                                </div>
-                                <div class="login-prompt mt-3">
-                                    <a asp-area="Identity" asp-page="/Account/Login">@Localizer["SignIn"]</a> @Localizer["SignInToCastYourVote"]
-                                </div>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- ── Reporter Card ───────────────────── -->
-                    <div class="sidebar-card anim-3">
-                        <div class="sidebar-card-header">
-                            <i class="bi bi-person-fill"></i> Reported By
-                        </div>
-                        <div class="sidebar-card-body">
-                            @if (Model.Issue?.IsAnonymous ?? false)
-                            {
-                                <div class="reporter-link" style="cursor: default;">
-                                    <div class="reporter-avatar-default">
-                                        <i class="bi bi-incognito"></i>
-                                    </div>
-                                    <div>
-                                        <div class="reporter-name">@Localizer["AnonymousUser"]</div>
-                                        <small class="text-muted">@Localizer["IdentityHiddenForPrivacy"]</small>
-                                    </div>
-                                </div>
-                            }
-                            else
-                            {
-                                <a href="/user/@Model.Issue?.Reporter?.Id" class="reporter-link">
-                                    @if (!string.IsNullOrEmpty(Model.Issue?.Reporter?.AvatarUrl))
-                                    {
-                                        <div class="reporter-avatar">
-                                            <img src="@Model.Issue?.Reporter?.AvatarUrl" alt="Avatar">
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="reporter-avatar-default">
-                                            <i class="bi bi-person-fill"></i>
-                                        </div>
-                                    }
-                                    <div>
-                                        <div class="reporter-name">@Model.Issue.Reporter?.DisplayName</div>
-                                        <div class="reporter-stat">@(Model.IssueCount ?? 0) issues reported</div>
-                                    </div>
-                                    <i class="bi bi-chevron-right ms-auto" style="color: var(--gray-300); font-size: var(--text-sm);"></i>
-                                </a>
-                                <a href="/user/@Model.Issue.Reporter?.Id" class="btn btn-outline-primary w-100 btn-sm">
-                                    <i class="bi bi-person-lines-fill me-1"></i>@Localizer["ViewDetails"]
-                                </a>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- ── Status History ──────────────────── -->
-                    @if (Model.Issue.StatusHistory?.Any() == true)
+            <aside class="detail-sidebar">
+                <section class="issue-surface detail-sidebar-card vote-card">
+                    <h2>@Localizer["CommunityVoteLabel"]</h2>
+                    @if (User?.Identity?.IsAuthenticated ?? false)
                     {
-                        <div class="sidebar-card anim-4">
-                            <div class="sidebar-card-header">
-                                <i class="bi bi-clock-history"></i> Status History
+                        <div class="detail-vote-buttons">
+                            <button type="button" class="vote-btn detail-vote-btn" id="upvoteBtn" data-vote-type="1">
+                                <i class="bi bi-hand-thumbs-up-fill"></i>
+                                <span class="vote-count" id="upvoteCount">@Model.Issue.Upvotes</span>
+                                <span class="vote-btn-label">@Localizer["UpvoteLabel"]</span>
+                            </button>
+                            <button type="button" class="vote-btn detail-vote-btn" id="downvoteBtn" data-vote-type="-1">
+                                <i class="bi bi-hand-thumbs-down-fill"></i>
+                                <span class="vote-count" id="downvoteCount">@Model.Issue.Downvotes</span>
+                                <span class="vote-btn-label">@Localizer["DownvoteLabel"]</span>
+                            </button>
+                        </div>
+                        <div class="detail-vote-progress">
+                            <div class="detail-vote-progress__bar" id="scoreBar" data-width="@upvotePct"></div>
+                        </div>
+                        <div class="detail-vote-summary">
+                            <span id="upvotePct">@upvotePct% @Localizer["PositiveVotesLabel"]</span>
+                            <span id="totalVoteCount">@totalVotes @Localizer["VotesTotalLabel"]</span>
+                        </div>
+                        <div id="voteMessage"></div>
+                    }
+                    else
+                    {
+                        <div class="detail-vote-guest">
+                            <div>
+                                <strong>@Model.Issue.Upvotes</strong>
+                                <span>@Localizer["UpvoteLabel"]</span>
                             </div>
-                            <div class="sidebar-card-body">
-                                <div class="timeline">
-                                    @foreach (var history in Model.SortedStatusHistory)
-                                    {
-                                        <div class="timeline-item">
-                                            <div class="timeline-date">@history.ChangedAt.ToString("MMM d, yyyy")</div>
-                                            <div class="timeline-change">
-                                                <span class="timeline-arrow">
-                                                    @history.From
-                                                    <i class="bi bi-arrow-right"></i>
-                                                    @history.To
-                                                </span>
-                                            </div>
-                                            @if (!string.IsNullOrEmpty(history.Comment))
-                                            {
-                                                <div class="timeline-comment">@history.Comment</div>
-                                            }
-                                        </div>
-                                    }
-                                </div>
+                            <div>
+                                <strong>@Model.Issue.Downvotes</strong>
+                                <span>@Localizer["DownvoteLabel"]</span>
+                            </div>
+                        </div>
+                        <p class="detail-sidebar-card__copy">
+                            <a asp-area="Identity" asp-page="/Account/Login">@Localizer["SignIn"]</a> @Localizer["SignInToCastYourVote"]
+                        </p>
+                    }
+                </section>
+
+                <section class="issue-surface detail-sidebar-card">
+                    <h2>@Localizer["SnapshotLabel"]</h2>
+                    <dl class="detail-sidebar-list">
+                        <div>
+                            <dt>@Localizer["Status"]</dt>
+                            <dd><partial name="_BadgeStatus" model="Model.Issue.Status" /></dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["Priority"]</dt>
+                            <dd><partial name="_BadgePriority" model="Model.Issue.Priority" /></dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["VisibilityLabel"]</dt>
+                            <dd>@(Model.Issue.IsAnonymous ? Localizer["AnonymousVisibility"] : Localizer["PublicIssue"])</dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["CreatedAtLabel"]</dt>
+                            <dd>@Model.Issue.CreatedAt.ToString("MMMM d, yyyy")</dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["LastUpdatedLabel"]</dt>
+                            <dd>@Model.Issue.LastActivityAt.ToString("MMMM d, yyyy")</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section class="issue-surface detail-sidebar-card">
+                    <h2>@Localizer["ReportedByLabel"]</h2>
+                    @if (Model.Issue.IsAnonymous)
+                    {
+                        <div class="detail-reporter detail-reporter--static">
+                            <div class="detail-reporter__avatar">
+                                <i class="bi bi-incognito"></i>
+                            </div>
+                            <div>
+                                <strong>@Localizer["AnonymousUser"]</strong>
+                                <span>@Localizer["IdentityHiddenForPrivacy"]</span>
                             </div>
                         </div>
                     }
+                    else
+                    {
+                        <a href="/user/@Model.Issue.Reporter?.Id" class="detail-reporter">
+                            <div class="detail-reporter__avatar">
+                                @if (!string.IsNullOrWhiteSpace(Model.Issue.Reporter?.AvatarUrl))
+                                {
+                                    <img src="@Model.Issue.Reporter.AvatarUrl" alt="@Model.Issue.Reporter.DisplayName" loading="lazy" decoding="async" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-person-fill"></i>
+                                }
+                            </div>
+                            <div>
+                                <strong>@Model.Issue.Reporter?.DisplayName</strong>
+                                <span>@(Model.IssueCount ?? 0) @Localizer["IssuesReporterStat"]</span>
+                            </div>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                </section>
 
-                </div>
-            </div><!-- /col-lg-4 sidebar -->
-
-        </div><!-- /row -->
+                @if (Model.Issue.StatusHistory?.Any() == true)
+                {
+                    <section class="issue-surface detail-sidebar-card">
+                        <h2>@Localizer["StatusHistoryLabel"]</h2>
+                        <div class="detail-timeline">
+                            @foreach (var history in Model.SortedStatusHistory)
+                            {
+                                <article class="detail-timeline__item">
+                                    <span class="detail-timeline__date">@history.ChangedAt.ToString("MMM d, yyyy")</span>
+                                    <div class="detail-timeline__flow">
+                                        <partial name="_BadgeStatus" model="history.From" />
+                                        <i class="bi bi-arrow-right"></i>
+                                        <partial name="_BadgeStatus" model="history.To" />
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(history.Comment))
+                                    {
+                                        <p>@history.Comment</p>
+                                    }
+                                </article>
+                            }
+                        </div>
+                    </section>
+                }
+            </aside>
+        </div>
     </div>
 }
 else
 {
-    <div class="container mt-4">
-        <div class="not-found-card">
-            <div class="not-found-icon">
+    <div class="issue-page issue-page--compact">
+        <section class="issue-surface issue-empty-state">
+            <div class="issue-empty-state__icon">
                 <i class="bi bi-exclamation-triangle-fill"></i>
             </div>
-            <h2 style="font-size: var(--text-3xl); font-weight: var(--font-extrabold); margin-bottom: var(--space-2);">@Localizer["IssueNotFoundMessage"]</h2>
-            <p style="color: var(--gray-500); font-size: var(--text-base); max-width: 400px; margin: 0 auto var(--space-6);">
-                The issue you're looking for doesn't exist or may have been removed.
-            </p>
-            <a href="/issues" class="btn btn-primary btn-lg px-5">
-                <i class="bi bi-arrow-left me-2"></i>Back to Issues
+            <h2 class="issue-empty-state__title">@Localizer["IssueNotFoundMessage"]</h2>
+            <p class="issue-empty-state__copy">@Localizer["IssueNotFoundMessage"]</p>
+            <a href="/issues" class="app-link-btn">
+                <i class="bi bi-arrow-left"></i>
+                <span>@Localizer["GoToIssuesList"]</span>
             </a>
-        </div>
+        </section>
     </div>
 }
 
-<!-- ══ SHARED LIGHTBOX MODAL ═══════════════════════════════
-     Rendered as a direct child of <body> by JS to avoid the
-     CSS containment bug: position:fixed breaks when any
-     ancestor has a CSS transform applied to it.
-     This element is injected by initLightbox() below.
-════════════════════════════════════════════════════════════ -->
-
 @section PageScripts {
-
-    <!-- Page-specific initialization -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Set current user ID for comments module
-            document.body.dataset.currentUserId = '@(User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "")';
-
-            // Set issue ID for modules that need it
-            document.body.dataset.issueId = '@Model?.Id';
-
-            // Initialize modules that require manual triggers
-            if (typeof AIAnalysis !== "undefined") {
-                const issueId = '@Model?.Id';
-                if (issueId?.trim() && document.getElementById("analysisPlaceholder")) {
-                    AIAnalysis.startPolling(issueId);
-                }
-            }
-        });
-    </script>
-
-    <!-- Media Lightbox Module -->
-    <script src="~/js/modules/media-lightbox.js" asp-append-version="true"></script>
-
-    <!-- AI Analysis Module -->
-    <script src="~/js/modules/ai-analysis.js" asp-append-version="true"></script>
-
-    <!-- Voting Module -->
-    <script src="~/js/modules/voting.js" asp-append-version="true"></script>
-
-    <!-- Comments Module -->
-    <script src="~/js/modules/comments.js" asp-append-version="true"></script>
-
-    <!-- Map Detail Module -->
-    <script src="~/js/modules/map-detail.js" asp-append-version="true"></script>
+    <script src="~/js/modules/media-lightbox.js" asp-append-version="true" defer></script>
+    <script src="~/js/modules/ai-analysis.js" asp-append-version="true" defer></script>
+    <script src="~/js/modules/voting.js" asp-append-version="true" defer></script>
+    <script src="~/js/modules/comments.js" asp-append-version="true" defer></script>
+    <script src="~/js/modules/map-detail.js" asp-append-version="true" defer></script>
+    <script src="~/js/modules/issue-detail-init.js" asp-append-version="true" defer></script>
 }

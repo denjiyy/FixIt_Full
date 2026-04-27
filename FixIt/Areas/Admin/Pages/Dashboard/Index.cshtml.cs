@@ -6,10 +6,11 @@ using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Moderation;
 using FixIt.Models.Enums;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Admin.Pages.Dashboard;
 
-[Authorize]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;

@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../FixIt/FixIt.csproj" />
     <ProjectReference Include="../FixIt.Models/FixIt.Models.csproj" />
     <ProjectReference Include="../FixIt.Services/FixIt.Services.csproj" />
     <ProjectReference Include="../FixIt.Data/FixIt.Data.csproj" />

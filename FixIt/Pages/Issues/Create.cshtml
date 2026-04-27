@@ -1,663 +1,398 @@
 @page "/issues/create"
+@using FixIt.Models.AI
+@using FixIt.Models.Enums
 @model CreateIssueModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["CreateAnIssue"];
+    ViewData["RequiresMap"] = true;
+    ViewData["BodyClass"] = "page-issue-create";
 }
 
-<link rel="stylesheet" href="~/css/pages/issue-create.css" />
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/issue-create.css" asp-append-version="true" />
+}
 
-<div class="container mt-4 pb-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-7">
+<div class="issue-page issue-create-page" id="issueCreateRoot"
+     data-default-lat="42.6977"
+     data-default-lng="23.3219"
+     data-title-too-short="@Localizer["CreateTitleValidation"]"
+     data-description-too-short="@Localizer["CreateDescriptionValidation"]"
+     data-city-required="@Localizer["PleaseSelectACity"]"
+     data-invalid-file-type="@Localizer["InvalidFileType"]"
+     data-image-limit="@Localizer["ImageUploadLimit"]"
+     data-video-limit="@Localizer["VideoUploadLimit"]"
+     data-only-first-files="@Localizer["OnlyFirstTenFiles"]"
+     data-no-suggestions="@Localizer["NoSuggestionsAvailableYet"]"
+     data-not-started="@Localizer["NotStarted"]"
+     data-location-pending="@Localizer["LocationPending"]"
+     data-no-media="@Localizer["NoMediaSelected"]"
+     data-files-selected-label="@Localizer["FilesSelectedLabel"]"
+     data-submit-label="@Localizer["SubmitReport"]"
+     data-submitting-label="@Localizer["SubmittingReport"]"
+     data-ai-suggestion-loading="Analyzing issue draft..."
+     data-ai-suggestion-ready="AI suggestions are ready. You can accept or override them."
+     data-ai-suggestion-unavailable="AI suggestions are temporarily unavailable."
+     data-ai-suggestion-idle="AI suggestions will appear after you add enough details."
+     data-ai-generated-label="AI-generated"
+     data-fallback-label="Rule-based suggestion"
+     data-confidence-label="Confidence"
+     data-apply-suggestion-label="Suggestions applied">
+    <header class="issue-page-header">
+        <div class="issue-page-header__content">
+            <span class="issue-page-header__eyebrow">
+                <i class="bi bi-send-plus"></i>
+                @Localizer["ReportIssue"]
+            </span>
+            <h1 class="issue-page-header__title">@Localizer["CreateAnIssue"]</h1>
+            <p class="issue-page-header__copy">@Localizer["ReportAndTrackInfrastructure"]</p>
+        </div>
 
-            <!-- ── Hero Header ───────────────────────────── -->
-            <div class="create-hero anim-1">
-                <div class="create-hero-icon">
-                    <i class="bi bi-plus-circle-fill"></i>
-                </div>
-                <h1>@Localizer["CreateAnIssue"]</h1>
-                <p>@Localizer["ReportAndTrackInfrastructure"]</p>
-            </div>
+        <div class="issue-page-actions">
+            <a asp-page="/Issues/Index" class="app-link-btn">
+                <i class="bi bi-list-check"></i>
+                <span>@Localizer["BrowseIssues"]</span>
+            </a>
+        </div>
+    </header>
 
-            <!-- ── Step Tracker ──────────────────────────── -->
-            <div class="step-tracker anim-1">
-                <div class="step-item">
-                    <div class="step-bubble active" id="step1Bubble">1</div>
-                    <span class="step-label active" id="step1Label">@Localizer["Details"]</span>
-                </div>
-                <div class="step-connector" id="conn1"></div>
-                <div class="step-item">
-                    <div class="step-bubble" id="step2Bubble">2</div>
-                    <span class="step-label" id="step2Label">@Localizer["Location"]</span>
-                </div>
-                <div class="step-connector" id="conn2"></div>
-                <div class="step-item">
-                    <div class="step-bubble" id="step3Bubble">3</div>
-                    <span class="step-label" id="step3Label">@Localizer["Media"]</span>
-                </div>
-            </div>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success rounded-4 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning rounded-4 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
+        </div>
+    }
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Any()))
+    {
+        <div asp-validation-summary="All" class="alert alert-danger rounded-4 mb-4" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+        </div>
+    }
 
-            <!-- ── Alerts ────────────────────────────────── -->
-            @if (TempData["Success"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-            @if (TempData["Warning"] != null)
-            {
-                <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
+    <div class="create-layout">
+        <form method="post" enctype="multipart/form-data" id="issueForm" class="create-main" novalidate>
+            <div id="createLiveRegion" class="visually-hidden" aria-live="polite"></div>
 
-            <!-- ── Info Banner ───────────────────────────── -->
-            <div class="info-banner anim-2">
-                <i class="bi bi-shield-check-fill"></i>
-                <div>
-                        <strong>@Localizer["YourReportWillBeReviewed"]</strong>
-                        @Localizer["BeAsSpecificAsPossible"]
-            <!-- ── Form ──────────────────────────────────── -->
-            <form method="post" enctype="multipart/form-data" id="issueForm" novalidate>
-
-                <!-- Hidden master fields for ASP.NET model binding -->
-                <input type="hidden" asp-for="Input.Title"       id="masterTitle" />
-                <input type="hidden" asp-for="Input.Description" id="masterDescription" />
-                <input type="hidden" asp-for="Input.CityId"      id="masterCity" />
-                <input type="hidden" asp-for="Input.Latitude"    id="masterLat" />
-                <input type="hidden" asp-for="Input.Longitude"   id="masterLng" />
-
-                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Any()))
-                {
-                    <div asp-validation-summary="All" class="alert alert-danger rounded-3 mb-4" role="alert">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+            <section class="issue-surface create-stepper">
+                <div class="create-stepper__item is-active" data-step-item="details">
+                    <span class="create-stepper__bubble">1</span>
+                    <div>
+                        <strong>@Localizer["Details"]</strong>
+                        <span>@Localizer["BasicInformation"]</span>
                     </div>
-                }
+                </div>
+                <div class="create-stepper__item" data-step-item="location">
+                    <span class="create-stepper__bubble">2</span>
+                    <div>
+                        <strong>@Localizer["Location"]</strong>
+                        <span>@Localizer["PinTheExactSpotOnTheMap"]</span>
+                    </div>
+                </div>
+                <div class="create-stepper__item" data-step-item="media">
+                    <span class="create-stepper__bubble">3</span>
+                    <div>
+                        <strong>@Localizer["Media"]</strong>
+                        <span>@Localizer["PhotosAndVideos"]</span>
+                    </div>
+                </div>
+            </section>
 
-                <!-- ── STEP 1 · Basic Info ─────────────────────── -->
-                <div class="create-card anim-2">
-                    <div class="create-card-header">
-                        <div class="create-card-step-num">1</div>
-                        <div class="create-card-header-text">
-                            <h6>@Localizer["BasicInformation"]</h6>
-                            <small>@Localizer["GiveThemeAClearTitleAndDescription"]</small>
+            <section class="issue-surface create-card">
+                <div class="create-card__header">
+                    <div>
+                        <span class="create-card__eyebrow">01</span>
+                        <h2>@Localizer["BasicInformation"]</h2>
+                        <p>@Localizer["GiveThemeAClearTitleAndDescription"]</p>
+                    </div>
+                </div>
+
+                <div class="create-card__body">
+                    <div class="create-field">
+                        <label for="issueTitle" class="create-label">@Localizer["IssueTitle"]</label>
+                        <input asp-for="Input.Title"
+                               class="create-input create-input--lg"
+                               id="issueTitle"
+                               maxlength="200"
+                               placeholder="@Localizer["ExamplePotholeOnMainStreet"]" />
+                        <div class="create-field__meta">
+                            <span class="create-field__hint">@Localizer["SpecificAndDescriptive"]</span>
+                            <span class="create-counter" id="titleCounter"></span>
                         </div>
+                        <span asp-validation-for="Input.Title" class="create-validation" id="titleValidation"></span>
                     </div>
-                    <div class="create-card-body">
 
-                        <!-- Title -->
-                        <div class="mb-5">
-                            <label for="baseTitle" class="create-label">
-                                @Localizer["IssueTitle"] <span class="required-star">*</span>
-                            </label>
-                            <input type="text"
-                                   class="create-input input-lg"
-                                   id="baseTitle"
-                                   name="baseTitle"
-                                   placeholder="@Localizer["ExamplePotholeOnMainStreet"]"
-                                   maxlength="200" />
-                            <span asp-validation-for="Input.Title" class="text-danger" style="font-size: var(--text-xs);"></span>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <span class="input-hint">
-                                    <i class="bi bi-pencil"></i>
-                                    @Localizer["SpecificAndDescriptive"]
-                                </span>
-                                <span class="char-counter" id="titleCounterDisplay">0 / 200</span>
+                    <div class="create-field">
+                        <label for="issueDescription" class="create-label">@Localizer["Description"]</label>
+                        <textarea asp-for="Input.Description"
+                                  class="create-textarea"
+                                  id="issueDescription"
+                                  rows="7"
+                                  maxlength="5000"
+                                  placeholder="@Localizer["DescribeTheIssueInDetail"]"></textarea>
+                        <div class="create-field__meta">
+                            <span class="create-field__hint">@Localizer["MinimumTenCharacters"]</span>
+                            <span class="create-counter" id="descriptionCounter"></span>
+                        </div>
+                        <span asp-validation-for="Input.Description" class="create-validation" id="descriptionValidation"></span>
+                    </div>
+
+                    <div class="create-field">
+                        <label asp-for="Input.TagNames" class="create-label">
+                            @Localizer["TagsLabel"]
+                            <span class="create-label__optional">@Localizer["Optional"]</span>
+                        </label>
+                        <input asp-for="Input.TagNames"
+                               class="create-input"
+                               id="tagInput"
+                               placeholder="@Localizer["TagsPlaceholder"]"
+                               aria-label="@Localizer["TagsLabel"]" />
+                        <span class="create-field__hint">@Localizer["TagsHint"]</span>
+                    </div>
+
+                    <div class="create-field">
+                        <div class="create-suggestions__header">
+                            <span class="create-label">@Localizer["SuggestedTagsLabel"]</span>
+                            <span class="create-field__hint">@Localizer["SuggestedTagsHint"]</span>
+                        </div>
+                        <div id="suggestedTags" class="create-suggestions"></div>
+                    </div>
+
+                    <section class="create-field create-field--ai">
+                        <div class="create-ai-panel" id="aiIssueSuggestionPanel" aria-live="polite">
+                            <div class="create-ai-panel__header">
+                                <span class="create-label">Smart Issue Classification</span>
+                                <span class="create-ai-badge" id="aiSuggestionSourceBadge">AI-generated</span>
                             </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="mb-0">
-                            <label for="baseDescription" class="create-label">
-                                @Localizer["Description"] <span class="required-star">*</span>
-                            </label>
-                            <textarea class="create-textarea"
-                                      id="baseDescription"
-                                      name="baseDescription"
-                                      rows="6"
-                                      maxlength="5000"
-                                      placeholder="@Localizer["DescribeTheIssueInDetail"]"></textarea>
-                            <span class="text-danger" style="font-size: var(--text-xs);"></span>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <span class="input-hint">
-                                    <i class="bi bi-chat-text"></i>
-                                    @Localizer["MinimumTenCharacters"]
-                                </span>
-                                <span class="char-counter" id="descCounterDisplay">0 / 5000</span>
+                            <div class="create-ai-skeleton d-none" id="aiSuggestionSkeleton" aria-hidden="true">
+                                <span class="app-skeleton"></span>
+                                <span class="app-skeleton"></span>
                             </div>
-                        </div>
-
-                        <!-- Tags input (manual + AI suggestions) -->
-                        <div class="mb-5">
-                            <label for="tagInput" class="create-label">
-                                Tags <span class="optional-tag">Optional</span>
-                            </label>
-                            <input type="text"
-                                   class="create-input"
-                                   id="tagInput"
-                                   placeholder="e.g. pothole, safety, street-light"
-                                   aria-label="Tag names" />
-                            <input type="hidden" asp-for="Input.TagNames" id="masterTags" />
-                            <div class="input-hint"><i class="bi bi-tags"></i> Comma-separated tags (will attempt to map existing tags)</div>
-                        </div>
-
-                        <div class="mb-5">
-                            <div style="font-size: var(--text-xs); font-weight: var(--font-semibold); text-transform: uppercase; color: var(--gray-400); margin-bottom: var(--space-2);">
-                                <i class="bi bi-robot"></i> AI suggested tags
-                            </div>
-                            <div id="suggestedTags" class="d-flex flex-wrap gap-2"></div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- ── STEP 2 · Location ───────────────────────── -->
-                <div class="create-card anim-3">
-                    <div class="create-card-header">
-                        <div class="create-card-step-num">2</div>
-                        <div class="create-card-header-text">
-                            <h6>@Localizer["LocationSectionHeading"]</h6>
-                            <small>@Localizer["PinTheExactSpotOnTheMapDescription"]</small>
-                        </div>
-                    </div>
-                    <div class="create-card-body">
-
-                        <!-- Address -->
-                        <div class="mb-5">
-                            <label asp-for="Input.Address" class="create-label">
-                                @Localizer["Address"] <span class="optional-tag">@Localizer["Optional"]</span>
-                            </label>
-                            <input asp-for="Input.Address"
-                                   class="create-input"
-                                   placeholder="@Localizer["AddressAutoFilled"]" />
-                            <span class="input-hint"><i class="bi bi-magic"></i> @Localizer["ReverseGeocodedFromYourMapPin"]</span>
-                        </div>
-
-                        <!-- Map -->
-                        <div class="mb-5">
-                            <label class="create-label">
-                                @Localizer["PinOnMap"] <span class="required-star">*</span>
-                            </label>
-                            <div class="map-container">
-                                <div id="map"></div>
-                                <div class="coords-pill">
-                                    <i class="bi bi-crosshair"></i>
-                                    <span>@Localizer["Coordinates"]</span>
-                                    <strong id="coordsDisplay">@Localizer["ClickTheMapToPlacePin"]</strong>
+                            <p class="create-field__hint mb-2" id="aiSuggestionStatus">AI suggestions will appear after you add enough details.</p>
+                            <div class="create-ai-confidence d-none" id="aiSuggestionConfidenceWrap">
+                                <div class="create-ai-confidence__head">
+                                    <span class="create-field__hint mb-0">Confidence</span>
+                                    <strong id="aiSuggestionConfidenceText">0%</strong>
+                                </div>
+                                <div class="create-ai-confidence__track" aria-hidden="true">
+                                    <span class="create-ai-confidence__fill" id="aiSuggestionConfidenceBar"></span>
                                 </div>
                             </div>
-                            <input type="hidden" asp-for="Input.Latitude"  id="latitude" />
-                            <input type="hidden" asp-for="Input.Longitude" id="longitude" />
-                            <span asp-validation-for="Input.Latitude"  class="text-danger" style="font-size: var(--text-xs);"></span>
                         </div>
 
-                        <!-- City -->
-                        <div class="mb-0">
-                            <label for="baseCity" class="create-label">
-                                @Localizer["CityOrCities"] <span class="required-star">*</span>
-                            </label>
-                            <select class="create-select" id="baseCity" name="baseCity">
-                                <option value="">@Localizer["SelectACity"]</option>
-                                @foreach (var city in Model.Cities)
-                                {
-                                    <option value="@city.Value">@city.Text</option>
-                                }
-                            </select>
-                            <span class="input-hint"><i class="bi bi-building"></i> @Localizer["UsuallyAutoSelectedFromYourMapPin"]</span>
+                        <div class="create-ai-grid">
+                            <div class="create-field">
+                                <label asp-for="Input.Category" class="create-label">@Localizer["CategoryLabel"]</label>
+                                <select asp-for="Input.Category" class="create-select" id="issueCategory">
+                                    <option value="">Select category</option>
+                                    @foreach (var category in Enum.GetValues<IssueCategory>())
+                                    {
+                                        <option value="@category">@category</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="create-field">
+                                <label asp-for="Input.Priority" class="create-label">@Localizer["SeverityLabel"]</label>
+                                <select asp-for="Input.Priority" class="create-select" id="issuePriority">
+                                    <option value="">Select severity</option>
+                                    @foreach (var priority in Enum.GetValues<IssuePriority>())
+                                    {
+                                        <option value="@priority">@priority</option>
+                                    }
+                                </select>
+                            </div>
                         </div>
 
+                        <div class="create-field">
+                            <label asp-for="Input.Department" class="create-label">Department</label>
+                            <input asp-for="Input.Department"
+                                   class="create-input"
+                                   id="issueDepartment"
+                                   maxlength="120"
+                                   placeholder="Suggested municipal department" />
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="issue-surface create-card">
+                <div class="create-card__header">
+                    <div>
+                        <span class="create-card__eyebrow">02</span>
+                        <h2>@Localizer["Location"]</h2>
+                        <p>@Localizer["PinTheExactSpotOnTheMapDescription"]</p>
                     </div>
                 </div>
 
-                <!-- ── STEP 3 · Media ──────────────────────────── -->
-                <div class="create-card anim-4">
-                    <div class="create-card-header">
-                        <div class="create-card-step-num">3</div>
-                        <div class="create-card-header-text">
-                            <h6>@Localizer["PhotosAndVideos"]</h6>
-                            <small>@Localizer["VisualEvidenceHelpsOfficials"]</small>
-                        </div>
-                        <span class="badge" style="background: var(--gray-100); color: var(--gray-500); font-size: var(--text-xs); border: 1px solid var(--gray-200); font-weight: var(--font-semibold);">@Localizer["Optional"]</span>
+                <div class="create-card__body">
+                    <div class="create-field">
+                        <label for="issueAddress" class="create-label">
+                            @Localizer["AddressLabel"]
+                            <span class="create-label__optional">@Localizer["Optional"]</span>
+                        </label>
+                        <input asp-for="Input.Address"
+                               class="create-input"
+                               id="issueAddress"
+                               placeholder="@Localizer["AddressAutoFilled"]" />
+                        <span class="create-field__hint">@Localizer["ReverseGeocodedFromYourMapPin"]</span>
                     </div>
-                    <div class="create-card-body">
 
-                        <div class="upload-zone" id="uploadZone">
-                            <div class="upload-zone-icon">
-                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                    <div class="create-field">
+                        <label class="create-label" for="map">@Localizer["PinOnMap"]</label>
+                        <div class="create-map">
+                            <div id="map" class="create-map__canvas" aria-label="@Localizer["PinOnMap"]"></div>
+                            <div class="create-map__meta">
+                                <div>
+                                    <strong>@Localizer["Coordinates"]</strong>
+                                    <span id="coordsDisplay">@Localizer["ClickTheMapToPlacePin"]</span>
+                                </div>
                             </div>
-                            <div class="upload-zone-title">
-                                @Localizer["DropFilesHereOrBrowseToUpload"]
-                            </div>
-                            <div class="upload-zone-sub">
-                                @Localizer["UploadFileInfo"]
-                            </div>
-                            <div class="upload-type-chips">
-                                <span class="upload-chip"><i class="bi bi-image"></i> JPG</span>
-                                <span class="upload-chip"><i class="bi bi-image"></i> PNG</span>
-                                <span class="upload-chip"><i class="bi bi-image"></i> WEBP</span>
-                                <span class="upload-chip"><i class="bi bi-play-circle"></i> MP4</span>
-                                <span class="upload-chip"><i class="bi bi-play-circle"></i> MOV</span>
-                                <span class="upload-chip"><i class="bi bi-play-circle"></i> WEBM</span>
-                            </div>
-                            <input type="file"
-                                   asp-for="Input.Photos"
-                                   id="mediaInput"
-                                   multiple
-                                   accept="image/*,video/*"
-                                   style="display: none;" />
                         </div>
+                        <input asp-for="Input.Latitude" id="latitude" type="hidden" />
+                        <input asp-for="Input.Longitude" id="longitude" type="hidden" />
+                        <span asp-validation-for="Input.Latitude" class="create-validation"></span>
+                    </div>
 
-                        <div class="media-preview-grid" id="mediaPreviewGrid"></div>
-
+                    <div class="create-field">
+                        <label for="baseCity" class="create-label">@Localizer["CityOrCities"]</label>
+                        <select asp-for="Input.CityId" class="create-select" id="baseCity">
+                            <option value="">@Localizer["SelectACity"]</option>
+                            @foreach (var city in Model.Cities)
+                            {
+                                <option value="@city.Value">@city.Text</option>
+                            }
+                        </select>
+                        <span class="create-field__hint">@Localizer["UsuallyAutoSelectedFromYourMapPin"]</span>
+                        <span asp-validation-for="Input.CityId" class="create-validation" id="cityValidation"></span>
                     </div>
                 </div>
+            </section>
 
-                <!-- ── Submit Footer ───────────────────────────── -->
-                <div class="submit-footer anim-5">
-                    <div class="submit-footer-meta">
-                        <i class="bi bi-shield-check-fill"></i>
-                        <span>@Localizer["VisibleToPublicAndCityOfficials"]</span>
+            <section class="issue-surface create-card">
+                <div class="create-card__header create-card__header--split">
+                    <div>
+                        <span class="create-card__eyebrow">03</span>
+                        <h2>@Localizer["PhotosAndVideos"]</h2>
+                        <p>@Localizer["VisualEvidenceHelpsOfficials"]</p>
                     </div>
-                    <div class="submit-actions">
-                        <a href="/issues" class="btn-cancel">
-                            <i class="bi bi-x"></i> @Localizer["Cancel"]
-                        </a>
-                        <button type="submit" class="btn-submit" id="baseSubmitBtn">
-                            <i class="bi bi-send-fill"></i>
-                            @Localizer["SubmitReport"]
-                        </button>
-                    </div>
+                    <span class="create-chip">@Localizer["Optional"]</span>
                 </div>
 
-            </form>
-        </div>
+                <div class="create-card__body">
+                    <div class="create-upload" id="uploadZone" role="button" tabindex="0" aria-controls="mediaInput">
+                        <div class="create-upload__icon">
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                        </div>
+                        <h3>@Localizer["DropFilesHereOrBrowseToUpload"]</h3>
+                        <p>@Localizer["UploadFileInfo"]</p>
+                        <div class="create-upload__types">
+                            <span>JPG</span>
+                            <span>PNG</span>
+                            <span>WEBP</span>
+                            <span>MP4</span>
+                            <span>MOV</span>
+                            <span>WEBM</span>
+                        </div>
+                        <input asp-for="Input.Photos"
+                               id="mediaInput"
+                               class="d-none"
+                               type="file"
+                               multiple
+                               accept="image/*,video/*" />
+                    </div>
+
+                    <div class="media-preview-grid" id="mediaPreviewGrid"></div>
+                </div>
+            </section>
+
+            <footer class="issue-surface create-submit">
+                <div class="create-submit__meta">
+                    <i class="bi bi-shield-check"></i>
+                    <span>@Localizer["VisibleToPublicAndCityOfficials"]</span>
+                </div>
+                <div class="create-submit__actions">
+                    <a href="/issues" class="app-link-btn">
+                        <i class="bi bi-x-circle"></i>
+                        <span>@Localizer["Cancel"]</span>
+                    </a>
+                    <button type="submit" class="nav-report-btn" id="baseSubmitBtn">
+                        <i class="bi bi-send-fill"></i>
+                        <span>@Localizer["SubmitReport"]</span>
+                    </button>
+                </div>
+            </footer>
+        </form>
+
+        <aside class="create-sidebar">
+            <section class="issue-surface create-sidebar-card">
+                <h2>@Localizer["ProgressOverview"]</h2>
+                <ul class="create-progress-list">
+                    <li data-progress-item="details">
+                        <span class="create-progress-list__dot"></span>
+                        <div>
+                            <strong>@Localizer["Details"]</strong>
+                            <span>@Localizer["GiveThemeAClearTitleAndDescription"]</span>
+                        </div>
+                    </li>
+                    <li data-progress-item="location">
+                        <span class="create-progress-list__dot"></span>
+                        <div>
+                            <strong>@Localizer["Location"]</strong>
+                            <span>@Localizer["PinTheExactSpotOnTheMapDescription"]</span>
+                        </div>
+                    </li>
+                    <li data-progress-item="media">
+                        <span class="create-progress-list__dot"></span>
+                        <div>
+                            <strong>@Localizer["Media"]</strong>
+                            <span>@Localizer["UploadFileInfo"]</span>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="issue-surface create-sidebar-card">
+                <h2>@Localizer["ReportSnapshot"]</h2>
+                <dl class="create-summary">
+                    <div>
+                        <dt>@Localizer["Title"]</dt>
+                        <dd id="summaryTitleValue">@(string.IsNullOrWhiteSpace(Model.Input.Title) ? Localizer["NotStarted"] : Model.Input.Title)</dd>
+                    </div>
+                    <div>
+                        <dt>@Localizer["CityOrCities"]</dt>
+                        <dd id="summaryCityValue">@(string.IsNullOrWhiteSpace(Model.Input.CityId) ? Localizer["NotStarted"] : Model.Cities.FirstOrDefault(c => c.Value == Model.Input.CityId)?.Text ?? Localizer["NotStarted"])</dd>
+                    </div>
+                    <div>
+                        <dt>@Localizer["Location"]</dt>
+                        <dd id="summaryLocationValue">@Localizer["LocationPending"]</dd>
+                    </div>
+                    <div>
+                        <dt>@Localizer["Media"]</dt>
+                        <dd id="summaryMediaValue">@Localizer["NoMediaSelected"]</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="issue-surface create-sidebar-card">
+                <h2>@Localizer["BeforeYouSubmit"]</h2>
+                <ul class="create-checklist">
+                    <li>@Localizer["BeAsSpecificAsPossible"]</li>
+                    <li>@Localizer["ReverseGeocodedFromYourMapPin"]</li>
+                    <li>@Localizer["VisualEvidenceHelpsOfficials"]</li>
+                </ul>
+            </section>
+        </aside>
     </div>
 </div>
 
 @section PageScripts {
     <partial name="_ValidationScriptsPartial" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-    /* ── State ───────────────────────────────────────── */
-    let map, markerLayer;
-    let selectedLat = 42.6977, selectedLng = 23.3219;
-    let geocodingCache = {};
-    let lastGeocodingRequest = 0;
-    let selectedCityFromGeocode = null;
-    const GEOCODING_THROTTLE_MS = 500;
-
-    /* ── Init ────────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', () => {
-        // Reset submit button (fixes "Processing..." stuck state on back-nav)
-        const submitBtn = document.getElementById('baseSubmitBtn');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-send-fill"></i> Submit Report';
-        }
-
-        document.getElementById('latitude').value  = selectedLat;
-        document.getElementById('longitude').value = selectedLng;
-
-        initMap();
-        initCharCounter('baseTitle',       'titleCounterDisplay', 200);
-        initCharCounter('baseDescription', 'descCounterDisplay',  5000);
-        initUploadZone();
-        initStepTracker();
-    });
-
-    /* ── Step Tracker (progressive validation feedback) ─ */
-    function initStepTracker() {
-        const titleEl = document.getElementById('baseTitle');
-        const descEl  = document.getElementById('baseDescription');
-        const cityEl  = document.getElementById('baseCity');
-
-        function updateSteps() {
-            const step1Done = titleEl.value.trim().length >= 3 && descEl.value.trim().length >= 10;
-            const step2Done = !!(cityEl.value && document.getElementById('latitude').value);
-
-            setStepState(1, step1Done ? 'done' : 'active');
-            setStepState(2, step1Done ? (step2Done ? 'done' : 'active') : 'idle');
-            setStepState(3, step2Done ? 'active' : 'idle');
-
-            document.getElementById('conn1').classList.toggle('done', step1Done);
-            document.getElementById('conn2').classList.toggle('done', step2Done);
-        }
-
-        titleEl.addEventListener('input', updateSteps);
-        descEl.addEventListener('input',  updateSteps);
-        cityEl.addEventListener('change', updateSteps);
-    }
-
-    function setStepState(num, state) {
-        const bubble = document.getElementById(`step${num}Bubble`);
-        const label  = document.getElementById(`step${num}Label`);
-
-        bubble.className = 'step-bubble';
-        label.className  = 'step-label';
-
-        if (state === 'done') {
-            bubble.classList.add('done');
-            bubble.innerHTML = '<i class="bi bi-check-lg" style="font-size:.75rem;"></i>';
-            label.classList.add('done');
-        } else if (state === 'active') {
-            bubble.classList.add('active');
-            bubble.textContent = num;
-            label.classList.add('active');
-        } else {
-            bubble.textContent = num;
-        }
-    }
-
-    /* ── Character Counter ───────────────────────────── */
-    function initCharCounter(inputId, displayId, max) {
-        const input   = document.getElementById(inputId);
-        const display = document.getElementById(displayId);
-        if (!input || !display) return;
-
-        function update() {
-            const len = input.value.length;
-            display.textContent = `${len} / ${max}`;
-            display.className = 'char-counter';
-            if (len >= max)         display.classList.add('at-limit');
-            else if (len >= max * .85) display.classList.add('near-limit');
-        }
-
-        input.addEventListener('input', update);
-        update();
-    }
-
-    /* ── Map ─────────────────────────────────────────── */
-    function initMap() {
-        map = L.map('map').setView([selectedLat, selectedLng], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        map.on('click', (e) => {
-            selectedLat = e.latlng.lat;
-            selectedLng = e.latlng.lng;
-            updateMarker();
-        });
-
-        updateMarker();
-    }
-
-    function updateMarker() {
-        document.getElementById('latitude').value  = selectedLat;
-        document.getElementById('longitude').value = selectedLng;
-        document.getElementById('coordsDisplay').textContent = `${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
-
-        if (markerLayer) map.removeLayer(markerLayer);
-        markerLayer = L.marker([selectedLat, selectedLng]).addTo(map);
-
-        reverseGeocode(selectedLat, selectedLng);
-    }
-
-    async function reverseGeocode(lat, lng) {
-        const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
-        if (geocodingCache[key]) {
-            applyGeocode(geocodingCache[key]);
-            return;
-        }
-
-        const now = Date.now();
-        if (now - lastGeocodingRequest < GEOCODING_THROTTLE_MS) return;
-        lastGeocodingRequest = now;
-
-        try {
-            const res  = await fetch(`/api/geocoding/reverse?latitude=${lat}&longitude=${lng}`, {
-                headers: { Accept: 'application/json' }
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            if (data?.address) {
-                geocodingCache[key] = data;
-                applyGeocode(data);
-            }
-        } catch (e) {
-            console.error('Geocoding error:', e);
-        }
-    }
-
-    function applyGeocode(data) {
-        const addressInput = document.querySelector('input[name="Input.Address"]');
-        if (addressInput) addressInput.value = data.address || '';
-
-        if (data.cityId?.trim()) {
-            const sel = document.getElementById('baseCity');
-            if (sel) {
-                sel.value = data.cityId;
-                selectedCityFromGeocode = data.cityId;
-            }
-        }
-
-        // Trigger step tracker update
-        document.getElementById('baseCity').dispatchEvent(new Event('change'));
-    }
-
-    /* ── Upload Zone ─────────────────────────────────── */
-    function initUploadZone() {
-        const zone  = document.getElementById('uploadZone');
-        const input = document.getElementById('mediaInput');
-
-        zone.addEventListener('click', () => input.click());
-
-        zone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            zone.classList.add('drag-over');
-        });
-        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            zone.classList.remove('drag-over');
-            const dt = new DataTransfer();
-            for (const f of e.dataTransfer.files) dt.items.add(f);
-            input.files = dt.files;
-            renderPreviews();
-        });
-
-        input.addEventListener('change', renderPreviews);
-    }
-
-    function renderPreviews() {
-        const input = document.getElementById('mediaInput');
-        const grid  = document.getElementById('mediaPreviewGrid');
-        grid.innerHTML = '';
-
-        if (!input.files?.length) return;
-
-        const files = Array.from(input.files).slice(0, 10);
-        const MAX_IMG = 5  * 1024 * 1024;
-        const MAX_VID = 100 * 1024 * 1024;
-
-        files.forEach((file, idx) => {
-            const isImg = file.type.startsWith('image/');
-            const isVid = file.type.startsWith('video/');
-            if (!isImg && !isVid) { alert(`${file.name} is not a valid file type`); return; }
-
-            const maxSize = isImg ? MAX_IMG : MAX_VID;
-            if (file.size > maxSize) {
-                alert(`${file.name} exceeds the ${maxSize / 1024 / 1024} MB limit`);
-                return;
-            }
-
-            const item = document.createElement('div');
-            item.className = 'media-preview-item';
-
-            const removeBtn = `<button type="button" class="media-preview-remove" onclick="removeMedia(${idx})" title="Remove">
-                <i class="bi bi-x"></i>
-            </button>`;
-            const badge = `<span class="media-preview-badge">${formatFileSize(file.size)}</span>`;
-
-            if (isImg) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    item.innerHTML = `<img src="${e.target.result}" alt="${file.name}">${removeBtn}${badge}`;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                const ext = file.name.split('.').pop().toUpperCase();
-                item.innerHTML = `
-                    <div class="preview-video-placeholder">
-                        <i class="bi bi-play-circle-fill"></i>
-                        <span>${ext}</span>
-                    </div>
-                    ${removeBtn}${badge}`;
-            }
-
-            grid.appendChild(item);
-        });
-
-        if (input.files.length > 10) alert('Only the first 10 files will be uploaded.');
-    }
-
-    function removeMedia(index) {
-        const input = document.getElementById('mediaInput');
-        const dt    = new DataTransfer();
-        Array.from(input.files).forEach((f, i) => { if (i !== index) dt.items.add(f); });
-        input.files = dt.files;
-        renderPreviews();
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes < 1024)        return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
-
-    function normalizeTags(tagString) {
-        return Array.from(new Set(
-            (tagString || '')
-                .split(',')
-                .map(t => t.trim().toLowerCase())
-                .filter(t => t.length > 0)
-        ));
-    }
-
-    function renderSuggestedTags(tags) {
-        const container = document.getElementById('suggestedTags');
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        if (!tags || tags.length === 0) {
-            container.innerHTML = '<small style="color: var(--gray-400);">No suggestions available yet.</small>';
-            return;
-        }
-
-        tags.slice(0, 8).forEach(tag => {
-            const pill = document.createElement('button');
-            pill.type = 'button';
-            pill.className = 'btn btn-sm btn-outline-primary';
-            pill.textContent = tag;
-            pill.style = 'text-transform:none; margin-bottom:0.25rem;';
-            pill.addEventListener('click', () => {
-                const input = document.getElementById('tagInput');
-                if (!input) return;
-
-                const current = normalizeTags(input.value);
-                if (!current.includes(tag.toLowerCase())) {
-                    current.push(tag.toLowerCase());
-                    input.value = current.join(', ');
-                }
-            });
-            container.appendChild(pill);
-        });
-    }
-
-    let tagSuggestionTimer = null;
-    function requestTagSuggestions() {
-        const title = document.getElementById('baseTitle')?.value.trim() ?? '';
-        const description = document.getElementById('baseDescription')?.value.trim() ?? '';
-
-        if (tagSuggestionTimer) {
-            clearTimeout(tagSuggestionTimer);
-        }
-
-        if (title.length < 3 && description.length < 10) {
-            renderSuggestedTags([]);
-            return;
-        }
-
-        tagSuggestionTimer = setTimeout(async () => {
-            try {
-                const response = await fetch('/api/analysis/suggest-tags', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ title, description })
-                });
-
-                if (!response.ok) {
-                    renderSuggestedTags([]);
-                    return;
-                }
-
-                const suggested = await response.json();
-                renderSuggestedTags(Array.isArray(suggested) ? suggested : []);
-            } catch (e) {
-                console.error('Tag suggestion fetch failed', e);
-                renderSuggestedTags([]);
-            }
-        }, 400);
-    }
-
-    const titleInput = document.getElementById('baseTitle');
-    const descInput = document.getElementById('baseDescription');
-
-    if (titleInput) titleInput.addEventListener('input', requestTagSuggestions);
-    if (descInput)  descInput.addEventListener('input', requestTagSuggestions);
-
-    /* ── Form Submit ─────────────────────────────────── */
-    document.getElementById('issueForm').addEventListener('submit', function (e) {
-        const title       = document.getElementById('baseTitle').value.trim();
-        const description = document.getElementById('baseDescription').value.trim();
-        let   city        = document.getElementById('baseCity').value;
-        const latitude    = document.getElementById('latitude').value  || '42.6977';
-        const longitude   = document.getElementById('longitude').value || '23.3219';
-
-        if (!city && selectedCityFromGeocode) {
-            city = selectedCityFromGeocode;
-            document.getElementById('baseCity').value = city;
-        }
-
-        if (title.length < 3) {
-            e.preventDefault();
-            document.getElementById('baseTitle').focus();
-            alert('Title must be at least 3 characters');
-            return;
-        }
-
-        if (description.length < 10) {
-            e.preventDefault();
-            document.getElementById('baseDescription').focus();
-            alert('Description must be at least 10 characters');
-            return;
-        }
-
-        if (!city) {
-            e.preventDefault();
-                            alert('@Localizer["PleaseSelectACity"]');
-            return;
-        }
-
-        // Sync hidden master fields for ASP.NET model binding
-        document.getElementById('masterTitle').value       = title;
-        document.getElementById('masterDescription').value = description;
-        document.getElementById('masterCity').value        = city;
-        document.getElementById('masterLat').value         = latitude;
-        document.getElementById('masterLng').value         = longitude;
-        document.getElementById('masterTags').value        = document.getElementById('tagInput').value.trim();
-
-        const btn = document.getElementById('baseSubmitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" style="width:14px;height:14px;"></span> Submitting…';
-    });
-    </script>
+    <script src="~/js/modules/issue-create.js" asp-append-version="true" defer></script>
 }

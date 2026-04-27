@@ -1,9 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Text.Json;
 using FixIt.Services.AI;
 using FixIt.Models.Users;
 using FixIt.ViewModels;
+using FixIt.Data.Repository.Contracts;
+using FixIt.Models.Moderation;
+using FixIt.Services.Contracts;
+using FixIt.Services.Constants;
 
 namespace FixIt.Controllers;
 
@@ -12,19 +18,29 @@ namespace FixIt.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin,Moderator")]
+[Authorize(Roles = RoleNames.AdminOrModerator)]
+[EnableRateLimiting(RateLimitPolicyNames.Reporting)]
 public class SuggestionsController : ControllerBase
 {
     private readonly IAdminSuggestionsService _suggestionsService;
+    private readonly IIssueService _issueService;
+    private readonly IRepository<ContentReport> _reportRepository;
+    private readonly ICivicAiService _civicAiService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<SuggestionsController> _logger;
 
     public SuggestionsController(
         IAdminSuggestionsService suggestionsService,
+        IIssueService issueService,
+        IRepository<ContentReport> reportRepository,
+        ICivicAiService civicAiService,
         UserManager<ApplicationUser> userManager,
         ILogger<SuggestionsController> logger)
     {
         _suggestionsService = suggestionsService;
+        _issueService = issueService;
+        _reportRepository = reportRepository;
+        _civicAiService = civicAiService;
         _userManager = userManager;
         _logger = logger;
     }
@@ -219,6 +235,197 @@ public class SuggestionsController : ControllerBase
             _logger.LogError($"Error retrieving suggestion: {ex.Message}");
             return StatusCode(500, new { error = "Failed to retrieve suggestion" });
         }
+    }
+
+    [HttpPost("issues/{issueId}/summary")]
+    public async Task<ActionResult<object>> SummarizeIssue(string issueId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(issueId))
+        {
+            return BadRequest(new { error = "Issue ID is required" });
+        }
+
+        try
+        {
+            var issue = await _issueService.GetIssueByIdAsync(issueId);
+            if (issue == null)
+            {
+                return NotFound(new { error = "Issue not found" });
+            }
+
+            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var result = await _civicAiService.SummarizeIssueThreadAsync(new IssueThreadSummaryInput
+            {
+                IssueId = issueId,
+                Title = issue.Title,
+                Description = issue.Description,
+                Comments = comments
+                    .Where(c => !c.IsDeleted)
+                    .Select(c => c.Text)
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Take(12)
+                    .ToList()
+            }, cancellationToken);
+
+            return Ok(new
+            {
+                content = result.Content,
+                aiGenerated = result.AiGenerated,
+                fallbackUsed = result.FallbackUsed
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating issue summary for {IssueId}", issueId);
+            return StatusCode(500, new { error = "Failed to summarize issue" });
+        }
+    }
+
+    [HttpPost("issues/{issueId}/summary/stream")]
+    public async Task StreamIssueSummary(string issueId, CancellationToken cancellationToken)
+    {
+        Response.ContentType = "application/x-ndjson";
+
+        if (string.IsNullOrWhiteSpace(issueId))
+        {
+            await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Issue ID is required." }, cancellationToken);
+            return;
+        }
+
+        try
+        {
+            var issue = await _issueService.GetIssueByIdAsync(issueId);
+            if (issue == null)
+            {
+                await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Issue not found." }, cancellationToken);
+                return;
+            }
+
+            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            await foreach (var aiEvent in _civicAiService.StreamIssueThreadSummaryAsync(new IssueThreadSummaryInput
+                           {
+                               IssueId = issueId,
+                               Title = issue.Title,
+                               Description = issue.Description,
+                               Comments = comments
+                                   .Where(c => !c.IsDeleted)
+                                   .Select(c => c.Text)
+                                   .Where(t => !string.IsNullOrWhiteSpace(t))
+                                   .Take(12)
+                                   .ToList()
+                           }, cancellationToken))
+            {
+                await WriteNdjsonEventAsync(aiEvent, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error streaming issue summary for {IssueId}", issueId);
+            await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Failed to stream issue summary." }, cancellationToken);
+        }
+    }
+
+    [HttpPost("reports/{reportId}/summary")]
+    public async Task<ActionResult<object>> SummarizeReport(string reportId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(reportId))
+        {
+            return BadRequest(new { error = "Report ID is required" });
+        }
+
+        try
+        {
+            var report = await _reportRepository.GetByIdAsync(reportId);
+            if (report == null)
+            {
+                return NotFound(new { error = "Report not found" });
+            }
+
+            var reportInput = await BuildReportSummaryInputAsync(report, cancellationToken);
+            var result = await _civicAiService.SummarizeReportAsync(reportInput, cancellationToken);
+            return Ok(new
+            {
+                content = result.Content,
+                aiGenerated = result.AiGenerated,
+                fallbackUsed = result.FallbackUsed
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating report summary for {ReportId}", reportId);
+            return StatusCode(500, new { error = "Failed to summarize report" });
+        }
+    }
+
+    [HttpPost("reports/{reportId}/summary/stream")]
+    public async Task StreamReportSummary(string reportId, CancellationToken cancellationToken)
+    {
+        Response.ContentType = "application/x-ndjson";
+
+        if (string.IsNullOrWhiteSpace(reportId))
+        {
+            await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Report ID is required." }, cancellationToken);
+            return;
+        }
+
+        try
+        {
+            var report = await _reportRepository.GetByIdAsync(reportId);
+            if (report == null)
+            {
+                await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Report not found." }, cancellationToken);
+                return;
+            }
+
+            var reportInput = await BuildReportSummaryInputAsync(report, cancellationToken);
+            await foreach (var aiEvent in _civicAiService.StreamReportSummaryAsync(reportInput, cancellationToken))
+            {
+                await WriteNdjsonEventAsync(aiEvent, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error streaming report summary for {ReportId}", reportId);
+            await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Failed to stream report summary." }, cancellationToken);
+        }
+    }
+
+    private async Task<ReportSummaryInput> BuildReportSummaryInputAsync(ContentReport report, CancellationToken cancellationToken)
+    {
+        var reportInput = new ReportSummaryInput
+        {
+            ReportId = report.Id,
+            Reason = report.Reason.ToString(),
+            Details = report.Details,
+            TargetId = report.TargetId,
+            TargetType = report.TargetType.ToString()
+        };
+
+        if (report.TargetType == FixIt.Models.Enums.ModerationTargetType.Issue && !string.IsNullOrWhiteSpace(report.TargetId))
+        {
+            var issue = await _issueService.GetIssueByIdAsync(report.TargetId);
+            if (issue != null)
+            {
+                var comments = await _issueService.GetCommentsForIssueAsync(report.TargetId);
+                reportInput.IssueTitle = issue.Title;
+                reportInput.IssueDescription = issue.Description;
+                reportInput.IssueComments = comments
+                    .Where(c => !c.IsDeleted)
+                    .Select(c => c.Text)
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Take(12)
+                    .ToList();
+            }
+        }
+
+        return reportInput;
+    }
+
+    private async Task WriteNdjsonEventAsync(AiStreamEvent aiEvent, CancellationToken cancellationToken)
+    {
+        var json = JsonSerializer.Serialize(aiEvent);
+        await Response.WriteAsync(json + "\n", cancellationToken);
+        await Response.Body.FlushAsync(cancellationToken);
     }
 }
 

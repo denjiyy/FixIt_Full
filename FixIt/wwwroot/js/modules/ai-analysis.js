@@ -5,18 +5,59 @@
 const AIAnalysis = (() => {
     'use strict';
 
+    const root = document.getElementById('issueDetailRoot');
+    const locale = root?.dataset.locale || document.documentElement.lang || undefined;
+    const i18n = {
+        title: root?.dataset.analysisTitle || 'AI Analysis',
+        pending: root?.dataset.analysisPending || 'Pending',
+        complete: root?.dataset.analysisComplete || 'Complete',
+        unavailable: root?.dataset.analysisUnavailable || 'Analysis unavailable',
+        errorCopy: root?.dataset.analysisErrorCopy || 'Could not generate analysis at this time.',
+        retry: root?.dataset.analysisRetry || 'Retry',
+        generatingTitle: root?.dataset.analysisGeneratingTitle || 'Generating analysis...',
+        generatingCopy: root?.dataset.analysisGeneratingCopy || 'This may take a few seconds.',
+        categoryLabel: root?.dataset.analysisCategoryLabel || 'Category',
+        severityLabel: root?.dataset.analysisSeverityLabel || 'Severity',
+        keywordsLabel: root?.dataset.analysisKeywordsLabel || 'Keywords',
+        suggestedTagsLabel: root?.dataset.analysisSuggestedTagsLabel || 'Suggested Tags',
+        notesLabel: root?.dataset.analysisNotesLabel || 'Analysis Notes',
+        similarIssuesLabel: root?.dataset.analysisSimilarIssuesLabel || 'Similar Issues',
+        moreLabel: root?.dataset.analysisMoreLabel || 'more',
+        confidenceSuffix: root?.dataset.analysisConfidenceSuffix || 'confidence',
+        analyzedLabel: root?.dataset.analysisAnalyzedLabel || 'Analyzed'
+    };
+
     let checkInterval = null;
     let checkAttempts = 0;
-    const MAX_ATTEMPTS = 60;
-    const POLL_INTERVAL = 5000;
+    const maxAttempts = 60;
+    const pollInterval = 5000;
+
+    function hydrateProgress(container = document) {
+        container.querySelectorAll('.severity-fill[data-width]').forEach((bar) => {
+            const width = Number.parseFloat(bar.dataset.width || '');
+            if (!Number.isNaN(width)) {
+                bar.style.width = `${width}%`;
+            }
+        });
+    }
+
+    function formatAnalyzedDate(value) {
+        return new Date(value).toLocaleString(locale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
 
     async function load(issueId) {
         try {
-            const res = await fetch(`/api/analysis/analyze/${issueId}`);
-            const data = await res.json();
+            const response = await fetch(`/api/analysis/analyze/${issueId}`);
+            const data = await response.json();
             if (data.success && data.analysis) {
                 display(data.analysis);
-                clearInterval(checkInterval);
+                window.clearInterval(checkInterval);
                 return true;
             }
             return false;
@@ -25,152 +66,210 @@ const AIAnalysis = (() => {
         }
     }
 
-    function display(a) {
-        const el = document.getElementById('analysisPlaceholder');
-        if (!el) return;
+    function display(analysis) {
+        const placeholder = document.getElementById('analysisPlaceholder');
+        if (!placeholder) return;
 
-        const sColor = a.estimatedSeverity >= 8 ? '#ef4444' : a.estimatedSeverity >= 5 ? '#f59e0b' : '#10b981';
-        const sBg = a.estimatedSeverity >= 8 ? 'var(--danger)' : a.estimatedSeverity >= 5 ? 'var(--warning)' : 'var(--success)';
-        const sLightBg = a.estimatedSeverity >= 8 ? 'var(--danger-light)' : a.estimatedSeverity >= 5 ? 'var(--warning-light)' : 'var(--success-light)';
+        const severityToneClass = analysis.estimatedSeverity >= 8
+            ? 'detail-metric__icon--danger'
+            : analysis.estimatedSeverity >= 5
+                ? 'detail-metric__icon--warning'
+                : 'detail-metric__icon--success';
+        const severityFillClass = analysis.estimatedSeverity >= 8
+            ? 'detail-progress__bar--danger'
+            : analysis.estimatedSeverity >= 5
+                ? 'detail-progress__bar--warning'
+                : 'detail-progress__bar--success';
 
-        const kwHtml = (a.keywords?.length) ? `
-            <div class="mb-4">
-                <div style="font-size:var(--text-xs);font-weight:var(--font-semibold);text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);margin-bottom:var(--space-2);">
-                    <i class="bi bi-key-fill me-1"></i>Keywords
+        const keywordMarkup = analysis.keywords?.length
+            ? `
+                <div class="detail-chip-block">
+                    <span class="detail-chip-block__label">${i18n.keywordsLabel}</span>
+                    <div class="detail-chip-list">
+                        ${analysis.keywords.slice(0, 6).map((keyword) => `<span class="detail-chip">${keyword}</span>`).join('')}
+                        ${analysis.keywords.length > 6 ? `<span class="detail-chip">+${analysis.keywords.length - 6} ${i18n.moreLabel}</span>` : ''}
+                    </div>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
-                    ${a.keywords.slice(0, 6).map(k => `<span class="badge" style="background:var(--gray-100);color:var(--gray-700);border:1px solid var(--gray-200);font-size:var(--text-xs);font-weight:var(--font-medium);text-transform:none;letter-spacing:0;">${k}</span>`).join('')}
-                    ${a.keywords.length > 6 ? `<span class="badge" style="background:var(--gray-100);color:var(--gray-400);border:1px solid var(--gray-200);">+${a.keywords.length - 6} more</span>` : ''}
-                </div>
-            </div>` : '';
+            `
+            : '';
 
-        const tagHtml = (a.suggestedTags?.length) ? `
-            <div class="mb-4">
-                <div style="font-size:var(--text-xs);font-weight:var(--font-semibold);text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);margin-bottom:var(--space-2);">
-                    <i class="bi bi-hash me-1"></i>Suggested Tags
+        const suggestedTagMarkup = analysis.suggestedTags?.length
+            ? `
+                <div class="detail-chip-block">
+                    <span class="detail-chip-block__label">${i18n.suggestedTagsLabel}</span>
+                    <div class="detail-chip-list">
+                        ${analysis.suggestedTags.slice(0, 5).map((tag) => `<a href="/tags/${tag}" class="detail-chip detail-chip--link">#${tag}</a>`).join('')}
+                        ${analysis.suggestedTags.length > 5 ? `<span class="detail-chip">+${analysis.suggestedTags.length - 5} ${i18n.moreLabel}</span>` : ''}
+                    </div>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
-                    ${a.suggestedTags.slice(0, 5).map(t => `<a href="/tags/${t}" class="badge" style="background:var(--primary-50);color:var(--primary-700);border:1px solid var(--primary-200);text-decoration:none;font-weight:var(--font-medium);text-transform:none;letter-spacing:0;font-size:var(--text-xs);">#${t}</a>`).join('')}
-                    ${a.suggestedTags.length > 5 ? `<span class="badge" style="background:var(--gray-100);color:var(--gray-400);border:1px solid var(--gray-200);">+${a.suggestedTags.length - 5} more</span>` : ''}
+            `
+            : '';
+
+        const notesMarkup = analysis.reasoning
+            ? `
+                <div class="detail-note">
+                    <strong>${i18n.notesLabel}</strong>
+                    <p>${analysis.reasoning}</p>
                 </div>
-            </div>` : '';
+            `
+            : '';
 
-        const reasonHtml = a.reasoning ? `
-            <div class="ai-reasoning mb-4">
-                <div class="label"><i class="bi bi-chat-right-quote-fill"></i> Analysis Notes</div>
-                ${a.reasoning}
-            </div>` : '';
+        const duplicateMarkup = analysis.potentialDuplicates?.length
+            ? `
+                <div class="detail-duplicates">
+                    <span class="detail-chip-block__label">${i18n.similarIssuesLabel}</span>
+                    ${analysis.potentialDuplicates.slice(0, 3).map((duplicate) => `
+                        <a href="/issues/${duplicate.issueId}" class="detail-duplicate-card">
+                            <div>
+                                <strong>${duplicate.issueTitle}</strong>
+                                <span>${duplicate.reason}</span>
+                            </div>
+                            <em>${duplicate.similarityScore}%</em>
+                        </a>
+                    `).join('')}
+                </div>
+            `
+            : '';
 
-        el.innerHTML = `
-            <div class="ai-card-header">
-                <div class="ai-card-header-left"><i class="bi bi-stars"></i> AI Analysis</div>
-                <span class="badge bg-success" style="font-size:var(--text-xs);"><i class="bi bi-check-circle-fill me-1"></i>Complete</span>
+        placeholder.innerHTML = `
+            <div class="detail-card__header detail-card__header--split">
+                <h2>${i18n.title}</h2>
+                <span class="detail-status detail-status--success">${i18n.complete}</span>
             </div>
-            <div class="ai-card-body">
-                <div class="row g-3 mb-4">
-                    <div class="col-sm-6">
-                        <div class="ai-metric">
-                            <div class="ai-metric-icon" style="background:var(--info-light);color:var(--info);"><i class="bi bi-tag-fill"></i></div>
-                            <div>
-                                <div class="ai-metric-label">Category</div>
-                                <div class="ai-metric-value">${a.category}</div>
-                                <div class="ai-metric-sub">${a.confidenceScore}% confidence</div>
+            <div class="detail-card__body">
+                <div class="detail-metric-grid">
+                    <article class="detail-metric">
+                        <div class="detail-metric__icon">
+                            <i class="bi bi-tag-fill"></i>
+                        </div>
+                        <div>
+                            <span>${i18n.categoryLabel}</span>
+                            <strong>${analysis.category}</strong>
+                            <small>${analysis.confidenceScore}% ${i18n.confidenceSuffix}</small>
+                        </div>
+                    </article>
+                    <article class="detail-metric">
+                        <div class="detail-metric__icon ${severityToneClass}">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        </div>
+                        <div>
+                            <span>${i18n.severityLabel}</span>
+                            <strong>${analysis.estimatedSeverity} / 10</strong>
+                            <div class="detail-progress">
+                                <div class="detail-progress__bar ${severityFillClass} severity-fill" data-width="${analysis.estimatedSeverity * 10}"></div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="ai-metric">
-                            <div class="ai-metric-icon" style="background:${sLightBg};color:${sColor};"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                            <div>
-                                <div class="ai-metric-label">Severity</div>
-                                <div class="ai-metric-value">${a.estimatedSeverity} <span style="font-size:var(--text-sm);color:var(--gray-400);">/ 10</span></div>
-                                <div class="severity-track"><div class="severity-fill" style="width:${a.estimatedSeverity * 10}%;background:${sBg};"></div></div>
-                            </div>
-                        </div>
-                    </div>
+                    </article>
                 </div>
-                ${kwHtml}${tagHtml}${reasonHtml}
-                <div style="font-size:var(--text-xs);color:var(--gray-400);border-top:1px solid var(--gray-100);padding-top:var(--space-3);margin-top:var(--space-2);">
-                    <i class="bi bi-clock me-1"></i>
-                    Analyzed ${new Date(a.analyzedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                ${keywordMarkup}
+                ${suggestedTagMarkup}
+                ${notesMarkup}
+                ${duplicateMarkup}
+                <div class="detail-analysis-meta">
+                    <i class="bi bi-clock-history"></i>
+                    <span>${i18n.analyzedLabel} ${formatAnalyzedDate(analysis.analyzedAt)}</span>
                 </div>
-            </div>`;
+            </div>
+        `;
+
+        hydrateProgress(placeholder);
     }
 
     function showError() {
-        const el = document.getElementById('analysisPlaceholder');
-        if (!el) return;
-        el.innerHTML = `
-            <div class="ai-card-header">
-                <div class="ai-card-header-left"><i class="bi bi-stars"></i> AI Analysis</div>
-                <span class="badge" style="background:var(--warning-light);color:var(--warning-dark);border:1px solid #fde68a;font-size:var(--text-xs);"><i class="bi bi-exclamation-triangle me-1"></i>Unavailable</span>
+        const placeholder = document.getElementById('analysisPlaceholder');
+        if (!placeholder) return;
+
+        placeholder.innerHTML = `
+            <div class="detail-card__header detail-card__header--split">
+                <h2>${i18n.title}</h2>
+                <span class="detail-status detail-status--warning">${i18n.unavailable}</span>
             </div>
-            <div class="ai-card-body">
-                <div style="text-align:center;padding:var(--space-8);">
-                    <div style="width:56px;height:56px;background:var(--warning-light);border-radius:var(--radius-xl);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);font-size:1.5rem;color:var(--warning);">
+            <div class="detail-card__body">
+                <div class="analysis-error analysis-error--visible">
+                    <div class="analysis-error-icon">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                     </div>
-                    <div style="font-weight:var(--font-semibold);color:var(--gray-700);margin-bottom:var(--space-1);">Analysis Unavailable</div>
-                    <div style="font-size:var(--text-sm);color:var(--gray-400);margin-bottom:var(--space-4);">Could not generate AI analysis at this time.</div>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="AIAnalysis.retry()">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Retry
+                    <h3>${i18n.unavailable}</h3>
+                    <p class="analysis-error-copy">${i18n.errorCopy}</p>
+                    <button type="button" class="btn btn-primary btn-sm" data-ai-retry>
+                        <i class="bi bi-arrow-clockwise me-1"></i>${i18n.retry}
                     </button>
                 </div>
-            </div>`;
+            </div>
+        `;
     }
 
     function startPolling(issueId) {
         checkAttempts = 0;
-        clearInterval(checkInterval);
-        load(issueId).then(found => {
-            if (!found) {
-                checkInterval = setInterval(async () => {
-                    checkAttempts++;
-                    const ok = await load(issueId);
-                    if (ok || checkAttempts >= MAX_ATTEMPTS) {
-                        clearInterval(checkInterval);
-                        if (!ok) showError();
+        window.clearInterval(checkInterval);
+
+        load(issueId).then((found) => {
+            if (found) return;
+
+            checkInterval = window.setInterval(async () => {
+                checkAttempts += 1;
+                const loaded = await load(issueId);
+                if (loaded || checkAttempts >= maxAttempts) {
+                    window.clearInterval(checkInterval);
+                    if (!loaded) {
+                        showError();
                     }
-                }, POLL_INTERVAL);
-            }
+                }
+            }, pollInterval);
         });
     }
 
-    return {
-        startPolling,
-        retry: (issueId) => {
-            const el = document.getElementById('analysisPlaceholder');
-            if (el) {
-                el.innerHTML = `
-                    <div class="ai-card-header">
-                        <div class="ai-card-header-left"><i class="bi bi-stars"></i> AI Analysis</div>
-                        <span class="badge" style="background:var(--warning-light);color:var(--warning-dark);border:1px solid #fde68a;font-size:var(--text-xs);"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
-                    </div>
-                    <div class="ai-card-body">
-                        <div class="ai-loading">
-                            <div class="ai-pulse-ring"><i class="bi bi-stars"></i></div>
-                            <div style="font-weight:var(--font-semibold);color:var(--gray-700);margin-bottom:var(--space-1);">Generating AI Analysis...</div>
-                            <div style="font-size:var(--text-sm);color:var(--gray-400);">This may take 15–30 seconds</div>
+    function retry(issueId) {
+        const resolvedIssueId = issueId || root?.dataset.issueId || document.getElementById('issueId')?.value;
+        const placeholder = document.getElementById('analysisPlaceholder');
+        if (placeholder) {
+            placeholder.innerHTML = `
+                <div class="detail-card__header detail-card__header--split">
+                    <h2>${i18n.title}</h2>
+                    <span class="detail-status detail-status--warning">${i18n.pending}</span>
+                </div>
+                <div class="detail-card__body">
+                    <div class="detail-analysis-loading">
+                        <div class="detail-analysis-loading__icon">
+                            <i class="bi bi-stars"></i>
                         </div>
-                    </div>`;
-            }
-            fetch(`/api/analysis/analyze/${issueId}`, { method: 'POST' }).catch(() => {});
-            startPolling(issueId);
+                        <h3>${i18n.generatingTitle}</h3>
+                        <p>${i18n.generatingCopy}</p>
+                    </div>
+                </div>
+            `;
         }
-    };
+
+        if (!resolvedIssueId) return;
+        fetch(`/api/analysis/analyze/${resolvedIssueId}`, { method: 'POST' }).catch(() => {});
+        startPolling(resolvedIssueId);
+    }
+
+    return { startPolling, retry };
 })();
 
-// Initialize when DOM is ready
+window.AIAnalysis = AIAnalysis;
+
+document.addEventListener('click', (event) => {
+    const retryButton = event.target.closest('[data-ai-retry]');
+    if (!retryButton) return;
+
+    const issueId = retryButton.getAttribute('data-issue-id') || undefined;
+    AIAnalysis.retry(issueId);
+});
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        const issueId = document.querySelector('[data-issue-id]')?.dataset.issueId || document.getElementById('issueId')?.value;
-        if (issueId?.trim() && document.getElementById('analysisPlaceholder')) {
-            AIAnalysis.startPolling(issueId);
+        const root = document.getElementById('issueDetailRoot');
+        if (!root) return;
+
+        if (root.dataset.issueId && document.getElementById('analysisPlaceholder')) {
+            AIAnalysis.startPolling(root.dataset.issueId);
         }
-    });
+    }, { once: true });
 } else {
-    const issueId = document.querySelector('[data-issue-id]')?.dataset.issueId || document.getElementById('issueId')?.value;
-    if (issueId?.trim() && document.getElementById('analysisPlaceholder')) {
-        AIAnalysis.startPolling(issueId);
+    const root = document.getElementById('issueDetailRoot');
+    if (root?.dataset.issueId && document.getElementById('analysisPlaceholder')) {
+        AIAnalysis.startPolling(root.dataset.issueId);
     }
 }

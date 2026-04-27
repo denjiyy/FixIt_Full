@@ -3,125 +3,140 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Account Management";
+    var securityState = Model.IsEmailConfirmed ? "Verified" : "Needs review";
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <h1 class="mb-4">@Localizer["AccountManagement"]</h1>
-            <p class="text-muted mb-4">@Localizer["ManageYourProfileAndAccountSettings"]</p>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-            <div class="row">
-                <!-- Navigation -->
-                <div class="col-md-3">
-                    <div class="list-group sticky-top" style="top: 1rem;">
-                        <a href="#profile-info" class="list-group-item list-group-item-action active" data-bs-toggle="list">
-                            <i class="bi bi-person"></i> Profile Information
-                        </a>
-                        <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="bi bi-shield-lock"></i> Security
-                        </a>
-                    </div>
+<section class="account-page account-page--compact py-4">
+    <section class="account-surface-hero mb-4">
+        <div class="account-surface-hero__row">
+            <div class="account-surface-hero__copy">
+                <span class="account-surface-hero__eyebrow">
+                    <i class="bi bi-person-badge"></i>
+                    Account management
+                </span>
+                <h1 class="account-surface-hero__title">@Localizer["AccountManagement"]</h1>
+                <p class="account-surface-hero__subtitle">
+                    Review identity details, check account security, and jump into profile or settings actions from one streamlined account control surface.
+                </p>
+            </div>
+            <div class="account-surface-hero__meta">
+                <div class="account-surface-hero__meta-card">
+                    <span>Email state</span>
+                    <strong>@securityState</strong>
+                    <small>@(Model.IsEmailConfirmed ? "Your email is confirmed" : "Verify your email to strengthen recovery and trust")</small>
                 </div>
-
-                <!-- Content -->
-                <div class="col-md-9">
-                    <!-- Profile Information -->
-                    <div id="profile-info" class="settings-section card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">
-                                <i class="bi bi-person-circle text-primary"></i> Profile Information
-                            </h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">@Localizer["EmailAddress"]</label>
-                                        <p class="form-control-plaintext fw-semibold">@Model.Email</p>
-                                        @if (!Model.IsEmailConfirmed)
-                                        {
-                                            <small class="text-warning"><i class="bi bi-exclamation-circle"></i> Not verified</small>
-                                        }
-                                        else
-                                        {
-                                            <small class="text-success"><i class="bi bi-check-circle"></i> Verified</small>
-                                        }
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">@Localizer["MemberSince"]</label>
-                                        <p class="form-control-plaintext">@Model.CurrentUser?.CreatedAt.ToString("MMMM d, yyyy")</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="my-4" />
-
-                            <div class="d-flex gap-2">
-                                <a href="/Settings" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-gear"></i> Settings
-                                </a>
-                                <a href="/user/@Model.CurrentUser?.Id" class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-eye"></i> View Profile
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Security Section -->
-                    <div id="security" class="settings-section card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title mb-4">
-                                <i class="bi bi-shield-lock text-danger"></i> Security
-                            </h5>
-
-                            <div class="card bg-light border-0 mb-4">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle mb-2 fw-semibold">@Localizer["PasswordLabel"]</h6>
-                                    <p class="text-muted mb-3">Change your password to keep your account secure.</p>
-                                    <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-outline-danger btn-sm">
-                                        <i class="bi bi-key"></i> Change Password
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="card bg-light border-0">
-                                <div class="card-body">
-                                    <h6 class="card-subtitle mb-2 fw-semibold">Two-Factor Authentication</h6>
-                                    <p class="text-muted mb-3">Enable additional security with two-factor authentication.</p>
-                                    <a href="/Identity/Account/Manage/TwoFactorAuthentication" class="btn btn-outline-info btn-sm">
-                                        <i class="bi bi-lock"></i> Set Up 2FA
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="account-surface-hero__meta-card">
+                    <span>Member since</span>
+                    <strong>@Model.CurrentUser?.CreatedAt.ToString("MMM yyyy")</strong>
+                    <small>Account age and profile presence</small>
                 </div>
             </div>
         </div>
+    </section>
+
+    <div class="settings-shell-grid">
+        <aside class="settings-sidepanel">
+            <div>
+                <h2 class="settings-sidepanel__title">Quick sections</h2>
+                <p class="settings-sidepanel__copy">These controls cover profile identity, password security, and deeper account actions.</p>
+            </div>
+
+            <div class="settings-sidepanel__links">
+                <a href="#profile-info" class="settings-link active">
+                    <i class="bi bi-person"></i>
+                    <span>Profile information</span>
+                </a>
+                <a href="#security" class="settings-link">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Security</span>
+                </a>
+            </div>
+
+            <div class="settings-sidepanel__stat">
+                <span>Next step</span>
+                <strong>@(Model.IsEmailConfirmed ? "Add 2FA" : "Verify email")</strong>
+                <small>@(Model.IsEmailConfirmed ? "Two-factor adds a strong second layer of protection." : "A confirmed email improves recovery and account trust.")</small>
+            </div>
+        </aside>
+
+        <div class="settings-stack">
+            <section id="profile-info" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-person-circle"></i> Identity</span>
+                        <h2 class="settings-panel__title">Profile information</h2>
+                        <p class="settings-panel__copy">The basics of your account identity and the fastest routes to public-facing profile controls.</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    <div class="settings-grid-two">
+                        <div class="switch-surface">
+                            <label class="form-label text-muted">Email address</label>
+                            <p class="form-control-plaintext fw-semibold mb-2">@Model.Email</p>
+                            @if (!Model.IsEmailConfirmed)
+                            {
+                                <small class="text-warning"><i class="bi bi-exclamation-circle me-1"></i>Not verified</small>
+                            }
+                            else
+                            {
+                                <small class="text-success"><i class="bi bi-check-circle me-1"></i>Verified</small>
+                            }
+                        </div>
+
+                        <div class="switch-surface">
+                            <label class="form-label text-muted">@Localizer["MemberSince"]</label>
+                            <p class="form-control-plaintext fw-semibold mb-2">@Model.CurrentUser?.CreatedAt.ToString("MMMM d, yyyy")</p>
+                            <small class="text-muted">Your account age and public contribution history are tied to this profile.</small>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel__actions">
+                        <a href="/Settings" class="btn btn-outline-primary">
+                            <i class="bi bi-gear me-2"></i>Settings
+                        </a>
+                        <a href="/user/@Model.CurrentUser?.Id" class="btn btn-outline-secondary">
+                            <i class="bi bi-eye me-2"></i>View profile
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="security" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-shield-lock"></i> Security</span>
+                        <h2 class="settings-panel__title">Account protection</h2>
+                        <p class="settings-panel__copy">Strengthen sign-in and recovery with password updates and optional two-factor authentication.</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    <div class="toggle-card-grid">
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>@Localizer["PasswordLabel"]</h6>
+                                <p>Change your password regularly to keep your FixIt account secure.</p>
+                            </div>
+                            <a href="/Identity/Account/Manage/ChangePassword" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-key me-2"></i>Change password
+                            </a>
+                        </div>
+
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>Two-factor authentication</h6>
+                                <p>Add an extra verification step so stolen passwords are not enough to enter your account.</p>
+                            </div>
+                            <a href="/Identity/Account/Manage/TwoFactorAuthentication" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-shield-check me-2"></i>Set up 2FA
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
-</div>
-
-<style>
-    .settings-section {
-        border: 1px solid #e9ecef;
-        border-radius: 0.75rem;
-        transition: all 0.3s ease;
-    }
-
-    .settings-section:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .list-group-item {
-        border-left: 3px solid transparent;
-        border-radius: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .list-group-item.active {
-        border-left-color: #0ea5e9;
-        background-color: #f0f9ff;
-        color: #0c63e4;
-    }
-</style>
+</section>

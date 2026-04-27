@@ -1,4 +1,5 @@
 using FixIt.Data.Repository.Contracts;
+using FixIt.Models.AI;
 using FixIt.Models.Issues;
 using FixIt.Models.Common;
 using FixIt.Models.Enums;
@@ -7,9 +8,10 @@ using FixIt.Models.Users;
 using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
-using FixIt.Services.AI;
+using FixIt.Services.Background;
 using MongoDB.Driver.GeoJsonObjectModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace FixIt.Services;
 
@@ -21,8 +23,9 @@ public class IssueService : IIssueService
     private readonly IRepository<ViewEvent> _viewEventRepo;
     private readonly IRepository<Comment> _commentRepo;
     private readonly IReputationService _reputationService;
-    private readonly IIssueAnalysisService _analysisService;
+    private readonly IIssueAnalysisQueue _issueAnalysisQueue;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<IssueService> _logger;
 
     public IssueService(
         IRepository<Issue> issueRepo, 
@@ -31,8 +34,9 @@ public class IssueService : IIssueService
         IRepository<ViewEvent> viewEventRepo,
         IRepository<Comment> commentRepo,
         IReputationService reputationService,
-        IIssueAnalysisService analysisService,
-        UserManager<ApplicationUser> userManager)
+        IIssueAnalysisQueue issueAnalysisQueue,
+        UserManager<ApplicationUser> userManager,
+        ILogger<IssueService> logger)
     {
         _issueRepo = issueRepo;
         _tagRepo = tagRepo;
@@ -40,8 +44,9 @@ public class IssueService : IIssueService
         _viewEventRepo = viewEventRepo;
         _commentRepo = commentRepo;
         _reputationService = reputationService;
-        _analysisService = analysisService;
+        _issueAnalysisQueue = issueAnalysisQueue;
         _userManager = userManager;
+        _logger = logger;
     }
 
     public async Task<Issue> CreateIssueAsync(
@@ -52,7 +57,10 @@ public class IssueService : IIssueService
         string cityId,
         UserSummary reporter,
         IEnumerable<string>? tagNames = null,
-        bool isAnonymous = false)
+        bool isAnonymous = false,
+        IssuePriority? priority = null,
+        IssueCategory? category = null,
+        string? department = null)
     {
         // Validate inputs
         if (string.IsNullOrWhiteSpace(title))
@@ -73,7 +81,9 @@ public class IssueService : IIssueService
             Reporter = reporter,
             IsAnonymous = isAnonymous,
             Status = IssueStatus.New,
-            Priority = IssuePriority.Medium,
+            Priority = priority ?? IssuePriority.Medium,
+            Category = category,
+            Department = string.IsNullOrWhiteSpace(department) ? null : department.Trim(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             LastActivityAt = DateTime.UtcNow,
@@ -137,18 +147,15 @@ public class IssueService : IIssueService
                 issueId: createdIssue.Id);
         }
 
-        // Analyze issue with AI (asynchronous, don't await to avoid delays)
-        _ = Task.Run(async () =>
+        // Schedule AI analysis through background queue so failures are observable and request-safe.
+        try
         {
-            try
-            {
-                await _analysisService.AnalyzeIssueAsync(createdIssue.Id);
-            }
-            catch
-            {
-                // Analysis is optional, don't fail if it errors
-            }
-        });
+            await _issueAnalysisQueue.QueueAnalysisAsync(createdIssue.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Unable to enqueue analysis for issue {IssueId}", createdIssue.Id);
+        }
 
         return createdIssue;
     }
@@ -492,6 +499,25 @@ public class IssueService : IIssueService
         if (pageSize > 100) pageSize = 100; // Max page size
     }
 
+    private static IEnumerable<Issue> ApplySort(IEnumerable<Issue> issues, IssueSortOption sort)
+    {
+        return sort switch
+        {
+            IssueSortOption.MostVoted => issues
+                .OrderByDescending(i => i.Upvotes - i.Downvotes)
+                .ThenByDescending(i => i.Upvotes)
+                .ThenByDescending(i => i.LastActivityAt)
+                .ThenByDescending(i => i.CreatedAt),
+            IssueSortOption.MostViewed => issues
+                .OrderByDescending(i => i.ViewCount)
+                .ThenByDescending(i => i.LastActivityAt)
+                .ThenByDescending(i => i.CreatedAt),
+            _ => issues
+                .OrderByDescending(i => i.LastActivityAt)
+                .ThenByDescending(i => i.CreatedAt)
+        };
+    }
+
     /// <summary>
     /// Soft delete an issue - marks it as deleted but keeps data for recovery
     /// </summary>
@@ -553,6 +579,10 @@ public class IssueService : IIssueService
         string? searchQuery = null,
         IssueStatus? status = null,
         IssuePriority? priority = null,
+        IssueCategory? category = null,
+        DateTime? fromUtc = null,
+        DateTime? toUtc = null,
+        IssueSortOption sort = IssueSortOption.Newest,
         int page = 1,
         int pageSize = 20)
     {
@@ -581,6 +611,23 @@ public class IssueService : IIssueService
             filters.Add(i => i.Priority == priority.Value);
         }
 
+        if (category.HasValue)
+        {
+            filters.Add(i => i.Category == category.Value);
+        }
+
+        if (fromUtc.HasValue)
+        {
+            var fromDate = fromUtc.Value.Date;
+            filters.Add(i => i.CreatedAt >= fromDate);
+        }
+
+        if (toUtc.HasValue)
+        {
+            var toExclusive = toUtc.Value.Date.AddDays(1);
+            filters.Add(i => i.CreatedAt < toExclusive);
+        }
+
         // Combine filters
         System.Linq.Expressions.Expression<System.Func<Issue, bool>> combinedFilter = filters[0];
         foreach (var filter in filters.Skip(1))
@@ -596,11 +643,8 @@ public class IssueService : IIssueService
         // Get total count
         var allIssues = await _issueRepo.FindAsync(combinedFilter);
         var totalCount = allIssues.Count();
-        var totalPages = Math.Ceiling(totalCount / (double)pageSize);
-
         // Get paginated results
-        var issues = allIssues
-            .OrderByDescending(i => i.CreatedAt)
+        var issues = ApplySort(allIssues, sort)
             .Skip(skip)
             .Take(pageSize)
             .ToList();
@@ -609,6 +653,31 @@ public class IssueService : IIssueService
         {
             Items = issues,
             Total = totalCount
+        };
+    }
+
+    public async Task<IssuePublicOverview> GetPublicIssueOverviewAsync(int featuredCount = 3)
+    {
+        var issues = (await _issueRepo.FindAsync(i => !i.IsDeleted)).ToList();
+
+        return new IssuePublicOverview
+        {
+            TotalIssues = issues.Count,
+            NewIssues = issues.Count(i => i.Status == IssueStatus.New),
+            ConfirmedIssues = issues.Count(i => i.Status == IssueStatus.Confirmed),
+            InProgressIssues = issues.Count(i => i.Status == IssueStatus.InProgress),
+            FixedIssues = issues.Count(i => i.Status == IssueStatus.Fixed),
+            CriticalIssues = issues.Count(i => i.Priority == IssuePriority.Critical),
+            CitiesCovered = issues
+                .Where(i => !string.IsNullOrWhiteSpace(i.CityId))
+                .Select(i => i.CityId)
+                .Distinct(StringComparer.Ordinal)
+                .Count(),
+            FeaturedIssues = issues
+                .OrderByDescending(i => i.LastActivityAt)
+                .ThenByDescending(i => i.CreatedAt)
+                .Take(Math.Max(0, featuredCount))
+                .ToList()
         };
     }
 

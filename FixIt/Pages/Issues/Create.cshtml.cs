@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Services.Contracts;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
@@ -12,10 +13,13 @@ using FixIt.Models.Users;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using FixIt.Models.Enums;
+using FixIt.Models.AI;
+using FixIt.Services.Constants;
 
 namespace FixIt.Pages.Issues;
 
 [Authorize]
+[EnableRateLimiting(RateLimitPolicyNames.Upload)]
 public class CreateIssueModel : PageModel
 {
     private readonly IIssueService _issueService;
@@ -54,10 +58,10 @@ public class CreateIssueModel : PageModel
         public string Description { get; set; } = null!;
 
         [Required(ErrorMessage = "Location is required")]
-        public double Latitude { get; set; }
+        public double? Latitude { get; set; }
 
         [Required(ErrorMessage = "Location is required")]
-        public double Longitude { get; set; }
+        public double? Longitude { get; set; }
 
         [Required(ErrorMessage = "City is required")]
         public string CityId { get; set; } = null!;
@@ -65,6 +69,13 @@ public class CreateIssueModel : PageModel
         public string? Address { get; set; }
 
         public string? TagNames { get; set; }
+
+        public IssuePriority? Priority { get; set; }
+
+        public IssueCategory? Category { get; set; }
+
+        [StringLength(120, ErrorMessage = "Department must not exceed 120 characters")]
+        public string? Department { get; set; }
 
         public List<IFormFile>? Photos { get; set; }
     }
@@ -136,12 +147,15 @@ public class CreateIssueModel : PageModel
             var issue = await _issueService.CreateIssueAsync(
                 title: Input.Title ?? "",
                 description: Input.Description ?? "",
-                longitude: Input.Longitude,
-                latitude: Input.Latitude,
+                longitude: Input.Longitude!.Value,
+                latitude: Input.Latitude!.Value,
                 cityId: Input.CityId,
                 reporter: reporter,
                 tagNames: tagNames,
-                isAnonymous: isAnonymous
+                isAnonymous: isAnonymous,
+                priority: Input.Priority,
+                category: Input.Category,
+                department: string.IsNullOrWhiteSpace(Input.Department) ? null : Input.Department.Trim()
             );
 
             _logger.LogInformation("Created issue {IssueId} by user {UserId}", issue.Id, userId);
@@ -184,7 +198,7 @@ public class CreateIssueModel : PageModel
         {
             _logger.LogError(ex, "Failed to create issue");
             await LoadCities();
-            ModelState.AddModelError("", $"Failed to create issue: {ex.Message}");
+            ModelState.AddModelError("", "Failed to create issue");
             return Page();
         }
     }

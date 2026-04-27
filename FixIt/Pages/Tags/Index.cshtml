@@ -16,99 +16,165 @@
 
 @section PageCss {
     <link rel="stylesheet" href="~/css/pages/issues-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/tag-index.css" asp-append-version="true" />
 }
 
-<div class="container-fluid px-md-4">
-    <div class="page-header anim-1">
-        <div class="page-header-left">
-            <div class="page-header-icon">
-                <i class="bi bi-tag-fill"></i>
-            </div>
-            <div>
-                <h1 class="page-title">#@normalizedTag</h1>
-                <p class="page-subtitle">@Localizer["IssuesTaggedWith"] #@normalizedTag</p>
+<div class="tag-page py-4">
+    <section class="tag-hero anim-1">
+        <div class="tag-hero__copy">
+            <span class="tag-hero__eyebrow">
+                <i class="bi bi-hash"></i>
+                Topic Feed
+            </span>
+            <h1 class="tag-hero__title">#@normalizedTag</h1>
+            <p class="tag-hero__subtitle">
+                Explore the community reports connected to this topic, track how many are still active, and jump into the most relevant issues faster.
+            </p>
+            <div class="tag-hero__actions">
+                <a href="/issues" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to all issues
+                </a>
+                <a href="/issues/create" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    Report with this topic
+                </a>
             </div>
         </div>
-        <div>
-            <a href="/issues" class="btn btn-outline-secondary btn-lg px-4">
-                <i class="bi bi-arrow-left me-2"></i>@Localizer["BackToIssues"]
-            </a>
+        <div class="tag-hero__panel">
+            <div class="tag-hero__panel-label">Topic snapshot</div>
+            <div class="tag-hero__panel-value">@totalIssues</div>
+            <div class="tag-hero__panel-copy">Tagged issues currently visible in this feed.</div>
+            <div class="tag-hero__meta">
+                <span><i class="bi bi-journal-text"></i> Page @Model.CurrentPage of @Model.TotalPages</span>
+                <span><i class="bi bi-diagram-3"></i> Civic reporting topic</span>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div class="stats-row anim-2">
-        <div class="stat-card total">
-            <div class="stat-icon"><i class="bi bi-flag-fill"></i></div>
+    <section class="tag-stats anim-2" aria-label="Tag statistics">
+        <article class="tag-stat-card">
+            <span class="tag-stat-card__icon total"><i class="bi bi-flag-fill"></i></span>
             <div>
-                <div class="stat-num">@totalIssues</div>
-                <div class="stat-lbl">@Localizer["TaggedIssues"]</div>
+                <strong>@totalIssues</strong>
+                <span>Tagged issues</span>
             </div>
-        </div>
-        <div class="stat-card resolved">
-            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+        </article>
+        <article class="tag-stat-card">
+            <span class="tag-stat-card__icon resolved"><i class="bi bi-check-circle-fill"></i></span>
             <div>
-                <div class="stat-num">@resolvedCount</div>
-                <div class="stat-lbl">@Localizer["Resolved"]</div>
+                <strong>@resolvedCount</strong>
+                <span>Resolved</span>
             </div>
-        </div>
-        <div class="stat-card progress">
-            <div class="stat-icon"><i class="bi bi-arrow-repeat"></i></div>
+        </article>
+        <article class="tag-stat-card">
+            <span class="tag-stat-card__icon progress"><i class="bi bi-arrow-repeat"></i></span>
             <div>
-                <div class="stat-num">@inProgressCount</div>
-                <div class="stat-lbl">@Localizer["InProgress"]</div>
+                <strong>@inProgressCount</strong>
+                <span>In progress</span>
             </div>
-        </div>
-        <div class="stat-card new-s">
-            <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        </article>
+        <article class="tag-stat-card">
+            <span class="tag-stat-card__icon fresh"><i class="bi bi-exclamation-diamond-fill"></i></span>
             <div>
-                <div class="stat-num">@newCount</div>
-                <div class="stat-lbl">@Localizer["New"]</div>
+                <strong>@newCount</strong>
+                <span>Newly reported</span>
             </div>
-        </div>
-    </div>
+        </article>
+    </section>
 
     @if (!Model.TagFound)
     {
-        <div class="empty-state anim-3">
-            <div class="empty-icon"><i class="bi bi-exclamation-circle"></i></div>
-            <h2 class="empty-title">@Localizer["TagNotFound"]</h2>
-            <p class="empty-text">@Localizer["NoIssuesFoundForTag"]</p>
-        </div>
-    }
-    else if (hasIssues)
-    {
-        <div class="results-header anim-4">
-            <p class="results-count mb-0">
-                @Localizer["Showing"] <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? Localizer["Issue"] : Localizer["IssuePlural"]) ·
-                @Localizer["PageOf"] <strong>@Model.CurrentPage</strong> @Localizer["Of"] <strong>@Model.TotalPages</strong>
-            </p>
-        </div>
-
-        <div class="issues-grid">
-            @foreach (var issue in Model.Issues)
-            {
-                <partial name="_IssueCard" model="issue" />
-            }
-        </div>
-
-        @if (Model.TotalPages > 1)
-        {
-            var baseUrl = $"/tags/{Uri.EscapeDataString(normalizedTag)}?";
-            var paginationModel = new FixIt.ViewModels.PaginationViewModel
-            {
-                CurrentPage = Model.CurrentPage,
-                TotalPages = Model.TotalPages,
-                BaseUrl = baseUrl
-            };
-            <partial name="_Pagination" model="paginationModel" />
-        }
+        <section class="tag-empty-state anim-3">
+            <div class="tag-empty-state__icon"><i class="bi bi-search"></i></div>
+            <h2>Topic not found</h2>
+            <p>We could not find a reporting topic for <strong>#@normalizedTag</strong>. Try another tag or browse the full issue feed.</p>
+            <div class="tag-empty-state__actions">
+                <a href="/issues" class="btn btn-primary">
+                    <i class="bi bi-list-ul"></i>
+                    Browse issues
+                </a>
+                <a href="/issues/create" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    Create a report
+                </a>
+            </div>
+        </section>
     }
     else
     {
-        <div class="empty-state anim-3">
-            <div class="empty-icon"><i class="bi bi-inbox"></i></div>
-            <h2 class="empty-title">@Localizer["NoIssuesFoundEmptyState"]</h2>
-            <p class="empty-text">@Localizer["NoIssuesFoundForTag"]</p>
-        </div>
+        <section class="tag-results-shell anim-3">
+            <div class="tag-results-shell__head">
+                <div>
+                    <p class="tag-results-shell__eyebrow">Filtered feed</p>
+                    <h2 class="tag-results-shell__title">Issues tagged with #@normalizedTag</h2>
+                    <p class="tag-results-shell__copy">
+                        @if (hasIssues)
+                        {
+                            <text>Showing <strong>@totalIssues</strong> issue@(totalIssues == 1 ? string.Empty : "s") connected to this topic.</text>
+                        }
+                        else
+                        {
+                            <text>No active issue cards are available for this topic yet.</text>
+                        }
+                    </p>
+                </div>
+                <div class="tag-results-shell__context">
+                    <span><i class="bi bi-clock-history"></i> Updated from the live public feed</span>
+                    <span><i class="bi bi-sliders"></i> Topic-specific browsing</span>
+                </div>
+            </div>
+
+            @if (hasIssues)
+            {
+                <div class="results-header">
+                    <p class="results-count mb-0">
+                        @Localizer["Showing"] <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? Localizer["Issue"] : Localizer["IssuePlural"]) ·
+                        @Localizer["PageOf"] <strong>@Model.CurrentPage</strong> @Localizer["Of"] <strong>@Model.TotalPages</strong>
+                    </p>
+                    <a href="/issues/create" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i>
+                        Add a related report
+                    </a>
+                </div>
+
+                <div class="issues-grid">
+                    @foreach (var issue in Model.Issues)
+                    {
+                        <partial name="_IssueCard" model="issue" />
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    var baseUrl = $"/tags/{Uri.EscapeDataString(normalizedTag)}?";
+                    var paginationModel = new FixIt.ViewModels.PaginationViewModel
+                    {
+                        CurrentPage = Model.CurrentPage,
+                        TotalPages = Model.TotalPages,
+                        BaseUrl = baseUrl
+                    };
+                    <partial name="_Pagination" model="paginationModel" />
+                }
+            }
+            else
+            {
+                <div class="tag-empty-state tag-empty-state--compact">
+                    <div class="tag-empty-state__icon"><i class="bi bi-inbox"></i></div>
+                    <h2>No issues published under this tag yet</h2>
+                    <p>Be the first person to report an issue that belongs in the <strong>#@normalizedTag</strong> topic.</p>
+                    <div class="tag-empty-state__actions">
+                        <a href="/issues/create" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i>
+                            Report an issue
+                        </a>
+                        <a href="/issues" class="btn btn-outline-primary">
+                            <i class="bi bi-grid"></i>
+                            Browse all tags and issues
+                        </a>
+                    </div>
+                </div>
+            }
+        </section>
     }
 </div>

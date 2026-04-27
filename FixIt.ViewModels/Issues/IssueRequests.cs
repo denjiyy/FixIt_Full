@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using FixIt.Models.Enums;
+using FixIt.Models.AI;
 
 namespace FixIt.ViewModels.Issues;
 
@@ -31,6 +32,13 @@ public class CreateIssueRequest
 
     [StringLength(5000, ErrorMessage = "Tags must not exceed 5000 characters")]
     public string? TagsJson { get; set; } // Comma-separated or JSON array of tag names
+
+    public IssuePriority? Priority { get; set; }
+
+    public IssueCategory? Category { get; set; }
+
+    [StringLength(120, ErrorMessage = "Department must not exceed 120 characters")]
+    public string? Department { get; set; }
 
     /// <summary>
     /// Whether to post the issue anonymously

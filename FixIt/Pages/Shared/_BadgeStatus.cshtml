@@ -1,15 +1,31 @@
 @using FixIt.Models.Enums
 @model IssueStatus
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 
 @{
     var badgeClass = Model switch
     {
-        IssueStatus.New        => "badge-status-new",
-        IssueStatus.Confirmed  => "badge-status-confirmed",
-        IssueStatus.InProgress => "badge-status-in-progress",
-        IssueStatus.Fixed      => "badge-status-fixed",
-        _                      => "bg-secondary"
+        IssueStatus.New        => "status-badge status-badge--new",
+        IssueStatus.Confirmed  => "status-badge status-badge--confirmed",
+        IssueStatus.InProgress => "status-badge status-badge--in-progress",
+        IssueStatus.Fixed      => "status-badge status-badge--fixed",
+        IssueStatus.Rejected   => "status-badge status-badge--rejected",
+        IssueStatus.Duplicate  => "status-badge status-badge--duplicate",
+        IssueStatus.Archived   => "status-badge status-badge--archived",
+        _                      => "status-badge status-badge--neutral"
+    };
+
+    var label = Model switch
+    {
+        IssueStatus.New => Localizer["New"],
+        IssueStatus.Confirmed => Localizer["Confirmed"],
+        IssueStatus.InProgress => Localizer["InProgress"],
+        IssueStatus.Fixed => Localizer["Fixed"],
+        IssueStatus.Rejected => Localizer["Rejected"],
+        IssueStatus.Duplicate => Localizer["Duplicate"],
+        IssueStatus.Archived => Localizer["Archived"],
+        _ => Model.ToString()
     };
 }
 
-<span class="badge @badgeClass">@Model</span>
+<span class="@badgeClass">@label</span>

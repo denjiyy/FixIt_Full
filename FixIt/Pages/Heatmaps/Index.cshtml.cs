@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Services.Analytics;
+using FixIt.Services.Contracts;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using System.Text.Json;
@@ -10,6 +11,7 @@ namespace FixIt.Pages.Heatmaps;
 public class HeatmapsModel : PageModel
 {
     private readonly IHeatmapService _heatmapService;
+    private readonly IIssueService _issueService;
     private readonly IRepository<City> _cityRepo;
 
     public string CityName { get; set; } = string.Empty;
@@ -21,9 +23,13 @@ public class HeatmapsModel : PageModel
     public int OpenIssues { get; set; }
     public int ResolvedIssues { get; set; }
     
-    public HeatmapsModel(IHeatmapService heatmapService, IRepository<City> cityRepo)
+    public HeatmapsModel(
+        IHeatmapService heatmapService,
+        IIssueService issueService,
+        IRepository<City> cityRepo)
     {
         _heatmapService = heatmapService;
+        _issueService = issueService;
         _cityRepo = cityRepo;
     }
 
@@ -41,8 +47,7 @@ public class HeatmapsModel : PageModel
         CityLongitude = city.Longitude;
 
         // Get all issues for this city
-        var issueRepo = HttpContext.RequestServices.GetRequiredService<IRepository<FixIt.Models.Issues.Issue>>();
-        var allIssues = (await issueRepo.FindAsync(i => i.CityId == cityId)).ToList();
+        var allIssues = await _issueService.GetIssuesByCityAsync(cityId);
 
         // Calculate statistics
         TotalIssues = allIssues.Count;

@@ -1,5 +1,6 @@
 @using FixIt.Models.Issues
 @model Issue
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 
 @{
     var priorityStr = Model.Priority switch
@@ -10,11 +11,21 @@
         FixIt.Models.Enums.IssuePriority.Low      => "low",
         _ => "low"
     };
+
+    var reporterName = Model.IsAnonymous
+        ? Localizer["AnonymousReporter"]
+        : string.IsNullOrWhiteSpace(Model.Reporter?.DisplayName)
+            ? Localizer["CommunityMember"]
+            : Model.Reporter.DisplayName;
+
+    var score = Model.Upvotes - Model.Downvotes;
+    var lastActivityLabel = Model.LastActivityAt > Model.CreatedAt
+        ? Model.LastActivityAt.ToString("MMM d")
+        : Model.CreatedAt.ToString("MMM d");
 }
 
 <a href="/issues/@Model.Id" class="issue-card-link">
     <article class="issue-card" data-priority="@priorityStr">
-        <!-- Card head: badges + priority dot -->
         <div class="issue-card-head">
             <div class="issue-badges">
                 <partial name="_BadgeStatus" model="Model.Status" />
@@ -22,8 +33,18 @@
             <partial name="_BadgePriority" model="Model.Priority" />
         </div>
 
-        <!-- Card body -->
         <div class="issue-card-body">
+            <div class="issue-card-meta-row">
+                <span class="issue-card-meta-pill">
+                    <i class="bi bi-person-circle"></i>
+                    <span>@reporterName</span>
+                </span>
+                <span class="issue-card-meta-pill">
+                    <i class="bi bi-clock-history"></i>
+                    <span>@Localizer["UpdatedShortLabel"] @lastActivityLabel</span>
+                </span>
+            </div>
+
             <h3 class="issue-card-title">@Model.Title</h3>
 
             @if (!string.IsNullOrEmpty(Model.Address))
@@ -37,20 +58,22 @@
             <p class="issue-card-desc">@Model.Description</p>
         </div>
 
-        <!-- Card footer: stats + date -->
         <div class="issue-card-foot">
-            <div class="d-flex align-items-center gap-3">
+            <div class="issue-card-stats">
                 <span class="issue-stat">
                     <i class="bi bi-eye"></i>@Model.ViewCount
                 </span>
                 <span class="issue-stat">
                     <i class="bi bi-chat"></i>@Model.CommentCount
                 </span>
-                <span class="issue-stat votes">
-                    <i class="bi bi-hand-thumbs-up-fill"></i>@Model.Upvotes
+                <span class="issue-stat votes @(score < 0 ? "is-negative" : "")">
+                    <i class="bi bi-activity"></i>@score
                 </span>
             </div>
-            <span class="issue-date">@Model.CreatedAt.ToString("MMM d, yyyy")</span>
+            <span class="issue-card-cta">
+                <span class="issue-date">@Model.CreatedAt.ToString("MMM d, yyyy")</span>
+                <strong>@Localizer["OpenIssue"] <i class="bi bi-arrow-up-right"></i></strong>
+            </span>
         </div>
     </article>
 </a>

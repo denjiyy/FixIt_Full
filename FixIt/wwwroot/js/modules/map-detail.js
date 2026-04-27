@@ -37,7 +37,9 @@ const MapDetail = (() => {
             }).addTo(map);
             L.marker([lat, lng]).addTo(map);
         } catch (e) {
-            console.error('Map render error:', e);
+            if (typeof window.FixItNotify === 'function') {
+                window.FixItNotify('Unable to render map preview.', 'warning');
+            }
         }
     }
 

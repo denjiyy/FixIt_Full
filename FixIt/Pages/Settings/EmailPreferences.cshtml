@@ -3,140 +3,219 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = "Email Preferences";
+    var notificationsEnabled = Model.User?.EmailNotificationsEnabled == true;
+    var preferredCity = Model.AvailableCities.FirstOrDefault(c => c.Id == Model.User?.PreferredCityId)?.Name ?? "All cities";
 }
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8">
-            <h1>@Localizer["EmailPreferencesPage"]</h1>
-            <p class="text-muted">@Localizer["ManageYourEmailNotificationSettings"]</p>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-            @if (Model.SuccessMessage != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @Model.SuccessMessage
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="account-page py-4">
+    <section class="account-surface-hero mb-4">
+        <div class="account-surface-hero__row">
+            <div class="account-surface-hero__copy">
+                <span class="account-surface-hero__eyebrow">
+                    <i class="bi bi-envelope-paper"></i>
+                    Inbox controls
+                </span>
+                <h1 class="account-surface-hero__title">@Localizer["EmailPreferencesPage"]</h1>
+                <p class="account-surface-hero__subtitle">
+                    Decide what deserves a place in your inbox, from weekly health reports to urgent safety alerts near the places you care about.
+                </p>
+            </div>
+            <div class="account-surface-hero__meta">
+                <div class="account-surface-hero__meta-card">
+                    <span>Email delivery</span>
+                    <strong>@(notificationsEnabled ? "On" : "Off")</strong>
+                    <small>Master switch for all FixIt email communication</small>
                 </div>
-            }
+                <div class="account-surface-hero__meta-card">
+                    <span>Focused location</span>
+                    <strong>@preferredCity</strong>
+                    <small>Scope for digests and location-aware alerts</small>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            <!-- Email Notifications Master Toggle -->
-            <form method="post" asp-page-handler="UpdateAllNotifications" class="mb-4">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" id="emailNotificationsEnabled" 
-                                   name="emailNotificationsEnabled" 
-                                   onchange="this.form.submit()"
-                                   @(Model.User?.EmailNotificationsEnabled == true ? "checked" : "")>
-                            <label class="form-check-label" for="emailNotificationsEnabled">
-                                <h5 class="mb-0">@Localizer["EmailNotificationsTitle"]</h5>
-                            </label>
+    @if (Model.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="settings-shell-grid">
+        <aside class="settings-sidepanel">
+            <div>
+                <h2 class="settings-sidepanel__title">Delivery guide</h2>
+                <p class="settings-sidepanel__copy">Keep urgent messages enabled, and use city scope to prevent your inbox from turning noisy.</p>
+            </div>
+
+            <div class="settings-sidepanel__links">
+                <a href="#master-switch" class="settings-link active">
+                    <i class="bi bi-toggle2-on"></i>
+                    <span>Master switch</span>
+                </a>
+                <a href="#notification-types" class="settings-link">
+                    <i class="bi bi-bell"></i>
+                    <span>Notification types</span>
+                </a>
+                <a href="#delivery-scope" class="settings-link">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>Delivery scope</span>
+                </a>
+            </div>
+
+            <div class="settings-sidepanel__stat">
+                <span>Recommendation</span>
+                <strong>Health + Safety</strong>
+                <small>That combination usually gives the best signal without creating inbox fatigue.</small>
+            </div>
+        </aside>
+
+        <div class="settings-stack">
+            <form method="post" asp-page-handler="UpdateAllNotifications">
+                <section id="master-switch" class="settings-panel">
+                    <div class="settings-panel__head">
+                        <div>
+                            <span class="settings-panel__eyebrow"><i class="bi bi-envelope-check"></i> Master control</span>
+                            <h2 class="settings-panel__title">@Localizer["EmailNotificationsTitle"]</h2>
+                            <p class="settings-panel__copy">@Localizer["TurnOnOrOffAllEmailNotificationsFromFixIt"]</p>
                         </div>
                     </div>
-                    <div class="card-body text-muted">
-                        <p class="mb-0">@Localizer["TurnOnOrOffAllEmailNotificationsFromFixIt"]</p>
+                    <div class="settings-panel__body">
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6 class="mb-1">Email delivery is @(notificationsEnabled ? "enabled" : "paused")</h6>
+                                <p class="mb-0">Use the main switch to pause all non-essential email from FixIt. You can re-enable granular preferences any time.</p>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="emailNotificationsEnabled"
+                                       name="emailNotificationsEnabled"
+                                       data-auto-submit="change"
+                                       @(notificationsEnabled ? "checked" : "")>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
             </form>
 
-            @if (Model.User?.EmailNotificationsEnabled == true)
+            @if (notificationsEnabled)
             {
-                <!-- Individual Notification Preferences -->
-                <form method="post" asp-page-handler="UpdatePreferences" class="mb-4">
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0"><i class="bi bi-envelope"></i> Notification Types</h5>
-                        </div>
-                        <div class="card-body">
-                            <!-- Health Reports -->
-                            <div class="mb-4 pb-4 border-bottom">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="receiveHealthReports" 
-                                           name="receiveHealthReports"
-                                           @(Model.User?.ReceiveHealthReports == true ? "checked" : "")>
-                                    <label class="form-check-label" for="receiveHealthReports">
-                                        <h6 class="mb-1">
-                                            <i class="bi bi-heart-pulse text-danger"></i> @Localizer["WeeklyHealthReportsLabel"]
-                                        </h6>
-                                        <small class="text-muted">@Localizer["GetWeeklyCommunityHealthMetrics"]</small>
-                                    </label>
-                                </div>
+                <form method="post" asp-page-handler="UpdatePreferences">
+                    <section id="notification-types" class="settings-panel">
+                        <div class="settings-panel__head">
+                            <div>
+                                <span class="settings-panel__eyebrow"><i class="bi bi-bell"></i> Notification types</span>
+                                <h2 class="settings-panel__title">What should we send?</h2>
+                                <p class="settings-panel__copy">Choose which email categories stay active so the inbox matches the way you use FixIt.</p>
                             </div>
-
-                            <!-- Weekly Reminders -->
-                            <div class="mb-4 pb-4 border-bottom">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="receiveWeeklyReminders" 
-                                           name="receiveWeeklyReminders"
-                                           @(Model.User?.ReceiveWeeklyReminders == true ? "checked" : "")>
-                                    <label class="form-check-label" for="receiveWeeklyReminders">
-                                        <h6 class="mb-1">
-                                            <i class="bi bi-bell text-warning"></i> Weekly Reminders
-                                        </h6>
-                                        <small class="text-muted">@Localizer["RemindersAboutOpenIssuesInYourArea"]</small>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Hazard Alerts -->
-                            <div class="mb-4">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="receiveHazardAlerts" 
-                                           name="receiveHazardAlerts"
-                                           @(Model.User?.ReceiveHazardAlerts == true ? "checked" : "")>
-                                    <label class="form-check-label" for="receiveHazardAlerts">
-                                        <h6 class="mb-1">
-                                            <i class="bi bi-exclamation-triangle text-danger"></i> Safety Alerts
-                                        </h6>
-                                        <small class="text-muted">@Localizer["InstantAlertsWhenHazardsAreReportedNearYou"]</small>
-                                    </label>
-                                </div>
+                            <div class="settings-chip-row">
+                                <span class="settings-chip"><i class="bi bi-heart-pulse"></i> Weekly health reports</span>
+                                <span class="settings-chip"><i class="bi bi-lightning-charge"></i> Hazard alerts</span>
+                                <span class="settings-chip"><i class="bi bi-flag"></i> Open issue reminders</span>
                             </div>
                         </div>
-                    </div>
+                        <div class="settings-panel__body">
+                            <div class="toggle-card-grid">
+                                <div class="toggle-card">
+                                    <div class="toggle-card__copy">
+                                        <h6><i class="bi bi-heart-pulse text-danger me-2"></i>@Localizer["WeeklyHealthReportsLabel"]</h6>
+                                        <p>@Localizer["GetWeeklyCommunityHealthMetrics"]</p>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="receiveHealthReports"
+                                               name="receiveHealthReports"
+                                               @(Model.User?.ReceiveHealthReports == true ? "checked" : "")>
+                                    </div>
+                                </div>
 
-                    <!-- City Preference -->
-                    <div class="card mt-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0"><i class="bi bi-geo-alt"></i> City Preference</h5>
+                                <div class="toggle-card">
+                                    <div class="toggle-card__copy">
+                                        <h6><i class="bi bi-calendar-week text-primary me-2"></i>Weekly reminders</h6>
+                                        <p>@Localizer["RemindersAboutOpenIssuesInYourArea"]</p>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="receiveWeeklyReminders"
+                                               name="receiveWeeklyReminders"
+                                               @(Model.User?.ReceiveWeeklyReminders == true ? "checked" : "")>
+                                    </div>
+                                </div>
+
+                                <div class="toggle-card">
+                                    <div class="toggle-card__copy">
+                                        <h6><i class="bi bi-exclamation-triangle text-warning me-2"></i>Safety alerts</h6>
+                                        <p>@Localizer["InstantAlertsWhenHazardsAreReportedNearYou"]</p>
+                                    </div>
+                                    <div class="form-check form-switch m-0">
+                                        <input class="form-check-input" type="checkbox" id="receiveHazardAlerts"
+                                               name="receiveHazardAlerts"
+                                               @(Model.User?.ReceiveHazardAlerts == true ? "checked" : "")>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="citySelect" class="form-label">Receive reports for:</label>
-                                <select id="citySelect" name="preferredCityId" class="form-select">
-                                    <option value="">Global (All Cities)</option>
-                                    @foreach (var city in Model.AvailableCities)
-                                    {
-                                        if (city.Id == Model.User?.PreferredCityId)
+                    </section>
+
+                    <section id="delivery-scope" class="settings-panel">
+                        <div class="settings-panel__head">
+                            <div>
+                                <span class="settings-panel__eyebrow"><i class="bi bi-geo-alt"></i> Delivery scope</span>
+                                <h2 class="settings-panel__title">Where should updates come from?</h2>
+                                <p class="settings-panel__copy">Focus reports on one city or keep your digest global across every supported location.</p>
+                            </div>
+                        </div>
+                        <div class="settings-panel__body">
+                            <div class="settings-grid-two">
+                                <div class="switch-surface">
+                                    <label for="citySelect" class="form-label">Receive reports for</label>
+                                    <select id="citySelect" name="preferredCityId" class="form-select">
+                                        <option value="">Global (All Cities)</option>
+                                        @foreach (var city in Model.AvailableCities)
                                         {
-                                            <option value="@city.Id" selected>@city.Name</option>
+                                            if (city.Id == Model.User?.PreferredCityId)
+                                            {
+                                                <option value="@city.Id" selected>@city.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@city.Id">@city.Name</option>
+                                            }
                                         }
-                                        else
-                                        {
-                                            <option value="@city.Id">@city.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <small class="text-muted d-block mt-2">
-                                    Choose which city's reports you want to receive, or select "Global" for all cities
-                                </small>
+                                    </select>
+                                    <small class="text-muted d-block mt-2">Choose one city for focused updates or stay global for a broader overview.</small>
+                                </div>
+
+                                <div class="settings-note-panel">
+                                    <h6 class="mb-2"><i class="bi bi-lightning-charge me-2"></i>Recommended setup</h6>
+                                    <p class="mb-0">Enable health reports for steady weekly insight and keep safety alerts on for anything urgent near your chosen area.</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-panel__actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-2"></i>Save preferences
+                                </button>
+                                <a href="/settings" class="btn btn-outline-secondary">@Localizer["CancelButton"]</a>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Save Preferences
-                        </button>
-                        <a href="/settings" class="btn btn-outline-secondary">@Localizer["CancelButton"]</a>
-                    </div>
+                    </section>
                 </form>
             }
             else
             {
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Enable email notifications above to customize your preferences.
-                </div>
+                <section class="settings-panel">
+                    <div class="settings-panel__head">
+                        <div>
+                            <span class="settings-panel__eyebrow"><i class="bi bi-pause-circle"></i> Delivery paused</span>
+                            <h2 class="settings-panel__title">Email preferences are currently inactive</h2>
+                            <p class="settings-panel__copy">Turn on the master switch above to tune notification types and delivery scope.</p>
+                        </div>
+                    </div>
+                </section>
             }
         </div>
     </div>

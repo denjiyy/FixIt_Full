@@ -1,4 +1,5 @@
 using FixIt.Models.Enums;
+using FixIt.Models.AI;
 
 namespace FixIt.ViewModels.Issues;
 
@@ -12,6 +13,8 @@ public class IssueSummaryResponse
     public string CityId { get; set; } = null!;
     public IssueStatus Status { get; set; }
     public IssuePriority Priority { get; set; }
+    public IssueCategory? Category { get; set; }
+    public string? Department { get; set; }
     public int Upvotes { get; set; }
     public int Downvotes { get; set; }
     public int CommentCount { get; set; }
@@ -39,6 +42,8 @@ public class IssueDetailResponse
     public double Latitude { get; set; }
     public IssueStatus Status { get; set; }
     public IssuePriority Priority { get; set; }
+    public IssueCategory? Category { get; set; }
+    public string? Department { get; set; }
     public int Upvotes { get; set; }
     public int Downvotes { get; set; }
     public int CommentCount { get; set; }

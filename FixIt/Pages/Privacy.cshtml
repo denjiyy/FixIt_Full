@@ -1,207 +1,305 @@
-﻿@page
+@page
 @model PrivacyModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["PrivacyPolicy"];
 }
 
-<link rel="stylesheet" href="~/css/pages/privacy.css" />
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/privacy.css" asp-append-version="true" />
+}
 
-<div class="container my-5">
-    <!-- Hero Section -->
-    <div class="policy-hero">
-        <h1><i class="bi bi-shield-lock"></i> @ViewData["Title"]</h1>
-        <p>Your privacy is important to us. This page explains how FixIt collects, uses, and protects your personal information.</p>
-    </div>
-
-    <div class="policy-container">
-        <!-- Table of Contents -->
-        <div class="policy-toc">
-            <h2><i class="bi bi-list-ul"></i> Quick Navigation</h2>
-            <ul>
-                <li><a href="#information-collection">Information Collection</a></li>
-                <li><a href="#information-use">How We Use Information</a></li>
-                <li><a href="#data-security">Data Security</a></li>
-                <li><a href="#user-rights">Your Rights</a></li>
-                <li><a href="#cookies">Cookies & Tracking</a></li>
-                <li><a href="#third-parties">Third-Party Services</a></li>
-                <li><a href="#contact">Contact Us</a></li>
-            </ul>
-        </div>
-
-        <!-- Information Collection Section -->
-        <div class="policy-section" id="information-collection">
-            <h2><i class="bi bi-info-circle"></i> Information We Collect</h2>
-            
-            <h3>Account Information</h3>
-            <p>When you create a FixIt account, we collect:</p>
-            <ul>
-                <li>Email address and username</li>
-                <li>Password (encrypted and never stored in plain text)</li>
-                <li>Profile information (optional: name, preferences, location)</li>
-            </ul>
-
-            <h3>Issue Reports & Content</h3>
-            <p>When you report infrastructure issues, we collect:</p>
-            <ul>
-                <li>Issue title and description</li>
-                <li>Location coordinates and GPS data</li>
-                <li>Photos and media uploads</li>
-                <li>Issue status and priority information</li>
-                <li>Timestamps and device information</li>
-            </ul>
-
-            <h3>Usage Information</h3>
-            <p>We automatically collect information about how you interact with our platform:</p>
-            <ul>
-                <li>Pages and features you visit</li>
-                <li>Time spent on each page</li>
-                <li>Clicks and interactions</li>
-                <li>Device type and operating system</li>
-                <li>IP address and approximate location</li>
-            </ul>
-
-            <div class="policy-highlight">
-                <strong>Privacy First:</strong> We never sell your personal data to third parties. Your privacy is under your control.
+<div class="privacy-page py-5">
+    <section class="privacy-hero">
+        <div class="privacy-hero__copy">
+            <span class="privacy-hero__eyebrow">
+                <i class="bi bi-shield-lock"></i>
+                Trust Center
+            </span>
+            <h1 class="privacy-hero__title">@ViewData["Title"]</h1>
+            <p class="privacy-hero__subtitle">
+                FixIt is built around public trust. This policy explains what we collect, why we collect it, how we protect it, and which controls stay in your hands.
+            </p>
+            <div class="privacy-hero__actions">
+                <a asp-page="/Settings/Privacy" class="btn btn-primary">
+                    <i class="bi bi-sliders"></i>
+                    Manage privacy settings
+                </a>
+                <a href="#contact" class="btn btn-outline-primary">
+                    <i class="bi bi-envelope"></i>
+                    Contact the privacy team
+                </a>
             </div>
         </div>
 
-        <!-- Information Use Section -->
-        <div class="policy-section" id="information-use">
-            <h2><i class="bi bi-gear"></i> How We Use Your Information</h2>
-            
-            <h3>Service Improvement</h3>
-            <p>Your information helps us improve FixIt by:</p>
-            <ul>
-                <li>Understanding how our platform is used</li>
-                <li>Identifying and fixing bugs and issues</li>
-                <li>Developing new features that benefit the community</li>
-                <li>Improving our infrastructure reports and analytics</li>
-            </ul>
-
-            <h3>Communication</h3>
-            <p>We may contact you to:</p>
-            <ul>
-                <li>Send important account or service notifications</li>
-                <li>Respond to your inquiries and support requests</li>
-                <li>Provide updates on issues you've reported (if opted in)</li>
-                <li>Share community highlights (optional)</li>
-            </ul>
-
-            <h3>Safety & Legal Compliance</h3>
-            <p>We use information to:</p>
-            <ul>
-                <li>Detect and prevent fraud and abuse</li>
-                <li>Enforce our Terms of Service</li>
-                <li>Comply with legal obligations</li>
-                <li>Protect the rights and safety of our community</li>
-            </ul>
-        </div>
-
-        <!-- Data Security Section -->
-        <div class="policy-section" id="data-security">
-            <h2><i class="bi bi-lock"></i> Data Security</h2>
-            
-            <p>We implement industry-standard security measures to protect your information:</p>
-            <ul>
-                <li>End-to-end encryption for sensitive data</li>
-                <li>Secure HTTPS connections for all traffic</li>
-                <li>Regular security audits and penetration testing</li>
-                <li>Encrypted password storage with strong hashing</li>
-                <li>Limited access to personal data (need-to-know basis)</li>
-                <li>Automatic backups and disaster recovery systems</li>
-            </ul>
-
-            <h3>Data Retention</h3>
-            <p>We retain your data only for as long as necessary to provide our services. You can request data deletion at any time, and we'll remove your personal information within 30 days (unless legally required to retain it).</p>
-        </div>
-
-        <!-- User Rights Section -->
-        <div class="policy-section" id="user-rights">
-            <h2><i class="bi bi-person-check"></i> Your Privacy Rights</h2>
-            
-            <h3>Access & Portability</h3>
-            <p>You have the right to:</p>
-            <ul>
-                <li>Access all your personal data we hold</li>
-                <li>Download your data in a portable format</li>
-                <li>Understand how your data is being used</li>
-            </ul>
-
-            <h3>Correction & Deletion</h3>
-            <p>You can:</p>
-            <ul>
-                <li>Update or correct your account information anytime</li>
-                <li>Delete your account and associated data</li>
-                <li>Remove specific pieces of information</li>
-            </ul>
-
-            <h3>Opt-Out Options</h3>
-            <p>You can opt out of:</p>
-            <ul>
-                <li>Marketing emails and newsletters</li>
-                <li>Location tracking (with reduced functionality)</li>
-                <li>Analytics and usage tracking</li>
-                <li>Cookie-based personalization</li>
-            </ul>
-
-            <div class="policy-highlight">
-                <strong>GDPR & CCPA Compliant:</strong> We respect and comply with international privacy regulations including GDPR, CCPA, and other local laws.
+        <div class="privacy-hero__panel">
+            <div class="privacy-hero__panel-item">
+                <span>Last updated</span>
+                <strong>@DateTime.UtcNow.ToString("MMMM d, yyyy")</strong>
+            </div>
+            <div class="privacy-hero__panel-item">
+                <span>Response target</span>
+                <strong>10 business days</strong>
+            </div>
+            <div class="privacy-hero__panel-item">
+                <span>Privacy model</span>
+                <strong>User-controlled</strong>
             </div>
         </div>
+    </section>
 
-        <!-- Cookies Section -->
-        <div class="policy-section" id="cookies">
-            <h2><i class="bi bi-cookie"></i> Cookies & Tracking</h2>
-            
-            <p>FixIt uses cookies to enhance your experience:</p>
-            <ul>
-                <li><strong>Essential Cookies:</strong> Required for authentication and security</li>
-                <li><strong>Performance Cookies:</strong> Help us understand how you use FixIt</li>
-                <li><strong>Preference Cookies:</strong> Remember your settings and language choice</li>
-                <li><strong>Marketing Cookies:</strong> (optional) Track campaigns and improvements</li>
-            </ul>
+    <section class="privacy-principles">
+        <article class="privacy-principle-card">
+            <div class="privacy-principle-card__icon"><i class="bi bi-person-lock"></i></div>
+            <h2>Minimum necessary data</h2>
+            <p>We only collect information needed to operate the platform, moderate abuse, and help cities respond to community reports.</p>
+        </article>
+        <article class="privacy-principle-card">
+            <div class="privacy-principle-card__icon"><i class="bi bi-shield-check"></i></div>
+            <h2>Secure by default</h2>
+            <p>Sensitive information is protected with strong transport security, encrypted storage, and limited access policies.</p>
+        </article>
+        <article class="privacy-principle-card">
+            <div class="privacy-principle-card__icon"><i class="bi bi-toggle2-on"></i></div>
+            <h2>Controls that stay visible</h2>
+            <p>Settings for anonymity, alerts, and profile visibility are exposed in-product so privacy choices are not buried.</p>
+        </article>
+    </section>
 
-            <h3>Managing Cookies</h3>
-            <p>You can manage cookie preferences through your browser settings. Most browsers allow you to refuse cookies or alert you when cookies are being sent. Note that disabling certain cookies may affect platform functionality.</p>
-        </div>
+    <div class="privacy-layout">
+        <aside class="privacy-nav">
+            <div class="privacy-nav__card">
+                <h2><i class="bi bi-list-ul"></i> Quick navigation</h2>
+                <nav aria-label="Privacy sections">
+                    <a href="#information-collection">Information collection</a>
+                    <a href="#information-use">How information is used</a>
+                    <a href="#data-security">Data security</a>
+                    <a href="#user-rights">Your rights</a>
+                    <a href="#cookies">Cookies and tracking</a>
+                    <a href="#third-parties">Third-party services</a>
+                    <a href="#contact">Contact and requests</a>
+                </nav>
+            </div>
 
-        <!-- Third-Party Services Section -->
-        <div class="policy-section" id="third-parties">
-            <h2><i class="bi bi-diagram-3"></i> Third-Party Services</h2>
-            
-            <h3>Services We Use</h3>
-            <p>FixIt integrates with third-party services:</p>
-            <ul>
-                <li><strong>Maps & Geocoding:</strong> For location services</li>
-                <li><strong>Analytics:</strong> To understand aggregate usage patterns</li>
-                <li><strong>Cloud Storage:</strong> Secure hosting of media uploads</li>
-                <li><strong>Email Delivery:</strong> For transactional notifications</li>
-            </ul>
+            <div class="privacy-nav__card privacy-nav__card--accent">
+                <h3>Need account-level controls?</h3>
+                <p>Manage anonymity, profile visibility, and hazard notifications directly from your settings area.</p>
+                <a asp-page="/Settings/Index" class="btn btn-sm btn-primary">
+                    <i class="bi bi-gear"></i>
+                    Open settings
+                </a>
+            </div>
+        </aside>
 
-            <h3>Your Data with Third Parties</h3>
-            <p>When using third-party services, only necessary data is shared, and we ensure they comply with privacy standards. You can contact us for specific information about any third-party processor.</p>
-        </div>
+        <div class="privacy-content">
+            <section class="privacy-section" id="information-collection">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-database"></i></span>
+                    <div>
+                        <h2>Information we collect</h2>
+                        <p>We collect account, reporting, and technical usage data needed to keep the platform functional and safe.</p>
+                    </div>
+                </div>
+                <div class="privacy-section__grid">
+                    <article class="privacy-subcard">
+                        <h3>Account information</h3>
+                        <ul>
+                            <li>Email address and username</li>
+                            <li>Password in hashed form only</li>
+                            <li>Optional profile information and communication preferences</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Issue reports and content</h3>
+                        <ul>
+                            <li>Issue titles, descriptions, and location data</li>
+                            <li>Photos, videos, timestamps, and status updates</li>
+                            <li>Interaction signals such as comments and votes</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Usage information</h3>
+                        <ul>
+                            <li>Pages and features you use</li>
+                            <li>Device, browser, and connection metadata</li>
+                            <li>Approximate location derived from IP when needed for security</li>
+                        </ul>
+                    </article>
+                </div>
+                <div class="privacy-highlight">
+                    <strong>Privacy first:</strong> FixIt does not sell your personal data to third parties.
+                </div>
+            </section>
 
-        <!-- Contact Section -->
-        <div class="policy-section" id="contact">
-            <h2><i class="bi bi-envelope"></i> Contact Us</h2>
-            
-            <p>If you have questions about our privacy practices or want to exercise your privacy rights:</p>
-            <ul>
-                <li><strong>Email:</strong> <a href="mailto:privacy@fixitapp.local">privacy@fixitapp.local</a></li>
-                <li><strong>Submit a Request:</strong> Use the privacy request form in your account settings</li>
-                <li><strong>Response Time:</strong> We aim to respond within 10 business days</li>
-            </ul>
+            <section class="privacy-section" id="information-use">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-diagram-3"></i></span>
+                    <div>
+                        <h2>How we use your information</h2>
+                        <p>Your information supports core reporting workflows, product quality, and community safety operations.</p>
+                    </div>
+                </div>
+                <div class="privacy-section__stack">
+                    <article class="privacy-subcard">
+                        <h3>Service operations</h3>
+                        <ul>
+                            <li>Publish reports and route them to the right city context</li>
+                            <li>Track issue progress, votes, comments, and moderation history</li>
+                            <li>Deliver essential account and issue notifications</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Service improvement</h3>
+                        <ul>
+                            <li>Diagnose bugs and reliability problems</li>
+                            <li>Understand which workflows need better UX or clearer guidance</li>
+                            <li>Improve issue categorization, analytics, and abuse prevention</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Safety and compliance</h3>
+                        <ul>
+                            <li>Detect fraud, spam, coordinated abuse, and platform misuse</li>
+                            <li>Enforce platform policies and moderator decisions</li>
+                            <li>Comply with legal obligations and valid requests</li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
 
-            <h3>Data Protection Officer</h3>
-            <p>For GDPR-related inquiries, contact our Data Protection Officer at <a href="mailto:dpo@fixitapp.local">dpo@fixitapp.local</a></p>
-        </div>
+            <section class="privacy-section" id="data-security">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-lock"></i></span>
+                    <div>
+                        <h2>Data security and retention</h2>
+                        <p>We use layered security controls and keep data only as long as it remains operationally or legally necessary.</p>
+                    </div>
+                </div>
+                <div class="privacy-section__grid">
+                    <article class="privacy-subcard">
+                        <h3>Security measures</h3>
+                        <ul>
+                            <li>HTTPS for traffic encryption</li>
+                            <li>Encrypted password storage with strong hashing</li>
+                            <li>Access controls, audit trails, and backup procedures</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Retention approach</h3>
+                        <ul>
+                            <li>Operational records are retained only as long as needed</li>
+                            <li>Deletion requests are processed promptly unless law requires retention</li>
+                            <li>Backups follow secure recovery and lifecycle policies</li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
 
-        <!-- Footer -->
-        <div class="policy-footer">
-            <p><strong>Privacy Policy Last Updated:</strong> <span class="policy-last-updated">@DateTime.Now.ToString("MMMM d, yyyy")</span></p>
-            <p>We may update this privacy policy from time to time. We will notify you of material changes via email.</p>
+            <section class="privacy-section" id="user-rights">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-person-check"></i></span>
+                    <div>
+                        <h2>Your rights and controls</h2>
+                        <p>You can review, update, limit, or request deletion of your data depending on the context and applicable law.</p>
+                    </div>
+                </div>
+                <div class="privacy-section__grid">
+                    <article class="privacy-subcard">
+                        <h3>Access and portability</h3>
+                        <ul>
+                            <li>Access the data associated with your account</li>
+                            <li>Request a portable export where applicable</li>
+                            <li>Understand how your data is used</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Correction and deletion</h3>
+                        <ul>
+                            <li>Update inaccurate account details</li>
+                            <li>Remove selected information or request account deletion</li>
+                            <li>Ask for anonymity features when public attribution is not appropriate</li>
+                        </ul>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Preference controls</h3>
+                        <ul>
+                            <li>Opt out of marketing and non-essential messages</li>
+                            <li>Adjust alert preferences and profile visibility</li>
+                            <li>Control cookie and analytics settings where supported</li>
+                        </ul>
+                    </article>
+                </div>
+                <div class="privacy-highlight">
+                    <strong>Compliance:</strong> FixIt is designed to respect modern privacy frameworks such as GDPR and CCPA.
+                </div>
+            </section>
+
+            <section class="privacy-section" id="cookies">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-cookie"></i></span>
+                    <div>
+                        <h2>Cookies and tracking</h2>
+                        <p>Cookies help us keep sessions secure, remember settings, and understand performance at an aggregate level.</p>
+                    </div>
+                </div>
+                <div class="privacy-subcard">
+                    <ul>
+                        <li><strong>Essential cookies:</strong> authentication, session continuity, and security protections</li>
+                        <li><strong>Preference cookies:</strong> language choices and product settings</li>
+                        <li><strong>Performance signals:</strong> aggregated analytics used to improve reliability and UX</li>
+                    </ul>
+                    <p class="mb-0">Most browsers let you block or clear cookies. Disabling some of them may reduce platform functionality.</p>
+                </div>
+            </section>
+
+            <section class="privacy-section" id="third-parties">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-box-arrow-up-right"></i></span>
+                    <div>
+                        <h2>Third-party services</h2>
+                        <p>We rely on supporting vendors for infrastructure functions such as maps, storage, and transactional communications.</p>
+                    </div>
+                </div>
+                <div class="privacy-subcard">
+                    <ul>
+                        <li>Map and geocoding services for issue location workflows</li>
+                        <li>Secure media storage for uploaded evidence</li>
+                        <li>Email delivery for account and issue notifications</li>
+                        <li>Operational analytics for aggregate product improvement</li>
+                    </ul>
+                    <p class="mb-0">We share only the minimum data required for those services to function and expect processors to follow appropriate privacy and security standards.</p>
+                </div>
+            </section>
+
+            <section class="privacy-section" id="contact">
+                <div class="privacy-section__head">
+                    <span class="privacy-section__icon"><i class="bi bi-envelope-paper"></i></span>
+                    <div>
+                        <h2>Contact and privacy requests</h2>
+                        <p>Reach out if you have questions about the policy, data requests, or region-specific privacy obligations.</p>
+                    </div>
+                </div>
+                <div class="privacy-contact-grid">
+                    <article class="privacy-subcard">
+                        <h3>Primary contact</h3>
+                        <p><a href="mailto:privacy@fixitapp.local">privacy@fixitapp.local</a></p>
+                        <p class="mb-0">Use this address for policy questions, access requests, and general privacy support.</p>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>Data protection contact</h3>
+                        <p><a href="mailto:dpo@fixitapp.local">dpo@fixitapp.local</a></p>
+                        <p class="mb-0">Use this route for GDPR-related requests or regulator-facing inquiries.</p>
+                    </article>
+                    <article class="privacy-subcard">
+                        <h3>In-product controls</h3>
+                        <p>Open account settings to manage reporting anonymity, hazard alerts, and profile visibility.</p>
+                        <a asp-page="/Settings/Privacy" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-gear"></i>
+                            Open privacy settings
+                        </a>
+                    </article>
+                </div>
+            </section>
         </div>
     </div>
 </div>

@@ -1,18 +1,28 @@
 @using FixIt.Models.Enums
 @model IssuePriority
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 
 @{
-    var dotClass = Model switch
+    var badgeClass = Model switch
     {
-        IssuePriority.Critical => "critical",
-        IssuePriority.High     => "high",
-        IssuePriority.Medium   => "medium",
-        IssuePriority.Low      => "low",
-        _                      => "low"
+        IssuePriority.Critical => "priority-badge--critical",
+        IssuePriority.High     => "priority-badge--high",
+        IssuePriority.Medium   => "priority-badge--medium",
+        IssuePriority.Low      => "priority-badge--low",
+        _                      => "priority-badge--low"
+    };
+
+    var label = Model switch
+    {
+        IssuePriority.Low => Localizer["Low"],
+        IssuePriority.Medium => Localizer["Medium"],
+        IssuePriority.High => Localizer["High"],
+        IssuePriority.Critical => Localizer["Critical"],
+        _ => Model.ToString()
     };
 }
 
-<div class="d-flex align-items-center gap-2">
-    <span class="priority-dot @dotClass" title="@Model Priority"></span>
-    <span style="font-size: var(--text-xs); color: var(--gray-400); font-weight: var(--font-semibold);">@Model</span>
-</div>
+<span class="priority-badge @badgeClass">
+    <span class="priority-dot" aria-hidden="true"></span>
+    <span class="priority-label">@label</span>
+</span>

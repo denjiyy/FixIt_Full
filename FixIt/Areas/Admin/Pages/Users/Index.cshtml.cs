@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Admin.Pages.Users;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;

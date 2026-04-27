@@ -5,135 +5,201 @@
 const Comments = (() => {
     'use strict';
 
-    const issueId = document.getElementById('issueId')?.value || document.querySelector('[data-issue-id]')?.dataset.issueId;
-    const currentUserId = document.body.dataset.currentUserId || document.querySelector('[data-current-user]')?.dataset.currentUser || '';
+    const root = document.getElementById('issueDetailRoot');
+    const issueId = root?.dataset.issueId || '';
+    const currentUserId = root?.dataset.currentUser || '';
+    const messages = {
+        deleteConfirm: root?.dataset.deleteCommentConfirm || 'Delete this comment?',
+        deleteOwnOnly: root?.dataset.deleteOwnOnly || 'You can only delete your own comments.',
+        deleteFailed: root?.dataset.deleteCommentFailed || 'Failed to delete comment.',
+        deleteError: root?.dataset.deleteCommentError || 'An error occurred while deleting the comment.',
+        signInLike: root?.dataset.signInLike || 'Please sign in to like comments.',
+        signInDislike: root?.dataset.signInDislike || 'Please sign in to dislike comments.',
+        actionFailed: root?.dataset.commentActionFailed || 'We could not update this comment right now.',
+        noComments: root?.dataset.noComments || 'No comments yet.'
+    };
+    const notify = (message, tone = 'info') => {
+        if (typeof window.FixItNotify === 'function') {
+            window.FixItNotify(message, tone);
+        }
+    };
 
-    async function deleteComment(commentId, authorId) {
-        if (!currentUserId || currentUserId !== authorId) {
-            alert('You can only delete your own comments');
+    function setLoadingState(button, isLoading) {
+        if (!button) return;
+        button.disabled = isLoading;
+        button.setAttribute('aria-busy', String(isLoading));
+        button.classList.toggle('is-loading', isLoading);
+    }
+
+    function ensureEmptyState() {
+        const commentsList = document.getElementById('commentsList');
+        if (!commentsList) return;
+
+        const hasComments = commentsList.querySelector('.comment-item');
+        const existingState = commentsList.querySelector('[data-comments-empty]');
+
+        if (hasComments) {
+            existingState?.remove();
             return;
         }
-        if (!confirm('Are you sure you want to delete this comment?')) return;
 
+        if (!existingState) {
+            const empty = document.createElement('div');
+            empty.dataset.commentsEmpty = 'true';
+            empty.className = 'alert alert-info';
+            empty.textContent = messages.noComments;
+            commentsList.appendChild(empty);
+        }
+    }
+
+    async function deleteComment(commentId, authorId, triggerButton = null) {
+        if (!currentUserId || currentUserId !== authorId) {
+            notify(messages.deleteOwnOnly, 'warning');
+            return;
+        }
+
+        if (!window.confirm(messages.deleteConfirm)) return;
+
+        setLoadingState(triggerButton, true);
         try {
             const response = await fetch(`/api/issues/${issueId}/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' }
             });
+
             if (response.ok) {
-                const commentEl = document.querySelector(`[data-comment-id="${commentId}"]`);
-                if (commentEl) {
-                    commentEl.style.opacity = '0.5';
-                    commentEl.querySelector('.comment-text').textContent = '[deleted]';
-                    commentEl.querySelector('.comment-delete-btn').style.display = 'none';
-                }
+                document.querySelector(`[data-comment-id="${commentId}"]`)?.remove();
+                ensureEmptyState();
             } else {
-                alert('Failed to delete comment');
+                notify(messages.deleteFailed, 'error');
             }
         } catch (error) {
-            console.error('Error deleting comment:', error);
-            alert('An error occurred while deleting the comment');
+            notify(messages.deleteError, 'error');
+        } finally {
+            setLoadingState(triggerButton, false);
         }
     }
 
-    async function likeComment(commentId) {
+    async function likeComment(commentId, triggerButton = null) {
         if (!currentUserId) {
-            alert('Please sign in to like comments');
+            notify(messages.signInLike, 'warning');
             return;
         }
+
+        setLoadingState(triggerButton, true);
         try {
             const response = await fetch(`/api/issues/${issueId}/comments/${commentId}/like`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
             });
-            if (response.ok) {
-                const data = await response.json();
-                const el = document.querySelector(`[data-comment-id="${commentId}"]`);
-                if (el) {
-                    el.querySelector('.like-count').textContent = data.data.likeCount;
-                    el.querySelector('.dislike-count').textContent = data.data.dislikeCount;
-                    el.querySelector('.comment-like-btn').classList.add('active');
-                    el.querySelector('.comment-dislike-btn').classList.remove('active');
-                }
+
+            if (!response.ok) {
+                notify(messages.actionFailed, 'error');
+                return;
             }
-        } catch (e) {
-            console.error(e);
+
+            const data = await response.json();
+            const element = document.querySelector(`[data-comment-id="${commentId}"]`);
+            if (!element) return;
+
+            element.querySelector('.like-count').textContent = data.data.likeCount;
+            element.querySelector('.dislike-count').textContent = data.data.dislikeCount;
+            element.querySelector('.comment-like-btn').classList.add('active');
+            element.querySelector('.comment-dislike-btn').classList.remove('active');
+        } catch (error) {
+            notify(messages.actionFailed, 'error');
+        } finally {
+            setLoadingState(triggerButton, false);
         }
     }
 
-    async function dislikeComment(commentId) {
+    async function dislikeComment(commentId, triggerButton = null) {
         if (!currentUserId) {
-            alert('Please sign in to dislike comments');
+            notify(messages.signInDislike, 'warning');
             return;
         }
+
+        setLoadingState(triggerButton, true);
         try {
             const response = await fetch(`/api/issues/${issueId}/comments/${commentId}/dislike`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
             });
-            if (response.ok) {
-                const data = await response.json();
-                const el = document.querySelector(`[data-comment-id="${commentId}"]`);
-                if (el) {
-                    el.querySelector('.like-count').textContent = data.data.likeCount;
-                    el.querySelector('.dislike-count').textContent = data.data.dislikeCount;
-                    el.querySelector('.comment-like-btn').classList.remove('active');
-                    el.querySelector('.comment-dislike-btn').classList.add('active');
-                }
+
+            if (!response.ok) {
+                notify(messages.actionFailed, 'error');
+                return;
             }
-        } catch (e) {
-            console.error(e);
+
+            const data = await response.json();
+            const element = document.querySelector(`[data-comment-id="${commentId}"]`);
+            if (!element) return;
+
+            element.querySelector('.like-count').textContent = data.data.likeCount;
+            element.querySelector('.dislike-count').textContent = data.data.dislikeCount;
+            element.querySelector('.comment-like-btn').classList.remove('active');
+            element.querySelector('.comment-dislike-btn').classList.add('active');
+        } catch (error) {
+            notify(messages.actionFailed, 'error');
+        } finally {
+            setLoadingState(triggerButton, false);
         }
     }
 
     function sort(sortBy) {
         const commentsList = document.getElementById('commentsList');
         if (!commentsList) return;
+
         const comments = Array.from(commentsList.querySelectorAll('.comment-item'));
-        comments.sort((a, b) => {
+        comments.sort((first, second) => {
             switch (sortBy) {
                 case 'oldest':
-                    return new Date(a.dataset.date) - new Date(b.dataset.date);
+                    return new Date(first.dataset.date) - new Date(second.dataset.date);
                 case 'mostLiked':
-                    return parseInt(b.dataset.likes) - parseInt(a.dataset.likes);
+                    return Number.parseInt(second.dataset.likes || '0', 10) - Number.parseInt(first.dataset.likes || '0', 10);
                 default:
-                    return new Date(b.dataset.date) - new Date(a.dataset.date);
+                    return new Date(second.dataset.date) - new Date(first.dataset.date);
             }
         });
-        comments.forEach(c => commentsList.appendChild(c));
-    }
 
-    // Wire up event listeners
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => wireEvents());
-    } else {
-        wireEvents();
+        comments.forEach((comment) => commentsList.appendChild(comment));
     }
 
     function wireEvents() {
-        document.querySelectorAll('.comment-delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                deleteComment(btn.dataset.commentId, btn.dataset.authorId);
+        if (!root || !issueId) return;
+
+        document.querySelectorAll('.comment-delete-btn').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                deleteComment(button.dataset.commentId, button.dataset.authorId, button);
             });
         });
 
-        document.querySelectorAll('.comment-like-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                likeComment(btn.dataset.commentId);
+        document.querySelectorAll('.comment-like-btn').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                likeComment(button.dataset.commentId, button);
             });
         });
 
-        document.querySelectorAll('.comment-dislike-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                dislikeComment(btn.dataset.commentId);
+        document.querySelectorAll('.comment-dislike-btn').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                dislikeComment(button.dataset.commentId, button);
             });
         });
 
-        const sortDropdown = document.getElementById('commentSortDropdown');
-        if (sortDropdown) {
-            sortDropdown.addEventListener('change', (e) => sort(e.target.value));
-        }
+        document.getElementById('commentSortDropdown')?.addEventListener('change', (event) => {
+            sort(event.target.value);
+        });
+
+        ensureEmptyState();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wireEvents, { once: true });
+    } else {
+        wireEvents();
     }
 
     return { deleteComment, likeComment, dislikeComment, sort };

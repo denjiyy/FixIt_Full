@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Locations;
 using FixIt.Data.Repository.Contracts;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Admin.Pages.Cities;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 public class IndexModel : PageModel
 {
     private readonly IRepository<City> _cityRepository;

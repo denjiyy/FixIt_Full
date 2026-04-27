@@ -7,6 +7,8 @@ using FixIt.Models.Issues;
 using FixIt.Models.AI;
 using FixIt.Models.Engagement;
 using FixIt.Services.AI;
+using FixIt.Services.Background;
+using FixIt.Services.Constants;
 
 namespace FixIt.Pages.Issues;
 
@@ -15,17 +17,20 @@ public class IssueDetailModel : PageModel
     private readonly IIssueService _issueService;
     private readonly IMediaService _mediaService;
     private readonly IIssueAnalysisService _analysisService;
+    private readonly IIssueAnalysisQueue _issueAnalysisQueue;
     private readonly ILogger<IssueDetailModel> _logger;
 
     public IssueDetailModel(
         IIssueService issueService, 
         IMediaService mediaService,
         IIssueAnalysisService analysisService,
+        IIssueAnalysisQueue issueAnalysisQueue,
         ILogger<IssueDetailModel> logger)
     {
         _issueService = issueService;
         _mediaService = mediaService;
         _analysisService = analysisService;
+        _issueAnalysisQueue = issueAnalysisQueue;
         _logger = logger;
     }
 
@@ -34,15 +39,15 @@ public class IssueDetailModel : PageModel
     public List<FixIt.Models.Media.Media> MediaList { get; set; } = new();
     public List<Comment> Comments { get; set; } = new();
     public int? IssueCount { get; set; }
+    public bool CanManageIssue { get; set; }
     
-    public List<dynamic> SortedStatusHistory
+    public List<IssueStatusHistory> SortedStatusHistory
     {
         get
         {
-            if (Issue?.StatusHistory == null) return new List<dynamic>();
-            
-            var statusHistory = Issue.StatusHistory as IEnumerable<dynamic> ?? new List<dynamic>();
-            return statusHistory.OrderByDescending(h => ((dynamic)h).ChangedAt).ToList();
+            return Issue?.StatusHistory?
+                .OrderByDescending(history => history.ChangedAt)
+                .ToList() ?? new List<IssueStatusHistory>();
         }
     }
 
@@ -95,22 +100,11 @@ public class IssueDetailModel : PageModel
             {
                 try
                 {
-                    // Fire and forget - don't wait for analysis to complete
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await _analysisService.AnalyzeIssueAsync(Id);
-                        }
-                        catch
-                        {
-                            // Silently fail - analysis will be retried on next page load
-                        }
-                    });
+                    await _issueAnalysisQueue.QueueAnalysisAsync(Id);
                 }
-                catch
+                catch (Exception enqueueEx)
                 {
-                    // Analysis trigger failed, but page still loads
+                    _logger.LogWarning(enqueueEx, "Failed to queue analysis for issue {IssueId}", Id);
                 }
             }
             
@@ -122,6 +116,16 @@ public class IssueDetailModel : PageModel
             
             // Load comments
             Comments = await _issueService.GetCommentsForIssueAsync(Id);
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            CanManageIssue = !string.IsNullOrWhiteSpace(currentUserId) &&
+                (User.IsInRole(RoleNames.Admin) || Issue.Reporter?.Id == currentUserId);
+
+            if (!(Issue?.IsAnonymous ?? true) && !string.IsNullOrWhiteSpace(Issue?.Reporter?.Id))
+            {
+                var reporterIssues = await _issueService.GetUserIssuesAsync(Issue.Reporter.Id, 1, 1);
+                IssueCount = (int)reporterIssues.Total;
+            }
             
             // Set flag for Leaflet CSS loading in _Layout.cshtml
             if (Issue?.Location?.Coordinates != null && Issue.Location.Coordinates.Values?.Count >= 2)

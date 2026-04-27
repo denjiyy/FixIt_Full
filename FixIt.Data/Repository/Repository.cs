@@ -17,7 +17,7 @@ namespace FixIt.Data.Repository
 
         public async Task<T?> GetByIdAsync(string id)
         {
-            var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
+            var filter = Builders<T>.Filter.Eq("_id", ParseObjectId(id));
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
@@ -42,19 +42,29 @@ namespace FixIt.Data.Repository
 
         public async Task ReplaceAsync(string id, T entity)
         {
-            var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
+            var filter = Builders<T>.Filter.Eq("_id", ParseObjectId(id));
             await _collection.ReplaceOneAsync(filter, entity);
         }
 
         public async Task DeleteAsync(string id)
         {
-            var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
+            var filter = Builders<T>.Filter.Eq("_id", ParseObjectId(id));
             await _collection.DeleteOneAsync(filter);
         }
 
         public async Task<long> CountAsync(Expression<Func<T, bool>>? predicate = null)
         {
             return await _collection.CountDocumentsAsync(predicate ?? (_ => true));
+        }
+
+        private static ObjectId ParseObjectId(string id)
+        {
+            if (!ObjectId.TryParse(id, out var objectId))
+            {
+                throw new InvalidEntityIdException(id);
+            }
+
+            return objectId;
         }
     }
 }

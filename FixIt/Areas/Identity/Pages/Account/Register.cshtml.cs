@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
 using FixIt.Models.Common;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Identity.Pages.Account;
 
+[EnableRateLimiting(RateLimitPolicyNames.AuthStrict)]
 public class RegisterModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -93,4 +96,3 @@ public class RegisterModel : PageModel
         public string ConfirmPassword { get; set; } = null!;
     }
 }
-

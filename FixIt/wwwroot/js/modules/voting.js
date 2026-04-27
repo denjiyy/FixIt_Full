@@ -5,52 +5,112 @@
 const Voting = (() => {
     'use strict';
 
-    function updateUI(d) {
-        if (!d) return;
-        document.getElementById('upvoteCount').textContent = d.upvotes;
-        document.getElementById('downvoteCount').textContent = d.downvotes;
-        document.getElementById('statScore').textContent = d.upvotes - d.downvotes;
+    const root = document.getElementById('issueDetailRoot');
+    const issueId = root?.dataset.issueId || document.getElementById('issueId')?.value || '';
+    const messages = {
+        success: root?.dataset.voteSuccess || 'Vote recorded!',
+        failure: root?.dataset.voteFailure || 'Failed to record vote.',
+        error: root?.dataset.voteError || 'An error occurred.',
+        positiveLabel: root?.dataset.positiveLabel || 'positive',
+        totalLabel: root?.dataset.totalLabel || 'total'
+    };
 
-        const total = d.upvotes + d.downvotes;
-        const pct = total > 0 ? Math.round(d.upvotes / total * 100) : 50;
+    function hydrateScoreBar() {
         const scoreBar = document.getElementById('scoreBar');
-        if (scoreBar) scoreBar.style.width = pct + '%';
-
-        const upPctEl = document.getElementById('upvotePct');
-        const totalEl = document.getElementById('totalVoteCount');
-        if (upPctEl) upPctEl.textContent = pct + '% positive';
-        if (totalEl) totalEl.textContent = total + ' total';
+        if (scoreBar?.dataset.width) {
+            scoreBar.style.width = `${scoreBar.dataset.width}%`;
+        }
     }
 
-    async function vote(issueId, voteType) {
+    function updateUI(data) {
+        if (!data) return;
+
+        document.getElementById('upvoteCount').textContent = data.upvotes;
+        document.getElementById('downvoteCount').textContent = data.downvotes;
+        document.getElementById('statScore').textContent = data.upvotes - data.downvotes;
+
+        const total = data.upvotes + data.downvotes;
+        const pct = total > 0 ? Math.round((data.upvotes / total) * 100) : 50;
+        const scoreBar = document.getElementById('scoreBar');
+        if (scoreBar) {
+            scoreBar.dataset.width = pct;
+            scoreBar.style.width = `${pct}%`;
+        }
+
+        const upPct = document.getElementById('upvotePct');
+        const totalVoteCount = document.getElementById('totalVoteCount');
+        if (upPct) upPct.textContent = `${pct}% ${messages.positiveLabel}`;
+        if (totalVoteCount) totalVoteCount.textContent = `${total} ${messages.totalLabel}`;
+    }
+
+    async function vote(issueIdValue, voteType) {
+        const messageSlot = document.getElementById('voteMessage');
+
         try {
-            const res = await fetch(`/api/issues/${issueId}/vote`, {
+            const response = await fetch(`/api/issues/${issueIdValue}/vote`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ voteType })
             });
 
-            const msg = document.getElementById('voteMessage');
-            if (res.ok) {
-                const data = await res.json();
-                updateUI(data.data);
-                msg.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle-fill me-1"></i>Vote recorded!</div>';
-                setTimeout(() => msg.innerHTML = '', 2500);
-                document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(voteType === 1 ? 'upvoteBtn' : 'downvoteBtn')?.classList.add('active');
-            } else {
-                msg.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle-fill me-1"></i>Failed to record vote.</div>';
+            if (!response.ok) {
+                if (messageSlot) {
+                    messageSlot.innerHTML = `<div class="alert alert-danger mt-3">${messages.failure}</div>`;
+                }
+                return;
             }
-        } catch {
-            document.getElementById('voteMessage').innerHTML = '<div class="alert alert-danger">An error occurred.</div>';
+
+            const result = await response.json();
+            updateUI(result.data);
+
+            if (messageSlot) {
+                messageSlot.innerHTML = `<div class="alert alert-success mt-3">${messages.success}</div>`;
+                window.setTimeout(() => {
+                    messageSlot.innerHTML = '';
+                }, 2500);
+            }
+
+            document.querySelectorAll('.vote-btn').forEach((button) => button.classList.remove('active'));
+            document.getElementById(voteType === 1 ? 'upvoteBtn' : 'downvoteBtn')?.classList.add('active');
+        } catch (error) {
+            if (typeof window.FixItNotify === 'function') {
+                window.FixItNotify(messages.error, 'error');
+            }
+            if (messageSlot) {
+                messageSlot.innerHTML = `<div class="alert alert-danger mt-3">${messages.error}</div>`;
+            }
         }
+    }
+
+    function bindVoteButtons() {
+        if (!issueId) return;
+
+        document.querySelectorAll('[data-vote-type]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const voteType = Number.parseInt(button.dataset.voteType || '', 10);
+                if (!Number.isNaN(voteType)) {
+                    vote(issueId, voteType);
+                }
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            hydrateScoreBar();
+            bindVoteButtons();
+        }, { once: true });
+    } else {
+        hydrateScoreBar();
+        bindVoteButtons();
     }
 
     return { vote };
 })();
 
-// Attach to window for use in onclick handlers
 window.vote = (voteType) => {
-    const issueId = document.getElementById('issueId')?.value || document.querySelector('[data-issue-id]')?.dataset.issueId;
-    if (issueId) Voting.vote(issueId, voteType);
+    const issueIdValue = document.getElementById('issueId')?.value || document.getElementById('issueDetailRoot')?.dataset.issueId;
+    if (issueIdValue) {
+        Voting.vote(issueIdValue, voteType);
+    }
 };

@@ -1,375 +1,331 @@
-﻿@page
+@page
 @model IndexModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["ReportAndFix"] + " - FixIt";
+    ViewData["BodyClass"] = "page-home-index";
 }
 
-<!-- Hero Section -->
-<section class="app-hero">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6 mb-5 mb-lg-0">
-                <div class="badge bg-white text-primary mb-4 badge-pill-md">
-                     @Localizer["CommunityPoweredPlatform"]
-                </div>
-                <h1 class="app-hero-title">
-                    @Localizer["ReportAndFix"]<br />
-                    <span class="gradient-text">@Localizer["CommunityIssues"]</span>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/home-index.css" asp-append-version="true" />
+}
+
+<div class="home-index-page">
+    <section class="home-hero">
+        <div class="home-hero__grid">
+            <div class="home-hero__content">
+                <span class="home-hero__eyebrow">
+                    <i class="bi bi-shield-check"></i>
+                    @Localizer["CommunityPoweredPlatform"]
+                </span>
+                <h1 class="home-hero__title">
+                    @Localizer["ReportAndFix"]
+                    <span>@Localizer["CommunityIssues"]</span>
                 </h1>
-                <p class="app-hero-subtitle">
-                    @Localizer["JoinThousands"]
-                </p>
-                <div class="app-hero-actions d-flex gap-3 flex-wrap">
+                <p class="home-hero__copy">@Localizer["HomeHeroDescription"]</p>
+
+                <div class="home-hero__actions">
                     @if (User?.Identity?.IsAuthenticated ?? false)
                     {
-                        <a asp-page="/Issues/Create" class="btn btn-accent btn-lg px-5">
-                            <i class="bi bi-plus-circle me-2"></i>@Localizer["ReportNewIssue"]
+                        <a asp-page="/Issues/Create" class="nav-report-btn">
+                            <i class="bi bi-plus-circle-fill"></i>
+                            <span>@Localizer["ReportNewIssue"]</span>
                         </a>
-                        <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5">
-                            <i class="bi bi-list-check me-2"></i>@Localizer["BrowseIssues"]
+                        <a asp-page="/Issues/Index" class="app-link-btn">
+                            <i class="bi bi-list-check"></i>
+                            <span>@Localizer["BrowseIssues"]</span>
                         </a>
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-accent btn-lg px-5">
-                            <i class="bi bi-person-plus me-2"></i>@Localizer["GetStartedFree"]
+                        <a asp-area="Identity" asp-page="/Account/Register" class="nav-report-btn">
+                            <i class="bi bi-person-plus-fill"></i>
+                            <span>@Localizer["GetStartedFree"]</span>
                         </a>
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-lg px-5">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>@Localizer["SignIn"]
+                        <a asp-area="Identity" asp-page="/Account/Login" class="app-link-btn">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>@Localizer["SignIn"]</span>
                         </a>
                     }
                 </div>
-                
-                <!-- Stats Bar -->
-                <div class="row g-4 mt-4">
-                    <div class="col-4">
-                        <div class="text-center">
-                            <div class="h3 fw-bold mb-0 hero-stat-value">10K+</div>
-                            <div class="small hero-stat-label">@Localizer["IssuesReported"]</div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-center">
-                            <div class="h3 fw-bold mb-0 hero-stat-value">7.5K+</div>
-                            <div class="small hero-stat-label">@Localizer["IssuesResolved"]</div>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-center">
-                            <div class="h3 fw-bold mb-0 hero-stat-value">50+</div>
-                            <div class="small hero-stat-label">@Localizer["Cities"]</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-6 d-none d-lg-block">
-                <div class="position-relative perspective-3d">
-                    <div class="glass-tilt">
-                        <div class="glass-panel">
-                            <div class="panel-heading d-flex align-items-center gap-3 mb-4 pb-4">
-                                <div class="icon-container-md">
-                                    <i class="bi bi-exclamation-triangle text-accent"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-semibold text-white">@Localizer["NewIssueReported"]</div>
-                                    <div class="small text-white-70">@Localizer["MinutesAgo", 2]</div>
-                                </div>
-                                <span class="badge badge-danger-light-solid">@Localizer["HighPriority"]</span>
-                            </div>
-                            <h6 class="fw-bold mb-2 text-white">@Localizer["SampleIssueTitle"]</h6>
-                            <p class="small mb-4 text-white-70">@Localizer["SampleIssueDescription"]</p>
-                            <div class="d-flex gap-2">
-                                <span class="badge bg-white text-dark px-3 py-2 small-text-xs"><i class="bi bi-geo-alt me-1"></i>@Localizer["SampleLocation"]</span>
-                                <span class="badge bg-white text-dark px-3 py-2 small-text-xs"><i class="bi bi-people me-1"></i>@Localizer["UpvotesCount"]</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
-<!-- How It Works Section -->
-<section class="py-5 mb-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <span class="badge bg-primary text-white badge-pill-md mb-3">
+                <div class="home-hero__highlights">
+                    <div class="home-highlight">
+                        <strong>@Model.Overview.ResolutionRatePercentage%</strong>
+                        <span>@Localizer["ResolutionRate"]</span>
+                    </div>
+                    <div class="home-highlight">
+                        <strong>@Model.Overview.CitiesCovered</strong>
+                        <span>@Localizer["CitiesCovered"]</span>
+                    </div>
+                    <div class="home-highlight">
+                        <strong>@Model.Overview.ActiveIssues</strong>
+                        <span>@Localizer["ActiveIssues"]</span>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="home-hero__panel home-hero__panel--inset">
+                <div class="home-hero__panel-head">
+                    <span class="home-panel-kicker">@Localizer["LivePlatformPulse"]</span>
+                    <h2>@Model.Overview.ActiveIssues @Localizer["ActiveIssues"]</h2>
+                    <p>@Localizer["FeaturedCommunityActivityCopy"]</p>
+                </div>
+
+                <div class="home-hero__panel-metrics">
+                    <article class="home-mini-metric">
+                        <span>@Localizer["TotalIssues"]</span>
+                        <strong>@Model.Overview.TotalIssues</strong>
+                    </article>
+                    <article class="home-mini-metric">
+                        <span>@Localizer["Resolved"]</span>
+                        <strong>@Model.Overview.FixedIssues</strong>
+                    </article>
+                    <article class="home-mini-metric">
+                        <span>@Localizer["InProgress"]</span>
+                        <strong>@Model.Overview.InProgressIssues</strong>
+                    </article>
+                    <article class="home-mini-metric">
+                        <span>@Localizer["Critical"]</span>
+                        <strong>@Model.Overview.CriticalIssues</strong>
+                    </article>
+                </div>
+
+                <div class="home-hero__feed">
+                    <div class="home-hero__feed-heading">
+                        <i class="bi bi-activity"></i>
+                        <span>@Localizer["FeaturedIssueUpdates"]</span>
+                    </div>
+
+                    @if (Model.Overview.FeaturedIssues.Any())
+                    {
+                        foreach (var issue in Model.Overview.FeaturedIssues.Take(3))
+                        {
+                            <a href="/issues/@issue.Id" class="home-hero__feed-item">
+                                <div class="home-hero__feed-copy">
+                                    <strong>@issue.Title</strong>
+                                    <span>@(string.IsNullOrWhiteSpace(issue.Address) ? Localizer["CommunityIssues"] : issue.Address)</span>
+                                </div>
+                                <div class="home-hero__feed-meta">
+                                    <partial name="_BadgeStatus" model="issue.Status" />
+                                </div>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="home-hero__feed-empty">
+                            @Localizer["NoIssuesReportedYet"]
+                        </div>
+                    }
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="issue-page">
+        <div class="issue-section-heading">
+            <div>
+                <span class="issue-page-header__eyebrow">
+                    <i class="bi bi-stars"></i>
+                    @Localizer["FeaturedCommunityActivity"]
+                </span>
+                <h2 class="issue-section-heading__title">@Localizer["FeaturedCommunityActivity"]</h2>
+                <p class="issue-section-heading__copy">@Localizer["FeaturedCommunityActivityCopy"]</p>
+            </div>
+            <a asp-page="/Issues/Index" class="app-link-btn">
+                <i class="bi bi-arrow-right-circle"></i>
+                <span>@Localizer["BrowseIssues"]</span>
+            </a>
+        </div>
+
+        @if (Model.Overview.FeaturedIssues.Any())
+        {
+            <div class="issue-card-grid home-featured-grid">
+                @foreach (var issue in Model.Overview.FeaturedIssues.Take(3))
+                {
+                    <partial name="_IssueCard" model="issue" />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="issue-surface issue-empty-state">
+                <div class="issue-empty-state__icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h2 class="issue-empty-state__title">@Localizer["NoIssuesReportedYet"]</h2>
+                <p class="issue-empty-state__copy">@Localizer["BeTheFirstToMakeYourCommunityBetter"]</p>
+            </div>
+        }
+    </section>
+
+    <section class="issue-page home-process">
+        <div class="home-section-intro">
+            <span class="issue-page-header__eyebrow">
+                <i class="bi bi-diagram-3"></i>
                 @Localizer["HowItWorks"]
             </span>
-            <h2 class="h1 fw-bold mb-3">@Localizer["SimpleTransparentEffective"]</h2>
-            <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;">
-                @Localizer["ReportTrackResults"]
-            </p>
+            <h2>@Localizer["SimpleTransparentEffective"]</h2>
+            <p>@Localizer["HomeProcessCopy"]</p>
         </div>
 
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card h-100">
-                    <div class="feature-number mb-3">1</div>
-                    <div class="feature-icon mb-4 feature-icon--info">
-                        <i class="bi bi-camera"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">@Localizer["ReportIssues"]</h5>
-                    <p class="feature-description mb-0">@Localizer["TakePhotoPin"]</p>
+        <div class="home-process__grid">
+            <article class="home-process__card issue-surface">
+                <span class="home-process__number">1</span>
+                <div class="home-process__icon home-process__icon--blue">
+                    <i class="bi bi-camera"></i>
                 </div>
-            </div>
+                <h3>@Localizer["ReportIssues"]</h3>
+                <p>@Localizer["TakePhotoPin"]</p>
+            </article>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card h-100">
-                    <div class="feature-number mb-3">2</div>
-                    <div class="feature-icon mb-4 feature-icon--success">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">@Localizer["RealTimeTracking"]</h5>
-                    <p class="feature-description mb-0">@Localizer["WatchIssuesProgress"]</p>
+            <article class="home-process__card issue-surface">
+                <span class="home-process__number">2</span>
+                <div class="home-process__icon home-process__icon--green">
+                    <i class="bi bi-geo-alt"></i>
                 </div>
-            </div>
+                <h3>@Localizer["Location"]</h3>
+                <p>@Localizer["PinTheExactSpotOnTheMapDescription"]</p>
+            </article>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card h-100">
-                    <div class="feature-number mb-3">3</div>
-                    <div class="feature-icon mb-4 feature-icon--warning">
-                        <i class="bi bi-chat-dots"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">@Localizer["CommunityEngagement"]</h5>
-                    <p class="feature-description mb-0">@Localizer["UpvoteIssuesComment"]</p>
+            <article class="home-process__card issue-surface">
+                <span class="home-process__number">3</span>
+                <div class="home-process__icon home-process__icon--gold">
+                    <i class="bi bi-graph-up-arrow"></i>
                 </div>
-            </div>
+                <h3>@Localizer["RealTimeTracking"]</h3>
+                <p>@Localizer["WatchIssuesProgress"]</p>
+            </article>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="feature-card h-100">
-                    <div class="feature-number mb-3">4</div>
-                    <div class="feature-icon mb-4 feature-icon--danger">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <h5 class="fw-bold mb-3">@Localizer["SeeResults"]</h5>
-                    <p class="feature-description mb-0">@Localizer["GetNotifiedWhenResolved"]</p>
+            <article class="home-process__card issue-surface">
+                <span class="home-process__number">4</span>
+                <div class="home-process__icon home-process__icon--red">
+                    <i class="bi bi-people"></i>
                 </div>
-            </div>
+                <h3>@Localizer["CommunityEngagement"]</h3>
+                <p>@Localizer["UpvoteIssuesComment"]</p>
+            </article>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Why FixIt Matters -->
-<section class="py-5 mb-5">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <span class="badge bg-primary text-white badge-pill-md mb-3">
+    <section class="issue-page home-trust">
+        <div class="home-trust__layout">
+            <div class="home-trust__content">
+                <span class="issue-page-header__eyebrow">
+                    <i class="bi bi-buildings"></i>
                     @Localizer["WhyItMatters"]
                 </span>
-                <h2 class="h1 fw-bold mb-4">@Localizer["BuildingStrongerCommunities"]</h2>
-                <p class="lead text-muted mb-5">
-                    @Localizer["FixItEmpower"]
-                </p>
+                <h2>@Localizer["BuildingStrongerCommunities"]</h2>
+                <p class="home-trust__copy">@Localizer["HomeTrustCopy"]</p>
 
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="icon-box icon-box--blue">
-                                    <i class="bi bi-shield-check" style="font-size: 1.5rem;"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-2">@Localizer["FullTransparency"]</h6>
-                                <p class="text-muted small mb-0">@Localizer["FullTransparencyDesc"]</p>
-                            </div>
+                <div class="home-trust__list">
+                    <article class="home-trust__item">
+                        <div class="home-trust__item-icon">
+                            <i class="bi bi-shield-check"></i>
                         </div>
-                    </div>
+                        <div>
+                            <h3>@Localizer["FullTransparency"]</h3>
+                            <p>@Localizer["EveryReportStatusVisible"]</p>
+                        </div>
+                    </article>
 
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="icon-box icon-box--green">
-                                    <i class="bi bi-lightning" style="font-size: 1.5rem;"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-2">@Localizer["FasterResolution"]</h6>
-                                <p class="text-muted small mb-0">@Localizer["FasterResolutionDesc"]</p>
-                            </div>
+                    <article class="home-trust__item">
+                        <div class="home-trust__item-icon home-trust__item-icon--green">
+                            <i class="bi bi-lightning-charge"></i>
                         </div>
-                    </div>
+                        <div>
+                            <h3>@Localizer["FasterResolution"]</h3>
+                            <p>@Localizer["CommunityReportingAccelerates"]</p>
+                        </div>
+                    </article>
 
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="icon-box icon-box--yellow">
-                                    <i class="bi bi-people" style="font-size: 1.5rem;"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-2">@Localizer["CommunityPower"]</h6>
-                                <p class="text-muted small mb-0">@Localizer["YourVoiceMatters"]</p>
-                            </div>
+                    <article class="home-trust__item">
+                        <div class="home-trust__item-icon home-trust__item-icon--gold">
+                            <i class="bi bi-people-fill"></i>
                         </div>
-                    </div>
+                        <div>
+                            <h3>@Localizer["CommunityPower"]</h3>
+                            <p>@Localizer["YourVoiceMatters"]</p>
+                        </div>
+                    </article>
 
-                    <div class="col-md-6">
-                        <div class="d-flex gap-3">
-                            <div class="flex-shrink-0">
-                                <div class="icon-box icon-box--red">
-                                    <i class="bi bi-bar-chart" style="font-size: 1.5rem;"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-2">@Localizer["DataDrivenImpact"]</h6>
-                                <p class="text-muted small mb-0">@Localizer["InfrastructureDecisionsBackedBy"]</p>
-                            </div>
+                    <article class="home-trust__item">
+                        <div class="home-trust__item-icon home-trust__item-icon--red">
+                            <i class="bi bi-bar-chart-line"></i>
                         </div>
-                    </div>
+                        <div>
+                            <h3>@Localizer["DataDrivenImpact"]</h3>
+                            <p>@Localizer["InfrastructureDecisionsBackedBy"]</p>
+                        </div>
+                    </article>
                 </div>
             </div>
 
-            <div class="col-lg-6">
-                <div class="position-relative">
-                    <div class="feature-stat-section">
-                        <div class="feature-stat-header">
-                            <h4 class="fw-bold mb-3">@Localizer["LiveCommunityImpact"]</h4>
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <div class="feature-stat-card">
-                                        <div class="h2 fw-bold mb-1">75%</div>
-                                        <div class="small">@Localizer["ResolutionRate"]</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="feature-stat-card">
-                                        <div class="h2 fw-bold mb-1">48h</div>
-                                        <div class="small">@Localizer["AvgResponseTime"]</div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="feature-stat-card">
-                                        <div class="h2 fw-bold mb-1">25K+</div>
-                                        <div class="small">@Localizer["ActiveCommunityMembers"]</div>
-                                    </div>
-                                </div>
-                            </div>
+            <aside class="home-trust__panel issue-surface">
+                <div class="home-trust__panel-copy">
+                    <span class="home-panel-kicker">@Localizer["LiveCommunityImpact"]</span>
+                    <h3>@Localizer["FeaturedCommunityActivity"]</h3>
+                    <p>@Localizer["FeaturedCommunityActivityCopy"]</p>
+                </div>
+
+                <div class="issue-kpi-grid home-trust__metrics">
+                    <div class="issue-kpi-card">
+                        <div class="issue-kpi-card__label">
+                            <i class="bi bi-check2-circle"></i>
+                            @Localizer["Resolved"]
                         </div>
+                        <div class="issue-kpi-card__value">@Model.Overview.FixedIssues</div>
+                        <div class="issue-kpi-card__meta">@Localizer["IssuesResolved"]</div>
+                    </div>
+
+                    <div class="issue-kpi-card">
+                        <div class="issue-kpi-card__label">
+                            <i class="bi bi-exclamation-circle"></i>
+                            @Localizer["New"]
+                        </div>
+                        <div class="issue-kpi-card__value">@Model.Overview.NewIssues</div>
+                        <div class="issue-kpi-card__meta">@Localizer["ReportIssues"]</div>
                     </div>
                 </div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="issue-page home-cta">
+        <div class="home-cta__card issue-surface issue-surface--glass">
+            <span class="issue-page-header__eyebrow">
+                <i class="bi bi-megaphone"></i>
+                @Localizer["ReadyToMakeADifference"]
+            </span>
+            <h2>@Localizer["ReadyToMakeADifference"]</h2>
+            <p>@Localizer["ReadyToMakeADifferenceCopy"]</p>
+
+            <div class="home-cta__actions">
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <a asp-page="/Issues/Create" class="nav-report-btn">
+                        <i class="bi bi-send-plus"></i>
+                        <span>@Localizer["SubmitReport"]</span>
+                    </a>
+                    <a asp-page="/Issues/Index" class="app-link-btn">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>@Localizer["BrowseIssues"]</span>
+                    </a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Register" class="nav-report-btn">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>@Localizer["CreateAccount"]</span>
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Login" class="app-link-btn">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>@Localizer["SignIn"]</span>
+                    </a>
+                }
             </div>
         </div>
-    </div>
-</section>
-
-<!-- Call to Action -->
-<section class="py-5 mb-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card border-0" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 1.5rem; overflow: hidden;">
-                    <div class="card-body p-5 text-center">
-                        <div class="mb-4">
-                            <span style="display: inline-block; width: 64px; height: 64px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                <i class="bi bi-star" style="font-size: 2rem; color: white;"></i>
-                            </span>
-                        </div>
-                        <h2 class="h1 fw-bold mb-3">Ready to Make a Difference?</h2>
-                        <p class="lead text-muted mb-5" style="max-width: 600px; margin-left: auto; margin-right: auto;">
-                            Join thousands of citizens using FixIt to improve their communities. Every report counts.
-                        </p>
-                        <div class="d-flex gap-3 justify-content-center flex-wrap">
-                            @if (User?.Identity?.IsAuthenticated ?? false)
-                            {
-                                <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
-                                    <i class="bi bi-plus-circle me-2"></i>Report an Issue Now
-                                </a>
-                                <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5">
-                                    <i class="bi bi-list-check me-2"></i>Browse Issues
-                                </a>
-                            }
-                            else
-                            {
-                                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-5">
-                                    <i class="bi bi-person-plus me-2"></i>Create Free Account
-                                </a>
-                                <a asp-page="/Issues/Index" class="btn btn-outline-primary btn-lg px-5">
-                                    <i class="bi bi-list-check me-2"></i>Explore Platform
-                                </a>
-                            }
-                        </div>
-                        
-                        <!-- Trust Indicators -->
-                        <div class="mt-5 pt-4" style="border-top: 1px solid rgba(14, 165, 233, 0.2);">
-                            <div class="row g-4">
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center justify-content-center gap-2">
-                                        <i class="bi bi-shield-check" style="color: #0ea5e9; font-size: 1.25rem;"></i>
-                                        <small class="fw-semibold text-muted">100% Free</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center justify-content-center gap-2">
-                                        <i class="bi bi-lock" style="color: #0ea5e9; font-size: 1.25rem;"></i>
-                                        <small class="fw-semibold text-muted">Secure & Private</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center justify-content-center gap-2">
-                                        <i class="bi bi-lightning" style="color: #0ea5e9; font-size: 1.25rem;"></i>
-                                        <small class="fw-semibold text-muted">Instant Setup</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<style>
-    /* Feature Card Enhancements */
-    .feature-number {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, #0ea5e9, #0284c7);
-        color: white;
-        border-radius: 0.5rem;
-        font-weight: 700;
-        font-size: 1.125rem;
-    }
-
-    .feature-card {
-        padding: 2.5rem;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    /* Smooth Scroll */
-    html {
-        scroll-behavior: smooth;
-    }
-
-    /* Hover effects for feature cards */
-    .feature-card:hover .feature-number {
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .feature-card:hover .feature-icon {
-        transform: scale(1.15);
-    }
-
-    /* Ensure Browse Issues button text stays white */
-    .hero .btn-outline-primary {
-        color: white !important;
-    }
-
-    .hero .btn-outline-primary:hover {
-        color: white !important;
-    }
-
-    /* CTA Section button styling */
-    .btn-outline-primary:not(.hero .btn-outline-primary) {
-        /* Keep default primary outline styling for buttons outside hero */
-    }
-</style>
+    </section>
+</div>

@@ -1,374 +1,265 @@
 @page "/settings/privacy"
 @model FixIt.Pages.Settings.PrivacyModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json
 @{
     ViewData["Title"] = Localizer["PrivacyAndSafetySettings"];
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <h1 class="mb-4">@Localizer["PrivacyAndSafetySettings"]</h1>
-            <p class="text-muted mb-4">@Localizer["ManageYourPrivacyPreferencesAndSafety"]</p>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/account.css" asp-append-version="true" />
+}
 
-            <div class="row">
-                <!-- Settings Navigation -->
-                <div class="col-md-3">
-                    <div class="list-group sticky-top" style="top: 1rem;">
-                        <a href="#anonymous-mode" class="list-group-item list-group-item-action active" data-bs-toggle="list">
-                            <i class="bi bi-incognito"></i> @Localizer["AnonymousMode"]
-                        </a>
-                        <a href="#hazard-mode" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="bi bi-exclamation-triangle"></i> @Localizer["HazardAlerts"]
-                        </a>
-                        <a href="#profile-visibility" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                            <i class="bi bi-eye"></i> @Localizer["ProfileVisibility"]
-                        </a>
+<div class="account-page py-4">
+    <section class="account-surface-hero mb-4">
+        <div class="account-surface-hero__row">
+            <div class="account-surface-hero__copy">
+                <span class="account-surface-hero__eyebrow">
+                    <i class="bi bi-shield-lock"></i>
+                    Privacy and safety
+                </span>
+                <h1 class="account-surface-hero__title">@Localizer["PrivacyAndSafetySettings"]</h1>
+                <p class="account-surface-hero__subtitle">@Localizer["ManageYourPrivacyPreferencesAndSafety"]</p>
+            </div>
+            <div class="account-surface-hero__meta">
+                <div class="account-surface-hero__meta-card">
+                    <span>Anonymous mode</span>
+                    <strong>@(Model.CurrentUser?.AnonymousReportingEnabled == true ? "On" : "Off")</strong>
+                    <small>Public identity masking for your reports</small>
+                </div>
+                <div class="account-surface-hero__meta-card">
+                    <span>Alert radius</span>
+                    <strong>@(Model.AlertPreferences?.AlertRadiusKm ?? 5) km</strong>
+                    <small>Notification distance from your current area</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="settings-shell-grid">
+        <aside class="settings-sidepanel">
+            <div>
+                <h2 class="settings-sidepanel__title">Control center</h2>
+                <p class="settings-sidepanel__copy">Privacy decisions should stay visible and understandable. These sections cover reporting identity, alerts, and public profile exposure.</p>
+            </div>
+
+            <div class="settings-sidepanel__links">
+                <a href="#anonymous-mode" class="settings-link active">
+                    <i class="bi bi-incognito"></i>
+                    <span>Anonymous mode</span>
+                </a>
+                <a href="#hazard-mode" class="settings-link">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Hazard alerts</span>
+                </a>
+                <a href="#profile-visibility" class="settings-link">
+                    <i class="bi bi-eye"></i>
+                    <span>Profile visibility</span>
+                </a>
+            </div>
+
+            <div class="settings-sidepanel__stat">
+                <span>Visibility rule</span>
+                <strong>@(Model.ProfileVisibility == "private" ? "Private" : "Public")</strong>
+                <small>Profile visibility affects how much of your account others can browse, not your earned reputation.</small>
+            </div>
+        </aside>
+
+        <div class="settings-stack">
+            <section id="anonymous-mode" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-incognito"></i> Anonymous reporting</span>
+                        <h2 class="settings-panel__title">@Localizer["AnonymousReportingMode"]</h2>
+                        <p class="settings-panel__copy">@Localizer["AnonymousReportingDescription"]</p>
                     </div>
                 </div>
+                <div class="settings-panel__body">
+                    <div class="toggle-card">
+                        <div class="toggle-card__copy">
+                            <h6>@Localizer["EnableAnonymousReporting"]</h6>
+                            <p>@Localizer["ReportHazardsAnonymously"]</p>
+                        </div>
+                        <form id="anonymousToggleForm" class="provider-inline-form">
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="anonymousSwitch"
+                                       @if (Model.CurrentUser?.AnonymousReportingEnabled == true) { <text>checked</text> }
+                                       data-privacy-action="toggle-anonymous">
+                            </div>
+                        </form>
+                    </div>
 
-                <!-- Settings Content -->
-                <div class="col-md-9">
-                    <div class="list-group-item-content">
-                        <!-- Anonymous Mode Section -->
-                        <div id="anonymous-mode" class="settings-section card mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">
-                                    <i class="bi bi-incognito text-danger"></i> @Localizer["AnonymousReportingMode"]
-                                </h5>
-                                <p class="text-muted">@Localizer["AnonymousReportingDescription"]</p>
+                    <div class="settings-note-panel">
+                        <h6 class="mb-2"><i class="bi bi-info-circle me-2"></i>How anonymous mode works</h6>
+                        <ul class="mb-0">
+                            <li>@Localizer["NameNotVisiblePublicly"]</li>
+                            <li>@Localizer["YourReportsWillShowAsAnonymous"]</li>
+                            <li>@Localizer["AdminsCanContactYou"]</li>
+                            <li>@Localizer["EarnReputationPoints"]</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
 
-                                <div class="card bg-light border-0 mb-4">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1">@Localizer["EnableAnonymousReporting"]</h6>
-                                                <small class="text-muted">@Localizer["ReportHazardsAnonymously"]</small>
-                                            </div>
-                                            <div>
-                                                <form id="anonymousToggleForm" class="d-inline">
-                                                    <div class="form-check form-switch">
-                                                        <input class="form-check-input" type="checkbox" id="anonymousSwitch" 
-                                                               @if(Model.CurrentUser?.AnonymousReportingEnabled == true) { <text>checked</text> }
-                                                               onchange="toggleAnonymousReporting()">
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="alert alert-info mb-0">
-                                    <h6 class="mb-2">
-                                        <i class="bi bi-info-circle"></i> How Anonymous Mode Works
-                                    </h6>
-                                    <ul class="mb-0">
-                                        <li>@Localizer["NameNotVisiblePublicly"]</li>
-                                        <li>@Localizer["YourReportsWillShowAsAnonymous"]</li>
-                                        <li>@Localizer["AdminsCanContactYou"]</li>
-                                        <li>@Localizer["EarnReputationPoints"]</li>
-                                    </ul>
-                                </div>
+            <section id="hazard-mode" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-bell"></i> Hazard alerts</span>
+                        <h2 class="settings-panel__title">@Localizer["HazardAlertPreferences"]</h2>
+                        <p class="settings-panel__copy">@Localizer["CustomizeHazardNotifications"]</p>
+                    </div>
+                    <div class="settings-chip-row">
+                        <span class="settings-chip"><i class="bi bi-shield-exclamation"></i> Crime</span>
+                        <span class="settings-chip"><i class="bi bi-sign-turn-right"></i> Traffic</span>
+                        <span class="settings-chip"><i class="bi bi-cone-striped"></i> Infrastructure</span>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    <div class="toggle-card-grid">
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>@Localizer["CrimeIncidents"]</h6>
+                                <p>@Localizer["BeNotifiedOfCrimeReports"]</p>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="crimeAlerts"
+                                       @if (Model.AlertPreferences?.CrimeAlerts == true) { <text>checked</text> }
+                                       data-privacy-action="alert-pref"
+                                       data-pref-key="crimeAlerts">
                             </div>
                         </div>
 
-                        <!-- Hazard Alerts Section -->
-                        <div id="hazard-mode" class="settings-section card mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">
-                                    <i class="bi bi-exclamation-triangle text-warning"></i> @Localizer["HazardAlertPreferences"]
-                                </h5>
-                                <p class="text-muted">@Localizer["CustomizeHazardNotifications"]</p>
-
-                                <div class="mb-4">
-                                    <h6 class="mb-3">@Localizer["AlertTypes"]</h6>
-                                    
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="crimeAlerts" 
-                                               @if(Model.AlertPreferences?.CrimeAlerts == true) { <text>checked</text> }
-                                               onchange="saveAlertPreference('crimeAlerts', this.checked)">
-                                        <label class="form-check-label" for="crimeAlerts">
-                                            <strong>@Localizer["CrimeIncidents"]</strong>
-                                            <small class="d-block text-muted">@Localizer["BeNotifiedOfCrimeReports"]</small>
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="accidentAlerts" 
-                                               @if(Model.AlertPreferences?.AccidentAlerts == true) { <text>checked</text> }
-                                               onchange="saveAlertPreference('accidentAlerts', this.checked)">
-                                        <label class="form-check-label" for="accidentAlerts">
-                                            <strong>@Localizer["TrafficAccidents"]</strong>
-                                            <small class="d-block text-muted">@Localizer["BeNotifiedOfTrafficHazards"]</small>
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="infrastructureAlerts" 
-                                               @if(Model.AlertPreferences?.InfrastructureAlerts == true) { <text>checked</text> }
-                                               onchange="saveAlertPreference('infrastructureAlerts', this.checked)">
-                                        <label class="form-check-label" for="infrastructureAlerts">
-                                            <strong>@Localizer["InfrastructureIssues"]</strong>
-                                            <small class="d-block text-muted">@Localizer["BeNotifiedOfInfrastructureProblems"]</small>
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="allHazards" 
-                                               @if(Model.AlertPreferences?.AllHazards == true) { <text>checked</text> }
-                                               onchange="saveAlertPreference('allHazards', this.checked)">
-                                        <label class="form-check-label" for="allHazards">
-                                            <strong>@Localizer["AllHazardTypes"]</strong>
-                                            <small class="d-block text-muted">@Localizer["NotifyForAllHazards"]</small>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <h6 class="mb-3">Alert Radius</h6>
-                                    <div class="form-group">
-                                        <label for="alertRadius" class="form-label">
-                                            @Localizer["DistanceFromYourLocation"]
-                                            <span class="badge bg-primary" id="radiusDisplay">
-                                                @(Model.AlertPreferences?.AlertRadiusKm ?? 5) km
-                                            </span>
-                                        </label>
-                                        <input type="range" class="form-range" id="alertRadius" 
-                                               min="1" max="20" step="1" 
-                                               value="@(Model.AlertPreferences?.AlertRadiusKm ?? 5)"
-                                               onchange="updateAlertRadius(this.value)">
-                                        <small class="form-text text-muted">
-                                            @Localizer["AlertsWithinDistance"]
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <h6 class="mb-3">@Localizer["SeverityThreshold"]</h6>
-                                    <select class="form-select" id="severityThreshold" 
-                                            onchange="saveSeverityThreshold(this.value)">
-                                        <option value="All">@Localizer["AllSeverityLevels"]</option>
-                                        <option value="High">@Localizer["HighAndCriticalOnly"]</option>
-                                        <option value="Critical">@Localizer["CriticalOnly"]</option>
-                                    </select>
-                                    <script>
-                                        document.getElementById('severityThreshold').value = '@(Model.AlertPreferences?.SeverityThreshold ?? "All")';
-                                    </script>
-                                    <small class="form-text text-muted d-block mt-2">
-                                        @Localizer["OnlyBeNotifiedAboveSeverity"]
-                                    </small>
-                                </div>
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>@Localizer["TrafficAccidents"]</h6>
+                                <p>@Localizer["BeNotifiedOfTrafficHazards"]</p>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="accidentAlerts"
+                                       @if (Model.AlertPreferences?.AccidentAlerts == true) { <text>checked</text> }
+                                       data-privacy-action="alert-pref"
+                                       data-pref-key="accidentAlerts">
                             </div>
                         </div>
 
-                        <!-- Profile Visibility Section -->
-                        <div id="profile-visibility" class="settings-section card mb-4">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4">
-                                    <i class="bi bi-eye text-info"></i> @Localizer["ProfileVisibility"]
-                                </h5>
-                                <p class="text-muted">@Localizer["ControlWhoCanSeeYourProfile"]</p>
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>@Localizer["InfrastructureIssues"]</h6>
+                                <p>@Localizer["BeNotifiedOfInfrastructureProblems"]</p>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="infrastructureAlerts"
+                                       @if (Model.AlertPreferences?.InfrastructureAlerts == true) { <text>checked</text> }
+                                       data-privacy-action="alert-pref"
+                                       data-pref-key="infrastructureAlerts">
+                            </div>
+                        </div>
 
-                                <div class="card bg-light border-0 mb-4">
-                                    <div class="card-body">
-                                        <h6 class="mb-3">@Localizer["ProfileVisibility"]</h6>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="radio" name="profileVisibility" 
-                                                   id="visibilityPublic" value="public"
-                                                   @if(Model.ProfileVisibility != "private") { <text>checked</text> }
-                                                   onchange="saveProfileVisibility('public')">
-                                            <label class="form-check-label" for="visibilityPublic">
-                                                <strong>@Localizer["Public"]</strong> - @Localizer["PublicProfileDescription"]
-                                            </label>
-                                        </div>
-
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="radio" name="profileVisibility" 
-                                                   id="visibilityPrivate" value="private"
-                                                   @if(Model.ProfileVisibility == "private") { <text>checked</text> }
-                                                   onchange="saveProfileVisibility('private')">
-                                            <label class="form-check-label" for="visibilityPrivate">
-                                                <strong>@Localizer["Private"]</strong> - @Localizer["PrivateProfileDescription"]
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="alert alert-warning mb-0">
-                                    <h6 class="mb-2">
-                                        <i class="bi bi-exclamation-triangle"></i> @Localizer["Note"]
-                                    </h6>
-                                    <p class="mb-0">@Localizer["PrivateProfileDoesNotAffectReputation"]</p>
-                                </div>
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>@Localizer["AllHazardTypes"]</h6>
+                                <p>@Localizer["NotifyForAllHazards"]</p>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="allHazards"
+                                       @if (Model.AlertPreferences?.AllHazards == true) { <text>checked</text> }
+                                       data-privacy-action="alert-pref"
+                                       data-pref-key="allHazards">
                             </div>
                         </div>
                     </div>
+
+                    <div class="settings-grid-two">
+                        <div class="switch-surface">
+                            <label for="alertRadius" class="form-label d-flex align-items-center justify-content-between gap-2">
+                                <span>@Localizer["DistanceFromYourLocation"]</span>
+                                <span class="badge text-bg-primary" id="radiusDisplay">@(Model.AlertPreferences?.AlertRadiusKm ?? 5) km</span>
+                            </label>
+                            <input type="range" class="form-range" id="alertRadius"
+                                   min="1" max="20" step="1"
+                                   value="@(Model.AlertPreferences?.AlertRadiusKm ?? 5)"
+                                   data-privacy-action="alert-radius">
+                            <small class="text-muted">@Localizer["AlertsWithinDistance"]</small>
+                        </div>
+
+                        <div class="switch-surface">
+                            <label for="severityThreshold" class="form-label">@Localizer["SeverityThreshold"]</label>
+                            <select class="form-select" id="severityThreshold" data-privacy-action="severity-threshold">
+                                <option value="All">@Localizer["AllSeverityLevels"]</option>
+                                <option value="High">@Localizer["HighAndCriticalOnly"]</option>
+                                <option value="Critical">@Localizer["CriticalOnly"]</option>
+                            </select>
+                            <small class="text-muted d-block mt-2">@Localizer["OnlyBeNotifiedAboveSeverity"]</small>
+                        </div>
+                    </div>
                 </div>
+            </section>
+
+            <section id="profile-visibility" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-eye"></i> Profile visibility</span>
+                        <h2 class="settings-panel__title">Profile visibility</h2>
+                        <p class="settings-panel__copy">@Localizer["ControlWhoCanSeeYourProfile"]</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    <div class="settings-radio">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="profileVisibility"
+                                   id="visibilityPublic" value="public"
+                                   @if (Model.ProfileVisibility != "private") { <text>checked</text> }
+                                   data-privacy-action="profile-visibility">
+                            <label class="form-check-label" for="visibilityPublic">
+                                <strong>@Localizer["Public"]</strong>
+                                <span class="d-block text-muted">@Localizer["PublicProfileDescription"]</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-radio">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="profileVisibility"
+                                   id="visibilityPrivate" value="private"
+                                   @if (Model.ProfileVisibility == "private") { <text>checked</text> }
+                                   data-privacy-action="profile-visibility">
+                            <label class="form-check-label" for="visibilityPrivate">
+                                <strong>@Localizer["Private"]</strong>
+                                <span class="d-block text-muted">@Localizer["PrivateProfileDescription"]</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-note-panel">
+                        <h6 class="mb-2"><i class="bi bi-exclamation-triangle me-2"></i>@Localizer["Note"]</h6>
+                        <p class="mb-0">@Localizer["PrivateProfileDoesNotAffectReputation"]</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="position-fixed bottom-0 end-0 p-3 settings-toast">
+        <div id="settingsToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong class="me-auto">@Localizer["SettingsUpdated"]</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Settings saved successfully.
             </div>
         </div>
     </div>
 </div>
 
-<!-- Alert Toast for Feedback -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div id="settingsToast" class="toast" role="alert">
-        <div class="toast-header bg-success text-white">
-            <i class="bi bi-check-circle me-2"></i>
-            <strong class="me-auto">@Localizer["SettingsUpdated"]</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body" id="toastMessage">
-            @Localizer["SettingsSavedSuccessfully"]
-        </div>
-    </div>
-</div>
-
-<script>
-    const apiBase = '/api/safety';
-
-    async function toggleAnonymousReporting() {
-        const enabled = document.getElementById('anonymousSwitch').checked;
-        console.log('Toggle anonymous reporting:', enabled);
-        console.log('Sending request to:', `${apiBase}/anonymous-reporting/toggle`);
-        
-        try {
-            const payload = { enabled: enabled };
-            console.log('Request payload:', payload);
-            
-            const response = await fetch(`${apiBase}/anonymous-reporting/toggle`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(payload)
-            });
-
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Response data:', data);
-                showToast(`Anonymous reporting ${enabled ? 'enabled' : 'disabled'} successfully`);
-                
-                // Reload page after 1 second to refresh the user data from server
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            } else {
-                const errorData = await response.text();
-                console.error('Error response:', errorData);
-                showToast('Failed to update settings', 'error');
-                document.getElementById('anonymousSwitch').checked = !enabled;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showToast('Error updating settings', 'error');
-            document.getElementById('anonymousSwitch').checked = !enabled;
-        }
-    }
-
-    function updateAlertRadius(value) {
-        document.getElementById('radiusDisplay').textContent = value + ' km';
-        saveAlertPreference('alertRadius', value);
-    }
-
-    async function saveAlertPreference(preference, value) {
-        try {
-            const response = await fetch(`${apiBase}/alert-preferences`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    [preference]: value
-                })
-            });
-
-            if (response.ok) {
-                showToast('Alert preference saved');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async function saveSeverityThreshold(threshold) {
-        try {
-            const response = await fetch(`${apiBase}/alert-preferences/severity`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ threshold: threshold })
-            });
-
-            if (response.ok) {
-                showToast('Severity threshold updated');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async function saveProfileVisibility(visibility) {
-        try {
-            const response = await fetch('/api/users/profile-visibility', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ visibility: visibility })
-            });
-
-            if (response.ok) {
-                showToast(`Profile visibility changed to ${visibility}`);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    function showToast(message, type = 'success') {
-        const toastEl = document.getElementById('settingsToast');
-        const messageEl = document.getElementById('toastMessage');
-        const headerEl = toastEl.querySelector('.toast-header');
-        
-        messageEl.textContent = message;
-        
-        if (type === 'error') {
-            headerEl.className = 'toast-header bg-danger text-white';
-            headerEl.innerHTML = '<i class="bi bi-exclamation-circle me-2"></i><strong class="me-auto">Error</strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
-        } else {
-            headerEl.className = 'toast-header bg-success text-white';
-            headerEl.innerHTML = '<i class="bi bi-check-circle me-2"></i><strong class="me-auto">Success</strong><button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>';
-        }
-        
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-    }
-</script>
-
-<style>
-    .settings-section {
-        border-left: 4px solid #007bff;
-        transition: all 0.3s ease;
-    }
-
-    .settings-section:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .list-group-item.active {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .form-range {
-        height: 0.5rem;
-    }
-
-    .alert {
-        border-radius: 0.5rem;
-    }
-</style>
+@section PageScripts {
+    <script id="settingsPrivacyConfig" type="application/json">
+        @Json.Serialize(new
+        {
+            antiForgeryToken = Antiforgery.GetAndStoreTokens(HttpContext).RequestToken,
+            severityThreshold = Model.AlertPreferences?.SeverityThreshold ?? "All"
+        })
+    </script>
+    <script src="~/js/pages/settings-privacy.js" asp-append-version="true" defer></script>
+}

@@ -3,194 +3,201 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["Leaderboards"] + " - FixIt";
+    var weeklyChampion = Model.WeeklyLeaderboard.FirstOrDefault()?.UserDisplayName ?? Localizer["NoEntriesYet"];
+    var monthlyChampion = Model.MonthlyLeaderboard.FirstOrDefault()?.UserDisplayName ?? Localizer["NoEntriesYet"];
+    var allTimeChampion = Model.AllTimeLeaderboard.FirstOrDefault()?.UserDisplayName ?? Localizer["NoEntriesYet"];
 }
 
-<link rel="stylesheet" href="~/css/pages/leaderboards.css" />
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/leaderboards.css" asp-append-version="true" />
+}
 
-<section class="container py-4 leaderboards-page">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="text-center mb-4">
-                <h1 class="display-5 fw-bold mb-3">
-                    <i class="bi bi-trophy text-gradient leaderboards-hero-icon"></i>
-                </h1>
-                <h1 class="h2 mb-2">@Localizer["CommunityLeaderboards"]</h1>
-                <p class="text-muted">@Localizer["CelebratateTopContributors"]</p>
+<section class="leaderboards-page py-4">
+    <div class="container">
+        <section class="leaderboards-hero">
+            <div class="leaderboards-hero__copy">
+                <span class="leaderboards-hero__eyebrow">
+                    <i class="bi bi-trophy"></i>
+                    Community champions
+                </span>
+                <h1 class="leaderboards-hero__title">@Localizer["CommunityLeaderboards"]</h1>
+                <p class="leaderboards-hero__subtitle">@Localizer["CelebratateTopContributors"]</p>
+            </div>
+            <div class="leaderboards-hero__stats">
+                <div class="leaderboards-hero__stat">
+                    <span>Weekly leader</span>
+                    <strong>@weeklyChampion</strong>
+                </div>
+                <div class="leaderboards-hero__stat">
+                    <span>Monthly leader</span>
+                    <strong>@monthlyChampion</strong>
+                </div>
+                <div class="leaderboards-hero__stat">
+                    <span>All-time leader</span>
+                    <strong>@allTimeChampion</strong>
+                </div>
+            </div>
+        </section>
+
+        <ul class="nav nav-pills leaderboards-tabs justify-content-center mb-5 gap-2" id="leaderboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active px-4 py-2" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly"
+                        type="button" role="tab">
+                    <i class="bi bi-calendar-week"></i> @Localizer["Weekly"]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4 py-2" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly"
+                        type="button" role="tab">
+                    <i class="bi bi-calendar-month"></i> @Localizer["Monthly"]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4 py-2" id="alltime-tab" data-bs-toggle="tab" data-bs-target="#alltime"
+                        type="button" role="tab">
+                    <i class="bi bi-infinity"></i> @Localizer["AllTimeTab"]
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="leaderboardContent">
+            <div class="tab-pane fade show active" id="weekly" role="tabpanel">
+                @RenderLeaderboard(Model.WeeklyLeaderboard, Localizer["ThisWeeksChampions"])
+            </div>
+
+            <div class="tab-pane fade" id="monthly" role="tabpanel">
+                @RenderLeaderboard(Model.MonthlyLeaderboard, Localizer["ThisMonthsTopContributors"])
+            </div>
+
+            <div class="tab-pane fade" id="alltime" role="tabpanel">
+                @RenderLeaderboard(Model.AllTimeLeaderboard, Localizer["HallOfFame"])
             </div>
         </div>
     </div>
-
-    <!-- Period Tabs -->
-    <ul class="nav nav-pills leaderboards-tabs justify-content-center mb-5 gap-2" id="leaderboardTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active px-4 py-2" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" 
-                    type="button" role="tab">
-                <i class="bi bi-calendar-week"></i> @Localizer["Weekly"]
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthly" 
-                    type="button" role="tab">
-                <i class="bi bi-calendar-month"></i> @Localizer["Monthly"]
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2" id="alltime-tab" data-bs-toggle="tab" data-bs-target="#alltime" 
-                    type="button" role="tab">
-                <i class="bi bi-infinity"></i> @Localizer["AllTimeTab"]
-            </button>
-        </li>
-    </ul>
-
-    <!-- Leaderboard Content -->
-    <div class="tab-content" id="leaderboardContent">
-        <!-- Weekly Leaderboard -->
-        <div class="tab-pane fade show active" id="weekly" role="tabpanel">
-            @RenderLeaderboard(Model.WeeklyLeaderboard, Localizer["ThisWeeksChampions"])
-        </div>
-
-        <!-- Monthly Leaderboard -->
-        <div class="tab-pane fade" id="monthly" role="tabpanel">
-            @RenderLeaderboard(Model.MonthlyLeaderboard, Localizer["ThisMonthsTopContributors"])
-        </div>
-
-        <!-- All Time Leaderboard -->
-        <div class="tab-pane fade" id="alltime" role="tabpanel">
-            @RenderLeaderboard(Model.AllTimeLeaderboard, Localizer["HallOfFame"])
-        </div>
-    </div>
-</div>
+</section>
 
 @{
     object RenderLeaderboard(List<FixIt.Models.Gamification.LeaderboardEntry> entries, string title)
     {
         if (!entries.Any())
         {
-            <div class="text-center py-5">
-                <div class="mb-4" style="font-size: 4rem; opacity: 0.3;">
-                    <i class="bi bi-inbox"></i>
+            <section class="leaderboards-section-shell">
+                <div class="leaderboards-section-shell__head">
+                    <div>
+                        <p class="leaderboards-section-shell__eyebrow">Leaderboard</p>
+                        <h2 class="leaderboards-section-shell__title">@title</h2>
+                    </div>
                 </div>
-                <h5 class="text-muted">@Localizer["NoEntriesYet"]</h5>
-                <p class="text-muted">@Localizer["BeTheFirstToContributeAndClaimYourSpot"]</p>
-            </div>
+                <div class="leaderboards-empty">
+                    <div class="leaderboards-empty-icon">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <h3>@Localizer["NoEntriesYet"]</h3>
+                    <p>@Localizer["BeTheFirstToContributeAndClaimYourSpot"]</p>
+                </div>
+            </section>
         }
-
-        <div class="row mb-4">
-            <div class="col-12">
-                <h4 class="text-center mb-4">@title</h4>
-            </div>
-        </div>
-
-        <!-- Top 3 Podium -->
-        if (entries.Count >= 3)
+        else
         {
-            var top3 = entries.Take(3).ToList();
-            <div class="row mb-5 g-3">
-                <!-- 2nd Place -->
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="card w-100 text-center leaderboards-podium-card podium-2">
-                        <div class="card-body p-4">
-                            <div class="mb-3 podium-medal">🥈</div>
-                            <h5 class="mb-2">@top3[1].UserDisplayName</h5>
-                            <div class="display-6 fw-bold text-secondary mb-3">@top3[1].Points</div>
-                            <small class="text-muted d-block">@Localizer["Points"]</small>
+            <section class="leaderboards-section-shell">
+                <div class="leaderboards-section-shell__head">
+                    <div>
+                        <p class="leaderboards-section-shell__eyebrow">Leaderboard</p>
+                        <h2 class="leaderboards-section-shell__title">@title</h2>
+                    </div>
+                    <div class="leaderboards-section-shell__meta">
+                        <span><i class="bi bi-people"></i> @entries.Count contributors ranked</span>
+                    </div>
+                </div>
+
+                @if (entries.Count >= 3)
+                {
+                    var top3 = entries.Take(3).ToList();
+                    <div class="leaderboards-podium-grid">
+                        <article class="leaderboards-podium-card leaderboards-podium-card--silver">
+                            <div class="leaderboards-podium-card__medal">🥈</div>
+                            <h3>@top3[1].UserDisplayName</h3>
+                            <strong>@top3[1].Points</strong>
+                            <span>@Localizer["Points"]</span>
                             <div class="mt-3">
                                 <span class="badge leaderboards-badge bg-@GetTrustLevelColor(top3[1].TrustLevel)">
                                     @GetTrustLevelLabel(top3[1].TrustLevel)
                                 </span>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </article>
 
-                <!-- 1st Place -->
-                <div class="col-md-4 order-md-first order-last">
-                    <div class="card w-100 text-center leaderboards-podium-card podium-1">
-                        <div class="card-body p-4">
-                            <div class="mb-3 podium-medal-top">👑</div>
-                            <h4 class="mb-2 fw-bold">@top3[0].UserDisplayName</h4>
-                            <div class="display-4 fw-bold mb-3 text-warning">@top3[0].Points</div>
-                            <small class="text-muted d-block">@Localizer["Points"]</small>
+                        <article class="leaderboards-podium-card leaderboards-podium-card--gold">
+                            <div class="leaderboards-podium-card__medal leaderboards-podium-card__medal--large">👑</div>
+                            <h3>@top3[0].UserDisplayName</h3>
+                            <strong>@top3[0].Points</strong>
+                            <span>@Localizer["Points"]</span>
                             <div class="mt-3">
                                 <span class="badge leaderboards-badge bg-@GetTrustLevelColor(top3[0].TrustLevel)">
                                     @GetTrustLevelLabel(top3[0].TrustLevel)
                                 </span>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </article>
 
-                <!-- 3rd Place -->
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="card w-100 text-center leaderboards-podium-card podium-3">
-                        <div class="card-body p-4">
-                            <div class="mb-3 podium-medal">🥉</div>
-                            <h6 class="mb-2">@top3[2].UserDisplayName</h6>
-                            <div class="h4 fw-bold mb-3 text-secondary">@top3[2].Points</div>
-                            <small class="text-muted d-block">@Localizer["Points"]</small>
+                        <article class="leaderboards-podium-card leaderboards-podium-card--bronze">
+                            <div class="leaderboards-podium-card__medal">🥉</div>
+                            <h3>@top3[2].UserDisplayName</h3>
+                            <strong>@top3[2].Points</strong>
+                            <span>@Localizer["Points"]</span>
                             <div class="mt-3">
                                 <span class="badge leaderboards-badge bg-@GetTrustLevelColor(top3[2].TrustLevel)">
                                     @GetTrustLevelLabel(top3[2].TrustLevel)
                                 </span>
                             </div>
-                        </div>
+                        </article>
                     </div>
-                </div>
-            </div>
-        }
+                }
 
-        <!-- Rest of Leaderboard -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card" style="border: none;">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 leaderboard-table">
-                                <thead>
-                                    <tr>
-                                        <th class="border-0 py-3 ps-4" style="width: 80px;">@Localizer["RankHeader"]</th>
-                                        <th class="border-0 py-3">@Localizer["UserHeader"]</th>
-                                        <th class="border-0 py-3 text-center">@Localizer["PointsHeader"]</th>
-                                        <th class="border-0 py-3 text-end pe-4">@Localizer["TrustLevelHeader"]</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var entry in entries.Skip(3).Take(20))
-                                    {
-                                        <tr class="leaderboard-row">
-                                            <td class="ps-4 py-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="rank-circle">@entry.Rank</div>
+                <div class="leaderboards-table-shell">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th class="border-0 py-3 ps-4 leaderboards-rank-col">@Localizer["RankHeader"]</th>
+                                    <th class="border-0 py-3">@Localizer["UserHeader"]</th>
+                                    <th class="border-0 py-3 text-center">@Localizer["PointsHeader"]</th>
+                                    <th class="border-0 py-3 text-end pe-4">@Localizer["TrustLevelHeader"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var entry in entries.Skip(3).Take(20))
+                                {
+                                    <tr class="leaderboard-row">
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rank-circle">@entry.Rank</div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <a href="/user/@entry.UserId" class="text-decoration-none d-flex align-items-center">
+                                                <div class="avatar-circle me-2">
+                                                    @entry.UserDisplayName.Substring(0, 1).ToUpper()
                                                 </div>
-                                            </td>
-                                            <td class="py-3">
-                                                <a href="/user/@entry.UserId" class="text-decoration-none d-flex align-items-center">
-                                                    <div class="avatar-circle me-2">
-                                                        @entry.UserDisplayName.Substring(0, 1).ToUpper()
-                                                    </div>
-                                                    <span class="fw-bold">@entry.UserDisplayName</span>
-                                                </a>
-                                            </td>
-                                            <td class="py-3 text-center">
-                                                <span class="badge points-badge">
-                                                    @entry.Points @Localizer["Points"]
-                                                </span>
-                                            </td>
-                                            <td class="py-3 text-end pe-4">
-                                                <span class="badge bg-@GetTrustLevelColor(entry.TrustLevel) px-3 py-2">
-                                                    @GetTrustLevelLabel(entry.TrustLevel)
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+                                                <span class="fw-bold">@entry.UserDisplayName</span>
+                                            </a>
+                                        </td>
+                                        <td class="py-3 text-center">
+                                            <span class="badge points-badge">
+                                                @entry.Points @Localizer["Points"]
+                                            </span>
+                                        </td>
+                                        <td class="py-3 text-end pe-4">
+                                            <span class="badge bg-@GetTrustLevelColor(entry.TrustLevel) px-3 py-2">
+                                                @GetTrustLevelLabel(entry.TrustLevel)
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
+        }
 
         return string.Empty;
     }

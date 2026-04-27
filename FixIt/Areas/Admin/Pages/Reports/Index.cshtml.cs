@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Moderation;
 using FixIt.Models.Enums;
 using FixIt.Data.Repository.Contracts;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Admin.Pages.Reports;
 
-[Authorize(Roles = "Admin,Moderator")]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 public class IndexModel : PageModel
 {
     private readonly IRepository<ContentReport> _reportRepository;
@@ -121,7 +122,7 @@ public class IndexModel : PageModel
         try
         {
             // Only admins can delete reports
-            if (!User.IsInRole("Admin"))
+            if (!User.IsInRole(RoleNames.Admin))
             {
                 _logger.LogWarning($"Moderator {User?.Identity?.Name} attempted to delete report {reportId}");
                 TempData["ErrorMessage"] = "Only admins can delete reports.";

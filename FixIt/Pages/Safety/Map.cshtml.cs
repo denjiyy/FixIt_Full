@@ -3,7 +3,6 @@ using FixIt.Models.Locations;
 using FixIt.Services.Safety;
 using FixIt.Data.Repository.Contracts;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Text.Json;
 
 namespace FixIt.Pages.Safety;
 
@@ -13,7 +12,7 @@ public class MapModel : PageModel
     private readonly IRepository<City> _cityRepo;
 
     public List<Hazard> Hazards { get; set; } = new();
-    public string HazardsJson { get; set; } = "[]";
+    public List<HazardMapItem> HazardMapData { get; set; } = new();
 
     public MapModel(IHazardService hazardService, IRepository<City> cityRepo)
     {
@@ -34,8 +33,7 @@ public class MapModel : PageModel
             Hazards = await _hazardService.GetCityHazardsAsync(targetCity.Id, includeResolved: false);
         }
 
-        // Serialize for JavaScript
-        var hazardData = Hazards.Select(h => new
+        HazardMapData = Hazards.Select(h => new HazardMapItem
         {
             id = h.Id,
             title = h.Title,
@@ -47,9 +45,24 @@ public class MapModel : PageModel
             address = h.Address ?? "Unknown location",
             confirmations = h.Confirmations,
             isResolved = h.IsResolved,
-            reporter = h.IsAnonymous ? "Anonymous" : h.ReportedByUserId ?? "Unknown"
+            reporter = h.IsAnonymous ? "Anonymous" : h.ReportedByUserId ?? "Unknown",
+            createdAt = h.CreatedAt
         }).ToList();
-
-        HazardsJson = JsonSerializer.Serialize(hazardData);
     }
+}
+
+public class HazardMapItem
+{
+    public string id { get; set; } = string.Empty;
+    public string title { get; set; } = string.Empty;
+    public string type { get; set; } = string.Empty;
+    public string severity { get; set; } = string.Empty;
+    public string description { get; set; } = string.Empty;
+    public double latitude { get; set; }
+    public double longitude { get; set; }
+    public string address { get; set; } = string.Empty;
+    public int confirmations { get; set; }
+    public bool isResolved { get; set; }
+    public string reporter { get; set; } = string.Empty;
+    public DateTime createdAt { get; set; }
 }

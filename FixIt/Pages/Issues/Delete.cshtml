@@ -5,141 +5,90 @@
     ViewData["Title"] = Localizer["DeleteIssue"];
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <!-- Header -->
-            <div class="mb-5">
-                <a href="/issues/@Model.Id" class="text-decoration-none text-muted">
-                    <i class="bi bi-chevron-left"></i> @Localizer["BackToIssue"]
-                </a>
-                <h1 class="h2 fw-bold mt-3 text-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>@Localizer["DeleteIssue"]
-                </h1>
-                <p class="text-muted">@Localizer["ThisActionCannotBeUndone"]</p>
-            </div>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issue-manage.css" asp-append-version="true" />
+}
 
-            @if (Model.Issue != null)
-            {
-                <div class="card border-danger border-2 bg-danger-light">
-                    <div class="card-body p-5">
-                        <!-- Issue Summary -->
-                        <div class="mb-4">
-                            <h3 class="h5 fw-bold mb-3">
-                                <i class="bi bi-file-text me-2"></i>@Localizer["IssueToDeleteHeading"]
-                            </h3>
-                            <div class="bg-white p-3 rounded border-start border-5 border-danger">
-                                <h4 class="h6 mb-2">@Model.Issue.Title</h4>
-                                <p class="text-muted mb-0">
-                                    <small>
-                                        @Localizer["CreatedBy"] @Model.Issue.Reporter.DisplayName @Localizer["OnDate"] @Model.Issue.CreatedAt.ToString("MMMM d, yyyy h:mm tt")
-                                    </small>
-                                </p>
+<div class="issue-manage-page">
+    <section class="issue-manage-hero issue-manage-hero--danger">
+        <a href="/issues/@Model.Id" class="issue-manage-back">
+            <i class="bi bi-chevron-left"></i> @Localizer["BackToIssue"]
+        </a>
+        <p class="issue-manage-eyebrow"><i class="bi bi-shield-exclamation"></i> Destructive Action</p>
+        <h1 class="issue-manage-title">@Localizer["DeleteIssue"]</h1>
+        <p class="issue-manage-copy">@Localizer["ThisActionCannotBeUndone"] Review the issue one last time and confirm only if the report should no longer remain publicly accessible.</p>
+    </section>
+
+    @if (Model.Issue != null)
+    {
+        <div class="issue-manage-layout">
+            <section class="issue-manage-card">
+                <div class="issue-manage-card__header">
+                    <h2 class="issue-manage-card__title"><i class="bi bi-file-earmark-x"></i> @Localizer["IssueToDeleteHeading"]</h2>
+                    <p class="issue-manage-card__copy">This summary helps confirm you are deleting the correct report.</p>
+                </div>
+                <div class="issue-manage-card__body issue-manage-stack">
+                    <div class="issue-manage-summary">
+                        <div class="issue-manage-meta">
+                            <div class="issue-manage-meta-item">
+                                <span>@Localizer["Title"]</span>
+                                <strong>@Model.Issue.Title</strong>
+                            </div>
+                            <div class="issue-manage-meta-item">
+                                <span>@Localizer["CreatedBy"]</span>
+                                <strong>@(Model.Issue.Reporter?.DisplayName ?? Localizer["AnonymousUser"])</strong>
+                            </div>
+                            <div class="issue-manage-meta-item">
+                                <span>@Localizer["OnDate"]</span>
+                                <strong>@Model.Issue.CreatedAt.ToString("MMMM d, yyyy h:mm tt")</strong>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Warning Message -->
-                        <div class="alert alert-danger" role="alert">
-                            <i class="bi bi-exclamation-circle me-2"></i>
-                            <strong>@Localizer["Warning"]</strong> @Localizer["DeletingThisIssue"]
-                        </div>
+                    <div class="issue-manage-highlight issue-manage-highlight--danger">
+                        <strong>@Localizer["Warning"]</strong> @Localizer["DeletingThisIssue"]
+                    </div>
 
-                        <!-- Consequences -->
-                        <div class="alert alert-light border border-danger">
-                            <strong class="d-block mb-3">@Localizer["WhenYouDeleteThisIssueColon"]</strong>
-                            <ul class="mb-0">
+                    <div class="issue-manage-card">
+                        <div class="issue-manage-card__body">
+                            <h3 class="h6 fw-bold mb-3">@Localizer["WhenYouDeleteThisIssueColon"]</h3>
+                            <ul class="issue-manage-checklist">
                                 <li>@Localizer["ItWillNoLongerAppearInIssueListings"]</li>
                                 <li>@Localizer["OtherUsersWillNotBeSeeIt"]</li>
                                 <li>@Localizer["CommentsAndVotesWillBePreserved"]</li>
                                 <li>@Localizer["AdminsCanRestoreDeletedIssues"]</li>
                             </ul>
                         </div>
-
-                        <!-- Confirmation -->
-                        <div class="mb-4">
-                            <p class="text-muted mb-2">
-                                <strong>@Localizer["ConfirmDeletionOf"]</strong>
-                            </p>
-                            <div class="input-group">
-                                <input type="text" 
-                                       class="form-control"
-                                       value="@Model.Issue.Title"
-                                       disabled
-                                       placeholder="Issue title">
-                            </div>
-                        </div>
-
-                        <!-- Form Actions -->
-                        <form method="post" class="d-grid gap-2">
-                            <button type="submit" class="btn btn-danger btn-lg">
-                                <i class="bi bi-trash me-2"></i>@Localizer["DeleteIssuePermanently"]
-                            </button>
-                            <a href="/issues/@Model.Id" class="btn btn-outline-secondary btn-lg">
-                                <i class="bi bi-x-circle me-2"></i>@Localizer["CancelDeletion"]
-                            </a>
-                        </form>
-
-                        <!-- Additional Info -->
-                        <p class="text-muted text-center mt-4 mb-0">
-                            <small>
-                                <i class="bi bi-info-circle me-1"></i>
-                                @Localizer["NeedHelp"] <a href="/help/issues" class="text-muted text-decoration-underline">@Localizer["LearnMoreAboutIssues"]</a>
-                            </small>
-                        </p>
                     </div>
-                </div>
 
-                <!-- Recovery Info -->
-                <div class="alert alert-info mt-4" role="alert">
-                    <i class="bi bi-lightbulb me-2"></i>
-                    <strong>@Localizer["Note"]</strong> @Localizer["IfYouDeleteThisByMistake"]
+                    <div class="issue-manage-note">
+                        <i class="bi bi-info-circle me-2"></i>
+                        @Localizer["Note"] @Localizer["IfYouDeleteThisByMistake"]
+                    </div>
+
+                    <form method="post" class="issue-manage-actions">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>@Localizer["DeleteIssuePermanently"]
+                        </button>
+                        <a href="/issues/@Model.Id" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>@Localizer["CancelDeletion"]
+                        </a>
+                    </form>
                 </div>
-            }
-            else
-            {
-                <div class="alert alert-warning" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    @Localizer["IssueNotFoundMessage"]
-                    <a href="/issues" class="ms-2">@Localizer["GoToIssuesList"]</a>
-                </div>
-            }
+            </section>
         </div>
-    </div>
+    }
+    else
+    {
+        <section class="issue-manage-card">
+            <div class="issue-manage-card__body">
+                <div class="issue-manage-empty">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <h2 class="h4 mb-2">@Localizer["IssueNotFoundMessage"]</h2>
+                    <p class="mb-4">The issue could not be loaded for deletion.</p>
+                    <a href="/issues" class="btn btn-outline-primary">@Localizer["GoToIssuesList"]</a>
+                </div>
+            </div>
+        </section>
+    }
 </div>
-
-<style>
-    .bg-danger-light {
-        background-color: #fff5f5;
-    }
-
-    .card {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .btn-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        border: none;
-    }
-
-    .btn-danger:hover {
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
-
-    .text-decoration-underline {
-        text-decoration: underline;
-    }
-
-    .border-danger {
-        border-color: #ef4444 !important;
-    }
-
-    ul {
-        padding-left: 1.25rem;
-    }
-
-    ul li {
-        margin-bottom: 0.5rem;
-    }
-</style>

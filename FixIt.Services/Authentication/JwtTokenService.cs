@@ -5,6 +5,7 @@ using FixIt.Models.Users;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using FixIt.Services.Constants;
 
 namespace FixIt.Services.Authentication;
 
@@ -48,12 +49,12 @@ public class JwtTokenService : ITokenService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
             new Claim(ClaimTypes.Name, user.DisplayName ?? user.UserName ?? ""),
-            new Claim("DisplayName", user.DisplayName ?? ""),
-            new Claim("ReputationScore", user.ReputationScore.ToString()),
-            new Claim("TrustLevel", user.TrustLevel.ToString()),
-            new Claim("IsVerifiedOfficial", user.IsVerifiedOfficial.ToString()),
-            new Claim("IsBanned", user.IsBanned.ToString()),
-            new Claim("IsRestricted", user.IsRestricted.ToString()),
+            new Claim(CustomClaimTypes.DisplayName, user.DisplayName ?? ""),
+            new Claim(CustomClaimTypes.ReputationScore, user.ReputationScore.ToString()),
+            new Claim(CustomClaimTypes.TrustLevel, user.TrustLevel.ToString()),
+            new Claim(CustomClaimTypes.IsVerifiedOfficial, user.IsVerifiedOfficial.ToString()),
+            new Claim(CustomClaimTypes.IsBanned, user.IsBanned.ToString()),
+            new Claim(CustomClaimTypes.IsRestricted, user.IsRestricted.ToString()),
         };
 
         // Add roles as claims
@@ -65,8 +66,8 @@ public class JwtTokenService : ITokenService
         // Add official title if verified official
         if (user.IsVerifiedOfficial && !string.IsNullOrEmpty(user.OfficialTitle))
         {
-            claims.Add(new Claim("OfficialTitle", user.OfficialTitle));
-            claims.Add(new Claim("OfficialDepartment", user.OfficialDepartment ?? ""));
+            claims.Add(new Claim(CustomClaimTypes.OfficialTitle, user.OfficialTitle));
+            claims.Add(new Claim(CustomClaimTypes.OfficialDepartment, user.OfficialDepartment ?? ""));
         }
 
         var token = new JwtSecurityToken(

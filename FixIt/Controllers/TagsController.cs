@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FixIt.Services.Contracts;
+using FixIt.Services.Constants;
 using FixIt.ViewModels;
 using FixIt.ViewModels.Tags;
 
@@ -185,7 +186,7 @@ public class TagsController : ControllerBase
     /// <param name="request">Tag creation request</param>
     /// <returns>The created tag</returns>
     [HttpPost]
-    [Authorize(Roles = "Moderator,Admin")]
+    [Authorize(Roles = RoleNames.ModeratorOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<TagResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -210,9 +211,9 @@ public class TagsController : ControllerBase
                 )
             );
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Invalid tag request"));
         }
         catch (Exception ex)
         {

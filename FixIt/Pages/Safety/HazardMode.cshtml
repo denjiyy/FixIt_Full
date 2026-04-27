@@ -1,68 +1,126 @@
 @page "/safety/hazard-mode"
 @model FixIt.Pages.Safety.HazardModeModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
+@inject Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json
 @{
     ViewData["Title"] = Localizer["SafetyHazardMap"];
+    ViewData["RequiresMap"] = true;
+    var coverageArea = Model.City?.Name ?? "your area";
 }
 
-<div class="container-fluid" style="height: 100vh; padding: 0;">
-    <!-- Header -->
-    <div class="hazard-header">
-        <div class="header-content">
-            <h5 class="mb-0">
-                <i class="bi bi-exclamation-triangle-fill text-danger"></i> @Localizer["HazardMode"]
-            </h5>
-            <small class="text-muted">@Localizer["HazardModeSubtitle"]</small>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/maps.css" asp-append-version="true" />
+}
+
+<div class="map-page py-4">
+    <section class="hazard-mode-hero">
+        <div class="hazard-mode-hero__copy">
+            <span class="eyebrow">@Localizer["HazardMode"]</span>
+            <h1 class="page-title mb-2">@Localizer["HazardMode"]</h1>
+            <p class="page-copy mb-0">
+                Monitor live reports across @coverageArea, verify incidents quickly, and capture new hazards directly from the map.
+            </p>
         </div>
-        <div class="header-controls">
-            <button class="btn btn-sm btn-outline-primary" id="myLocationBtn">
-                <i class="bi bi-geo-alt-fill"></i> @Localizer["MyLocation"]
+        <div class="hazard-mode-hero__actions">
+            <a href="/safety/map" class="btn btn-outline-primary">
+                <i class="bi bi-map me-2"></i>@Localizer["HazardMap"]
+            </a>
+            <button type="button" class="btn btn-primary" id="myLocationBtn">
+                <i class="bi bi-geo-alt-fill me-2"></i>My location
             </button>
-            <small class="text-muted ms-2"><i class="bi bi-info-circle"></i> @Localizer["ClickToReportHazard"]</small>
         </div>
-    </div>
+        <div class="hazard-mode-hero__metrics">
+            <div class="hazard-mode-hero__metric">
+                <span>Coverage area</span>
+                <strong>@coverageArea</strong>
+                <small>Live map radius of 10 km around the active position.</small>
+            </div>
+            <div class="hazard-mode-hero__metric">
+                <span>Workflow</span>
+                <strong>Report, verify, coordinate</strong>
+                <small>Tap the map to report. Open any card to inspect or moderate.</small>
+            </div>
+        </div>
+    </section>
 
-    <div class="hazard-container">
-        <!-- Map -->
-        <div id="hazardMap" class="hazard-map"></div>
+    <div class="hazard-mode-layout">
+        <section class="card hazard-mode-stage">
+            <div class="hazard-mode-stage__head">
+                <div>
+                    <span class="eyebrow">@Localizer["SafetyHazardMap"]</span>
+                    <h2 class="h3 mb-2">Tap the map to report a hazard</h2>
+                    <p class="text-muted mb-0">Select any point on the map to open the rapid-report flow. Existing hazards stay visible so teams can avoid duplicates.</p>
+                </div>
+                <div class="hazard-mode-stage__legend">
+                    <span class="hazard-severity-pill hazard-severity-pill--critical">@Localizer["Critical"]</span>
+                    <span class="hazard-severity-pill hazard-severity-pill--high">@Localizer["High"]</span>
+                    <span class="hazard-severity-pill hazard-severity-pill--medium">@Localizer["Medium"]</span>
+                    <span class="hazard-severity-pill hazard-severity-pill--low">@Localizer["Low"]</span>
+                </div>
+            </div>
+            <div class="hazard-mode-stage__map-wrap">
+                <div id="hazardMap" class="hazard-map"></div>
+                <div class="hazard-map-hint">
+                    <i class="bi bi-cursor-fill"></i>
+                    <div>
+                        <strong>Quick report</strong>
+                        <span>Click anywhere on the map to start a field report with the selected coordinates.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <!-- Sidebar - Hazard List -->
-        <div class="hazard-sidebar">
-            <div class="sidebar-header">
-                <h6 class="mb-3">@Localizer["NearbyHazards"]</h6>
-                <div class="filter-controls">
-                    <input type="text" class="form-control form-control-sm mb-2" 
-                           id="hazardFilter" placeholder='@Localizer["FilterHazards"]'
-                           onkeyup="filterHazards(this.value)">
-                    <select class="form-select form-select-sm mb-2" id="severityFilter" 
-                            onchange="filterBySeverity(this.value)">
-                        <option value="">@Localizer["AllSeverities"]</option>
+        <aside class="card hazard-mode-sidebar">
+            <div class="hazard-mode-sidebar__head">
+                <div>
+                    <span class="eyebrow">Nearby hazards</span>
+                    <h2 class="h4 mb-2">Nearby hazards</h2>
+                    <p class="text-muted mb-0">Filter by keyword, severity, or type to focus on the incidents that need attention first.</p>
+                </div>
+            </div>
+
+            <div class="hazard-mode-filter-grid">
+                <div class="hazard-filter-field hazard-filter-field--wide">
+                    <label for="hazardFilter">@Localizer["FilterHazards"]</label>
+                    <div class="hazard-search-input">
+                        <i class="bi bi-search"></i>
+                        <input type="search" class="form-control" id="hazardFilter" placeholder='@Localizer["FilterHazards"]' />
+                    </div>
+                </div>
+
+                <div class="hazard-filter-field">
+                    <label for="severityFilter">Severity</label>
+                    <select class="form-select" id="severityFilter">
+                        <option value="">All severities</option>
                         <option value="Critical">@Localizer["Critical"]</option>
                         <option value="High">@Localizer["High"]</option>
                         <option value="Medium">@Localizer["Medium"]</option>
                         <option value="Low">@Localizer["Low"]</option>
                     </select>
-                    <select class="form-select form-select-sm" id="typeFilter" 
-                            onchange="filterByType(this.value)">
-                        <option value="">@Localizer["AllTypes"]</option>
-                        <option value="Crime">@Localizer["Crime"]</option>
-                        <option value="Accident">@Localizer["Accident"]</option>
-                        <option value="Construction">@Localizer["Construction"]</option>
-                        <option value="Pothole">@Localizer["Pothole"]</option>
-                        <option value="Flooding">@Localizer["Flooding"]</option>
-                        <option value="DamagedInfrastructure">@Localizer["DamagedInfrastructure"]</option>
-                        <option value="StreetLight">@Localizer["StreetLight"]</option>
-                        <option value="Debris">@Localizer["Debris"]</option>
-                        <option value="TrafficCongestion">@Localizer["TrafficCongestion"]</option>
-                        <option value="Other">@Localizer["Other"]</option>
+                </div>
+
+                <div class="hazard-filter-field">
+                    <label for="typeFilter">Type</label>
+                    <select class="form-select" id="typeFilter">
+                        <option value="">All types</option>
+                        <option value="Crime">Crime</option>
+                        <option value="Accident">Accident</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Pothole">Pothole</option>
+                        <option value="Flooding">Flooding</option>
+                        <option value="DamagedInfrastructure">Damaged infrastructure</option>
+                        <option value="StreetLight">Street light</option>
+                        <option value="Debris">Debris</option>
+                        <option value="TrafficCongestion">Traffic congestion</option>
+                        <option value="Other">Other</option>
                     </select>
                 </div>
             </div>
 
-            <div class="sidebar-stats mb-3">
+            <div class="sidebar-stats mb-0">
                 <div class="stat-pill">
                     <span class="stat-value" id="totalHazardsCount">0</span>
-                    <span class="stat-label">@Localizer["TotalHazards"]</span>
+                    <span class="stat-label">Total hazards</span>
                 </div>
                 <div class="stat-pill critical">
                     <span class="stat-value" id="criticalCount">0</span>
@@ -75,1081 +133,254 @@
             </div>
 
             <div class="hazards-list" id="hazardsList">
-                <div class="text-center text-muted py-4">
-                    <i class="bi bi-hourglass-split"></i> @Localizer["LoadingHazards"]
+                <div class="hazard-list-placeholder">
+                    <i class="bi bi-hourglass-split"></i>
+                    <h3>@Localizer["LoadingHazards"]</h3>
+                    <p class="mb-0">Fetching the latest safety reports for the active coverage area.</p>
                 </div>
             </div>
-        </div>
+        </aside>
     </div>
 </div>
 
-<!-- Hazard Detail Modal -->
-<div class="modal fade" id="hazardDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<div class="toast-container position-fixed top-0 end-0 p-3 hazard-toast-stack">
+        <div id="hazardToast" class="toast hazard-toast" role="status" aria-live="polite" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="hazardToastBody"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+</div>
+
+<div class="modal fade" id="hazardDetailModal" tabindex="-1" aria-labelledby="hazardModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-bottom-0">
-                <h5 class="modal-title" id="hazardModalTitle"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div>
+                    <span class="eyebrow">Nearby hazards</span>
+                    <h2 class="modal-title h4 mt-2" id="hazardModalTitle"></h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="hazard-detail-content" id="hazardDetailContent">
-                    <!-- Dynamic content -->
-                </div>
+                <div class="hazard-detail-content" id="hazardDetailContent"></div>
             </div>
-            <div class="modal-footer border-top-0" id="hazardDetailFooter">
-                <button type="button" class="btn btn-outline-primary" id="confirmBtn" onclick="confirmHazard()">
-                    <i class="bi bi-check-circle"></i> @Localizer["Confirm"]
+            <div class="modal-footer border-top-0 hazard-modal-actions">
+                <button type="button" class="btn btn-outline-primary" id="confirmBtn">
+                    <i class="bi bi-check-circle me-2"></i>Confirm
                 </button>
-                <button type="button" class="btn btn-warning d-none" id="editBtn" onclick="openEditModal()">
-                    <i class="bi bi-pencil-square"></i> @Localizer["Edit"]
+                <button type="button" class="btn btn-warning d-none" id="editBtn">
+                    <i class="bi bi-pencil-square me-2"></i>@Localizer["Edit"]
                 </button>
-                <button type="button" class="btn btn-danger d-none" id="deleteBtn" onclick="deleteHazard()">
-                    <i class="bi bi-trash"></i> @Localizer["Delete"]
+                <button type="button" class="btn btn-danger d-none" id="deleteBtn">
+                    <i class="bi bi-trash me-2"></i>@Localizer["Delete"]
                 </button>
-                <button type="button" class="btn btn-success d-none" id="restoreBtn" onclick="restoreHazard()">
-                    <i class="bi bi-arrow-counterclockwise"></i> @Localizer["Restore"]
+                <button type="button" class="btn btn-success d-none" id="restoreBtn">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Restore
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
-
-            <!-- Edit Hazard Modal -->
-            <div class="modal fade" id="editHazardModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">@Localizer["EditHazard"]</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="editHazardForm">
-                                <input type="hidden" id="editHazardId" />
-                                <div class="mb-2">
-                                    <label class="form-label">@Localizer["Type"]</label>
-                                    <select id="editType" class="form-select">
-                                        <option value="">@Localizer["SelectType"]</option>
-                                        <option value="Crime">@Localizer["Crime"]</option>
-                                        <option value="Accident">@Localizer["Accident"]</option>
-                                        <option value="Construction">@Localizer["Construction"]</option>
-                                        <option value="Pothole">@Localizer["Pothole"]</option>
-                                        <option value="Flooding">@Localizer["Flooding"]</option>
-                                        <option value="DamagedInfrastructure">@Localizer["DamagedInfrastructure"]</option>
-                                        <option value="StreetLight">@Localizer["StreetLight"]</option>
-                                        <option value="Debris">@Localizer["Debris"]</option>
-                                        <option value="TrafficCongestion">@Localizer["TrafficCongestion"]</option>
-                                        <option value="Other">@Localizer["Other"]</option>
-                                    </select>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">@Localizer["Severity"]</label>
-                                    <select id="editSeverity" class="form-select">
-                                        <option value="">@Localizer["SelectSeverity"]</option>
-                                        <option value="Critical">@Localizer["Critical"]</option>
-                                        <option value="High">@Localizer["High"]</option>
-                                        <option value="Medium">@Localizer["Medium"]</option>
-                                        <option value="Low">@Localizer["Low"]</option>
-                                    </select>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">@Localizer["Title"]</label>
-                                    <input id="editTitle" class="form-control" />
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">@Localizer["Description"]</label>
-                                    <textarea id="editDescription" class="form-control" rows="3"></textarea>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="form-label">@Localizer["Address"]</label>
-                                    <input id="editAddress" class="form-control" />
-                                </div>
-                                <div class="row">
-                                    <div class="col-6 mb-2">
-                                        <label class="form-label">@Localizer["Latitude"]</label>
-                                        <input id="editLatitude" class="form-control" />
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <label class="form-label">@Localizer["Longitude"]</label>
-                                        <input id="editLongitude" class="form-control" />
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
-                            <button type="button" class="btn btn-primary" onclick="submitHazardUpdate()">@Localizer["SaveChanges"]</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 </div>
 
-<!-- Report Hazard Modal -->
-<div class="modal fade" id="reportHazardModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="editHazardModal" tabindex="-1" aria-labelledby="editHazardModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-flag"></i> @Localizer["ReportHazard"]</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div>
+                    <span class="eyebrow">Edit hazard</span>
+                    <h2 class="modal-title h5 mt-2" id="editHazardModalTitle">Edit hazard</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="quickReportForm">
-                    <div class="alert alert-info mb-3">
-                        <strong>@Localizer["LocationSelected"]</strong><br>
-                        <small id="reportLocationDisplay">@Localizer["ClickOnMapToSelectLocation"]</small>
+                <form id="editHazardForm" class="hazard-form-stack">
+                    <input type="hidden" id="editHazardId" />
+
+                    <div class="hazard-form-grid">
+                        <div>
+                            <label class="form-label" for="editType">Type</label>
+                            <select id="editType" class="form-select">
+                                <option value="">Select type</option>
+                                <option value="Crime">Crime</option>
+                                <option value="Accident">Accident</option>
+                                <option value="Construction">Construction</option>
+                                <option value="Pothole">Pothole</option>
+                                <option value="Flooding">Flooding</option>
+                                <option value="DamagedInfrastructure">Damaged infrastructure</option>
+                                <option value="StreetLight">Street light</option>
+                                <option value="Debris">Debris</option>
+                                <option value="TrafficCongestion">Traffic congestion</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="form-label" for="editSeverity">Severity</label>
+                            <select id="editSeverity" class="form-select">
+                                <option value="">Select severity</option>
+                                <option value="Critical">@Localizer["Critical"]</option>
+                                <option value="High">@Localizer["High"]</option>
+                                <option value="Medium">@Localizer["Medium"]</option>
+                                <option value="Low">@Localizer["Low"]</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="reportType" class="form-label">@Localizer["HazardType"] <span class="text-danger">*</span></label>
-                        <select class="form-select" id="reportType" required>
-                            <option value="">@Localizer["SelectType"]</option>
-                            <option value="Crime">@Localizer["Crime"]</option>
-                            <option value="Accident">@Localizer["Accident"]</option>
-                            <option value="Construction">@Localizer["Construction"]</option>
-                            <option value="Pothole">@Localizer["Pothole"]</option>
-                            <option value="Flooding">@Localizer["Flooding"]</option>
-                            <option value="DamagedInfrastructure">@Localizer["DamagedInfrastructure"]</option>
-                            <option value="StreetLight">@Localizer["StreetLight"]</option>
-                            <option value="Debris">@Localizer["Debris"]</option>
-                            <option value="TrafficCongestion">@Localizer["TrafficCongestion"]</option>
-                            <option value="Other">@Localizer["Other"]</option>
-                        </select>
+                    <div>
+                        <label class="form-label" for="editTitle">@Localizer["Title"]</label>
+                        <input id="editTitle" class="form-control" />
                     </div>
 
-                    <div class="mb-3">
-                        <label for="reportSeverity" class="form-label">@Localizer["Severity"] <span class="text-danger">*</span></label>
-                        <select class="form-select" id="reportSeverity" required>
-                            <option value="">@Localizer["SelectSeverity"]</option>
-                            <option value="Critical">🔴 @Localizer["Critical"]</option>
-                            <option value="High">🟠 @Localizer["High"]</option>
-                            <option value="Medium">🟡 @Localizer["Medium"]</option>
-                            <option value="Low">🟢 @Localizer["Low"]</option>
-                        </select>
+                    <div>
+                        <label class="form-label" for="editDescription">@Localizer["Description"]</label>
+                        <textarea id="editDescription" class="form-control" rows="4"></textarea>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="reportTitle" class="form-label">@Localizer["Title"] <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="reportTitle" required placeholder="@Localizer["HazardTitlePlaceholder"]">
+                    <div>
+                        <label class="form-label" for="editAddress">@Localizer["Address"]</label>
+                        <input id="editAddress" class="form-control" />
                     </div>
 
-                    <div class="mb-3">
-                        <label for="reportDescription" class="form-label">@Localizer["Details"] <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="reportDescription" rows="3" required placeholder="@Localizer["HazardDetailsPlaceholder"]"></textarea>
+                    <div class="hazard-form-grid">
+                        <div>
+                            <label class="form-label" for="editLatitude">@Localizer["Latitude"]</label>
+                            <input id="editLatitude" class="form-control" />
+                        </div>
+                        <div>
+                            <label class="form-label" for="editLongitude">@Localizer["Longitude"]</label>
+                            <input id="editLongitude" class="form-control" />
+                        </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="reportLocationInput" class="form-label">@Localizer["Location"] <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="reportLocationInput" readonly placeholder="@Localizer["ClickOnMapToSelectLocation"]">
-                        <small class="form-text text-muted">@Localizer["SelectedFromMapInstructions"]</small>
-                    </div>
-
-
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
-                <button type="button" class="btn btn-danger" onclick="submitQuickReport()">
-                    <i class="bi bi-check-circle"></i> @Localizer["SubmitReport"]
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveHazardUpdateBtn">
+                    <i class="bi bi-check-circle me-2"></i>@Localizer["SaveChanges"]
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Hazard Detail Modal -->
-<div class="modal fade" id="hazardDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="reportHazardModal" tabindex="-1" aria-labelledby="reportHazardModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header border-bottom-0">
-                <h5 class="modal-title" id="hazardModalTitle"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <div>
+                    <span class="eyebrow">Quick report</span>
+                    <h2 class="modal-title h5 mt-2" id="reportHazardModalTitle">Report hazard</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="hazard-detail-content" id="hazardDetailContent">
-                    <!-- Dynamic content -->
-                </div>
+                <form id="quickReportForm" class="hazard-form-stack">
+                    <div class="hazard-report-location">
+                        <strong>Location selected</strong>
+                        <small id="reportLocationDisplay">Click on the map to select a location</small>
+                    </div>
+
+                    <div class="hazard-form-grid">
+                        <div>
+                            <label for="reportType" class="form-label">Hazard type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="reportType" required>
+                                <option value="">Select type</option>
+                                <option value="Crime">Crime</option>
+                                <option value="Accident">Accident</option>
+                                <option value="Construction">Construction</option>
+                                <option value="Pothole">Pothole</option>
+                                <option value="Flooding">Flooding</option>
+                                <option value="DamagedInfrastructure">Damaged infrastructure</option>
+                                <option value="StreetLight">Street light</option>
+                                <option value="Debris">Debris</option>
+                                <option value="TrafficCongestion">Traffic congestion</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="reportSeverity" class="form-label">Severity <span class="text-danger">*</span></label>
+                            <select class="form-select" id="reportSeverity" required>
+                                <option value="">Select severity</option>
+                                <option value="Critical">@Localizer["Critical"]</option>
+                                <option value="High">@Localizer["High"]</option>
+                                <option value="Medium">@Localizer["Medium"]</option>
+                                <option value="Low">@Localizer["Low"]</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="reportTitle" class="form-label">@Localizer["Title"] <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="reportTitle" required placeholder="Summarize the hazard in one clear line" />
+                    </div>
+
+                    <div>
+                        <label for="reportDescription" class="form-label">@Localizer["Details"] <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="reportDescription" rows="4" required placeholder="Describe what happened, how severe it is, and anything responders should know."></textarea>
+                    </div>
+
+                    <div>
+                        <label for="reportLocationInput" class="form-label">@Localizer["Location"] <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control location-field" id="reportLocationInput" readonly placeholder="Click on the map to select a location" />
+                        <small class="form-text text-muted">The location is filled automatically from the point you selected on the map.</small>
+                    </div>
+                </form>
             </div>
-            <div class="modal-footer border-top-0" id="hazardDetailFooter">
-                <button type="button" class="btn btn-outline-primary" id="confirmBtn" onclick="confirmHazard()">
-                    <i class="bi bi-check-circle"></i> @Localizer["Confirm"]
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitQuickReportBtn">
+                    <i class="bi bi-send-check me-2"></i>Submit report
                 </button>
-                <button type="button" class="btn btn-warning d-none" id="editBtn" onclick="openEditModal()">
-                    <i class="bi bi-pencil-square"></i> @Localizer["Edit"]
-                </button>
-                <button type="button" class="btn btn-danger d-none" id="deleteBtn" onclick="deleteHazard()">
-                    <i class="bi bi-trash"></i> @Localizer["Delete"]
-                </button>
-                <button type="button" class="btn btn-success d-none" id="restoreBtn" onclick="restoreHazard()">
-                    <i class="bi bi-arrow-counterclockwise"></i> @Localizer["Restore"]
-                </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Close"]</button>
             </div>
         </div>
     </div>
 </div>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
-<script>
-    let map;
-    let userMarker;
-    let hazardMarkers = {};
-    let currentCity = '@Model.CityId';
-    let selectedHazardId = null;
-    let reportLocationLat = null;
-    let reportLocationLng = null;
-    let reportLocationAddress = '';
-    let userLocation = { lat: 42.7339, lng: 25.4858 }; // Default Sofia
-    
-    // Geocoding state and caching
-    let geocodingCache = {};
-    let lastGeocodingRequest = 0;
-    let geocodingTimeout = null;
-    const GEOCODING_DEBOUNCE_MS = 300;
-    const GEOCODING_REQUEST_THROTTLE_MS = 500;
-
-    // Real-time hazard updates - poll for new/updated hazards every 5 seconds
-    let hazardRefreshInterval = null;
-    const HAZARD_REFRESH_INTERVAL_MS = 5000;
-
-    const severityColors = {
-        'Critical': '#dc3545',
-        'High': '#fd7e14',
-        'Medium': '#ffc107',
-        'Low': '#198754'
-    };
-
-    const severityIcons = {
-        'Critical': '🚨',
-        'High': '⚠️',
-        'Medium': '⚡',
-        'Low': 'ℹ️'
-    };
-
-    const localized = {
-        yourLocation: @System.Text.Json.JsonSerializer.Serialize(Localizer["YourLocation"].Value),
-        latitudeLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Latitude"].Value),
-        longitudeLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Longitude"].Value),
-        locationSelected: @System.Text.Json.JsonSerializer.Serialize(Localizer["LocationSelected"].Value),
-        noHazardsNearby: @System.Text.Json.JsonSerializer.Serialize(Localizer["NoHazardsNearby"].Value),
-        failedToLoadHazards: @System.Text.Json.JsonSerializer.Serialize(Localizer["FailedToLoadHazards"].Value),
-        viewDetails: @System.Text.Json.JsonSerializer.Serialize(Localizer["ViewDetails"].Value),
-        typeLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Type"].Value),
-        severityLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Severity"].Value),
-        descriptionLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Description"].Value),
-        locationLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Location"].Value),
-        confirmationsLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Confirmations"].Value),
-        reportedLabel: @System.Text.Json.JsonSerializer.Serialize(Localizer["Reported"].Value),
-        hazardConfirmed: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardConfirmed"].Value),
-        fillAllRequiredFields: @System.Text.Json.JsonSerializer.Serialize(Localizer["FillAllRequiredFields"].Value),
-        clickOnMapToSelectLocation: @System.Text.Json.JsonSerializer.Serialize(Localizer["ClickOnMapToSelectLocation"].Value),
-        reportSubmitted: @System.Text.Json.JsonSerializer.Serialize(Localizer["ReportSubmitted"].Value),
-        errorSubmittingReport: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorSubmittingReport"].Value),
-        hazardUpdated: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardUpdated"].Value),
-        errorUpdatingHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorUpdatingHazard"].Value),
-        hazardDeleted: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardDeleted"].Value),
-        errorDeletingHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorDeletingHazard"].Value),
-        hazardRestored: @System.Text.Json.JsonSerializer.Serialize(Localizer["HazardRestored"].Value),
-        errorRestoringHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ErrorRestoringHazard"].Value),
-        confirmDeleteHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ConfirmDeleteHazard"].Value),
-        confirmRestoreHazard: @System.Text.Json.JsonSerializer.Serialize(Localizer["ConfirmRestoreHazard"].Value)
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-        initializeMap();
-        loadNearbyHazards();
-        
-        // Start a refresh interval to check for new hazards every 5 seconds
-        if (hazardRefreshInterval) clearInterval(hazardRefreshInterval);
-        hazardRefreshInterval = setInterval(loadNearbyHazards, HAZARD_REFRESH_INTERVAL_MS);
-        
-        // Request user location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                updateMapCenter();
-                loadNearbyHazards();
-            });
-        }
-    });
-
-    function initializeMap() {
-        map = L.map('hazardMap').setView([userLocation.lat, userLocation.lng], 13);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
-        }).addTo(map);
-
-        // User location marker
-        userMarker = L.circleMarker([userLocation.lat, userLocation.lng], {
-            radius: 8,
-            fillColor: '#007bff',
-            color: '#0056b3',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
-        }).addTo(map);
-        userMarker.bindPopup(localized.yourLocation);
-
-        // Map click handler for reporting hazards
-        map.on('click', function (e) {
-            reportLocationLat = e.latlng.lat;
-            reportLocationLng = e.latlng.lng;
-            
-            // Show loading state
-            const coordDisplay = `${localized.latitudeLabel}: ${reportLocationLat.toFixed(6)}, ${localized.longitudeLabel}: ${reportLocationLng.toFixed(6)}`;
-            document.getElementById('reportLocationDisplay').textContent = coordDisplay;
-                            document.getElementById('reportLocationInput').value = '@Localizer["LoadingAddress"]';
-            document.getElementById('reportLocationInput').style.color = '#999';
-            
-            // Debounce geocoding requests
-            clearTimeout(geocodingTimeout);
-            geocodingTimeout = setTimeout(function() {
-                reverseGeocode(reportLocationLat, reportLocationLng);
-            }, GEOCODING_DEBOUNCE_MS);
-            
-            const modal = new bootstrap.Modal(document.getElementById('reportHazardModal'));
-            modal.show();
-        });
-    }
-
-    function updateMapCenter() {
-        if (map && userMarker) {
-            map.setView([userLocation.lat, userLocation.lng], 13);
-            userMarker.setLatLng([userLocation.lat, userLocation.lng]);
-        }
-    }
-
-    /**
-     * Reverse geocode coordinates to address
-     */
-    async function reverseGeocode(lat, lng) {
-        const cacheKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
-        
-        // Check local cache first
-        if (geocodingCache[cacheKey]) {
-            console.log('Using local cache:', geocodingCache[cacheKey]);
-            updateLocationField(geocodingCache[cacheKey]);
-            reportLocationAddress = geocodingCache[cacheKey];
-            return;
-        }
-        
-        // Throttle requests to avoid overloading
-        const now = Date.now();
-        if (now - lastGeocodingRequest < GEOCODING_REQUEST_THROTTLE_MS) {
-            console.log('Throttling geocoding request');
-            return;
-        }
-        
-        lastGeocodingRequest = now;
-        
-        try {
-            console.log(`Fetching address for: ${lat}, ${lng}`);
-            
-            const response = await fetch(
-                `/api/geocoding/reverse?latitude=${lat}&longitude=${lng}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                }
-            );
-            
-            console.log('Backend geocoding response status:', response.status);
-            
-            if (!response.ok) {
-                throw new Error(`Geocoding API error: ${response.status}`);
+@section PageScripts {
+    <script id="hazardModeConfig" type="application/json">
+        @Json.Serialize(new
+        {
+            currentCity = Model.CityId,
+            localized = new
+            {
+                yourLocation = "Your location",
+                latitudeLabel = Localizer["Latitude"].Value,
+                longitudeLabel = Localizer["Longitude"].Value,
+                locationSelected = "Location selected",
+                noHazardsNearby = "No hazards nearby",
+                failedToLoadHazards = "Unable to load nearby hazards right now.",
+                viewDetails = Localizer["ViewDetails"].Value,
+                typeLabel = "Type",
+                severityLabel = "Severity",
+                descriptionLabel = Localizer["Description"].Value,
+                locationLabel = "Location",
+                confirmationsLabel = Localizer["Confirmations"].Value,
+                reportedLabel = "Reported",
+                hazardConfirmed = "Hazard confirmed.",
+                fillAllRequiredFields = "Fill in all required fields before submitting.",
+                clickOnMapToSelectLocation = "Click on the map to select a location",
+                reportSubmitted = "Report submitted.",
+                errorSubmittingReport = "We couldn't submit the report.",
+                hazardUpdated = "Hazard updated.",
+                errorUpdatingHazard = "We couldn't update the hazard.",
+                hazardDeleted = "Hazard deleted.",
+                errorDeletingHazard = "We couldn't delete the hazard.",
+                hazardRestored = "Hazard restored.",
+                errorRestoringHazard = "We couldn't restore the hazard.",
+                confirmDeleteHazard = "Are you sure you want to delete this hazard?",
+                confirmRestoreHazard = "Restore this hazard?",
+                loadingAddress = Localizer["LoadingAddress"].Value,
+                loadingHazards = Localizer["LoadingHazards"].Value,
+                quickReportThanks = "Thank you! Your report has been submitted and helps keep the community safe.",
+                pleaseSelectLocation = "Please click on the map to select a location.",
+                noHazardsArea = "No hazards in your area",
+                hazardUpdatedShort = "Hazard updated",
+                hazardDeletedShort = "Hazard deleted",
+                hazardRestoredShort = "Hazard restored"
             }
-            
-            const data = await response.json();
-            console.log('Geocoding response:', data);
-            
-            if (data && data.address) {
-                console.log('Address received:', data.address);
-                
-                // Cache the result
-                geocodingCache[cacheKey] = data.address;
-                
-                // Update the field
-                reportLocationAddress = data.address;
-                updateLocationField(data.address);
-            } else {
-                console.warn('No address in response');
-                const fallback = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
-                reportLocationAddress = fallback;
-                updateLocationField(fallback);
-            }
-        } catch (error) {
-            console.error('Geocoding error:', error);
-            
-            // Fallback to coordinates on error
-            const fallback = `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
-            reportLocationAddress = fallback;
-            updateLocationField(fallback);
-        }
-    }
-    
-    function buildAddressString(addressObj) {
-        // Priority order for address components
-        const parts = [];
-        
-        // Add street address with house number
-        if (addressObj.road) {
-            let street = addressObj.road;
-            if (addressObj.house_number) {
-                street += ` ${addressObj.house_number}`;
-            }
-            parts.push(street);
-        } else if (addressObj.street) {
-            let street = addressObj.street;
-            if (addressObj.house_number) {
-                street += ` ${addressObj.house_number}`;
-            }
-            parts.push(street);
-        }
-        
-        // Add suburb or neighborhood
-        if (addressObj.suburb) {
-            if (!parts.some(p => p.includes(addressObj.suburb))) {
-                parts.push(addressObj.suburb);
-            }
-        } else if (addressObj.neighbourhood) {
-            if (!parts.some(p => p.includes(addressObj.neighbourhood))) {
-                parts.push(addressObj.neighbourhood);
-            }
-        }
-        
-        // Add postcode if available
-        if (addressObj.postcode) {
-            parts.push(addressObj.postcode);
-        }
-        
-        // Add city/town/village - use the most specific
-        let city = addressObj.city || addressObj.town || addressObj.village || addressObj.municipality;
-        if (city) {
-            if (!parts.some(p => p.includes(city))) {
-                parts.push(city);
-            }
-        }
-        
-        // Add state/province if different from city
-        if (addressObj.state && addressObj.state !== city) {
-            if (!parts.some(p => p.includes(addressObj.state))) {
-                parts.push(addressObj.state);
-            }
-        }
-        
-        // Add country as last component
-        if (addressObj.country) {
-            if (!parts.some(p => p.includes(addressObj.country))) {
-                parts.push(addressObj.country);
-            }
-        }
-        
-        if (parts.length === 0) {
-            return localized.locationSelected;
-        }
-        
-        return parts.join(', ');
-    }
-    
-    function updateLocationField(address) {
-        const input = document.getElementById('reportLocationInput');
-        if (input) {
-            input.value = address;
-            input.style.color = '#333';
-        }
-    }
-
-    async function loadNearbyHazards() {
-        try {
-            const response = await fetch(
-                `/api/safety/nearby-hazards?cityId=${currentCity}&latitude=${userLocation.lat}&longitude=${userLocation.lng}&radiusKm=10`
-            );
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log('Hazards loaded:', data);
-
-            if (data.success && Array.isArray(data.data)) {
-                displayHazards(data.data);
-                updateStatistics(data.data);
-            } else {
-                console.error('Failed to load hazards:', data.message || 'Invalid response format');
-                document.getElementById('hazardsList').innerHTML = '<div class="alert alert-warning p-2"><small>No hazards in your area</small></div>';
-            }
-        } catch (error) {
-            console.error('Error loading hazards:', error);
-            document.getElementById('hazardsList').innerHTML = `<div class="alert alert-danger p-2"><small>${localized.failedToLoadHazards}</small></div>`;
-        }
-    }
-
-    function displayHazards(hazards) {
-        // Clear existing markers
-        Object.values(hazardMarkers).forEach(marker => map.removeLayer(marker));
-        hazardMarkers = {};
-
-        // Update sidebar
-        const hazardsList = document.getElementById('hazardsList');
-        if (hazards.length === 0) {
-            hazardsList.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-check-circle"></i> ${localized.noHazardsNearby}</div>`;
-            return;
-        }
-
-        hazardsList.innerHTML = hazards.map(hazard => `
-            <div class="hazard-item severity-${hazard.severity.toLowerCase()}" onclick="selectHazard('${hazard.id}')">
-                <div class="hazard-item-header">
-                    <span class="hazard-icon">${severityIcons[hazard.severity]}</span>
-                    <div class="hazard-info">
-                        <h6 class="mb-0">${hazard.title}</h6>
-                        <small class="text-muted">${hazard.type} • ${hazard.distance.toFixed(1)} km away</small>
-                    </div>
-                </div>
-                <div class="hazard-item-footer">
-                    <span class="badge bg-${getSeverityBadgeClass(hazard.severity)}">${hazard.severity}</span>
-                    <span class="badge bg-light text-dark">${hazard.confirmations} ${localized.confirmationsLabel}</span>
-                </div>
-            </div>
-        `).join('');
-
-        // Add markers to map
-        hazards.forEach(hazard => {
-            const marker = L.circleMarker([hazard.latitude, hazard.longitude], {
-                radius: 10,
-                fillColor: severityColors[hazard.severity],
-                color: '#000',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-
-            marker.bindPopup(`
-                <strong>${hazard.title}</strong><br/>
-                ${hazard.severity} • ${hazard.confirmations} ${localized.confirmationsLabel}<br/>
-                <button class="btn btn-sm btn-primary mt-2" onclick="showHazardDetail('${hazard.id}')">
-                    ${localized.viewDetails}
-                </button>
-            `);
-
-            hazardMarkers[hazard.id] = marker;
-
-            marker.on('click', function () {
-                selectHazard(hazard.id);
-            });
-        });
-    }
-
-    function updateStatistics(hazards) {
-        document.getElementById('totalHazardsCount').textContent = hazards.length;
-        document.getElementById('criticalCount').textContent = hazards.filter(h => h.severity === 'Critical').length;
-        document.getElementById('highCount').textContent = hazards.filter(h => h.severity === 'High').length;
-    }
-
-    function selectHazard(hazardId) {
-        selectedHazardId = hazardId;
-        if (hazardMarkers[hazardId]) {
-            hazardMarkers[hazardId].openPopup();
-        }
-    }
-
-    async function showHazardDetail(hazardId) {
-        try {
-            const response = await fetch(`/api/safety/${hazardId}`);
-            const data = await response.json();
-
-            if (data.success) {
-                const hazard = data.data;
-                // store for editing
-                window._currentHazard = hazard;
-
-                document.getElementById('hazardModalTitle').textContent = hazard.title;
-                document.getElementById('hazardDetailContent').innerHTML = `
-                    <div class="hazard-detail">
-                        <div class="detail-row">
-                            <label>${localized.typeLabel}:</label>
-                            <span>${hazard.type}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>${localized.severityLabel}:</label>
-                            <span class="badge bg-${getSeverityBadgeClass(hazard.severity)}">${hazard.severity}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>${localized.descriptionLabel}:</label>
-                            <p>${hazard.description}</p>
-                        </div>
-                        <div class="detail-row">
-                            <label>${localized.locationLabel}:</label>
-                            <span>${hazard.address}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>${localized.confirmationsLabel}:</label>
-                            <span>${hazard.confirmations}</span>
-                        </div>
-                        <div class="detail-row">
-                            <label>${localized.reportedLabel}:</label>
-                            <span>${new Date(hazard.createdAt).toLocaleString()}</span>
-                        </div>
-                    </div>
-                `;
-
-                selectedHazardId = hazardId;
-
-                // toggle CRUD buttons based on API-provided flags
-                const canEdit = hazard.canEdit || hazard.canEdit === true;
-                const canDelete = hazard.canDelete || hazard.canDelete === true;
-                const canRestore = hazard.canRestore || hazard.canRestore === true;
-
-                document.getElementById('editBtn').classList.toggle('d-none', !canEdit);
-                document.getElementById('deleteBtn').classList.toggle('d-none', !canDelete);
-                document.getElementById('restoreBtn').classList.toggle('d-none', !canRestore);
-
-                const modal = new bootstrap.Modal(document.getElementById('hazardDetailModal'));
-                modal.show();
-            }
-        } catch (error) {
-            console.error('Error loading hazard detail:', error);
-        }
-    }
-
-    async function confirmHazard() {
-        if (!selectedHazardId) return;
-
-        try {
-            const response = await fetch(`/api/safety/${selectedHazardId}/confirm`, {
-                method: 'POST'
-            });
-
-            if (response.ok) {
-                alert(localized.hazardConfirmed);
-                
-                // Close the modal first
-                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('hazardDetailModal'));
-                if (modalInstance) {
-                    modalInstance.hide();
-                }
-                
-                // Refresh all hazard data to show updated confirmation count in real-time
-                await loadNearbyHazards();
-            }
-        } catch (error) {
-            console.error('Error confirming hazard:', error);
-        }
-    }
-
-    async function submitQuickReport() {
-        const type = document.getElementById('reportType').value;
-        const severity = document.getElementById('reportSeverity').value;
-        const title = document.getElementById('reportTitle').value;
-        const description = document.getElementById('reportDescription').value;
-
-        if (!type || !severity || !title || !description) {
-            alert(localized.fillAllRequiredFields);
-            return;
-        }
-
-        if (reportLocationLat === null || reportLocationLng === null) {
-            alert('Please click on the map to select a location');
-            return;
-        }
-
-        // Map severity string to enum value
-        const severityMap = { 'Low': 0, 'Medium': 1, 'High': 2, 'Critical': 3 };
-        const severityValue = severityMap[severity];
-
-        try {
-            const response = await fetch('/api/safety/report', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    cityId: currentCity,
-                    type: type,
-                    severity: severity,
-                    title: title,
-                    description: description,
-                    latitude: reportLocationLat,
-                    longitude: reportLocationLng,
-                    address: reportLocationAddress
-                })
-            });
-
-            const responseData = await response.json();
-
-            if (response.ok || response.status === 201) {
-                alert('Thank you! Your report has been submitted and helps keep the community safe.');
-                bootstrap.Modal.getInstance(document.getElementById('reportHazardModal')).hide();
-                document.getElementById('quickReportForm').reset();
-                reportLocationLat = null;
-                reportLocationLng = null;
-                reportLocationAddress = '';
-                document.getElementById('reportLocationDisplay').textContent = 'Click on map to select location';
-                const locationInput = document.getElementById('reportLocationInput');
-                locationInput.value = '';
-                locationInput.style.color = '#333';
-                loadNearbyHazards();
-            } else {
-                const errorMsg = responseData?.message || 'Failed to submit report';
-                console.error('Report submission failed:', {
-                    status: response.status,
-                    error: errorMsg,
-                    fullResponse: responseData
-                });
-                alert('Error: ' + errorMsg);
-            }
-        } catch (error) {
-            console.error('Error submitting report:', error);
-            alert('Error submitting report: ' + error.message);
-        }
-    }
-
-    function filterHazards(searchTerm) {
-        const items = document.querySelectorAll('.hazard-item');
-        items.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            item.style.display = text.includes(searchTerm.toLowerCase()) ? 'block' : 'none';
-        });
-    }
-
-    function filterBySeverity(severity) {
-        const items = document.querySelectorAll('.hazard-item');
-        items.forEach(item => {
-            if (!severity) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = item.classList.contains(`severity-${severity.toLowerCase()}`) ? 'block' : 'none';
-            }
-        });
-    }
-
-    function filterByType(type) {
-        // Implementation for type filtering
-        const items = document.querySelectorAll('.hazard-item');
-        items.forEach(item => {
-            if (!type) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = item.textContent.includes(type) ? 'block' : 'none';
-            }
-        });
-    }
-
-    function getSeverityBadgeClass(severity) {
-        const classes = {
-            'Critical': 'danger',
-            'High': 'warning',
-            'Medium': 'info',
-            'Low': 'success'
-        };
-        return classes[severity] || 'secondary';
-    }
-
-    document.getElementById('myLocationBtn').addEventListener('click', function () {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                updateMapCenter();
-                loadNearbyHazards();
-            });
-        }
-    });
-
-    // Open edit modal and prefill fields
-    function openEditModal() {
-        const hazard = window._currentHazard;
-        if (!hazard) return;
-
-        document.getElementById('editHazardId').value = hazard.id;
-        document.getElementById('editType').value = hazard.type || '';
-        document.getElementById('editSeverity').value = hazard.severity || '';
-        document.getElementById('editTitle').value = hazard.title || '';
-        document.getElementById('editDescription').value = hazard.description || '';
-        document.getElementById('editAddress').value = hazard.address || '';
-        document.getElementById('editLatitude').value = hazard.latitude || '';
-        document.getElementById('editLongitude').value = hazard.longitude || '';
-
-        const modal = new bootstrap.Modal(document.getElementById('editHazardModal'));
-        modal.show();
-    }
-
-    async function submitHazardUpdate() {
-        const id = document.getElementById('editHazardId').value;
-        const payload = {
-            type: document.getElementById('editType').value || null,
-            severity: document.getElementById('editSeverity').value || null,
-            title: document.getElementById('editTitle').value || null,
-            description: document.getElementById('editDescription').value || null,
-            address: document.getElementById('editAddress').value || null,
-            latitude: parseFloat(document.getElementById('editLatitude').value) || null,
-            longitude: parseFloat(document.getElementById('editLongitude').value) || null
-        };
-
-        try {
-            const response = await fetch(`/api/safety/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const res = await response.json();
-            if (response.ok) {
-                alert('Hazard updated');
-                bootstrap.Modal.getInstance(document.getElementById('editHazardModal')).hide();
-                bootstrap.Modal.getInstance(document.getElementById('hazardDetailModal'))?.hide();
-                loadNearbyHazards();
-            } else {
-                console.error('Update failed', res);
-                alert(res?.message || 'Failed to update hazard');
-            }
-        } catch (err) {
-            console.error('Error updating hazard', err);
-            alert('Error updating hazard');
-        }
-    }
-
-    async function deleteHazard() {
-        if (!selectedHazardId) return;
-        if (!confirm('Are you sure you want to delete this hazard?')) return;
-
-        try {
-            const response = await fetch(`/api/safety/${selectedHazardId}`, { method: 'DELETE' });
-            const res = await response.json();
-            if (response.ok) {
-                alert('Hazard deleted');
-                bootstrap.Modal.getInstance(document.getElementById('hazardDetailModal')).hide();
-                loadNearbyHazards();
-            } else {
-                console.error('Delete failed', res);
-                alert(res?.message || 'Failed to delete hazard');
-            }
-        } catch (err) {
-            console.error('Error deleting hazard', err);
-            alert('Error deleting hazard');
-        }
-    }
-
-    async function restoreHazard() {
-        if (!selectedHazardId) return;
-        if (!confirm('Restore this hazard?')) return;
-
-        try {
-            const response = await fetch(`/api/safety/${selectedHazardId}/restore`, { method: 'POST' });
-            const res = await response.json();
-            if (response.ok) {
-                alert('Hazard restored');
-                bootstrap.Modal.getInstance(document.getElementById('hazardDetailModal')).hide();
-                loadNearbyHazards();
-            } else {
-                console.error('Restore failed', res);
-                alert(res?.message || 'Failed to restore hazard');
-            }
-        } catch (err) {
-            console.error('Error restoring hazard', err);
-            alert('Error restoring hazard');
-        }
-    }
-</script>
-
-<style>
-    .hazard-header {
-        background: white;
-        padding: 1rem;
-        border-bottom: 1px solid #ddd;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 10;
-    }
-
-    .header-controls {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .hazard-container {
-        display: flex;
-        height: calc(100vh - 80px);
-    }
-
-    .hazard-map {
-        flex: 1;
-        min-height: 100%;
-    }
-
-    .hazard-sidebar {
-        width: 350px;
-        background: white;
-        border-left: 1px solid #ddd;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .sidebar-header {
-        padding: 1rem;
-        border-bottom: 1px solid #eee;
-    }
-
-    .sidebar-stats {
-        display: flex;
-        gap: 0.5rem;
-        padding: 0 1rem;
-    }
-
-    .stat-pill {
-        flex: 1;
-        padding: 0.75rem;
-        background: #f8f9fa;
-        border-radius: 0.5rem;
-        text-align: center;
-        font-size: 0.85rem;
-    }
-
-    .stat-pill.critical {
-        background: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-    }
-
-    .stat-pill.high {
-        background: rgba(253, 126, 20, 0.1);
-        color: #fd7e14;
-    }
-
-    .stat-value {
-        display: block;
-        font-weight: bold;
-        font-size: 1.25rem;
-    }
-
-    .stat-label {
-        display: block;
-        color: #666;
-        margin-top: 0.25rem;
-    }
-
-    .hazards-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0.5rem;
-    }
-
-    .hazard-item {
-        padding: 0.75rem;
-        margin-bottom: 0.5rem;
-        border: 1px solid #ddd;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .hazard-item:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transform: translateX(-2px);
-    }
-
-    .hazard-item.severity-critical {
-        border-left: 4px solid #dc3545;
-        background: rgba(220, 53, 69, 0.05);
-    }
-
-    .hazard-item.severity-high {
-        border-left: 4px solid #fd7e14;
-        background: rgba(253, 126, 20, 0.05);
-    }
-
-    .hazard-item.severity-medium {
-        border-left: 4px solid #ffc107;
-        background: rgba(255, 193, 7, 0.05);
-    }
-
-    .hazard-item.severity-low {
-        border-left: 4px solid #198754;
-        background: rgba(25, 135, 84, 0.05);
-    }
-
-    .hazard-item-header {
-        display: flex;
-        gap: 0.75rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .hazard-icon {
-        font-size: 1.5rem;
-        min-width: 32px;
-        text-align: center;
-    }
-
-    .hazard-info {
-        flex: 1;
-    }
-
-    .hazard-item h6 {
-        margin-bottom: 0.25rem;
-    }
-
-    .hazard-item-footer {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .hazard-detail {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .detail-row {
-        display: grid;
-        grid-template-columns: 120px 1fr;
-        gap: 1rem;
-    }
-
-    .detail-row label {
-        font-weight: 600;
-        color: #666;
-    }
-
-    .filter-controls {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-</style>
-
-<style>
-    @@media (max-width: 768px) {
-        .hazard-sidebar {
-            width: 100%;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 40%;
-            border-left: none;
-            border-top: 1px solid #ddd;
-        }
-
-        .hazard-container {
-            height: auto;
-        }
-
-        .hazard-map {
-            height: 60vh;
-        }
-    }
-</style>
+        })
+    </script>
+    <script src="~/js/pages/hazard-mode.js" asp-append-version="true" defer></script>
+}

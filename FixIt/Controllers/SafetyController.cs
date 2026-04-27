@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FixIt.Services.Safety;
+using FixIt.Services.AI;
 using FixIt.Models.Safety;
 using FixIt.ViewModels;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Users;
+using FixIt.Services.Constants;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FixIt.Controllers;
@@ -24,18 +27,21 @@ public class SafetyController : ControllerBase
     private readonly IRepository<Hazard> _hazardRepo;
     private readonly IRepository<ApplicationUser> _userRepo;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ICivicAiService _civicAiService;
     private readonly ILogger<SafetyController> _logger;
 
     public SafetyController(
         IHazardService hazardService,
         IRepository<Hazard> hazardRepo,
         IRepository<ApplicationUser> userRepo,
+        ICivicAiService civicAiService,
         UserManager<ApplicationUser> userManager,
         ILogger<SafetyController> logger)
     {
         _hazardService = hazardService;
         _hazardRepo = hazardRepo;
         _userRepo = userRepo;
+        _civicAiService = civicAiService;
         _userManager = userManager;
         _logger = logger;
     }
@@ -208,8 +214,8 @@ public class SafetyController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reporting hazard: {Message}", ex.Message);
-            return BadRequest(ApiResponse<object>.CreateError($"Failed to report hazard: {ex.Message}"));
+            _logger.LogError(ex, "Error reporting hazard");
+            return BadRequest(ApiResponse<object>.CreateError("Failed to report hazard"));
         }
     }
 
@@ -278,7 +284,7 @@ public class SafetyController : ControllerBase
     /// <param name="request">Resolution details</param>
     /// <returns>Resolved hazard information</returns>
     [HttpPost("{hazardId}/resolve")]
-    [Authorize]
+    [Authorize(Roles = RoleNames.Admin)]
     [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ResolveHazard(
@@ -305,6 +311,10 @@ public class SafetyController : ControllerBase
                 HazardToDetailResponse(hazard),
                 "Hazard resolved successfully"
             ));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
         }
         catch (Exception ex)
         {
@@ -333,7 +343,7 @@ public class SafetyController : ControllerBase
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             bool isReporter = !string.IsNullOrEmpty(userId) && (hazard.ReportedByUserId == userId || hazard.InternalUserId == userId);
-            bool isAdmin = User.IsInRole("Admin");
+            bool isAdmin = User.IsInRole(RoleNames.Admin);
 
             response.CanEdit = isReporter || isAdmin;
             response.CanDelete = isReporter || isAdmin;
@@ -406,6 +416,58 @@ public class SafetyController : ControllerBase
         }
     }
 
+    [HttpPost("insights/cluster")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<ActionResult<object>> SummarizeHazardCluster([FromBody] HazardClusterInsightRequest request, CancellationToken cancellationToken)
+    {
+        if (request == null || request.TotalReports <= 0)
+        {
+            return BadRequest(new { error = "Cluster payload is required." });
+        }
+
+        try
+        {
+            var result = await _civicAiService.GenerateHazardInsightAsync(ToHazardInsightInput(request), cancellationToken);
+
+            return Ok(new
+            {
+                content = result.Content,
+                aiGenerated = result.AiGenerated,
+                fallbackUsed = result.FallbackUsed
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating hazard insight");
+            return StatusCode(500, new { error = "Failed to generate hazard insight." });
+        }
+    }
+
+    [HttpPost("insights/cluster/stream")]
+    public async Task StreamHazardClusterInsight([FromBody] HazardClusterInsightRequest request, CancellationToken cancellationToken)
+    {
+        Response.ContentType = "application/x-ndjson";
+
+        if (request == null || request.TotalReports <= 0)
+        {
+            await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Cluster payload is required." }, cancellationToken);
+            return;
+        }
+
+        try
+        {
+            await foreach (var aiEvent in _civicAiService.StreamHazardInsightAsync(ToHazardInsightInput(request), cancellationToken))
+            {
+                await WriteNdjsonEventAsync(aiEvent, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error streaming hazard insight");
+            await WriteNdjsonEventAsync(new AiStreamEvent { Type = "error", Message = "Failed to stream hazard insight." }, cancellationToken);
+        }
+    }
+
     /// <summary>
     /// Toggle anonymous reporting for user
     /// </summary>
@@ -413,7 +475,8 @@ public class SafetyController : ControllerBase
     /// <returns>Updated anonymous reporting status</returns>
     [HttpPost("anonymous-reporting/toggle")]
     [Authorize]
-    [IgnoreAntiforgeryToken]
+    // Browser clients use cookie auth here, so CSRF protection is required.
+    [ValidateAntiForgeryToken]
     [ProducesResponseType(typeof(ApiResponse<AnonymousReportingStatusResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<AnonymousReportingStatusResponse>>> ToggleAnonymousReporting(
         [FromBody] ToggleAnonymousReportingRequest request)
@@ -478,7 +541,7 @@ public class SafetyController : ControllerBase
 
             // Only allow deletion by hazard reporter or admins
             bool isReporter = hazard.ReportedByUserId == userId || hazard.InternalUserId == userId;
-            bool isAdmin = User.IsInRole("Admin");
+            bool isAdmin = User.IsInRole(RoleNames.Admin);
 
             if (!isReporter && !isAdmin)
             {
@@ -496,7 +559,8 @@ public class SafetyController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+            _logger.LogWarning(ex, "Hazard {HazardId} was not found for delete", id);
+            return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
         }
         catch (Exception ex)
         {
@@ -509,7 +573,7 @@ public class SafetyController : ControllerBase
     /// Restore a soft-deleted hazard (admin only)
     /// </summary>
     [HttpPost("{id}/restore")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = RoleNames.Admin)]
     public async Task<ActionResult<ApiResponse<object>>> RestoreHazard(string id)
     {
         try
@@ -520,7 +584,8 @@ public class SafetyController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+            _logger.LogWarning(ex, "Hazard {HazardId} was not found for restore", id);
+            return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
         }
         catch (Exception ex)
         {
@@ -548,7 +613,7 @@ public class SafetyController : ControllerBase
                 return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
 
             bool isReporter = hazard.ReportedByUserId == userId || hazard.InternalUserId == userId;
-            bool isAdmin = User.IsInRole("Admin");
+            bool isAdmin = User.IsInRole(RoleNames.Admin);
             if (!isReporter && !isAdmin)
                 return Forbid();
 
@@ -567,7 +632,8 @@ public class SafetyController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+            _logger.LogWarning(ex, "Hazard {HazardId} was not found for update", id);
+            return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
         }
         catch (Exception ex)
         {
@@ -609,6 +675,34 @@ public class SafetyController : ControllerBase
             ResolvedAt = hazard.ResolvedAt,
             ResolutionNotes = hazard.ResolutionNotes
         };
+    }
+
+    private static HazardInsightInput ToHazardInsightInput(HazardClusterInsightRequest request)
+    {
+        return new HazardInsightInput
+        {
+            CityId = request.CityId,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude,
+            TotalReports = request.TotalReports,
+            TotalConfirmations = request.TotalConfirmations,
+            FromUtc = request.FromUtc,
+            ToUtc = request.ToUtc,
+            HazardTypes = request.HazardTypes
+                .Select(h => new HazardTypeFrequencyInput
+                {
+                    Type = h.Type,
+                    Count = h.Count
+                })
+                .ToList()
+        };
+    }
+
+    private async Task WriteNdjsonEventAsync(AiStreamEvent aiEvent, CancellationToken cancellationToken)
+    {
+        var json = JsonSerializer.Serialize(aiEvent);
+        await Response.WriteAsync(json + "\n", cancellationToken);
+        await Response.Body.FlushAsync(cancellationToken);
     }
 }
 
@@ -716,4 +810,22 @@ public class UpdateHazardRequest
     public double? Longitude { get; set; }
     public string? Address { get; set; }
     public DateTime? ExpiresAt { get; set; }
+}
+
+public class HazardClusterInsightRequest
+{
+    public string? CityId { get; set; }
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public int TotalReports { get; set; }
+    public int TotalConfirmations { get; set; }
+    public DateTime? FromUtc { get; set; }
+    public DateTime? ToUtc { get; set; }
+    public List<HazardClusterTypeCount> HazardTypes { get; set; } = new();
+}
+
+public class HazardClusterTypeCount
+{
+    public string Type { get; set; } = string.Empty;
+    public int Count { get; set; }
 }

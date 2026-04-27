@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
+using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Identity.Pages.Account;
 
 [IgnoreAntiforgeryToken(Order = 1000)]
+[EnableRateLimiting(RateLimitPolicyNames.AuthStrict)]
 public class ExternalLoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;

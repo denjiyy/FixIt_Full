@@ -1,0 +1,56 @@
+using System.Reflection;
+using FixIt.Controllers;
+using FixIt.Pages.Issues;
+using FixIt.Services.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+
+namespace FixIt.Tests.Security;
+
+public class SecurityAttributeTests
+{
+    [Fact]
+    public void SafetyController_ResolveHazard_IsAdminOnly()
+    {
+        var method = typeof(SafetyController).GetMethod(nameof(SafetyController.ResolveHazard));
+        var authorize = method?.GetCustomAttribute<AuthorizeAttribute>();
+
+        Assert.NotNull(authorize);
+        Assert.Equal(RoleNames.Admin, authorize!.Roles);
+    }
+
+    [Fact]
+    public void SafetyController_ToggleAnonymousReporting_RequiresAntiforgery()
+    {
+        var method = typeof(SafetyController).GetMethod(nameof(SafetyController.ToggleAnonymousReporting));
+        var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
+
+        Assert.NotNull(antiforgery);
+    }
+
+    [Fact]
+    public void AuthAndAnalysis_Controllers_HaveExpectedRateLimitPolicies()
+    {
+        var authPolicy = typeof(AuthController).GetCustomAttribute<EnableRateLimitingAttribute>();
+        var analysisPolicy = typeof(AnalysisController).GetCustomAttribute<EnableRateLimitingAttribute>();
+        var createIssuePolicy = typeof(CreateIssueModel).GetCustomAttribute<EnableRateLimitingAttribute>();
+        var identityLoginPolicy = typeof(FixIt.Areas.Identity.Pages.Account.LoginModel).GetCustomAttribute<EnableRateLimitingAttribute>();
+        var adminLoginPolicy = typeof(FixIt.Areas.Admin.Pages.LoginModel).GetCustomAttribute<EnableRateLimitingAttribute>();
+
+        Assert.NotNull(authPolicy);
+        Assert.Equal(RateLimitPolicyNames.AuthStrict, authPolicy!.PolicyName);
+
+        Assert.NotNull(analysisPolicy);
+        Assert.Equal(RateLimitPolicyNames.Reporting, analysisPolicy!.PolicyName);
+
+        Assert.NotNull(createIssuePolicy);
+        Assert.Equal(RateLimitPolicyNames.Upload, createIssuePolicy!.PolicyName);
+
+        Assert.NotNull(identityLoginPolicy);
+        Assert.Equal(RateLimitPolicyNames.AuthStrict, identityLoginPolicy!.PolicyName);
+
+        Assert.NotNull(adminLoginPolicy);
+        Assert.Equal(RateLimitPolicyNames.AuthStrict, adminLoginPolicy!.PolicyName);
+    }
+}

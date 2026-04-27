@@ -3,14 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Issues;
 using FixIt.Models.Enums;
-using FixIt.Data.Repository.Contracts;
+using FixIt.Services.Constants;
+using FixIt.Services.Contracts;
+using System.Security.Claims;
 
 namespace FixIt.Areas.Admin.Pages.Issues;
 
-[Authorize(Roles = "Admin,Moderator")]
+[Authorize(Policy = PolicyNames.AdminOnly)]
 public class IndexModel : PageModel
 {
-    private readonly IRepository<Issue> _issueRepository;
+    private readonly IIssueService _issueService;
     private readonly ILogger<IndexModel> _logger;
 
     public List<Issue> Issues { get; set; } = new();
@@ -25,9 +27,9 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? StatusFilter { get; set; }
 
-    public IndexModel(IRepository<Issue> issueRepository, ILogger<IndexModel> logger)
+    public IndexModel(IIssueService issueService, ILogger<IndexModel> logger)
     {
-        _issueRepository = issueRepository;
+        _issueService = issueService;
         _logger = logger;
     }
 
@@ -36,25 +38,21 @@ public class IndexModel : PageModel
         try
         {
             PageNumber = pageNumber;
-            var allIssues = await _issueRepository.FindAsync(i => true);
-            var issuesList = allIssues.ToList();
-
-            if (!string.IsNullOrWhiteSpace(SearchTerm))
+            IssueStatus? parsedStatus = null;
+            if (Enum.TryParse<IssueStatus>(StatusFilter, true, out var status))
             {
-                issuesList = issuesList.Where(i => 
-                    i.Title.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    i.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
-                ).ToList();
+                parsedStatus = status;
             }
 
-            TotalIssues = issuesList.Count;
-            TotalPages = (int)Math.Ceiling(TotalIssues / (double)PageSize);
+            var result = await _issueService.GetAllIssuesAsync(
+                searchQuery: SearchTerm,
+                status: parsedStatus,
+                page: PageNumber,
+                pageSize: PageSize);
 
-            Issues = issuesList
-                .OrderByDescending(i => i.CreatedAt)
-                .Skip((pageNumber - 1) * PageSize)
-                .Take(PageSize)
-                .ToList();
+            TotalIssues = (int)result.Total;
+            TotalPages = (int)Math.Ceiling((double)result.Total / PageSize);
+            Issues = result.Items.ToList();
 
             _logger.LogInformation("Admin viewed issues list");
         }
@@ -68,16 +66,9 @@ public class IndexModel : PageModel
     {
         try
         {
-            var issue = await _issueRepository.GetByIdAsync(issueId);
-            if (issue == null)
-                return NotFound();
-
-            issue.Status = IssueStatus.Fixed;
-            issue.UpdatedAt = DateTime.UtcNow;
-
-            await _issueRepository.ReplaceAsync(issueId, issue);
-
-            _logger.LogInformation($"Issue {issue.Id} resolved by admin");
+            var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.Fixed, actorUserId);
+            _logger.LogInformation("Issue {IssueId} resolved by admin", issueId);
             TempData["SuccessMessage"] = "Issue marked as resolved.";
 
             return RedirectToPage(new { pageNumber = PageNumber });
@@ -94,16 +85,9 @@ public class IndexModel : PageModel
     {
         try
         {
-            var issue = await _issueRepository.GetByIdAsync(issueId);
-            if (issue == null)
-                return NotFound();
-
-            issue.Status = IssueStatus.InProgress;
-            issue.UpdatedAt = DateTime.UtcNow;
-
-            await _issueRepository.ReplaceAsync(issueId, issue);
-
-            _logger.LogInformation($"Issue {issue.Id} reopened by admin");
+            var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.InProgress, actorUserId);
+            _logger.LogInformation("Issue {IssueId} reopened by admin", issueId);
             TempData["SuccessMessage"] = "Issue reopened.";
 
             return RedirectToPage(new { pageNumber = PageNumber });
@@ -121,20 +105,15 @@ public class IndexModel : PageModel
         try
         {
             // Only admins can delete issues
-            if (!User.IsInRole("Admin"))
+            if (!User.IsInRole(RoleNames.Admin))
             {
-                _logger.LogWarning($"Moderator {User?.Identity?.Name} attempted to delete issue {issueId}");
+                _logger.LogWarning("Non-admin user {UserName} attempted to delete issue {IssueId}", User?.Identity?.Name, issueId);
                 TempData["ErrorMessage"] = "Only admins can delete issues.";
                 return RedirectToPage(new { pageNumber = PageNumber });
             }
 
-            var issue = await _issueRepository.GetByIdAsync(issueId);
-            if (issue == null)
-                return NotFound();
-
-            await _issueRepository.DeleteAsync(issueId);
-
-            _logger.LogWarning($"Issue {issue.Id} deleted by admin");
+            await _issueService.DeleteIssueAsync(issueId);
+            _logger.LogWarning("Issue {IssueId} deleted by admin", issueId);
             TempData["SuccessMessage"] = "Issue deleted.";
 
             return RedirectToPage(new { pageNumber = PageNumber });

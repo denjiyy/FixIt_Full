@@ -5,56 +5,69 @@
 const MediaLightbox = (() => {
     'use strict';
 
+    const root = document.getElementById('issueDetailRoot');
+    const labels = {
+        viewer: root?.dataset.lightboxLabel || 'Image viewer',
+        close: root?.dataset.closeLabel || 'Close',
+        previous: root?.dataset.previousLabel || 'Previous',
+        next: root?.dataset.nextLabel || 'Next',
+        photo: root?.dataset.photoLabel || 'Photo'
+    };
+
     let images = [];
     let currentIndex = 0;
     let modal = null;
 
     function init() {
-        // Collect all image srcs from the grid
-        const thumbs = document.querySelectorAll('#mediaGrid .media-thumb');
-        images = Array.from(thumbs).map(t => t.dataset.mediaSrc);
-
+        const thumbs = document.querySelectorAll('#mediaGrid [data-media-src]');
+        images = Array.from(thumbs).map((thumb) => thumb.dataset.mediaSrc).filter(Boolean);
         if (images.length === 0) return;
 
-        // Build modal and append to body (NOT inside any transformed container)
+        thumbs.forEach((thumb, index) => {
+            thumb.addEventListener('click', () => open(index));
+        });
+
         modal = document.createElement('div');
         modal.id = 'sharedMediaModal';
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
-        modal.setAttribute('aria-label', 'Image viewer');
+        modal.setAttribute('aria-label', labels.viewer);
         modal.innerHTML = `
-            <button class="modal-close-btn" id="lbClose" title="Close (Esc)">
+            <button class="modal-close-btn" id="lbClose" title="${labels.close}">
                 <i class="bi bi-x-lg"></i>
             </button>
-            <button class="modal-nav-btn modal-nav-prev" id="lbPrev" title="Previous">
+            <button class="modal-nav-btn modal-nav-prev" id="lbPrev" title="${labels.previous}">
                 <i class="bi bi-chevron-left"></i>
             </button>
             <div class="modal-img-wrap">
-                <img id="lbImg" src="" alt="Full-size photo">
+                <img id="lbImg" src="" alt="">
             </div>
-            <button class="modal-nav-btn modal-nav-next" id="lbNext" title="Next">
+            <button class="modal-nav-btn modal-nav-next" id="lbNext" title="${labels.next}">
                 <i class="bi bi-chevron-right"></i>
             </button>
             <div class="modal-counter" id="lbCounter"></div>
         `;
         document.body.appendChild(modal);
 
-        // Event listeners
         document.getElementById('lbClose').addEventListener('click', close);
-        document.getElementById('lbPrev').addEventListener('click', (e) => { e.stopPropagation(); navigate(-1); });
-        document.getElementById('lbNext').addEventListener('click', (e) => { e.stopPropagation(); navigate(1); });
-
-        // Click outside image closes modal
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) close();
+        document.getElementById('lbPrev').addEventListener('click', (event) => {
+            event.stopPropagation();
+            navigate(-1);
+        });
+        document.getElementById('lbNext').addEventListener('click', (event) => {
+            event.stopPropagation();
+            navigate(1);
         });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) close();
+        });
+
+        document.addEventListener('keydown', (event) => {
             if (!modal?.classList.contains('show')) return;
-            if (e.key === 'Escape') close();
-            if (e.key === 'ArrowLeft') navigate(-1);
-            if (e.key === 'ArrowRight') navigate(1);
+            if (event.key === 'Escape') close();
+            if (event.key === 'ArrowLeft') navigate(-1);
+            if (event.key === 'ArrowRight') navigate(1);
         });
     }
 
@@ -66,46 +79,37 @@ const MediaLightbox = (() => {
     }
 
     function close() {
+        if (!modal) return;
         modal.classList.remove('show');
         document.body.style.overflow = '';
     }
 
-    function navigate(dir) {
-        currentIndex = (currentIndex + dir + images.length) % images.length;
+    function navigate(direction) {
+        currentIndex = (currentIndex + direction + images.length) % images.length;
         render();
     }
 
     function render() {
-        const img = document.getElementById('lbImg');
+        const image = document.getElementById('lbImg');
         const counter = document.getElementById('lbCounter');
-        const prev = document.getElementById('lbPrev');
+        const previous = document.getElementById('lbPrev');
         const next = document.getElementById('lbNext');
+        if (!image || !counter || !previous || !next) return;
 
-        // Reset animation by cloning the img-wrap
-        const wrap = img.parentElement;
-        wrap.style.animation = 'none';
-        wrap.offsetHeight; // reflow
-        wrap.style.animation = '';
-
-        img.src = images[currentIndex];
-        img.alt = `Photo ${currentIndex + 1} of ${images.length}`;
+        image.src = images[currentIndex];
+        image.alt = `${labels.photo} ${currentIndex + 1}`;
         counter.textContent = `${currentIndex + 1} / ${images.length}`;
-
-        // Hide nav arrows when only one image
-        const single = images.length <= 1;
-        prev.classList.toggle('hidden', single);
-        next.classList.toggle('hidden', single);
+        previous.classList.toggle('hidden', images.length <= 1);
+        next.classList.toggle('hidden', images.length <= 1);
     }
 
     return { init, open };
 })();
 
-// Attach to window for use in onclick handlers
 window.openLightbox = (index) => MediaLightbox.open(index);
 
-// Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => MediaLightbox.init());
+    document.addEventListener('DOMContentLoaded', () => MediaLightbox.init(), { once: true });
 } else {
     MediaLightbox.init();
 }

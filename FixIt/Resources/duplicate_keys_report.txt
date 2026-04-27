@@ -1,0 +1,386 @@
+Found 32 duplicate keys:
+
+
+KEY: ConnectedAccounts
+Occurrences at lines: [38, 450]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 38):
+  <data name="ConnectedAccounts" xml:space="preserve"><value>Connected Accounts</value></data>
+  <data name="PrivacyAndSafety" xml:space="preserve"><value>Privacy &amp; Safety</value></data>
+
+Occurrence 2 (Line 450):
+  <data name="ConnectedAccounts" xml:space="preserve"><value>Connected Accounts</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
+====================================================================================================
+
+KEY: HealthReports
+Occurrences at lines: [81, 498]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 81):
+  <data name="HealthReports" xml:space="preserve"><value>Health Reports</value></data>
+  <data name="ViewHeatmaps" xml:space="preserve"><value>View Heatmaps</value></data>
+
+Occurrence 2 (Line 498):
+  <data name="HealthReports" xml:space="preserve"><value>Health Reports</value></data>
+  <data name="ViewHeatmaps" xml:space="preserve"><value>View Heatmaps</value></data>
+====================================================================================================
+
+KEY: ViewHeatmaps
+Occurrences at lines: [82, 499]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 82):
+  <data name="ViewHeatmaps" xml:space="preserve"><value>View Heatmaps</value></data>
+  <data name="HelpCenter" xml:space="preserve"><value>Help Center</value></data>
+
+Occurrence 2 (Line 499):
+  <data name="ViewHeatmaps" xml:space="preserve"><value>View Heatmaps</value></data>
+  <data name="Reports" xml:space="preserve"><value>Reports</value></data>
+====================================================================================================
+
+KEY: Resolved
+Occurrences at lines: [88, 255]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 88):
+  <data name="Resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="NoCitiesFound" xml:space="preserve"><value>No Cities Found</value></data>
+
+Occurrence 2 (Line 255):
+  <data name="Resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Newest" xml:space="preserve"><value>Newest</value></data>
+====================================================================================================
+
+KEY: NoCitiesFound
+Occurrences at lines: [89, 345]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 89):
+  <data name="NoCitiesFound" xml:space="preserve"><value>No Cities Found</value></data>
+  <data name="NoCitiesMessage" xml:space="preserve"><value>There are no cities available for the selected country. Try a different region.</value></data>
+
+Occurrence 2 (Line 345):
+  <data name="NoCitiesFound" xml:space="preserve"><value>No cities found</value></data>
+  <data name="AddYourFirstCityToGetStarted" xml:space="preserve"><value>Add your first city to get started</value></data>
+====================================================================================================
+
+KEY: SelectCity
+Occurrences at lines: [94, 463]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 94):
+  <data name="SelectCity" xml:space="preserve"><value>Select City</value></data>
+  <data name="GlobalAllCities" xml:space="preserve"><value>Global (All Cities)</value></data>
+
+Occurrence 2 (Line 463):
+  <data name="SelectCity" xml:space="preserve"><value>Select City</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Clear Filters</value></data>
+====================================================================================================
+
+KEY: SafetyHazardMap
+Occurrences at lines: [108, 509]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 108):
+  <data name="SafetyHazardMap" xml:space="preserve"><value>Safety Hazard Map</value></data>
+  <data name="TakePhotoPin" xml:space="preserve"><value>Take a photo, pin the location on a map, and submit a detailed report in seconds.</value></data>
+
+Occurrence 2 (Line 509):
+  <data name="SafetyHazardMap" xml:space="preserve"><value>Safety Hazard Map</value></data>
+  <data name="FilterHazards" xml:space="preserve"><value>Filter hazards...</value></data>
+====================================================================================================
+
+KEY: UpvotesCount
+Occurrences at lines: [127, 455]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 127):
+  <data name="UpvotesCount" xml:space="preserve"><value>12 upvotes</value></data>
+  <data name="SignInToReport" xml:space="preserve"><value>Sign In to Report</value></data>
+
+Occurrence 2 (Line 455):
+  <data name="UpvotesCount" xml:space="preserve"><value>Upvotes</value></data>
+  <data name="DownvotesCount" xml:space="preserve"><value>Downvotes</value></data>
+====================================================================================================
+
+KEY: SignInToReport
+Occurrences at lines: [128, 350]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 128):
+  <data name="SignInToReport" xml:space="preserve"><value>Sign In to Report</value></data>
+  <data name="TotalIssues" xml:space="preserve"><value>Total Issues</value></data>
+
+Occurrence 2 (Line 350):
+  <data name="SignInToReport" xml:space="preserve"><value>Sign In to Report</value></data>
+  <data name="CompleteYourRegistration" xml:space="preserve"><value>Complete Your Registration</value></data>
+====================================================================================================
+
+KEY: Search
+Occurrences at lines: [132, 472]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 132):
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+
+Occurrence 2 (Line 472):
+  <data name="Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading</value></data>
+====================================================================================================
+
+KEY: OtherUsersWillNotBeSeeIt
+Occurrences at lines: [160, 237]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 160):
+  <data name="OtherUsersWillNotBeSeeIt" xml:space="preserve"><value>Other users will not be able to see it</value></data>
+  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Comments and votes will be preserved internally</value></data>
+
+Occurrence 2 (Line 237):
+  <data name="OtherUsersWillNotBeSeeIt" xml:space="preserve"><value>Other users will not be able to see it</value></data>
+  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Comments and votes will be preserved internally</value></data>
+====================================================================================================
+
+KEY: CommentsAndVotesWillBePreserved
+Occurrences at lines: [161, 238]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 161):
+  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Comments and votes will be preserved internally</value></data>
+  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Admins can restore deleted issues if needed</value></data>
+
+Occurrence 2 (Line 238):
+  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Comments and votes will be preserved internally</value></data>
+  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Admins can restore deleted issues if needed</value></data>
+====================================================================================================
+
+KEY: AdminsCanRestoreDeletedIssues
+Occurrences at lines: [162, 239]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 162):
+  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Admins can restore deleted issues if needed</value></data>
+  <data name="ConfirmDeletion" xml:space="preserve"><value>Confirm deletion of:</value></data>
+
+Occurrence 2 (Line 239):
+  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Admins can restore deleted issues if needed</value></data>
+  <data name="ConfirmDeletionOf" xml:space="preserve"><value>Confirm deletion of:</value></data>
+====================================================================================================
+
+KEY: DeleteIssuePermanently
+Occurrences at lines: [164, 241]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 164):
+  <data name="DeleteIssuePermanently" xml:space="preserve"><value>Delete Issue Permanently</value></data>
+  <data name="CancelDeletion" xml:space="preserve"><value>Cancel Deletion</value></data>
+
+Occurrence 2 (Line 241):
+  <data name="DeleteIssuePermanently" xml:space="preserve"><value>Delete Issue Permanently</value></data>
+  <data name="CancelDeletion" xml:space="preserve"><value>Cancel Deletion</value></data>
+====================================================================================================
+
+KEY: CancelDeletion
+Occurrences at lines: [165, 242]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 165):
+  <data name="CancelDeletion" xml:space="preserve"><value>Cancel Deletion</value></data>
+  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Learn more about issues</value></data>
+
+Occurrence 2 (Line 242):
+  <data name="CancelDeletion" xml:space="preserve"><value>Cancel Deletion</value></data>
+  <data name="NeedHelp" xml:space="preserve"><value>Need help?</value></data>
+====================================================================================================
+
+KEY: LearnMoreAboutIssues
+Occurrences at lines: [166, 244]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 166):
+  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Learn more about issues</value></data>
+  <data name="NeedHelp" xml:space="preserve"><value>Need help?</value></data>
+
+Occurrence 2 (Line 244):
+  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Learn more about issues</value></data>
+  <data name="Note" xml:space="preserve"><value>Note:</value></data>
+====================================================================================================
+
+KEY: NeedHelp
+Occurrences at lines: [167, 243]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 167):
+  <data name="NeedHelp" xml:space="preserve"><value>Need help?</value></data>
+  <data name="Note" xml:space="preserve"><value>Note:</value></data>
+
+Occurrence 2 (Line 243):
+  <data name="NeedHelp" xml:space="preserve"><value>Need help?</value></data>
+  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Learn more about issues</value></data>
+====================================================================================================
+
+KEY: Note
+Occurrences at lines: [168, 245]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 168):
+  <data name="Note" xml:space="preserve"><value>Note:</value></data>
+  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>If you delete this by mistake, please contact an administrator. They may be able to restore it.</value></data>
+
+Occurrence 2 (Line 245):
+  <data name="Note" xml:space="preserve"><value>Note:</value></data>
+  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>If you delete this by mistake, please contact an administrator. They may be able to restore it.</value></data>
+====================================================================================================
+
+KEY: IfYouDeleteThisByMistake
+Occurrences at lines: [169, 246]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 169):
+  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>If you delete this by mistake, please contact an administrator. They may be able to restore it.</value></data>
+  <data name="IssueNotFound" xml:space="preserve"><value>Issue not found or has been deleted.</value></data>
+
+Occurrence 2 (Line 246):
+  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>If you delete this by mistake, please contact an administrator. They may be able to restore it.</value></data>
+  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Issue not found or has already been deleted.</value></data>
+====================================================================================================
+
+KEY: SaveChanges
+Occurrences at lines: [173, 469]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 173):
+  <data name="SaveChanges" xml:space="preserve"><value>Save Changes</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+
+Occurrence 2 (Line 469):
+  <data name="SaveChanges" xml:space="preserve"><value>Save Changes</value></data>
+  <data name="Submit" xml:space="preserve"><value>Submit</value></data>
+====================================================================================================
+
+KEY: CreatedBy
+Occurrences at lines: [175, 232]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 175):
+  <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
+  <data name="IssueInfo" xml:space="preserve"><value>Issue Info:</value></data>
+
+Occurrence 2 (Line 232):
+  <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
+  <data name="OnDate" xml:space="preserve"><value>on</value></data>
+====================================================================================================
+
+KEY: OverallScore
+Occurrences at lines: [188, 254]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 188):
+  <data name="OverallScore" xml:space="preserve"><value>Overall Score</value></data>
+  <data name="Votes" xml:space="preserve"><value>Votes</value></data>
+
+Occurrence 2 (Line 254):
+  <data name="OverallScore" xml:space="preserve"><value>Overall Score</value></data>
+  <data name="Resolved" xml:space="preserve"><value>Resolved</value></data>
+====================================================================================================
+
+KEY: GoToHazardMode
+Occurrences at lines: [195, 508]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 195):
+  <data name="GoToHazardMode" xml:space="preserve"><value>Go to Hazard Mode</value></data>
+  <data name="SeverityLevels" xml:space="preserve"><value>Severity Levels</value></data>
+
+Occurrence 2 (Line 508):
+  <data name="GoToHazardMode" xml:space="preserve"><value>Go to Hazard Mode</value></data>
+  <data name="SafetyHazardMap" xml:space="preserve"><value>Safety Hazard Map</value></data>
+====================================================================================================
+
+KEY: Error
+Occurrences at lines: [202, 513]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 202):
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
+
+Occurrence 2 (Line 513):
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="FailedToUpdateSettings" xml:space="preserve"><value>Failed to update settings</value></data>
+====================================================================================================
+
+KEY: ReverseGeocodedFromYourMapPin
+Occurrences at lines: [217, 480]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 217):
+  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Reverse geocoded from your map pin</value></data>
+  <data name="PinOnMap" xml:space="preserve"><value>Pin on Map</value></data>
+
+Occurrence 2 (Line 480):
+  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Reverse geocoded from your map pin</value></data>
+  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Usually auto-selected from your map pin</value></data>
+====================================================================================================
+
+KEY: PinOnMap
+Occurrences at lines: [218, 478]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 218):
+  <data name="PinOnMap" xml:space="preserve"><value>Pin on Map</value></data>
+  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Click the map to place a pin</value></data>
+
+Occurrence 2 (Line 478):
+  <data name="PinOnMap" xml:space="preserve"><value>Pin on Map</value></data>
+  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Click the map to place a pin</value></data>
+====================================================================================================
+
+KEY: ClickTheMapToPlacePin
+Occurrences at lines: [219, 479]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 219):
+  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Click the map to place a pin</value></data>
+  <data name="Coordinates" xml:space="preserve"><value>Coordinates:</value></data>
+
+Occurrence 2 (Line 479):
+  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Click the map to place a pin</value></data>
+  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Reverse geocoded from your map pin</value></data>
+====================================================================================================
+
+KEY: SelectACity
+Occurrences at lines: [221, 526]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 221):
+  <data name="SelectACity" xml:space="preserve"><value>Select a city…</value></data>
+  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Usually auto-selected from your map pin</value></data>
+
+Occurrence 2 (Line 526):
+  <data name="SelectACity" xml:space="preserve"><value>Select a city...</value></data>
+  <data name="ManageYourAccountAndPreferences" xml:space="preserve"><value>Manage your account, preferences, and more</value></data>
+====================================================================================================
+
+KEY: UsuallyAutoSelectedFromYourMapPin
+Occurrences at lines: [222, 481]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 222):
+  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Usually auto-selected from your map pin</value></data>
+  <data name="PhotosAndVideos" xml:space="preserve"><value>Photos &amp; Videos</value></data>
+
+Occurrence 2 (Line 481):
+  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Usually auto-selected from your map pin</value></data>
+  <data name="ConfirmDeleteReport" xml:space="preserve"><value>Delete this report?</value></data>
+====================================================================================================
+
+KEY: DropFilesHereOrBrowseToUpload
+Occurrences at lines: [226, 476]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 226):
+  <data name="DropFilesHereOrBrowseToUpload" xml:space="preserve"><value>Drop files here or browse to upload</value></data>
+  <data name="UploadFileInfo" xml:space="preserve"><value>Up to 10 files — Images up to 5 MB each · Videos up to 100 MB each</value></data>
+
+Occurrence 2 (Line 476):
+  <data name="DropFilesHereOrBrowseToUpload" xml:space="preserve"><value>Drop files here or browse to upload</value></data>
+  <data name="UploadFileInfo" xml:space="preserve"><value>Max 10 files, 50MB each (JPG, PNG, WEBP, MP4)</value></data>
+====================================================================================================
+
+KEY: UploadFileInfo
+Occurrences at lines: [227, 477]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 227):
+  <data name="UploadFileInfo" xml:space="preserve"><value>Up to 10 files — Images up to 5 MB each · Videos up to 100 MB each</value></data>
+  <data name="VisibleToPublicAndCityOfficials" xml:space="preserve"><value>Visible to the public &amp; city officials after review</value></data>
+
+Occurrence 2 (Line 477):
+  <data name="UploadFileInfo" xml:space="preserve"><value>Max 10 files, 50MB each (JPG, PNG, WEBP, MP4)</value></data>
+  <data name="PinOnMap" xml:space="preserve"><value>Pin on Map</value></data>
+====================================================================================================
+
+KEY: IssueNotFoundMessage
+Occurrences at lines: [247, 406]
+----------------------------------------------------------------------------------------------------
+Occurrence 1 (Line 247):
+  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Issue not found or has already been deleted.</value></data>
+  <data name="GoToIssuesList" xml:space="preserve"><value>Go to Issues List</value></data>
+
+Occurrence 2 (Line 406):
+  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Issue Not Found</value></data>
+  <data name="AnalysisLabel" xml:space="preserve"><value>Analysis</value></data>
+====================================================================================================

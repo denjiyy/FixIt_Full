@@ -4,242 +4,322 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["ExploreCities"] + " - FixIt";
+
+    var selectedCountry = Model.SelectedCountry ?? "Bulgaria";
+    var selectedCity = Model.SelectedCity?.Trim() ?? string.Empty;
+    var hasSelectedCity = !string.IsNullOrWhiteSpace(selectedCity);
+    var visibleCities = Model.Cities?.Count ?? 0;
+    var issuePreview = Model.CityIssues.Take(6).ToList();
 }
 
-<link rel="stylesheet" href="~/css/pages/cities.css" />
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/cities.css" asp-append-version="true" />
+}
 
-<div class="container mt-4">
-
-    <!-- ── Hero Banner ───────────────────────────────────── -->
-    <section class="hero position-relative mb-5">
-        <div class="position-relative" style="z-index: 2;">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <div class="badge bg-white text-primary px-3 py-2 mb-4"
-                         style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        @Localizer["InfrastructureExplorer"]
-                    </div>
-                    <h1 class="display-4 fw-bold mb-4" style="line-height: 1.2; letter-spacing: -0.02em;">
-                        @Localizer["ExploreCities"] <br/>
-                        <span style="background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.65)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                            @Localizer["InfrastructureIssues"]
-                        </span>
-                    </h1>
-                    <p class="lead mb-0" style="color: rgba(255,255,255,0.9); max-width: 580px; font-size: 1.15rem;">
-                        @Localizer["DiscoverCitiesDesc"]
-                    </p>
-                </div>
-                <div class="col-lg-4 d-none d-lg-flex justify-content-end align-items-center">
-                    <div style="background: rgba(255,255,255,0.12); backdrop-filter: blur(20px); border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.2); padding: 1.75rem; min-width: 200px; text-align: center;">
-                        <div style="font-size: 3rem; font-weight: 800; color: white; line-height: 1; margin-bottom: 0.25rem;">@Model.TotalCities</div>
-                        <div style="color: rgba(255,255,255,0.8); font-size: 0.875rem; font-weight: 500;">@((Model.TotalCities == 1) ? Localizer["CityOrCities"] : Localizer["CitiesPlural"]) in @Model.SelectedCountry</div>
-                    </div>
-                </div>
+<div class="cities-page py-4">
+    <section class="cities-hero">
+        <div class="cities-hero__copy">
+            <span class="cities-hero__eyebrow">
+                <i class="bi bi-globe2"></i>
+                Infrastructure Explorer
+            </span>
+            <h1 class="cities-hero__title">Discover cities through live civic reporting</h1>
+            <p class="cities-hero__subtitle">
+                Jump from regional coverage to street-level context. Explore supported cities, open their heatmaps, and review recent community reports without losing your place.
+            </p>
+            <div class="cities-hero__actions">
+                <a href="/issues" class="btn btn-primary">
+                    <i class="bi bi-list-ul"></i>
+                    Browse all issues
+                </a>
+                <a href="/issues/create" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-circle"></i>
+                    Report a new issue
+                </a>
             </div>
+        </div>
+
+        <div class="cities-hero__stats">
+            <article class="cities-hero-stat">
+                <span>Selected country</span>
+                <strong>@selectedCountry</strong>
+                <small>Current region in focus</small>
+            </article>
+            <article class="cities-hero-stat">
+                <span>Available cities</span>
+                <strong>@Model.TotalCities</strong>
+                <small>@visibleCities visible on this page</small>
+            </article>
+            <article class="cities-hero-stat">
+                <span>Explorer coverage</span>
+                <strong>@Model.Countries.Count</strong>
+                <small>Countries currently supported</small>
+            </article>
+            <article class="cities-hero-stat">
+                <span>Page progress</span>
+                <strong>@Model.CurrentPage / @Math.Max(1, Model.TotalPages)</strong>
+                <small>Pagination across the selected country</small>
+            </article>
         </div>
     </section>
 
-    <!-- ── Country Selector ──────────────────────────────── -->
-    <div class="country-selector">
-        <h3><i class="bi bi-flag-fill"></i> @Localizer["FilterByCountry"]</h3>
-        <div class="country-tabs">
+    <section class="cities-toolbar">
+        <div>
+            <p class="cities-toolbar__eyebrow">Filter by country</p>
+            <h2 class="cities-toolbar__title">@selectedCountry coverage</h2>
+            <p class="cities-toolbar__copy">
+                Switch countries to review coverage breadth, or drill into a specific city to surface the latest reported issues.
+            </p>
+        </div>
+
+        @if (hasSelectedCity)
+        {
+            <div class="cities-toolbar__selected">
+                <span class="cities-toolbar__selected-label">Focused city</span>
+                <strong>@selectedCity</strong>
+                <a asp-page="/Cities"
+                   asp-route-selectedCountry="@selectedCountry"
+                   asp-route-selectedCity=""
+                   asp-route-currentPage="@Model.CurrentPage">
+                    Clear city focus
+                </a>
+            </div>
+        }
+    </section>
+
+    <section class="cities-country-shell">
+        <div class="cities-country-shell__chips">
             @foreach (var country in Model.Countries)
             {
-                <a asp-page="Cities"
+                <a asp-page="/Cities"
                    asp-route-selectedCountry="@country"
                    asp-route-selectedCity=""
                    asp-route-currentPage="1"
-                   class="country-btn @(Model.SelectedCountry == country ? "active" : "")">
+                   class="country-chip @(selectedCountry == country ? "is-active" : string.Empty)">
+                    <i class="bi bi-flag"></i>
                     @country
                 </a>
             }
         </div>
-    </div>
+    </section>
 
-    <!-- ── Cities Grid ───────────────────────────────────── -->
-    <div>
-        <div class="section-header">
-            <h2>
-                <i class="bi bi-buildings"></i>
-                @Model.SelectedCountry
-            </h2>
-            <span class="city-count-badge">
-                @Model.TotalCities @(Model.TotalCities == 1 ? "city" : "cities")
-            </span>
+    <section class="cities-directory">
+        <div class="cities-directory__head">
+            <div>
+                <p class="cities-directory__eyebrow">City directory</p>
+                <h2 class="cities-directory__title">@selectedCountry</h2>
+                <p class="cities-directory__copy">
+                    Review cities, open mapping and health views, or focus the page on a single city to see its latest reports.
+                </p>
+            </div>
+            <div class="cities-directory__meta">
+                <span><i class="bi bi-buildings"></i> @Model.TotalCities total cities</span>
+                <span><i class="bi bi-grid"></i> @visibleCities shown on this page</span>
+            </div>
         </div>
 
         @if (Model.Cities.Any())
         {
-            <div class="city-grid">
+            <div class="cities-grid">
                 @foreach (var city in Model.Cities)
                 {
-                    <div class="city-card">
-                        <div class="city-image-container">
+                    var isSelected = string.Equals(selectedCity, city.Name, StringComparison.OrdinalIgnoreCase);
+                    <article class="city-card @(isSelected ? "city-card--selected" : string.Empty)">
+                        <div class="city-card__media @(!string.IsNullOrEmpty(city.PhotoUrl) ? string.Empty : "is-fallback")">
                             @if (!string.IsNullOrEmpty(city.PhotoUrl))
                             {
-                                <img src="@city.PhotoUrl" alt="@city.Name" class="city-image"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="city-placeholder" style="display: none;">
-                                    <i class="bi bi-building"></i>
-                                </div>
+                                <img src="@city.PhotoUrl"
+                                     alt="@city.Name"
+                                     class="city-card__image"
+                                     loading="lazy"
+                                     decoding="async" />
                             }
-                            else
-                            {
-                                <div class="city-placeholder">
-                                    <i class="bi bi-building"></i>
-                                </div>
-                            }
+                            <div class="city-card__placeholder" aria-hidden="@(!string.IsNullOrEmpty(city.PhotoUrl)).ToString().ToLowerInvariant()">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="city-card__badge">
+                                <i class="bi bi-pin-map"></i>
+                                @(isSelected ? "Focused city" : "Explore city")
+                            </div>
                         </div>
-                        <div class="city-content">
-                            <h3 class="city-name">@city.Name</h3>
-                            @if (!string.IsNullOrEmpty(city.Description))
-                            {
-                                <p class="city-description">@city.Description</p>
-                            }
-                            else
-                            {
-                                <p class="city-description">@Localizer["ExploreInfrastructureIssuesInCity", city.Name]</p>
-                            }
-                            <div class="city-actions">
-                                <a href="/Heatmaps/@city.Id" class="city-action-btn btn-primary">
-                                    <i class="bi bi-map-fill"></i> Heatmap
+
+                        <div class="city-card__body">
+                            <div class="city-card__heading">
+                                <h3>@city.Name</h3>
+                                <span>@selectedCountry</span>
+                            </div>
+
+                            <p class="city-card__description">
+                                @if (!string.IsNullOrWhiteSpace(city.Description))
+                                {
+                                    @city.Description
+                                }
+                                else
+                                {
+                                    <text>@Localizer["ExploreInfrastructureIssuesInCity", city.Name]</text>
+                                }
+                            </p>
+
+                            <div class="city-card__actions">
+                                <a asp-page="/Cities"
+                                   asp-page-handler="SelectCity"
+                                   asp-route-country="@selectedCountry"
+                                   asp-route-city="@city.Name"
+                                   class="btn btn-primary">
+                                    <i class="bi bi-list-stars"></i>
+                                    @(isSelected ? "Viewing issues" : "View recent issues")
                                 </a>
-                                <a href="/HealthReports/@city.Id" class="city-action-btn btn-outline">
-                                    <i class="bi bi-heart-pulse-fill"></i> Health
+                                <a href="/Heatmaps/@city.Id" class="btn btn-outline-primary">
+                                    <i class="bi bi-map"></i>
+                                    Heatmap
+                                </a>
+                                <a href="/HealthReports/@city.Id" class="btn btn-outline-primary">
+                                    <i class="bi bi-heart-pulse"></i>
+                                    Health report
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 }
             </div>
 
-            <!-- Pagination -->
             @if (Model.TotalPages > 1)
             {
-                <div class="pagination-container">
+                <nav class="cities-pagination" aria-label="Cities pagination">
                     @if (Model.CurrentPage > 1)
                     {
-                        <a asp-page="Cities"
-                           asp-route-selectedCountry="@Model.SelectedCountry"
-                           asp-route-selectedCity="@Model.SelectedCity"
+                        <a asp-page="/Cities"
+                           asp-route-selectedCountry="@selectedCountry"
+                           asp-route-selectedCity="@selectedCity"
                            asp-route-currentPage="@(Model.CurrentPage - 1)"
-                           class="page-link">
-                            <i class="bi bi-chevron-left"></i>
+                           class="cities-pagination__link">
+                            <i class="bi bi-arrow-left"></i>
+                            Previous
                         </a>
                     }
-                    else
-                    {
-                        <span class="page-link disabled"><i class="bi bi-chevron-left"></i></span>
-                    }
 
-                    @for (int i = 1; i <= Model.TotalPages; i++)
-                    {
-                        if (i == Model.CurrentPage)
+                    <div class="cities-pagination__numbers">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
                         {
-                            <span class="page-link active">@i</span>
+                            if (i == Model.CurrentPage)
+                            {
+                                <span class="cities-pagination__link is-active">@i</span>
+                            }
+                            else
+                            {
+                                <a asp-page="/Cities"
+                                   asp-route-selectedCountry="@selectedCountry"
+                                   asp-route-selectedCity="@selectedCity"
+                                   asp-route-currentPage="@i"
+                                   class="cities-pagination__link">@i</a>
+                            }
                         }
-                        else
-                        {
-                            <a asp-page="Cities"
-                               asp-route-selectedCountry="@Model.SelectedCountry"
-                               asp-route-selectedCity="@Model.SelectedCity"
-                               asp-route-currentPage="@i"
-                               class="page-link">@i</a>
-                        }
-                    }
+                    </div>
 
                     @if (Model.CurrentPage < Model.TotalPages)
                     {
-                        <a asp-page="Cities"
-                           asp-route-selectedCountry="@Model.SelectedCountry"
-                           asp-route-selectedCity="@Model.SelectedCity"
+                        <a asp-page="/Cities"
+                           asp-route-selectedCountry="@selectedCountry"
+                           asp-route-selectedCity="@selectedCity"
                            asp-route-currentPage="@(Model.CurrentPage + 1)"
-                           class="page-link">
-                            <i class="bi bi-chevron-right"></i>
+                           class="cities-pagination__link">
+                            Next
+                            <i class="bi bi-arrow-right"></i>
                         </a>
                     }
-                    else
-                    {
-                        <span class="page-link disabled"><i class="bi bi-chevron-right"></i></span>
-                    }
-                </div>
+                </nav>
             }
         }
         else
         {
-            <div class="empty-state">
-                <div class="empty-state-icon">
+            <div class="cities-empty">
+                <div class="cities-empty__icon">
                     <i class="bi bi-inbox"></i>
                 </div>
-                <h3>No Cities Found</h3>
-                <p>There are no cities available for the selected country. Try a different region.</p>
-                <a asp-page="Cities" asp-route-selectedCountry="Bulgaria" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-arrow-left me-2"></i> Back to Bulgaria
+                <h3>No cities available in this region yet</h3>
+                <p>There is no city coverage for <strong>@selectedCountry</strong> right now. Try another country or come back once the network expands.</p>
+                <a asp-page="/Cities" asp-route-selectedCountry="Bulgaria" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Bulgaria
                 </a>
             </div>
         }
-    </div>
+    </section>
 
-    <!-- ── Selected City Issues ──────────────────────────── -->
-    @if (!string.IsNullOrEmpty(Model.SelectedCity) && Model.CityIssues.Any())
+    @if (hasSelectedCity)
     {
-        <div class="selected-city-section">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2">
+        <section class="city-focus">
+            <div class="city-focus__head">
                 <div>
-                    <h2 class="section-title">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        Issues in @Model.SelectedCity
-                    </h2>
-                    <p class="section-subtitle mb-0">
-                        @Model.CityIssues.Count @(Model.CityIssues.Count == 1 ? "issue" : "issues") reported by community members
+                    <p class="city-focus__eyebrow">Focused issue feed</p>
+                    <h2 class="city-focus__title">@selectedCity</h2>
+                    <p class="city-focus__copy">
+                        @(Model.CityIssues.Any()
+                            ? $"Showing the most recent community reports currently tied to {selectedCity}."
+                            : $"No community issues are currently attached to {selectedCity}.")
                     </p>
                 </div>
-                @if (Model.CityIssues.Count > 12)
-                {
-                    <a asp-page="/Issues/Index" class="btn btn-primary">
-                        <i class="bi bi-list-ul me-2"></i>View All @Model.CityIssues.Count Issues
+                <div class="city-focus__actions">
+                    <a href="/issues/create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Report an issue here
                     </a>
-                }
+                    @if (Model.Cities.Any(c => c.Name == selectedCity))
+                    {
+                        var selectedCityObject = Model.Cities.FirstOrDefault(c => c.Name == selectedCity);
+                        if (selectedCityObject != null)
+                        {
+                            <a href="/Heatmaps/@selectedCityObject.Id" class="btn btn-outline-primary">
+                                <i class="bi bi-map"></i>
+                                Open heatmap
+                            </a>
+                        }
+                    }
+                </div>
             </div>
 
-            <div class="issues-grid">
-                @foreach (var issue in Model.CityIssues.Take(12))
-                {
-                    <div class="issue-card @issue.Priority.ToString().ToLower()">
-                        <div class="issue-title">@issue.Title</div>
-                        <div class="issue-description">@issue.Description</div>
-                        <div class="issue-meta">
-                            <span>
-                                <i class="bi bi-calendar3"></i>
-                                @issue.CreatedAt.ToString("MMM dd, yyyy")
-                            </span>
-                            <span>
-                                <i class="bi bi-tag-fill"></i>
-                                @issue.Status
-                            </span>
-                            <div class="issue-votes">
-                                <i class="bi bi-hand-thumbs-up-fill"></i>
-                                @issue.Upvotes
+            @if (issuePreview.Any())
+            {
+                <div class="city-focus__grid">
+                    @foreach (var issue in issuePreview)
+                    {
+                        <a href="/issues/@issue.Id" class="city-issue-card">
+                            <div class="city-issue-card__top">
+                                <partial name="_BadgeStatus" model="issue.Status" />
+                                <partial name="_BadgePriority" model="issue.Priority" />
                             </div>
-                        </div>
+                            <h3>@issue.Title</h3>
+                            <p>@issue.Description</p>
+                            <div class="city-issue-card__meta">
+                                <span><i class="bi bi-calendar3"></i> @issue.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                <span><i class="bi bi-hand-thumbs-up"></i> @issue.Upvotes</span>
+                                <span><i class="bi bi-chat-left-text"></i> @issue.CommentCount</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+
+                @if (Model.CityIssues.Count > issuePreview.Count)
+                {
+                    <div class="city-focus__footer">
+                        <p>Showing the latest @issuePreview.Count reports from a total of @Model.CityIssues.Count for @selectedCity.</p>
                     </div>
                 }
-            </div>
-        </div>
-    }
-    else if (!string.IsNullOrEmpty(Model.SelectedCity) && !Model.CityIssues.Any())
-    {
-        <div class="selected-city-section">
-            <div class="empty-state">
-                <div class="empty-state-icon" style="background: linear-gradient(135deg, var(--success-light), #a7f3d0); border-color: #6ee7b7; color: var(--success);">
-                    <i class="bi bi-check-circle-fill"></i>
+            }
+            else
+            {
+                <div class="cities-empty cities-empty--compact">
+                    <div class="cities-empty__icon cities-empty__icon--success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h3>All clear in @selectedCity</h3>
+                    <p>The city feed is quiet right now. If you spot something that needs attention, create a report and the community can rally around it.</p>
                 </div>
-                <h3>All Clear in @Model.SelectedCity</h3>
-                <p>@Localizer["NoIssuesInCity"]</p>
-                <a asp-page="/Issues/Create" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-plus-circle me-2"></i> Report an Issue
-                </a>
-            </div>
-        </div>
+            }
+        </section>
     }
 </div>
+
+@section PageScripts {
+    <script src="~/js/pages/cities-page.js" asp-append-version="true" defer></script>
+}

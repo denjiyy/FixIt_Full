@@ -1,26 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <xsd:schema id="root" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata" type="xsd:string" minOccurs="0" />
-          <xsd:element name="assembly" type="xsd:string" minOccurs="0" />
-          <xsd:element name="data" minOccurs="0" maxOccurs="unbounded">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="xml:space" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata" type="xsd:string" minOccurs="0" />
+          <xs:element name="assembly" type="xsd:string" minOccurs="0" />
+          <xs:element name="data" minOccurs="0" maxOccurs="unbounded">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" use="required" type="xsd:string" />
+              <xs:attribute name="xml:space" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
@@ -232,21 +232,11 @@
   <data name="SubmitReport" xml:space="preserve"><value>Изпращане на докладност</value></data>
   <data name="MonitorHealthMetrics" xml:space="preserve"><value>Мониториране на ангажираност на общностю и показатели на здравето на инфраструктурата</value></data>
   <data name="IssueToDeleteHeading" xml:space="preserve"><value>Проблем за изтриване:</value></data>
-  <data name="CreatedBy" xml:space="preserve"><value>Създано от</value></data>
   <data name="OnDate" xml:space="preserve"><value>на</value></data>
   <data name="DeletingThisIssue" xml:space="preserve"><value>Изтриването на този проблем ще го премахне от публично виждане, но вашето изтриване ще бъде записано.</value></data>
   <data name="WhenYouDeleteThisIssueColon" xml:space="preserve"><value>Когато изтриете този проблем:</value></data>
   <data name="ItWillNoLongerAppearInIssueListings" xml:space="preserve"><value>Той больше няма да се появява в списъците на проблемите</value></data>
-  <data name="OtherUsersWillNotBeSeeIt" xml:space="preserve"><value>Други потребители няма да могат да го видят</value></data>
-  <data name="CommentsAndVotesWillBePreserved" xml:space="preserve"><value>Коментарите и гласовете ще бъдат запазени вътрешно</value></data>
-  <data name="AdminsCanRestoreDeletedIssues" xml:space="preserve"><value>Администраторите могат да възстановят изтритите проблеми, ако е необходимо</value></data>
   <data name="ConfirmDeletionOf" xml:space="preserve"><value>Потвърдете изтриване на:</value></data>
-  <data name="DeleteIssuePermanently" xml:space="preserve"><value>Трайно изтриване на проблем</value></data>
-  <data name="CancelDeletion" xml:space="preserve"><value>Отмяна на изтриване</value></data>
-  <data name="NeedHelp" xml:space="preserve"><value>Нужна ли ви помощ?</value></data>
-  <data name="LearnMoreAboutIssues" xml:space="preserve"><value>Научете повече за проблемите</value></data>
-  <data name="Note" xml:space="preserve"><value>Забележка:</value></data>
-  <data name="IfYouDeleteThisByMistake" xml:space="preserve"><value>Ако изтриете това по грешка, свържете се с администратор. Те могат да го възстановят.</value></data>
   <data name="IssueNotFoundMessage" xml:space="preserve"><value>Проблемът не е намерен или вече е изтрит.</value></data>
   <data name="GoToIssuesList" xml:space="preserve"><value>Отидете в списъка на проблемите</value></data>
   <data name="BriefTitleOfTheIssueEdit" xml:space="preserve"><value>Кратко заглавие на проблема</value></data>
@@ -254,8 +244,6 @@
   <data name="CharactersText" xml:space="preserve"><value>знаци</value></data>
   <data name="IssueInfoEdit" xml:space="preserve"><value>Информация за проблема:</value></data>
   <data name="CommunityHealthScore" xml:space="preserve"><value>Оценка на здравето на общностю</value></data>
-  <data name="OverallScore" xml:space="preserve"><value>Обща оценка</value></data>
-  <data name="Resolved" xml:space="preserve"><value>Разрешено</value></data>
   <data name="Newest" xml:space="preserve"><value>Най-нови</value></data>
   <data name="MostVoted" xml:space="preserve"><value>Най-гласувани</value></data>
   <data name="MostViewed" xml:space="preserve"><value>Най-гледани</value></data>
@@ -281,7 +269,6 @@
   <data name="AccountStatus" xml:space="preserve"><value>Статус на сметката</value></data>
   <data name="EmailPreferencesPage" xml:space="preserve"><value>Предпочитания за имейл</value></data>
   <data name="ManageYourEmailNotificationSettings" xml:space="preserve"><value>Управление на настройките за известяване по имейл</value></data>
-  <data name="SearchByTitle" xml:space="preserve"><value>Търсете по заглавие...</value></data>
   <data name="SearchByReason" xml:space="preserve"><value>Търсете по причина...</value></data>
   <data name="EnterYourUsername" xml:space="preserve"><value>Въведете вашето потребителско име</value></data>
   <data name="EnterYourPassword" xml:space="preserve"><value>Въведете вашата парола</value></data>
@@ -345,12 +332,10 @@
   <data name="BeTheFirstToContributeAndClaimYourSpot" xml:space="preserve"><value>Бъдете първи да се вмешаете и заемете своето място!</value></data>
   <data name="NoUsersFound" xml:space="preserve"><value>Няма намерени потребители</value></data>
   <data name="NoReportsFound" xml:space="preserve"><value>Няма намерени доклади</value></data>
-  <data name="NoCitiesFound" xml:space="preserve"><value>Няма намерени градове</value></data>
   <data name="AddYourFirstCityToGetStarted" xml:space="preserve"><value>Добавьте първия си град, за да начнете</value></data>
   <data name="ThisIsHowOtherUsersWillSeeYou" xml:space="preserve"><value>Това е как другите потребители ще ви видят</value></data>
   <data name="SignInToJoinTheConversation" xml:space="preserve"><value>Влезте, за да се присъедините към разговора</value></data>
   <data name="SignInToCastYourVote" xml:space="preserve"><value>Влезте, за да отдадете вашия вот</value></data>
-  <data name="SignInToReport" xml:space="preserve"><value>Влизане за докладване</value></data>
   <data name="CompleteYourRegistration" xml:space="preserve"><value>Завършете вашата регистрация</value></data>
   <data name="SigningInWith" xml:space="preserve"><value>Влизане с</value></data>
   <data name="PasswordAuthentication" xml:space="preserve"><value>Удостоверение с парола</value></data>
@@ -406,7 +391,6 @@
   <data name="AnonymousUser" xml:space="preserve"><value>Анонимен потребител</value></data>
   <data name="IdentityHiddenForPrivacy" xml:space="preserve"><value>Самоличност скритаза поверителност</value></data>
   <data name="AgeLabel" xml:space="preserve"><value>Възраст</value></data>
-  <data name="IssueNotFoundMessage" xml:space="preserve"><value>Проблемът не е намерен</value></data>
   <data name="AnalysisLabel" xml:space="preserve"><value>Анализ</value></data>
   <data name="CategoryLabel" xml:space="preserve"><value>Категория</value></data>
   <data name="SeverityLabel" xml:space="preserve"><value>Тежест</value></data>
@@ -450,12 +434,10 @@
   <data name="DevelopmentModeTitle" xml:space="preserve"><value>Режим на разработка</value></data>
   <data name="SwappingToDevelopmentEnvironment" xml:space="preserve"><value>Преминаването към средата за разработка показва подробна информация за възникналога грешка.</value></data>
   <data name="PasswordLabel" xml:space="preserve"><value>Парола</value></data>
-  <data name="ConnectedAccounts" xml:space="preserve"><value>Свързани сметки</value></data>
   <data name="ConfirmPassword" xml:space="preserve"><value>Потвърди парола</value></data>
   <data name="DisplayNameField" xml:space="preserve"><value>Дисплей име</value></data>
   <data name="UpvoteLabel" xml:space="preserve"><value>Гласуване нагоре</value></data>
   <data name="DownvoteLabel" xml:space="preserve"><value>Гласуване надолу</value></data>
-  <data name="UpvotesCount" xml:space="preserve"><value>Гласове нагоре</value></data>
   <data name="DownvotesCount" xml:space="preserve"><value>Гласове надолу</value></data>
   <data name="RankHeader" xml:space="preserve"><value>Ранг</value></data>
   <data name="UserHeader" xml:space="preserve"><value>Потребител</value></data>
@@ -463,25 +445,16 @@
   <data name="Points" xml:space="preserve"><value>точки</value></data>
   <data name="PointsUntilNextLevel" xml:space="preserve"><value>{0} точки до {1}</value></data>
   <data name="TrustLevelHeader" xml:space="preserve"><value>Ниво на доверие</value></data>
-  <data name="SelectCity" xml:space="preserve"><value>Избирам град</value></data>
   <data name="ClearFilters" xml:space="preserve"><value>Изчистване на филтрите</value></data>
   <data name="NoResultsMatchYourCurrentFilters" xml:space="preserve"><value>Няма резултати, които съответстват на вашите текущи филтри. Опитайте да коригирате вашето търсене или да изчистите филтрите.</value></data>
   <data name="Delete" xml:space="preserve"><value>Изтриване</value></data>
   <data name="Edit" xml:space="preserve"><value>Редактиране</value></data>
   <data name="Save" xml:space="preserve"><value>Запази</value></data>
-  <data name="SaveChanges" xml:space="preserve"><value>Запази промени</value></data>
   <data name="Submit" xml:space="preserve"><value>Подайте</value></data>
   <data name="Filter" xml:space="preserve"><value>Филтър</value></data>
-  <data name="Search" xml:space="preserve"><value>Търси</value></data>
   <data name="Loading" xml:space="preserve"><value>Зареждане</value></data>
   <data name="LoadingHazards" xml:space="preserve"><value>Зареждане на опасности...</value></data>
   <data name="LoadingAddress" xml:space="preserve"><value>Зареждане на адрес...</value></data>
-  <data name="DropFilesHereOrBrowseToUpload" xml:space="preserve"><value>Отпуснете файлами тук или прегледайте за качване</value></data>
-  <data name="UploadFileInfo" xml:space="preserve"><value>Максимум 10 файла, по 50 MB всеки (JPG, PNG, WEBP, MP4)</value></data>
-  <data name="PinOnMap" xml:space="preserve"><value>Щифт на картата</value></data>
-  <data name="ClickTheMapToPlacePin" xml:space="preserve"><value>Щракнете на картата, за да поставите щифт</value></data>
-  <data name="ReverseGeocodedFromYourMapPin" xml:space="preserve"><value>Обратно геокодиран от вашия щифт на картата</value></data>
-  <data name="UsuallyAutoSelectedFromYourMapPin" xml:space="preserve"><value>Обикновено автоматично избран от вашия щифт на картата</value></data>
   <data name="ConfirmDeleteReport" xml:space="preserve"><value>Изтрийте този доклад?</value></data>
   <data name="ConfirmDeleteCity" xml:space="preserve"><value>Изтрийте този град?</value></data>
   <data name="ConfirmDeleteUser" xml:space="preserve"><value>Окончателно изтрийте този потребител?</value></data>
@@ -498,8 +471,6 @@
   <data name="FilterResults" xml:space="preserve"><value>Няма резултати за</value></data>
   <data name="TermsOfService" xml:space="preserve"><value>Условия на услугата</value></data>
   <data name="ByCreatingAnAccountYouAgreeTo" xml:space="preserve"><value>Чрез създаване на сметка, вие се съглашате с нашите</value></data>
-  <data name="HealthReports" xml:space="preserve"><value>Доклади за здравето</value></data>
-  <data name="ViewHeatmaps" xml:space="preserve"><value>Преглед на топлинни карти</value></data>
   <data name="Reports" xml:space="preserve"><value>Доклади</value></data>
   <data name="ReportsLabel" xml:space="preserve"><value>Доклади</value></data>
   <data name="Unban" xml:space="preserve"><value>Отразрещаване</value></data>
@@ -508,12 +479,9 @@
   <data name="RestrictUser" xml:space="preserve"><value>Ограничаване на потребителя</value></data>
   <data name="Approve" xml:space="preserve"><value>Одобрете</value></data>
   <data name="Dismiss" xml:space="preserve"><value>Отхвърлете</value></data>
-  <data name="GoToHazardMode" xml:space="preserve"><value>Отиди на режим опасност</value></data>
-  <data name="SafetyHazardMap" xml:space="preserve"><value>Карта за безопасност опасности</value></data>
   <data name="FilterHazards" xml:space="preserve"><value>Филтър опасности...</value></data>
   <data name="ErrorLoadingHazards" xml:space="preserve"><value>Грешка при зареждане на опасности</value></data>
   <data name="ErrorLoadingHazardDetail" xml:space="preserve"><value>Грешка при зареждане на детайли за опасност</value></data>
-  <data name="Error" xml:space="preserve"><value>Грешка</value></data>
   <data name="FailedToUpdateSettings" xml:space="preserve"><value>Неудачно обновяване на настройки</value></data>
   <data name="ErrorUpdatingSettings" xml:space="preserve"><value>Грешка при обновяване на настройки</value></data>
   <data name="PleaseSelectACity" xml:space="preserve"><value>Моля изберете град — опитайте да щракнете на местоположение на картата</value></data>
@@ -521,12 +489,9 @@
   <data name="ReportsLabel2" xml:space="preserve"><value>Доклади</value></data>
   <data name="YourReportsWillShowAsAnonymous" xml:space="preserve"><value>Вашите доклади ще се показват като "Анонимни" на картата и в списъци</value></data>
   <data name="AdminLoginTooltip" xml:space="preserve"><value>Вход за администратори и модератори</value></data>
-  <data name="InfrastructureExplorer" xml:space="preserve"><value>ПРОУЧВАЧ НА ИНФРАСТРУКТУРА</value></data>
-  <data name="InfrastructureIssues" xml:space="preserve"><value>Проблеми с инфраструктурата</value></data>
   <data name="ExploreInfrastructureIssuesInCity" xml:space="preserve"><value>Открийте проблеми с инфраструктурата и доклади на общността в {0}.</value></data>
   <data name="NoIssuesInCity" xml:space="preserve"><value>Страхотни новини — този град в момента няма докладвани проблеми с инфраструктурата.</value></data>
   <data name="FilterByCountry" xml:space="preserve"><value>Филтрирай по държава</value></data>
-  <data name="SelectACity" xml:space="preserve"><value>Избери град...</value></data>
   <data name="ManageYourAccountAndPreferences" xml:space="preserve"><value>Управлявайте акаунта си, предпочитанията и още</value></data>
   <data name="CityPreferenceInfo" xml:space="preserve"><value>Този град ще бъде използван за прогнозиране на проблеми, спазване на SLA, кампании и други функционални страници.</value></data>
   <data name="AuthProvidersList" xml:space="preserve"><value>Google • Microsoft • Facebook • GitHub</value></data>
@@ -571,4 +536,104 @@
   <data name="Private" xml:space="preserve"><value>Частен</value></data>
   <data name="PrivateProfileDescription" xml:space="preserve"><value>Само вие и администраторите можете да видите вашия профил</value></data>
   <data name="PrivateProfileDoesNotAffectReputation" xml:space="preserve"><value>Направата на вашия профил частен не влияе на вашата репутация или приноси за общността. Влияе само на това кой може да види вашата профилна страница.</value></data>
+  <data name="AddressLabel" xml:space="preserve"><value>Адрес</value></data>
+  <data name="AiAnalysisLabel" xml:space="preserve"><value>AI анализ</value></data>
+  <data name="AnalysisNotesLabel" xml:space="preserve"><value>Бележки от анализа</value></data>
+  <data name="AnalysisUnavailableCopy" xml:space="preserve"><value>Не успяхме да заредим подробностите от анализа в момента. Опитайте отново след малко.</value></data>
+  <data name="AnalyzedAtLabel" xml:space="preserve"><value>Анализирано</value></data>
+  <data name="AnonymousReporter" xml:space="preserve"><value>Анонимен подател</value></data>
+  <data name="AnonymousVisibility" xml:space="preserve"><value>Анонимен сигнал</value></data>
+  <data name="Archived" xml:space="preserve"><value>Архивиран</value></data>
+  <data name="BeforeYouSubmit" xml:space="preserve"><value>Преди да изпратите</value></data>
+  <data name="CitiesCovered" xml:space="preserve"><value>Обхванати градове</value></data>
+  <data name="CloseLabel" xml:space="preserve"><value>Затвори</value></data>
+  <data name="CommentPlaceholder" xml:space="preserve"><value>Добавете контекст, актуализация или полезни детайли за съседите и градските екипи...</value></data>
+  <data name="CommentsLabel" xml:space="preserve"><value>Коментари</value></data>
+  <data name="CommunityMember" xml:space="preserve"><value>Член на общността</value></data>
+  <data name="CommunityVoteLabel" xml:space="preserve"><value>Гласът на общността</value></data>
+  <data name="CompleteLabel" xml:space="preserve"><value>Готово</value></data>
+  <data name="ConfidenceSuffix" xml:space="preserve"><value>увереност</value></data>
+  <data name="CreateDescriptionValidation" xml:space="preserve"><value>Добавете още малко подробности, за да могат другите да разберат проблема.</value></data>
+  <data name="BreadcrumbLabel" xml:space="preserve"><value>Навигационна пътека</value></data>
+  <data name="CreateTitleValidation" xml:space="preserve"><value>Добавете ясно заглавие с поне 3 знака.</value></data>
+  <data name="CreatedAtLabel" xml:space="preserve"><value>Подаден</value></data>
+  <data name="DeleteCommentConfirm" xml:space="preserve"><value>Да изтрием ли този коментар?</value></data>
+  <data name="DeleteCommentError" xml:space="preserve"><value>Възникна проблем при изтриването на коментара.</value></data>
+  <data name="DeleteCommentFailed" xml:space="preserve"><value>Не успяхме да изтрием коментара в момента.</value></data>
+  <data name="DeleteOwnCommentsOnly" xml:space="preserve"><value>Можете да изтривате само собствените си коментари.</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>Описание</value></data>
+  <data name="Duplicate" xml:space="preserve"><value>Дублиран</value></data>
+  <data name="EditChecklistAddress" xml:space="preserve"><value>Потвърдете, че местоположението все още насочва към правилното място.</value></data>
+  <data name="EditChecklistDescription" xml:space="preserve"><value>Уверете се, че описанието отразява последния контекст и въздействие.</value></data>
+  <data name="EditGuidanceCopy" xml:space="preserve"><value>Използвайте това място, за да изясните какво се е променило, да подобрите контекста или да направите сигнала по-лесен за действие.</value></data>
+  <data name="EditGuidanceTitle" xml:space="preserve"><value>Полезни насоки</value></data>
+  <data name="EditIssueCopy" xml:space="preserve"><value>Прецизирайте сигнала, за да могат съседите, градските екипи и модераторите да го разберат бързо.</value></data>
+  <data name="EditIssueFormCopy" xml:space="preserve"><value>Поддържайте сигнала точен, актуален и лесен за преглед.</value></data>
+  <data name="FeaturedCommunityActivity" xml:space="preserve"><value>Акценти от общността</value></data>
+  <data name="FeaturedCommunityActivityCopy" xml:space="preserve"><value>Следете последните сигнали, активните поправки и местата, където жителите вече движат промяната заедно.</value></data>
+  <data name="FeaturedIssueUpdates" xml:space="preserve"><value>Акцентирани обновления</value></data>
+  <data name="FilesSelectedLabel" xml:space="preserve"><value>избрани файла</value></data>
+  <data name="FiltersLabel" xml:space="preserve"><value>Филтри</value></data>
+  <data name="GeneratingAiAnalysisCopy" xml:space="preserve"><value>Системата преглежда сигнала и подготвя структурирано обобщение на проблема.</value></data>
+  <data name="GeneratingAiAnalysisTitle" xml:space="preserve"><value>Генериране на AI анализ</value></data>
+  <data name="HomeHeroDescription" xml:space="preserve"><value>Помогнете на града да действа по-бързо. Подайте сигнал за инфраструктурен проблем, насочете общественото внимание и следете напредъка от първия сигнал до окончателното решение.</value></data>
+  <data name="HomeProcessCopy" xml:space="preserve"><value>Създадено така, че подаването да е лесно за жителите и полезно за екипите, като всяка стъпка остава видима от сигнала до решението.</value></data>
+  <data name="HomeTrustCopy" xml:space="preserve"><value>Ясното докладване, видимият напредък и споделената отговорност помагат на общностите да решават повече проблеми с по-малко триене.</value></data>
+  <data name="ImageUploadLimit" xml:space="preserve"><value>Можете да качите до 8 изображения.</value></data>
+  <data name="ImageViewer" xml:space="preserve"><value>Преглед на изображение</value></data>
+  <data name="InvalidFileType" xml:space="preserve"><value>Този тип файл не се поддържа. Качвайте само изображения или видеа.</value></data>
+  <data name="IssuePhotoLabel" xml:space="preserve"><value>Снимка на проблема</value></data>
+  <data name="IssuesDiscoveryCopy" xml:space="preserve"><value>Разгледайте сигналите от общността, открийте кои проблеми са най-важни и филтрирайте потока до темите, по които можете да помогнете.</value></data>
+  <data name="KeywordsLabel" xml:space="preserve"><value>Ключови думи</value></data>
+  <data name="LastUpdatedLabel" xml:space="preserve"><value>Обновено</value></data>
+  <data name="LivePlatformPulse" xml:space="preserve"><value>Пулс на платформата</value></data>
+  <data name="LocationLabel" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="LocationPending" xml:space="preserve"><value>Очаква се поставяне на маркер</value></data>
+  <data name="MediaLabel" xml:space="preserve"><value>Медия</value></data>
+  <data name="MoreLabel" xml:space="preserve"><value>още</value></data>
+  <data name="NextLabel" xml:space="preserve"><value>Следваща</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Следваща страница</value></data>
+  <data name="NoMediaSelected" xml:space="preserve"><value>Все още няма избрани файлове</value></data>
+  <data name="NoSuggestionsAvailableYet" xml:space="preserve"><value>Предложенията ще се появят, след като добавите заглавие и описание.</value></data>
+  <data name="NotStarted" xml:space="preserve"><value>Не е започнато</value></data>
+  <data name="OnlyFirstTenFiles" xml:space="preserve"><value>Ще бъдат включени само първите 10 файла.</value></data>
+  <data name="OpenIssue" xml:space="preserve"><value>Отвори сигнала</value></data>
+  <data name="PaginationLabel" xml:space="preserve"><value>Странициране</value></data>
+  <data name="PendingLabel" xml:space="preserve"><value>В изчакване</value></data>
+  <data name="PhotosLabel" xml:space="preserve"><value>снимки</value></data>
+  <data name="PositiveVotesLabel" xml:space="preserve"><value>положителни</value></data>
+  <data name="PostCommentLabel" xml:space="preserve"><value>Публикувай коментар</value></data>
+  <data name="PreviousLabel" xml:space="preserve"><value>Предишна</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Предишна страница</value></data>
+  <data name="ProgressOverview" xml:space="preserve"><value>Напредък</value></data>
+  <data name="PublicIssue" xml:space="preserve"><value>Публичен сигнал</value></data>
+  <data name="ReadyToMakeADifference" xml:space="preserve"><value>Готови ли сте да помогнете?</value></data>
+  <data name="ReadyToMakeADifferenceCopy" xml:space="preserve"><value>Подайте сигнал за минути, подкрепете важните проблеми около вас и помогнете на общността да превърне видимостта в действие.</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Отхвърлен</value></data>
+  <data name="ReportSnapshot" xml:space="preserve"><value>Обобщение на сигнала</value></data>
+  <data name="ReportedByLabel" xml:space="preserve"><value>Подаден от</value></data>
+  <data name="Retry" xml:space="preserve"><value>Опитай отново</value></data>
+  <data name="ScoreLabel" xml:space="preserve"><value>Резултат</value></data>
+  <data name="SignInToDislikeComments" xml:space="preserve"><value>Влезте, за да гласувате отрицателно за коментари.</value></data>
+  <data name="SignInToLikeComments" xml:space="preserve"><value>Влезте, за да гласувате положително за коментари.</value></data>
+  <data name="SimilarIssuesDetectedLabel" xml:space="preserve"><value>Открити сходни сигнали</value></data>
+  <data name="SnapshotLabel" xml:space="preserve"><value>Обобщение</value></data>
+  <data name="SortByLabel" xml:space="preserve"><value>Сортирай по</value></data>
+  <data name="StatusHistoryLabel" xml:space="preserve"><value>История на статуса</value></data>
+  <data name="SubmittingReport" xml:space="preserve"><value>Изпращане на сигнала...</value></data>
+  <data name="SuggestedTagsHint" xml:space="preserve"><value>Предложения на база заглавието и описанието.</value></data>
+  <data name="SuggestedTagsLabel" xml:space="preserve"><value>Предложени етикети</value></data>
+  <data name="TagsHint" xml:space="preserve"><value>Разделяйте етикетите със запетаи, за да помогнете за категоризацията.</value></data>
+  <data name="TagsLabel" xml:space="preserve"><value>Етикети</value></data>
+  <data name="TagsPlaceholder" xml:space="preserve"><value>дупка, осветление, тротоар</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>Възникна неочаквана грешка. Опитайте отново.</value></data>
+  <data name="UpdatedShortLabel" xml:space="preserve"><value>Обновено</value></data>
+  <data name="VideoPreviewUnavailable" xml:space="preserve"><value>Визуализацията на видеото не е налична</value></data>
+  <data name="VideoUploadLimit" xml:space="preserve"><value>Можете да качите до 2 видеа.</value></data>
+  <data name="VideosLabel" xml:space="preserve"><value>видеа</value></data>
+  <data name="ViewsLabel" xml:space="preserve"><value>Преглеждания</value></data>
+  <data name="VisibilityLabel" xml:space="preserve"><value>Видимост</value></data>
+  <data name="VoteFailed" xml:space="preserve"><value>Не успяхме да запазим гласа ви.</value></data>
+  <data name="VoteRecorded" xml:space="preserve"><value>Гласът е отчетен</value></data>
+  <data name="VotesTotalLabel" xml:space="preserve"><value>гласа общо</value></data>
 </root>

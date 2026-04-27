@@ -105,7 +105,10 @@ public class IssuesController : ControllerBase
                 request.CityId,
                 reporter,
                 tagNames,
-                request.IsAnonymous
+                request.IsAnonymous,
+                request.Priority,
+                request.Category,
+                request.Department
             );
 
             _logger.LogInformation(
@@ -125,7 +128,7 @@ public class IssuesController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -280,7 +283,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Status update request</param>
     /// <returns>Updated issue</returns>
     [HttpPut("{id}/status")]
-    [Authorize(Roles = "Moderator,Admin")]
+    [Authorize(Roles = RoleNames.ModeratorOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -315,7 +318,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -331,7 +334,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Priority update request</param>
     /// <returns>Updated issue</returns>
     [HttpPut("{id}/priority")]
-    [Authorize(Roles = "Moderator,Admin")]
+    [Authorize(Roles = RoleNames.ModeratorOrAdmin)]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -361,7 +364,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -409,7 +412,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -480,7 +483,7 @@ public class IssuesController : ControllerBase
             }
 
             // Only allow deletion by issue reporter or admins
-            if (issue.Reporter.Id != userId && !User.IsInRole("Admin"))
+            if (issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
             {
                 return Forbid();
             }
@@ -496,7 +499,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -636,11 +639,11 @@ public class IssuesController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -725,7 +728,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+            return NotFound(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -780,7 +783,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+            return NotFound(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -835,7 +838,7 @@ public class IssuesController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return NotFound(ApiResponse<object>.CreateError(ex.Message));
+            return NotFound(ApiResponse<object>.CreateError("Request could not be processed"));
         }
         catch (Exception ex)
         {
@@ -853,4 +856,3 @@ public class CommentLikeResponse
     public int LikeCount { get; set; }
     public int DislikeCount { get; set; }
 }
-

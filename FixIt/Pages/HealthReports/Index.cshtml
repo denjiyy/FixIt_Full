@@ -3,311 +3,248 @@
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["CommunityHealthReports"];
+    var openRate = Model.CityReport.TotalIssues == 0
+        ? 0
+        : (Model.CityReport.OpenIssues / (double)Model.CityReport.TotalIssues) * 100;
+    var healthStroke = (Model.CityReport.HealthScore / 100.0 * 502.4).ToString("F2");
+    var resolutionRateWidth = $"{Model.CityReport.ResolutionRate}%";
+    var openRateWidth = $"{openRate:F0}%";
 }
 
-<div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
-                    <h1 class="h2 mb-2">
-                        <i class="bi bi-heart-pulse text-gradient"></i> @Localizer["CommunityHealthReports"]
-                    </h1>
-                    <p class="text-muted mb-0">@Localizer["MonitorHealthMetrics"]</p>
-                </div>
-                @if (!Model.IsGlobal && Model.AllCities.Any())
-                {
-                    <div class="dropdown">
-                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-geo-alt"></i> 
-                            @(Model.AllCities.FirstOrDefault(c => c.Id == Model.CityId)?.Name ?? Localizer["SelectCity"])
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="max-height: 400px; overflow-y: auto;">
-                            <li>
-                                <a class="dropdown-item @(Model.IsGlobal ? "active" : "")" href="/HealthReports">
-                                    <i class="bi bi-globe"></i> @Localizer["GlobalReport"]
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            @foreach (var city in Model.AllCities.OrderBy(c => c.Name))
-                            {
-                                <li>
-                                    <a class="dropdown-item @(city.Id == Model.CityId ? "active" : "")" 
-                                       href="/HealthReports/@city.Id">
-                                        <i class="bi bi-building"></i> @city.Name
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                }
-            </div>
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/analytics.css" asp-append-version="true" />
+}
+
+<div class="analytics-page py-4">
+    <div class="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <span class="eyebrow">@Localizer["CommunityHealthReports"]</span>
+            <h1 class="page-title mb-2">@Localizer["CommunityHealthReports"]</h1>
+            <p class="page-copy mb-0">@Localizer["MonitorHealthMetrics"]</p>
         </div>
+
+        @if (!Model.IsGlobal && Model.AllCities.Any())
+        {
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-geo-alt me-2"></i>@(Model.AllCities.FirstOrDefault(c => c.Id == Model.CityId)?.Name ?? Localizer["SelectCity"])
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow analytics-city-menu">
+                    <li>
+                        <a class="dropdown-item @(Model.IsGlobal ? "active" : "")" href="/HealthReports">
+                            <i class="bi bi-globe me-2"></i>@Localizer["GlobalReport"]
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    @foreach (var city in Model.AllCities.OrderBy(c => c.Name))
+                    {
+                        <li>
+                            <a class="dropdown-item @(city.Id == Model.CityId ? "active" : "")" href="/HealthReports/@city.Id">
+                                <i class="bi bi-building me-2"></i>@city.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
     </div>
 
-    <!-- Health Score Hero Card -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card" style="border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <div class="card-body p-4 p-md-5">
-                    <div class="row align-items-center g-4">
-                        <div class="col-lg-8">
-                            <h2 class="h3 mb-4" style="color: white;">@Localizer["CommunityHealthScore"]</h2>
-                            <div class="row g-3">
-                                <div class="col-6 col-md-3">
-                                    <div class="text-center">
-                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.HealthScore.ToString("F1")</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["OverallScore"]</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="text-center">
-                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.TotalIssues</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["TotalIssues"]</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="text-center">
-                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.ResolutionRate.ToString("F0")%</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["Resolved"]</div>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <div class="text-center">
-                                        <div class="display-4 fw-bold mb-2" style="color: white;">@Model.CityReport.TotalUpvotes</div>
-                                        <div style="opacity: 0.9; font-size: 0.9rem;">@Localizer["Votes"]</div>
-                                    </div>
-                                </div>
+    <section class="card analytics-hero mb-4">
+        <div class="card-body">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8">
+                    <h2 class="h3 mb-4">@Localizer["CommunityHealthScore"]</h2>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="text-center">
+                                <div class="display-4 fw-bold mb-2">@Model.CityReport.HealthScore.ToString("F1")</div>
+                                <div>@Localizer["OverallScore"]</div>
                             </div>
                         </div>
-                        <div class="col-lg-4 text-center">
-                            <div class="position-relative d-inline-block">
-                                <svg width="180" height="180" viewBox="0 0 200 200" style="transform: rotate(-90deg);">
-                                    <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="20"/>
-                                    <circle cx="100" cy="100" r="80" fill="none" stroke="white" stroke-width="20"
-                                            stroke-dasharray="@((Model.CityReport.HealthScore / 100.0 * 502.4).ToString("F2")) 502.4"
-                                            stroke-linecap="round"/>
-                                </svg>
-                                <div class="position-absolute top-50 start-50 translate-middle">
-                                    <div class="h1 mb-0" style="color: white; font-size: 2.5rem;">
-                                        @Model.CityReport.HealthScore.ToString("F0")
-                                    </div>
-                                    <small style="opacity: 0.9;">/ 100</small>
-                                </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center">
+                                <div class="display-4 fw-bold mb-2">@Model.CityReport.TotalIssues</div>
+                                <div>@Localizer["TotalIssues"]</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center">
+                                <div class="display-4 fw-bold mb-2">@Model.CityReport.ResolutionRate.ToString("F0")%</div>
+                                <div>@Localizer["Resolved"]</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="text-center">
+                                <div class="display-4 fw-bold mb-2">@Model.CityReport.TotalUpvotes</div>
+                                <div>@Localizer["Votes"]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="analytics-ring">
+                        <svg viewBox="0 0 200 200" aria-hidden="true">
+                            <circle cx="100" cy="100" r="80" fill="none" class="analytics-ring__track" stroke-width="20"></circle>
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--white)" stroke-width="20"
+                                    stroke-dasharray="@healthStroke 502.4" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="analytics-ring__center">
+                            <div>
+                                <div class="h1 mb-0">@Model.CityReport.HealthScore.ToString("F0")</div>
+                                <small>/ 100</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Key Metrics -->
     <div class="row g-4 mb-4">
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--primary);">
+            <div class="card analytics-metric-card hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="text-muted small text-uppercase fw-bold mb-2">@Localizer["TotalIssues"]</div>
                             <div class="h2 mb-0">@Model.CityReport.TotalIssues</div>
                         </div>
-                        <div class="text-primary" style="font-size: 2rem;">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
+                        <div class="analytics-metric-icon text-primary"><i class="bi bi-exclamation-triangle"></i></div>
                     </div>
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-primary" style="width: 100%"></div>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" data-progress-width="100"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--success);">
+            <div class="card analytics-metric-card is-success hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="text-muted small text-uppercase fw-bold mb-2">@Localizer["Resolved"]</div>
                             <div class="h2 mb-0">@Model.CityReport.ResolvedIssues</div>
                         </div>
-                        <div class="text-success" style="font-size: 2rem;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+                        <div class="analytics-metric-icon text-success"><i class="bi bi-check-circle"></i></div>
                     </div>
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-success" style="width: @Model.CityReport.ResolutionRate%"></div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" data-progress-width="@resolutionRateWidth.TrimEnd('%')"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--danger);">
+            <div class="card analytics-metric-card is-danger hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="text-muted small text-uppercase fw-bold mb-2">@Localizer["OpenIssues"]</div>
                             <div class="h2 mb-0">@Model.CityReport.OpenIssues</div>
                         </div>
-                        <div class="text-danger" style="font-size: 2rem;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
+                        <div class="analytics-metric-icon text-danger"><i class="bi bi-hourglass-split"></i></div>
                     </div>
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-danger" style="width: @((Model.CityReport.OpenIssues / (double)Math.Max(Model.CityReport.TotalIssues, 1) * 100).ToString("F0"))%"></div>
+                    <div class="progress">
+                        <div class="progress-bar bg-danger" data-progress-width="@openRateWidth.TrimEnd('%')"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 hover-lift" style="border: none; border-left: 4px solid var(--info);">
+            <div class="card analytics-metric-card is-info hover-lift">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="text-muted small text-uppercase fw-bold mb-2">@Localizer["Engagement"]</div>
                             <div class="h2 mb-0">@(Model.CityReport.TotalUpvotes + Model.CityReport.TotalComments)</div>
                         </div>
-                        <div class="text-info" style="font-size: 2rem;">
-                            <i class="bi bi-chat-dots"></i>
-                        </div>
+                        <div class="analytics-metric-icon text-info"><i class="bi bi-chat-dots"></i></div>
                     </div>
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar bg-info" style="width: 85%"></div>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" data-progress-width="85"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Priority Breakdown -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card" style="border: none;">
-                <div class="card-header" style="background: white; border-bottom: 2px solid var(--gray-200);">
-                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> @Localizer["IssuesByPriority"]</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3 g-md-4">
-                        <div class="col-6 col-md-3">
-                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1)); border-radius: 1rem;">
-                                <div class="display-5 fw-bold text-danger mb-2">@Model.CityReport.CriticalIssues</div>
-                                <div class="small text-uppercase fw-bold text-danger">@Localizer["Critical"]</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(249, 115, 22, 0.1)); border-radius: 1rem;">
-                                <div class="display-5 fw-bold text-warning mb-2">@Model.CityReport.HighIssues</div>
-                                <div class="small text-uppercase fw-bold text-warning">@Localizer["High"]</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1)); border-radius: 1rem;">
-                                <div class="display-5 fw-bold mb-2" style="color: #f59e0b;">@Model.CityReport.MediumIssues</div>
-                                <div class="small text-uppercase fw-bold" style="color: #f59e0b;">@Localizer["Medium"]</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <div class="text-center p-4" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border-radius: 1rem;">
-                                <div class="display-5 fw-bold text-success mb-2">@Model.CityReport.LowIssues</div>
-                                <div class="small text-uppercase fw-bold text-success">@Localizer["Low"]</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0"><i class="bi bi-bar-chart me-2"></i>@Localizer["IssuesByPriority"]</h2>
+        </div>
+        <div class="card-body">
+            <div class="priority-grid">
+                <div class="priority-tile priority-tile--critical"><strong>@Model.CityReport.CriticalIssues</strong><span>@Localizer["Critical"]</span></div>
+                <div class="priority-tile priority-tile--high"><strong>@Model.CityReport.HighIssues</strong><span>@Localizer["High"]</span></div>
+                <div class="priority-tile priority-tile--medium"><strong>@Model.CityReport.MediumIssues</strong><span>@Localizer["Medium"]</span></div>
+                <div class="priority-tile priority-tile--low"><strong>@Model.CityReport.LowIssues</strong><span>@Localizer["Low"]</span></div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Top Issues -->
     @if (Model.CityReport.TopIssues?.Any() == true)
     {
-        <div class="row">
-            <div class="col-12">
-                <div class="card" style="border: none;">
-                    <div class="card-header" style="background: white; border-bottom: 2px solid var(--gray-200);">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="bi bi-star"></i> Top Trending Issues</h5>
-                            <a href="/issues" class="btn btn-sm btn-outline-primary">View All</a>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead style="background: var(--gray-100);">
-                                    <tr>
-                                        <th class="border-0 py-3 ps-4">Issue</th>
-                                        <th class="border-0 py-3">Status</th>
-                                        <th class="border-0 py-3">Priority</th>
-                                        <th class="border-0 py-3 text-center">Upvotes</th>
-                                        <th class="border-0 py-3 text-center">Comments</th>
-                                        <th class="border-0 py-3 pe-4">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var issue in Model.CityReport.TopIssues.Take(10))
-                                    {
-                                        <tr style="transition: background 0.2s;">
-                                            <td class="ps-4 py-3">
-                                                <div class="fw-bold text-truncate" style="max-width: 300px;">@issue.Title</div>
-                                            </td>
-                                            <td class="py-3">
-                                                @{
-                                                    var statusClass = issue.Status switch
-                                                    {
-                                                        FixIt.Models.Enums.IssueStatus.New => "warning",
-                                                        FixIt.Models.Enums.IssueStatus.Confirmed => "info",
-                                                        FixIt.Models.Enums.IssueStatus.InProgress => "primary",
-                                                        FixIt.Models.Enums.IssueStatus.Fixed => "success",
-                                                        _ => "secondary"
-                                                    };
-                                                }
-                                                <span class="badge bg-@statusClass">@issue.Status</span>
-                                            </td>
-                                            <td class="py-3">
-                                                @{
-                                                    var priorityClass = issue.Priority switch
-                                                    {
-                                                        FixIt.Models.Enums.IssuePriority.Critical => "danger",
-                                                        FixIt.Models.Enums.IssuePriority.High => "warning",
-                                                        FixIt.Models.Enums.IssuePriority.Medium => "info",
-                                                        FixIt.Models.Enums.IssuePriority.Low => "success",
-                                                        _ => "secondary"
-                                                    };
-                                                }
-                                                <span class="badge bg-@priorityClass">@issue.Priority</span>
-                                            </td>
-                                            <td class="py-3 text-center">
-                                                <span class="badge bg-light text-dark">
-                                                    <i class="bi bi-hand-thumbs-up"></i> @issue.Upvotes
-                                                </span>
-                                            </td>
-                                            <td class="py-3 text-center">
-                                                <span class="badge bg-light text-dark">
-                                                    <i class="bi bi-chat"></i> @issue.Comments
-                                                </span>
-                                            </td>
-                                            <td class="py-3 pe-4">
-                                                <a href="/issues/@issue.IssueId" class="btn btn-sm btn-outline-primary">
-                                                    <i class="bi bi-arrow-right"></i> View
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <section class="card">
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <h2 class="h5 mb-0"><i class="bi bi-star me-2"></i>Top trending issues</h2>
+                <a href="/issues" class="btn btn-sm btn-outline-primary">View all</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 analytics-table">
+                        <thead>
+                            <tr>
+                                <th class="border-0 py-3 ps-4">Issue</th>
+                                <th class="border-0 py-3">Status</th>
+                                <th class="border-0 py-3">Priority</th>
+                                <th class="border-0 py-3 text-center">Upvotes</th>
+                                <th class="border-0 py-3 text-center">Comments</th>
+                                <th class="border-0 py-3 pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var issue in Model.CityReport.TopIssues.Take(10))
+                            {
+                                var statusClass = issue.Status switch
+                                {
+                                    FixIt.Models.Enums.IssueStatus.New => "warning",
+                                    FixIt.Models.Enums.IssueStatus.Confirmed => "info",
+                                    FixIt.Models.Enums.IssueStatus.InProgress => "primary",
+                                    FixIt.Models.Enums.IssueStatus.Fixed => "success",
+                                    _ => "secondary"
+                                };
+                                var priorityClass = issue.Priority switch
+                                {
+                                    FixIt.Models.Enums.IssuePriority.Critical => "danger",
+                                    FixIt.Models.Enums.IssuePriority.High => "warning",
+                                    FixIt.Models.Enums.IssuePriority.Medium => "info",
+                                    FixIt.Models.Enums.IssuePriority.Low => "success",
+                                    _ => "secondary"
+                                };
+
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="fw-bold text-truncate analytics-issue-title">@issue.Title</div>
+                                    </td>
+                                    <td class="py-3"><span class="badge bg-@statusClass">@issue.Status</span></td>
+                                    <td class="py-3"><span class="badge bg-@priorityClass">@issue.Priority</span></td>
+                                    <td class="py-3 text-center">
+                                        <span class="badge bg-light text-dark"><i class="bi bi-hand-thumbs-up me-1"></i>@issue.Upvotes</span>
+                                    </td>
+                                    <td class="py-3 text-center">
+                                        <span class="badge bg-light text-dark"><i class="bi bi-chat me-1"></i>@issue.Comments</span>
+                                    </td>
+                                    <td class="py-3 pe-4">
+                                        <a href="/issues/@issue.IssueId" class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
+        </section>
     }
 </div>
-
-<style>
-    .table-hover tbody tr:hover {
-        background: var(--gray-100);
-    }
-</style>

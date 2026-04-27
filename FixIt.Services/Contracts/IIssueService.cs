@@ -1,6 +1,7 @@
 using FixIt.Models.Issues;
 using FixIt.Models.Common;
 using FixIt.Models.Enums;
+using FixIt.Models.AI;
 using FixIt.Data.Repository.Contracts;
 
 namespace FixIt.Services.Contracts;
@@ -15,7 +16,10 @@ public interface IIssueService
         string cityId,
         UserSummary reporter,
         IEnumerable<string>? tagNames = null,
-        bool isAnonymous = false);
+        bool isAnonymous = false,
+        IssuePriority? priority = null,
+        IssueCategory? category = null,
+        string? department = null);
 
     Task<Issue?> GetIssueByIdAsync(string issueId);
 
@@ -72,8 +76,14 @@ public interface IIssueService
         string? searchQuery = null,
         IssueStatus? status = null,
         IssuePriority? priority = null,
+        IssueCategory? category = null,
+        DateTime? fromUtc = null,
+        DateTime? toUtc = null,
+        IssueSortOption sort = IssueSortOption.Newest,
         int page = 1,
         int pageSize = 20);
+
+    Task<IssuePublicOverview> GetPublicIssueOverviewAsync(int featuredCount = 3);
 
     Task<PagedResult<Issue>> GetIssuesByTagAsync(
         string tagId,
