@@ -6,6 +6,7 @@ using FixIt.Models.Infrastructure;
 using FixIt.Models.Enums;
 using FixIt.Models.Gamification;
 using FixIt.Data.Infrastructure;
+using FixIt.Data.Infrastructure.Migrations;
 using FixIt.Data.Repository;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Services;
@@ -155,6 +156,9 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     var client = sp.GetRequiredService<IMongoClient>();
     return client.GetDatabase(mongoDatabaseName);
 });
+
+// Register migration runner for schema versioning
+builder.Services.AddScoped<MigrationRunner>();
 
 // Configure ASP.NET Core Identity with MongoDB
 builder.Services.AddIdentityMongoDbProvider<ApplicationUser, MongoRole>(identity =>
@@ -843,6 +847,14 @@ if (isRateLimitingEnabled)
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Run pending database migrations on startup
+// This ensures schema is up-to-date before any requests are processed
+using (var scope = app.Services.CreateScope())
+{
+    var migrationRunner = scope.ServiceProvider.GetRequiredService<MigrationRunner>();
+    await migrationRunner.RunPendingMigrationsAsync();
+}
 
 var controllers = app.MapControllers();
 if (isRateLimitingEnabled)

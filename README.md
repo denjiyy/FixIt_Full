@@ -21,6 +21,7 @@ A comprehensive civic engagement platform that enables citizens to report local 
 - [Security](#security)
 - [Testing](#testing)
 - [Deployment](#deployment)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -585,63 +586,89 @@ FixIt.Tests/
 
 ## Deployment
 
+### Quick Start
+
+**Using Docker (Recommended):**
+
+```bash
+# Development
+docker-compose up -d
+
+# Production
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+```
+
+### Production Deployment
+
+Complete production deployment documentation is available in:
+- **[DOCKER.md](./DOCKER.md)** - Container setup, deployment, and troubleshooting
+- **[PRODUCTION_READINESS.md](./PRODUCTION_READINESS.md)** - Implementation status and next steps
+
+For secrets management:
+- **[SECRETS.md](./SECRETS.md)** - Comprehensive secrets management guide for all environments
+
+For CI/CD automation:
+- **[.github/CI-CD.md](./.github/CI-CD.md)** - GitHub Actions workflows and automation
+
 ### Production Checklist
 
 - [ ] Set `ASPNETCORE_ENVIRONMENT=Production`
 - [ ] Configure HTTPS (`RequireHttps: true`)
-- [ ] Set secure JWT_SECRET_KEY (min 32 characters)
-- [ ] Configure production MongoDB connection
+- [ ] Set secure JWT_SECRET_KEY (min 32 characters) via secrets manager
+- [ ] Configure production MongoDB connection (MongoDB Atlas recommended)
 - [ ] Set up OAuth credentials for production
 - [ ] Configure SMTP for production email
 - [ ] Set `CORS_ALLOWED_ORIGINS` to production domain
 - [ ] Enable rate limiting
 - [ ] Configure logging provider (Application Insights, Serilog, etc.)
+- [ ] Set up automated backups
+- [ ] Configure monitoring and alerts
 
-### Environment Variables (Production)
+---
 
-```bash
-# Database
-MONGODB_CONNECTION_STRING=mongodb+srv://user:pass@cluster.mongodb.net/fixit
-MONGODB_DATABASE_NAME=fixit
+## Documentation
 
-# Security
-JWT_SECRET_KEY=your-super-secret-key-min-32-characters-long
+### Setup & Deployment
+- **[DOCKER.md](./DOCKER.md)** - Complete Docker and containerization guide
+  - Local development with docker-compose
+  - Production deployment strategies
+  - Health checks and monitoring
+  - Troubleshooting common issues
 
-# OAuth
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
+### Production Readiness
+- **[PRODUCTION_READINESS.md](./PRODUCTION_READINESS.md)** - Implementation summary
+  - Critical items completed
+  - Next steps and recommendations
+  - Verification checklist
 
-# Email
-EMAIL_PROVIDER=Smtp
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USERNAME=apikey
-SMTP_PASSWORD=...
+### Database Management
+- **[FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md)** - Database migrations guide
+  - Creating new migrations
+  - Migration examples
+  - Rollback procedures
+  - Best practices
 
-# Application
-ASPNETCORE_ENVIRONMENT=Production
-APP_BASE_URL=https://fixit.yourdomain.com
-ALLOWED_HOSTS=fixit.yourdomain.com
-```
+### Security & Secrets
+- **[SECRETS.md](./SECRETS.md)** - Secrets management guide
+  - Development setup
+  - Staging environment configuration
+  - Production best practices
+  - Rotation and emergency procedures
+  - Security checklist
 
-### Docker (Future)
+### CI/CD Pipeline
+- **[.github/CI-CD.md](./.github/CI-CD.md)** - GitHub Actions documentation
+  - Build and test automation
+  - Security scanning
+  - Docker image publishing
+  - Release workflow
 
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-WORKDIR /app
-EXPOSE 8080
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
-COPY . .
-RUN dotnet restore
-RUN dotnet publish -c Release -o /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "FixIt.dll"]
-```
+### Code Contribution
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Contribution guidelines
+  - Development workflow
+  - Coding standards
+  - Testing requirements
+  - Pull request process
 
 ---
 
@@ -653,6 +680,8 @@ ENTRYPOINT ["dotnet", "FixIt.dll"]
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
+
 ### Code Style
 
 - Follow C# naming conventions (PascalCase for public members, camelCase for private)
@@ -660,6 +689,7 @@ ENTRYPOINT ["dotnet", "FixIt.dll"]
 - Add XML documentation for public APIs
 - Keep methods small and focused
 - Write unit tests for new features
+- Database schema changes require migrations (see [MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md))
 
 ---
 
@@ -677,4 +707,4 @@ For issues, questions, or contributions, please:
 
 ---
 
-*Built with  for civic engagement and community improvement*
+*Built with ❤️ for civic engagement and community improvement*
