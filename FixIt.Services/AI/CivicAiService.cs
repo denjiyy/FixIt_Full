@@ -413,47 +413,14 @@ public sealed class OpenAiCivicAiService : ICivicAiService
         var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
         if (IsApiConfigured(apiKey))
         {
-            var full = new StringBuilder();
-
-            try
+            var streamEvents = await TryStreamEventsAsync(systemPrompt, userPrompt, cancellationToken);
+            if (streamEvents != null)
             {
-                await foreach (var chunk in StreamTextAsync(systemPrompt, userPrompt, cancellationToken))
+                foreach (var @event in streamEvents)
                 {
-                    if (string.IsNullOrWhiteSpace(chunk))
-                    {
-                        continue;
-                    }
-
-                    full.Append(chunk);
-                    yield return new AiStreamEvent
-                    {
-                        Type = "chunk",
-                        Text = chunk,
-                        AiGenerated = true,
-                        FallbackUsed = false
-                    };
+                    yield return @event;
                 }
-
-                if (full.Length > 0)
-                {
-                    yield return new AiStreamEvent
-                    {
-                        Type = "complete",
-                        Content = NormalizeSummary(full.ToString()),
-                        AiGenerated = true,
-                        FallbackUsed = false
-                    };
-                    yield break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Streaming AI response failed. Falling back to deterministic copy.");
-                yield return new AiStreamEvent
-                {
-                    Type = "error",
-                    Message = "AI stream failed. Showing fallback insight."
-                };
+                yield break;
             }
         }
 
@@ -472,6 +439,58 @@ public sealed class OpenAiCivicAiService : ICivicAiService
             AiGenerated = false,
             FallbackUsed = true
         };
+    }
+
+    private async Task<List<AiStreamEvent>?> TryStreamEventsAsync(string systemPrompt, string userPrompt, CancellationToken cancellationToken)
+    {
+        var full = new StringBuilder();
+        var events = new List<AiStreamEvent>();
+
+        try
+        {
+            await foreach (var chunk in StreamTextAsync(systemPrompt, userPrompt, cancellationToken))
+            {
+                if (string.IsNullOrWhiteSpace(chunk))
+                {
+                    continue;
+                }
+
+                full.Append(chunk);
+                events.Add(new AiStreamEvent
+                {
+                    Type = "chunk",
+                    Text = chunk,
+                    AiGenerated = true,
+                    FallbackUsed = false
+                });
+            }
+
+            if (full.Length > 0)
+            {
+                events.Add(new AiStreamEvent
+                {
+                    Type = "complete",
+                    Content = NormalizeSummary(full.ToString()),
+                    AiGenerated = true,
+                    FallbackUsed = false
+                });
+                return events;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Streaming AI response failed. Falling back to deterministic copy.");
+            return new List<AiStreamEvent>
+            {
+                new()
+                {
+                    Type = "error",
+                    Message = "AI stream failed. Showing fallback insight."
+                }
+            };
+        }
+
+        return null;
     }
 
     private async Task<string?> CompleteTextAsync(
@@ -583,32 +602,38 @@ public sealed class OpenAiCivicAiService : ICivicAiService
                 yield break;
             }
 
-            try
+            var chunk = TryParseStreamChunk(payload);
+            if (chunk != null)
             {
-                using var json = JsonDocument.Parse(payload);
-                var root = json.RootElement;
-                var choices = root.GetProperty("choices");
-                if (choices.GetArrayLength() == 0)
-                {
-                    continue;
-                }
-
-                var delta = choices[0].GetProperty("delta");
-                if (!delta.TryGetProperty("content", out var contentNode))
-                {
-                    continue;
-                }
-
-                var chunk = contentNode.GetString();
-                if (!string.IsNullOrWhiteSpace(chunk))
-                {
-                    yield return chunk;
-                }
+                yield return chunk;
             }
-            catch
+        }
+    }
+
+    private string? TryParseStreamChunk(string payload)
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(payload);
+            var root = json.RootElement;
+            var choices = root.GetProperty("choices");
+            if (choices.GetArrayLength() == 0)
             {
-                // Ignore malformed stream chunks and continue reading.
+                return null;
             }
+
+            var delta = choices[0].GetProperty("delta");
+            if (!delta.TryGetProperty("content", out var contentNode))
+            {
+                return null;
+            }
+
+            return contentNode.GetString();
+        }
+        catch
+        {
+            // Ignore malformed stream chunks and continue reading.
+            return null;
         }
     }
 
