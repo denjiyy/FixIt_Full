@@ -1,0 +1,77 @@
+# Production docker-compose override configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+version: '3.8'
+
+services:
+  mongodb:
+    restart: always
+    # Production: Use managed MongoDB Atlas or replica set instead
+    # Remove local MongoDB and reference external database via connection string
+    environment:
+      # Recommended: Use MongoDB Atlas connection string from environment variable
+      # MONGO_INITDB_ROOT_PASSWORD should be strong in production
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+
+  fixit-app:
+    restart: always
+    ports:
+      # In production, use reverse proxy (nginx, traefik) instead of direct port exposure
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING}
+      MongoDB__DatabaseName: ${MONGODB_DATABASE_NAME:-fixit}
+      
+      # OAuth Configuration - Use environment variables for production
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # AI Service
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      
+      # Security - MUST be strong in production
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      
+      # Email Configuration
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      
+      # Logging
+      LOGGING__LOGLEVEL__DEFAULT: Warning
+      LOGGING__LOGLEVEL__MICROSOFT: Warning
+    
+    # Production should have stricter resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+# Example .env.production file variables needed:
+# MONGODB_CONNECTION_STRING=mongodb+srv://user:password@cluster.mongodb.net/fixit
+# MONGODB_DATABASE_NAME=fixit
+# MONGODB_ROOT_PASSWORD=your-secure-password
+# GOOGLE_CLIENT_ID=xxx
+# GOOGLE_CLIENT_SECRET=xxx
+# OPENAI_API_KEY=sk-xxx
+# JWT_SECRET_KEY=your-32-char-minimum-secret-key
+# ALLOWED_HOSTS=yourdomain.com
+# CORS_ALLOWED_ORIGINS=https://yourdomain.com
+# EMAIL_PROVIDER=Smtp
+# SMTP_HOST=smtp.sendgrid.net
+# SMTP_PORT=587
+# SMTP_USERNAME=apikey
+# SMTP_PASSWORD=xxx
+# EMAIL_FROM_ADDRESS=noreply@yourdomain.com

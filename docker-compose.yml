@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # MongoDB database
+  mongodb:
+    image: mongo:7.0
+    container_name: fixit-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: fixit
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - fixit-network
+
+  # FixIt Application
+  fixit-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fixit-app
+    restart: unless-stopped
+    ports:
+      - "5092:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      MongoDB__ConnectionString: "mongodb://root:rootpassword@mongodb:27017"
+      MongoDB__DatabaseName: "fixit"
+      
+      # OAuth Configuration
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      
+      # AI Service
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      
+      # Security
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-super-secret-key-min-32-characters-long-1234567890}
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      CORS_ALLOWED_ORIGINS: "http://localhost:5092,http://localhost:3000"
+      
+      # Email Configuration
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-Console}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@fixit.local}
+      
+      # Application Settings
+      DetailedErrors: "true"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      # Mount wwwroot/uploads for persistent file storage
+      - fixit_uploads:/app/wwwroot/uploads
+    healthcheck:
+      test: curl -f http://localhost:8080/health/live || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - fixit-network
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+  fixit_uploads:
+
+networks:
+  fixit-network:
+    driver: bridge
