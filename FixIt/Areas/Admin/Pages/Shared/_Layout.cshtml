@@ -11,7 +11,14 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="FixIt Admin Panel - Manage civic issues, users, reports, and cities." />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
     <title>@(ViewData["Title"] ?? "Admin Panel") - FixIt</title>
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -118,12 +125,12 @@
 
     <div class="admin-overlay" data-admin-close hidden></div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
     @if (showMapAssets)
     {
-        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" defer></script>
     }
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("PageScripts", required: false)
 </body>
 </html>

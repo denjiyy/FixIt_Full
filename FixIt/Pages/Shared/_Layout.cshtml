@@ -25,7 +25,32 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="FixIt - Civic issue reporting and tracking platform. Report infrastructure problems, confirm hazards, and track resolutions in your city." />
+    <meta name="keywords" content="civic issues, reporting, infrastructure, hazard, community" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="@(Context.Request.Scheme)://@(Context.Request.Host)" />
+    <meta property="og:title" content="@(ViewData["Title"] ?? "FixIt") - Community Infrastructure Solutions" />
+    <meta property="og:description" content="Report, track, and resolve civic infrastructure issues in your city." />
+    <meta property="og:image" content="@(Context.Request.Scheme)://@(Context.Request.Host)/images/og-image.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="@(Context.Request.Scheme)://@(Context.Request.Host)" />
+    <meta property="twitter:title" content="@(ViewData["Title"] ?? "FixIt") - Community Infrastructure Solutions" />
+    <meta property="twitter:description" content="Report, track, and resolve civic infrastructure issues in your city." />
+    <meta property="twitter:image" content="@(Context.Request.Scheme)://@(Context.Request.Host)/images/og-image.png" />
+    
     <title>@ViewData["Title"] - FixIt</title>
+    <link rel="canonical" href="@(Context.Request.Scheme)://@(Context.Request.Host)@(Context.Request.Path)" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="apple-touch-icon" href="~/images/apple-touch-icon.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -34,8 +59,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/design-tokens.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
 
     @if (showMapAssets)
     {
@@ -291,13 +316,12 @@
             </div>
         </div>
 
-        <div class="container app-footer__bottom">
-            <span>&copy; @DateTime.Now.Year FixIt · @Localizer["CommunityInfrastructureSolutions"]</span>
-            <div class="app-footer__actions">
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary footer-language-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-globe2"></i>
-                        <span>@Localizer["Language"]</span>
+        <div class="conbootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
+    @if (showMapAssets)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    }
+    <script src="~/js/site.js" asp-append-version="true" deferan>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end app-menu">
                         <li><a class="dropdown-item" href="/SetLanguage?culture=en-US&returnUrl=@Context.Request.Path">English</a></li>
