@@ -695,7 +695,10 @@ try
                 
                 // Generate leaderboards
                 var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
+                logger.LogInformation("Regenerating leaderboards (all time, monthly, weekly)...");
                 await reputationService.RegenerateAllTimeLeaderboardAsync();
+                await reputationService.RegenerateMonthlyLeaderboardAsync();
+                await reputationService.RegenerateWeeklyLeaderboardAsync();
                 logger.LogInformation("Database seeding and leaderboard generation completed.");
             }
             else
@@ -704,7 +707,10 @@ try
                 
                 // Still regenerate leaderboards on startup (can be expensive)
                 var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
+                logger.LogInformation("Regenerating leaderboards (all time, monthly, weekly)...");
                 await reputationService.RegenerateAllTimeLeaderboardAsync();
+                await reputationService.RegenerateMonthlyLeaderboardAsync();
+                await reputationService.RegenerateWeeklyLeaderboardAsync();
             }
         }
         catch (Exception ex)
