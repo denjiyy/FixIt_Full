@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace FixIt.Data.Infrastructure.Migrations;

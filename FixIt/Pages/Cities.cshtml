@@ -125,16 +125,20 @@
                 {
                     var isSelected = string.Equals(selectedCity, city.Name, StringComparison.OrdinalIgnoreCase);
                     <article class="city-card @(isSelected ? "city-card--selected" : string.Empty)">
-                        <div class="city-card__media @(!string.IsNullOrEmpty(city.PhotoUrl) ? string.Empty : "is-fallback")">
+                        <div class="city-card__media" data-city-image-container>
                             @if (!string.IsNullOrEmpty(city.PhotoUrl))
                             {
                                 <img src="@city.PhotoUrl"
                                      alt="@city.Name"
                                      class="city-card__image"
                                      loading="lazy"
-                                     decoding="async" />
+                                     decoding="async"
+                                     crossorigin="anonymous"
+                                     onerror="this.style.display='none'; this.parentElement.classList.add('is-fallback'); this.parentElement.querySelector('.city-card__placeholder').style.display='block';" />
                             }
-                            <div class="city-card__placeholder" aria-hidden="@(!string.IsNullOrEmpty(city.PhotoUrl)).ToString().ToLowerInvariant()">
+                            <div class="city-card__placeholder" 
+                                 style="@(string.IsNullOrEmpty(city.PhotoUrl) ? "display: block;" : "display: none;")"
+                                 aria-hidden="@(string.IsNullOrEmpty(city.PhotoUrl) ? "false" : "true")">
                                 <i class="bi bi-building"></i>
                             </div>
                             <div class="city-card__badge">

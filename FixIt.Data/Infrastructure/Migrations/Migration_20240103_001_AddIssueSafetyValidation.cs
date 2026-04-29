@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace FixIt.Data.Infrastructure.Migrations;
@@ -21,8 +22,8 @@ public class Migration_20240103_001_AddIssueSafetyValidation : IMigration
             // Set to false for existing documents (requires manual review)
             var updateDefinition = Builders<BsonDocument>.Update
                 .SetOnInsert("validated", false)
-                .SetOnInsert("validatedAt", null)
-                .SetOnInsert("validatedBy", null);
+                .SetOnInsert("validatedAt", BsonNull.Value)
+                .SetOnInsert("validatedBy", BsonNull.Value);
 
             var filter = Builders<BsonDocument>.Filter
                 .Exists("validated", false);
