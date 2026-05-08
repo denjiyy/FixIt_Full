@@ -89,7 +89,7 @@ docker compose exec mongodb mongosh -u root -p "$MONGODB_ROOT_PASSWORD" --authen
 
 1. **Create production environment file:**
    ```bash
-   cp .env.example .env.production
+   cp .env.production.example .env.production
    # Edit with production values
    nano .env.production
    ```
@@ -98,21 +98,36 @@ docker compose exec mongodb mongosh -u root -p "$MONGODB_ROOT_PASSWORD" --authen
    ```bash
    docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
    ```
+   - To change the host port, set `APP_HOST_PORT` in `.env.production` (default `8080`).
 
 3. **Monitor deployment:**
    ```bash
    docker compose logs -f fixit-app
    ```
 
-4. **Run release smoke test:**
+4. **Run production preflight checks:**
+   ```bash
+   scripts/ops/preflight.sh .env.production
+   ```
+
+5. **Run release smoke test:**
    ```bash
    scripts/ops/smoke.sh http://localhost:8080
    ```
 
-5. **Run light-load gate (10-20 users):**
+6. **Run light-load gate (10-20 users):**
    ```bash
    CONCURRENCY=20 DURATION_SECONDS=90 scripts/ops/load-lite.sh http://localhost:8080
    ```
+
+7. **Optional one-command full gate:**
+   ```bash
+   scripts/ops/release-gate.sh .env.production
+   ```
+   - If `ALLOWED_HOSTS` excludes `localhost` (recommended), run:
+     ```bash
+     FIXIT_RELEASE_REQUEST_HOST_HEADER=your-production-domain.com scripts/ops/release-gate.sh .env.production
+     ```
 
 ### Production Recommendations
 
@@ -162,7 +177,7 @@ docker compose exec mongodb mongosh -u root -p "$MONGODB_ROOT_PASSWORD" --authen
 6. **Logging**
    - Logs output to stdout (Docker captures)
    - Configure log driver: `json-file`, `awslogs`, `splunk`, etc.
-   - Example: `docker logs fixit-app` or `docker compose logs`
+   - Example: `docker compose logs fixit-app`
 
 7. **Networking**
    - Docker creates isolated network `fixit-network`

@@ -1,7 +1,6 @@
 services:
   mongodb:
     image: mongo:7.0
-    container_name: fixit-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -23,7 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fixit-app
     restart: unless-stopped
     environment:
       ASPNETCORE_URLS: http://+:8080
@@ -41,6 +39,7 @@ services:
       AllowedHosts: ${ALLOWED_HOSTS:-localhost;127.0.0.1}
       Security__CorsAllowedOrigins: ${CORS_ALLOWED_ORIGINS:-http://localhost:5092,http://localhost:3000}
       Security__TrustedProxyIps: ${SECURITY_TRUSTED_PROXY_IPS:-}
+      Security__HttpsPort: ${SECURITY_HTTPS_PORT:-443}
 
       Email__Provider: ${EMAIL_PROVIDER:-Console}
       Email__FromAddress: ${EMAIL_FROM_ADDRESS:-noreply@fixit.local}
@@ -52,6 +51,8 @@ services:
       Email__Smtp__EnableSsl: ${SMTP_ENABLE_SSL:-true}
 
       DataProtection__KeyRingPath: ${DATA_PROTECTION_KEY_RING_PATH:-/app/data-protection-keys}
+      DataProtection__CertificatePath: ${DATA_PROTECTION_CERTIFICATE_PATH:-}
+      DataProtection__CertificatePassword: ${DATA_PROTECTION_CERTIFICATE_PASSWORD:-}
       Database__ResetOnStartup: ${DATABASE_RESET_ON_STARTUP:-false}
       Database__EnableDevelopmentAdminSeed: ${DATABASE_ENABLE_DEVELOPMENT_ADMIN_SEED:-false}
       Database__DevelopmentAdmin__UserName: ${DATABASE_DEVELOPMENT_ADMIN_USERNAME:-admin}

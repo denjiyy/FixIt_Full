@@ -167,7 +167,7 @@ namespace FixIt.Controllers
                         }
 
                         _logger.LogWarning("No address found in Nominatim response");
-                        throw new Exception("No address in response");
+                        throw new InvalidOperationException("No address in response");
                     }
                 }
             }

@@ -24,6 +24,9 @@ obj/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.production.local
+.env.production.*.local
 appsettings.Development.json
 appsettings.Production.json
 UserSecrets/
@@ -43,6 +46,7 @@ Thumbs.db
 logs/
 *.log
 npm-debug.log*
+backups/
 
 # Dependencies
 node_modules/

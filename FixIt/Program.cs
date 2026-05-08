@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Net;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Globalization;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
@@ -96,6 +97,13 @@ builder.Services.AddSession(options =>
 var securityConfig = builder.Configuration.GetSection("Security");
 var rateLimitingConfig = builder.Configuration.GetSection("Security:RateLimiting");
 var isRateLimitingEnabled = rateLimitingConfig.GetValue("Enabled", true);
+var configuredHttpsPort = securityConfig.GetValue<int?>("HttpsPort");
+var httpsPort = configuredHttpsPort.HasValue && configuredHttpsPort.Value > 0 ? configuredHttpsPort.Value : 443;
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.HttpsPort = httpsPort;
+    options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+});
 
 // Configure rate limiting (DDoS protection) with per-client partitioning
 if (isRateLimitingEnabled)
@@ -594,6 +602,22 @@ if (!string.IsNullOrWhiteSpace(dataProtectionKeyRingPath))
     dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(fullPath));
 }
 
+var dataProtectionCertificatePath = builder.Configuration["DataProtection:CertificatePath"];
+var dataProtectionCertificatePassword = builder.Configuration["DataProtection:CertificatePassword"];
+if (!string.IsNullOrWhiteSpace(dataProtectionCertificatePath))
+{
+    var certificateFullPath = Path.GetFullPath(dataProtectionCertificatePath);
+    if (!File.Exists(certificateFullPath))
+    {
+        throw new InvalidOperationException($"DataProtection certificate file was not found at '{certificateFullPath}'.");
+    }
+
+    var certificate = X509CertificateLoader.LoadPkcs12FromFile(
+        certificateFullPath,
+        string.IsNullOrWhiteSpace(dataProtectionCertificatePassword) ? null : dataProtectionCertificatePassword);
+    dataProtectionBuilder.ProtectKeysWithCertificate(certificate);
+}
+
 // Configure trusted proxy handling for reverse-proxy deployments
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -673,6 +697,11 @@ if (!hasGoogleClientId || !hasGoogleClientSecret)
 if (isProduction && string.IsNullOrWhiteSpace(dataProtectionKeyRingPath))
 {
     app.Logger.LogWarning("DataProtection:KeyRingPath is not configured. Auth cookies may be invalidated after container restarts.");
+}
+
+if (isProduction && string.IsNullOrWhiteSpace(dataProtectionCertificatePath))
+{
+    app.Logger.LogWarning("DataProtection:CertificatePath is not configured. Data protection keys are persisted without an explicit at-rest encryptor.");
 }
 
 // Initialize database (indexes and seed data) - optional if MongoDB is available

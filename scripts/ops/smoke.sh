@@ -3,6 +3,8 @@ set -euo pipefail
 
 BASE_URL="${1:-http://localhost:8080}"
 CURL_TIMEOUT_SECONDS="${CURL_TIMEOUT_SECONDS:-10}"
+REQUEST_HOST_HEADER="${REQUEST_HOST_HEADER:-}"
+CURL_RESOLVE_ENTRY="${CURL_RESOLVE_ENTRY:-}"
 
 echo "Running smoke checks against: ${BASE_URL}"
 
@@ -14,7 +16,21 @@ check_endpoint() {
   body_file="$(mktemp)"
 
   local status_code
-  status_code="$(curl --silent --show-error --max-time "${CURL_TIMEOUT_SECONDS}" -o "${body_file}" -w "%{http_code}" "${BASE_URL}${path}" || true)"
+  local curl_args=(
+    --silent
+    --show-error
+    --max-time "${CURL_TIMEOUT_SECONDS}"
+    -o "${body_file}"
+    -w "%{http_code}"
+  )
+  if [[ -n "${REQUEST_HOST_HEADER}" ]]; then
+    curl_args+=(-H "Host: ${REQUEST_HOST_HEADER}")
+  fi
+  if [[ -n "${CURL_RESOLVE_ENTRY}" ]]; then
+    curl_args+=(--resolve "${CURL_RESOLVE_ENTRY}")
+  fi
+
+  status_code="$(curl "${curl_args[@]}" "${BASE_URL}${path}" || true)"
 
   local matched="false"
   for expected in "${accepted_statuses[@]}"; do

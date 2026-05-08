@@ -4,6 +4,12 @@ Audience: diploma beta launch (10-20 users)
 
 Mark every item before release.
 
+## 0) One-Command Full Gate
+
+- [ ] Run full automated gate:
+  `scripts/ops/release-gate.sh .env.production`
+- [ ] If this command fails, mark NO-GO and fix the reported gate.
+
 ## 1) Build and Test Gates
 
 - [ ] `dotnet build FixIt.sln -c Release` passes with 0 errors.
@@ -14,6 +20,8 @@ Mark every item before release.
 
 ## 2) Secrets and Configuration Gates
 
+- [ ] `scripts/ops/preflight.sh .env.production` passes.
+- [ ] `.env.production` is created from `.env.production.example`.
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`
 - [ ] `JWT_SECRET_KEY` is 32+ characters and random.
 - [ ] `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are production values.
@@ -21,13 +29,14 @@ Mark every item before release.
 - [ ] `CORS_ALLOWED_ORIGINS` only contains production domains.
 - [ ] `ALLOWED_HOSTS` only contains production hostnames.
 - [ ] `DATA_PROTECTION_KEY_RING_PATH` points to persistent storage.
+- [ ] `SECURITY_HTTPS_PORT` is set correctly (usually `443`).
 
 ## 3) Runtime Smoke Gates
 
 - [ ] Start production stack:
   `docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d`
 - [ ] Run smoke test:
-  `scripts/ops/smoke.sh http://localhost:8080`
+  `scripts/ops/smoke.sh http://localhost:8080` (or your ingress URL)
 - [ ] Verify app logs have no unhandled exceptions:
   `docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production logs --tail=200 fixit-app`
 
@@ -43,9 +52,9 @@ Mark every item before release.
 ## 5) Backup and Restore Gates
 
 - [ ] Backup succeeds:
-  `MONGODB_ROOT_PASSWORD=<password> scripts/ops/mongo-backup.sh ./backups`
+  `FIXIT_ENV_FILE=.env.production scripts/ops/mongo-backup.sh ./backups`
 - [ ] Restore test succeeds on non-production environment:
-  `MONGODB_ROOT_PASSWORD=<password> scripts/ops/mongo-restore.sh ./backups/<file>.archive.gz --drop`
+  `FIXIT_ENV_FILE=.env.production scripts/ops/mongo-restore.sh ./backups/<file>.archive.gz --drop`
 - [ ] Backup file is stored outside the app host (cloud storage or off-host copy).
 
 ## 6) Rollback Gate

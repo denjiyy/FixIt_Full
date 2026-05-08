@@ -134,6 +134,15 @@ See [MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md) for ex
 ### Beta Ops Gates
 
 ```bash
+# Production env preflight
+scripts/ops/preflight.sh .env.production
+
+# Full release gate
+scripts/ops/release-gate.sh .env.production
+
+# Full release gate when ALLOWED_HOSTS excludes localhost
+FIXIT_RELEASE_REQUEST_HOST_HEADER=your-production-domain.com scripts/ops/release-gate.sh .env.production
+
 # Smoke test
 scripts/ops/smoke.sh http://localhost:8080
 
@@ -175,7 +184,7 @@ See [SECRETS.md](./SECRETS.md) for complete guide on configuring:
 docker compose up -d
 
 # Production
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
 ```
 
 ### Stop Services

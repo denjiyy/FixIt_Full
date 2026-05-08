@@ -269,18 +269,23 @@ To create a development admin user, add to `appsettings.Development.json`:
 |----------|-------------|---------|
 | `MONGODB_CONNECTION_STRING` | MongoDB connection string | `mongodb://root:<password>@mongodb:27017` |
 | `MONGODB_DATABASE_NAME` | Database name | `fixit` |
+| `MONGODB_ROOT_PASSWORD` | MongoDB root password used by compose Mongo service | `strong-db-password` |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456...apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret | `GOCSPX-...` |
 | `OPENAI_API_KEY` | OpenAI API key | `<openai-api-key>` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins | `https://fixit.app,https://admin.fixit.app` |
 | `ALLOWED_HOSTS` | Allowed hostnames | `fixit.app;api.fixit.app` |
 | `SECURITY_TRUSTED_PROXY_IPS` | Reverse proxy IP allowlist | `10.0.0.10,10.0.0.11` |
+| `SECURITY_HTTPS_PORT` | HTTPS redirect destination port | `443` |
 | `SMTP_HOST` | SMTP server host | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP server port | `587` |
 | `SMTP_USERNAME` | SMTP username | `noreply@fixit.local` |
 | `SMTP_PASSWORD` | SMTP password (app password) | `...` |
 | `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-super-secret-key-here` |
 | `DATA_PROTECTION_KEY_RING_PATH` | Shared key storage path for cookie encryption keys | `/app/data-protection-keys` |
+| `DATA_PROTECTION_CERTIFICATE_PATH` | Optional PFX path for data-protection key encryption at rest | `/run/secrets/fixit-dp.pfx` |
+| `DATA_PROTECTION_CERTIFICATE_PASSWORD` | Optional PFX password | `...` |
+| `APP_HOST_PORT` | Host port mapped to container port 8080 in production compose | `8080` |
 
 ### appsettings.json Configuration
 
@@ -299,6 +304,8 @@ To create a development admin user, add to `appsettings.Development.json`:
   },
   "Security": {
     "RequireHttps": false,
+    "HttpsPort": 443,
+    "TrustedProxyIps": "",
     "RateLimiting": {
       "Enabled": true,
       "RequestsPerMinute": 60,
@@ -593,6 +600,7 @@ FixIt.Tests/
 docker compose up -d
 
 # Production
+cp .env.production.example .env.production
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
 ```
 
@@ -626,6 +634,15 @@ For CI/CD automation:
 ### Operational Scripts
 
 ```bash
+# Validate production env quality
+scripts/ops/preflight.sh .env.production
+
+# Run all gates end-to-end (build, test, vulnerabilities, compose, smoke, load, backup)
+scripts/ops/release-gate.sh .env.production
+
+# If ALLOWED_HOSTS excludes localhost, set production host header for local gate execution
+FIXIT_RELEASE_REQUEST_HOST_HEADER=your-production-domain.com scripts/ops/release-gate.sh .env.production
+
 # Smoke test a running instance
 scripts/ops/smoke.sh http://localhost:8080
 
@@ -633,8 +650,8 @@ scripts/ops/smoke.sh http://localhost:8080
 CONCURRENCY=20 DURATION_SECONDS=90 scripts/ops/load-lite.sh http://localhost:8080
 
 # Backup/restore
-MONGODB_ROOT_PASSWORD=<password> scripts/ops/mongo-backup.sh ./backups
-MONGODB_ROOT_PASSWORD=<password> scripts/ops/mongo-restore.sh ./backups/<file>.archive.gz --drop
+FIXIT_ENV_FILE=.env.production scripts/ops/mongo-backup.sh ./backups
+FIXIT_ENV_FILE=.env.production scripts/ops/mongo-restore.sh ./backups/<file>.archive.gz --drop
 ```
 
 ---

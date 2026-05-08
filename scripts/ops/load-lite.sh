@@ -7,6 +7,8 @@ CONCURRENCY="${CONCURRENCY:-20}"
 REQUEST_TIMEOUT_SECONDS="${REQUEST_TIMEOUT_SECONDS:-8}"
 MIN_SUCCESS_RATE_PERCENT="${MIN_SUCCESS_RATE_PERCENT:-99}"
 MAX_P95_SECONDS="${MAX_P95_SECONDS:-1.50}"
+REQUEST_HOST_HEADER="${REQUEST_HOST_HEADER:-}"
+CURL_RESOLVE_ENTRY="${CURL_RESOLVE_ENTRY:-}"
 
 TARGET_PATHS=(
   "/health/live"
@@ -28,8 +30,21 @@ run_worker() {
   while (( SECONDS < end_ts )); do
     local path_index=$((RANDOM % ${#TARGET_PATHS[@]}))
     local path="${TARGET_PATHS[$path_index]}"
-    curl --silent --show-error --max-time "${REQUEST_TIMEOUT_SECONDS}" \
-      -o /dev/null -w "%{http_code} %{time_total}\n" "${BASE_URL}${path}" \
+    local curl_args=(
+      --silent
+      --show-error
+      --max-time "${REQUEST_TIMEOUT_SECONDS}"
+      -o /dev/null
+      -w "%{http_code} %{time_total}\n"
+    )
+    if [[ -n "${REQUEST_HOST_HEADER}" ]]; then
+      curl_args+=(-H "Host: ${REQUEST_HOST_HEADER}")
+    fi
+    if [[ -n "${CURL_RESOLVE_ENTRY}" ]]; then
+      curl_args+=(--resolve "${CURL_RESOLVE_ENTRY}")
+    fi
+
+    curl "${curl_args[@]}" "${BASE_URL}${path}" \
       >> "${results_file}" 2>/dev/null || echo "000 ${REQUEST_TIMEOUT_SECONDS}" >> "${results_file}"
   done
 }
