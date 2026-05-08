@@ -511,6 +511,122 @@ public class SafetyController : ControllerBase
     }
 
     /// <summary>
+    /// Updates hazard alert preferences for the current user.
+    /// </summary>
+    [HttpPost("alert-preferences")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    [ProducesResponseType(typeof(ApiResponse<AlertPreferencesResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<AlertPreferencesResponse>>> UpdateAlertPreferences(
+        [FromBody] UpdateAlertPreferencesRequest request)
+    {
+        if (request == null)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Request payload is required."));
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+        }
+
+        if (request.CrimeAlerts.HasValue)
+        {
+            user.CrimeAlertsEnabled = request.CrimeAlerts.Value;
+        }
+
+        if (request.AccidentAlerts.HasValue)
+        {
+            user.AccidentAlertsEnabled = request.AccidentAlerts.Value;
+        }
+
+        if (request.InfrastructureAlerts.HasValue)
+        {
+            user.InfrastructureAlertsEnabled = request.InfrastructureAlerts.Value;
+        }
+
+        if (request.AllHazards.HasValue)
+        {
+            user.AllHazardAlertsEnabled = request.AllHazards.Value;
+        }
+
+        if (request.AlertRadius.HasValue)
+        {
+            if (request.AlertRadius.Value < 1 || request.AlertRadius.Value > 50)
+            {
+                return BadRequest(ApiResponse<object>.CreateError("Alert radius must be between 1 and 50 km."));
+            }
+
+            user.AlertRadiusKm = request.AlertRadius.Value;
+        }
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Failed to update alert preferences."));
+        }
+
+        return Ok(ApiResponse<AlertPreferencesResponse>.CreateSuccess(
+            new AlertPreferencesResponse
+            {
+                CrimeAlerts = user.CrimeAlertsEnabled,
+                AccidentAlerts = user.AccidentAlertsEnabled,
+                InfrastructureAlerts = user.InfrastructureAlertsEnabled,
+                AllHazards = user.AllHazardAlertsEnabled,
+                AlertRadiusKm = user.AlertRadiusKm,
+                SeverityThreshold = user.HazardSeverityThreshold
+            },
+            "Alert preferences updated"));
+    }
+
+    /// <summary>
+    /// Updates hazard severity threshold for notifications.
+    /// </summary>
+    [HttpPost("alert-preferences/severity")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    [ProducesResponseType(typeof(ApiResponse<AlertPreferencesResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<AlertPreferencesResponse>>> UpdateAlertSeverityThreshold(
+        [FromBody] UpdateAlertSeverityRequest request)
+    {
+        var normalizedThreshold = NormalizeSeverityThreshold(request?.Threshold);
+        if (normalizedThreshold == null)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Severity threshold must be one of: All, High, Critical."));
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+        }
+
+        user.HazardSeverityThreshold = normalizedThreshold;
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Failed to update severity threshold."));
+        }
+
+        return Ok(ApiResponse<AlertPreferencesResponse>.CreateSuccess(
+            new AlertPreferencesResponse
+            {
+                CrimeAlerts = user.CrimeAlertsEnabled,
+                AccidentAlerts = user.AccidentAlertsEnabled,
+                InfrastructureAlerts = user.InfrastructureAlertsEnabled,
+                AllHazards = user.AllHazardAlertsEnabled,
+                AlertRadiusKm = user.AlertRadiusKm,
+                SeverityThreshold = user.HazardSeverityThreshold
+            },
+            "Severity threshold updated"));
+    }
+
+    /// <summary>
     /// Delete a hazard (soft delete)
     /// Only the user who reported the hazard or an administrator can delete it
     /// </summary>
@@ -694,7 +810,23 @@ public class SafetyController : ControllerBase
                     Type = h.Type,
                     Count = h.Count
                 })
-                .ToList()
+            .ToList()
+        };
+    }
+
+    private static string? NormalizeSeverityThreshold(string? threshold)
+    {
+        if (string.IsNullOrWhiteSpace(threshold))
+        {
+            return null;
+        }
+
+        return threshold.Trim().ToLowerInvariant() switch
+        {
+            "all" => "All",
+            "high" => "High",
+            "critical" => "Critical",
+            _ => null
         };
     }
 
@@ -794,6 +926,30 @@ public class ToggleAnonymousReportingRequest
 public class AnonymousReportingStatusResponse
 {
     public bool AnonymousReportingEnabled { get; set; }
+}
+
+public class UpdateAlertPreferencesRequest
+{
+    public bool? CrimeAlerts { get; set; }
+    public bool? AccidentAlerts { get; set; }
+    public bool? InfrastructureAlerts { get; set; }
+    public bool? AllHazards { get; set; }
+    public int? AlertRadius { get; set; }
+}
+
+public class UpdateAlertSeverityRequest
+{
+    public string? Threshold { get; set; }
+}
+
+public class AlertPreferencesResponse
+{
+    public bool CrimeAlerts { get; set; }
+    public bool AccidentAlerts { get; set; }
+    public bool InfrastructureAlerts { get; set; }
+    public bool AllHazards { get; set; }
+    public int AlertRadiusKm { get; set; }
+    public string SeverityThreshold { get; set; } = "All";
 }
 
 public class UpdateHazardRequest

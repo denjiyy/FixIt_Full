@@ -57,7 +57,19 @@ public sealed class GlobalExceptionHandlingMiddleware
             return;
         }
 
-        context.Response.ContentType = "text/plain; charset=utf-8";
-        await context.Response.WriteAsync(message);
+        // For web page requests, redirect to appropriate error page
+        if (statusCode == StatusCodes.Status404NotFound)
+        {
+            context.Response.Redirect("/404", permanent: false);
+        }
+        else if (statusCode == StatusCodes.Status403Forbidden)
+        {
+            context.Response.Redirect("/error?code=403", permanent: false);
+        }
+        else
+        {
+            // All other errors (500, etc.) redirect to error page
+            context.Response.Redirect("/error", permanent: false);
+        }
     }
 }

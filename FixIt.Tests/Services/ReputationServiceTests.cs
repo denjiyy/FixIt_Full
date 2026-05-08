@@ -7,6 +7,7 @@ using FixIt.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Linq.Expressions;
 
 namespace FixIt.Tests.Services;
 
@@ -27,16 +28,29 @@ public class ReputationServiceTests
         _loggerMock = new Mock<ILogger<ReputationService>>();
 
         var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
+        var optionsMock = Options.Create(new IdentityOptions());
+        var passwordHasher = new PasswordHasher<ApplicationUser>();
+        var userValidators = new List<IUserValidator<ApplicationUser>>();
+        var passwordValidators = new List<IPasswordValidator<ApplicationUser>>();
+        var lookupNormalizer = new UpperInvariantLookupNormalizer();
+        var identityErrors = new IdentityErrorDescriber();
+        var serviceProvider = new Mock<IServiceProvider>().Object;
+        var userManagerLogger = new Mock<ILogger<UserManager<ApplicationUser>>>().Object;
+
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
-            It.IsAny<IUserStore<ApplicationUser>>(),
-            It.IsAny<IOptions<IdentityOptions>>(),
-            It.IsAny<IPasswordHasher<ApplicationUser>>(),
-            It.IsAny<IEnumerable<IUserValidator<ApplicationUser>>>(),
-            It.IsAny<IEnumerable<IPasswordValidator<ApplicationUser>>>(),
-            It.IsAny<ILookupNormalizer>(),
-            It.IsAny<IdentityErrorDescriber>(),
-            It.IsAny<IServiceProvider>(),
-            It.IsAny<ILogger<UserManager<ApplicationUser>>>());
+            userStoreMock.Object,
+            optionsMock,
+            passwordHasher,
+            userValidators,
+            passwordValidators,
+            lookupNormalizer,
+            identityErrors,
+            serviceProvider,
+            userManagerLogger);
+
+        // Mock UserManager methods
+        _userManagerMock.Setup(m => m.FindByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync((string id) => new ApplicationUser { Id = MongoDB.Bson.ObjectId.GenerateNewId(), Email = $"user_{id}@example.com", EmailConfirmed = true });
 
         _reputationService = new ReputationService(
             _reputationRepoMock.Object,
@@ -134,7 +148,7 @@ public class ReputationServiceTests
 
         // Assert
         Assert.NotNull(updatedReputation);
-        Assert.Equal(150, updatedReputation.TotalPoints); // 100 + 50
+        Assert.Equal(215, updatedReputation.TotalPoints); // 100 + 50 + achievement rewards (65)
         Assert.Equal(6, updatedReputation.IssuesReported); // 5 + 1
         _transactionRepoMock.Verify(r => r.InsertAsync(It.IsAny<ReputationTransaction>()), Times.Once);
         _reputationRepoMock.Verify(r => r.ReplaceAsync(userId, It.IsAny<UserReputation>()), Times.AtLeastOnce);
@@ -173,7 +187,7 @@ public class ReputationServiceTests
 
         // Assert
         Assert.NotNull(capturedReputation);
-        Assert.Equal(10, capturedReputation.TotalPoints);
+        Assert.Equal(15, capturedReputation.TotalPoints); // 10 + verified-email achievement reward (5)
         Assert.Equal(3, capturedReputation.CommentsPosted); // 2 + 1
     }
 
@@ -217,5 +231,155 @@ public class ReputationServiceTests
 
         // Assert
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetLeaderboardAsync_OrdersByRankAndHonorsTakeLimit()
+    {
+        // Arrange
+        var allEntries = new List<LeaderboardEntry>
+        {
+            new() { UserId = "u3", UserDisplayName = "User 3", Rank = 3, Points = 30, Period = LeaderboardPeriod.Weekly },
+            new() { UserId = "u1", UserDisplayName = "User 1", Rank = 1, Points = 50, Period = LeaderboardPeriod.Weekly },
+            new() { UserId = "u2", UserDisplayName = "User 2", Rank = 2, Points = 40, Period = LeaderboardPeriod.Weekly },
+            new() { UserId = "m1", UserDisplayName = "Monthly", Rank = 1, Points = 100, Period = LeaderboardPeriod.Monthly }
+        };
+
+        _leaderboardRepoMock
+            .Setup(r => r.FindAsync(It.IsAny<Expression<Func<LeaderboardEntry, bool>>>()))
+            .ReturnsAsync((Expression<Func<LeaderboardEntry, bool>> predicate) =>
+                allEntries.Where(predicate.Compile()).ToList());
+
+        // Act
+        var result = await _reputationService.GetLeaderboardAsync(LeaderboardPeriod.Weekly, 2);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Equal("u1", result[0].UserId);
+        Assert.Equal("u2", result[1].UserId);
+    }
+
+    [Fact]
+    public async Task RegenerateMonthlyLeaderboardAsync_SkipsMissingUsersAndKeepsRanksContiguous()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var transactions = new List<ReputationTransaction>
+        {
+            new() { UserId = "missing-user", Points = 100, CreatedAt = now.AddDays(-1) },
+            new() { UserId = "user-a", Points = 80, CreatedAt = now.AddDays(-1) },
+            new() { UserId = "user-b", Points = 60, CreatedAt = now.AddDays(-1) }
+        };
+
+        var userReputations = new Dictionary<string, UserReputation>
+        {
+            ["user-a"] = new() { Id = "user-a", UserId = "user-a", TrustLevel = 2, TotalPoints = 250 },
+            ["user-b"] = new() { Id = "user-b", UserId = "user-b", TrustLevel = 1, TotalPoints = 80 }
+        };
+
+        var insertedEntries = new List<LeaderboardEntry>();
+
+        _transactionRepoMock
+            .Setup(r => r.FindAsync(It.IsAny<Expression<Func<ReputationTransaction, bool>>>()))
+            .ReturnsAsync((Expression<Func<ReputationTransaction, bool>> predicate) =>
+                transactions.Where(predicate.Compile()).ToList());
+
+        _leaderboardRepoMock
+            .Setup(r => r.FindAsync(It.IsAny<Expression<Func<LeaderboardEntry, bool>>>()))
+            .ReturnsAsync(new List<LeaderboardEntry>());
+
+        _leaderboardRepoMock
+            .Setup(r => r.InsertAsync(It.IsAny<LeaderboardEntry>()))
+            .Callback<LeaderboardEntry>(entry => insertedEntries.Add(entry))
+            .ReturnsAsync((LeaderboardEntry e) => e);
+
+        _reputationRepoMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync((string id) => userReputations.TryGetValue(id, out var rep) ? rep : null);
+
+        _userManagerMock.Setup(m => m.FindByIdAsync("missing-user"))
+            .ReturnsAsync((ApplicationUser?)null);
+        _userManagerMock.Setup(m => m.FindByIdAsync("user-a"))
+            .ReturnsAsync(new ApplicationUser
+            {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId(),
+                DisplayName = "User A",
+                EmailConfirmed = true
+            });
+        _userManagerMock.Setup(m => m.FindByIdAsync("user-b"))
+            .ReturnsAsync(new ApplicationUser
+            {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId(),
+                DisplayName = "User B",
+                EmailConfirmed = true
+            });
+
+        // Act
+        await _reputationService.RegenerateMonthlyLeaderboardAsync();
+
+        // Assert
+        Assert.Equal(2, insertedEntries.Count);
+        Assert.Equal("user-a", insertedEntries[0].UserId);
+        Assert.Equal("user-b", insertedEntries[1].UserId);
+        Assert.Equal(1, insertedEntries[0].Rank);
+        Assert.Equal(2, insertedEntries[1].Rank);
+        Assert.DoesNotContain(insertedEntries, e => e.UserId == "missing-user");
+    }
+
+    [Fact]
+    public async Task RegenerateWeeklyLeaderboardAsync_WhenPointsTie_OrdersByUserIdDeterministically()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var transactions = new List<ReputationTransaction>
+        {
+            new() { UserId = "user-b", Points = 10, CreatedAt = now.AddDays(-1) },
+            new() { UserId = "user-a", Points = 10, CreatedAt = now.AddDays(-1) }
+        };
+
+        var insertedEntries = new List<LeaderboardEntry>();
+
+        _transactionRepoMock
+            .Setup(r => r.FindAsync(It.IsAny<Expression<Func<ReputationTransaction, bool>>>()))
+            .ReturnsAsync((Expression<Func<ReputationTransaction, bool>> predicate) =>
+                transactions.Where(predicate.Compile()).ToList());
+
+        _leaderboardRepoMock
+            .Setup(r => r.FindAsync(It.IsAny<Expression<Func<LeaderboardEntry, bool>>>()))
+            .ReturnsAsync(new List<LeaderboardEntry>());
+
+        _leaderboardRepoMock
+            .Setup(r => r.InsertAsync(It.IsAny<LeaderboardEntry>()))
+            .Callback<LeaderboardEntry>(entry => insertedEntries.Add(entry))
+            .ReturnsAsync((LeaderboardEntry e) => e);
+
+        _reputationRepoMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<string>()))
+            .ReturnsAsync((UserReputation?)null);
+
+        _userManagerMock.Setup(m => m.FindByIdAsync("user-a"))
+            .ReturnsAsync(new ApplicationUser
+            {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId(),
+                DisplayName = "User A",
+                EmailConfirmed = true
+            });
+        _userManagerMock.Setup(m => m.FindByIdAsync("user-b"))
+            .ReturnsAsync(new ApplicationUser
+            {
+                Id = MongoDB.Bson.ObjectId.GenerateNewId(),
+                DisplayName = "User B",
+                EmailConfirmed = true
+            });
+
+        // Act
+        await _reputationService.RegenerateWeeklyLeaderboardAsync();
+
+        // Assert
+        Assert.Equal(2, insertedEntries.Count);
+        Assert.Equal("user-a", insertedEntries[0].UserId);
+        Assert.Equal("user-b", insertedEntries[1].UserId);
+        Assert.Equal(1, insertedEntries[0].Rank);
+        Assert.Equal(2, insertedEntries[1].Rank);
     }
 }

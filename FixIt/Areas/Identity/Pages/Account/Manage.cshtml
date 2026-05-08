@@ -38,6 +38,13 @@
         </div>
     </section>
 
+    @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+    {
+        <div class="alert @(Model.StatusMessageIsError ? "alert-danger" : "alert-success") mb-4" role="alert">
+            @Model.StatusMessage
+        </div>
+    }
+
     <div class="settings-shell-grid">
         <aside class="settings-sidepanel">
             <div>
@@ -53,6 +60,10 @@
                 <a href="#security" class="settings-link">
                     <i class="bi bi-shield-lock"></i>
                     <span>Security</span>
+                </a>
+                <a href="#data-rights" class="settings-link">
+                    <i class="bi bi-database-lock"></i>
+                    <span>Data rights</span>
                 </a>
             </div>
 
@@ -133,6 +144,49 @@
                             <a href="/Identity/Account/Manage/TwoFactorAuthentication" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-shield-check me-2"></i>Set up 2FA
                             </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="data-rights" class="settings-panel">
+                <div class="settings-panel__head">
+                    <div>
+                        <span class="settings-panel__eyebrow"><i class="bi bi-database-lock"></i> Privacy rights</span>
+                        <h2 class="settings-panel__title">Data export and account deletion</h2>
+                        <p class="settings-panel__copy">Export your personal data in JSON format or permanently deactivate your account.</p>
+                    </div>
+                </div>
+                <div class="settings-panel__body">
+                    <div class="toggle-card-grid">
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>Export my data</h6>
+                                <p>Download a portable JSON file containing your account and contribution history.</p>
+                            </div>
+                            <form method="post" asp-page-handler="ExportData">
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-download me-2"></i>Export data
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="toggle-card">
+                            <div class="toggle-card__copy">
+                                <h6>Delete my account</h6>
+                                <p>This anonymizes your profile, revokes tokens, and signs you out immediately.</p>
+                            </div>
+                            <form method="post" asp-page-handler="DeleteAccount" class="d-flex flex-column gap-2">
+                                <input type="text"
+                                       name="confirmation"
+                                       class="form-control form-control-sm"
+                                       placeholder="Type DELETE to confirm"
+                                       required
+                                       autocomplete="off" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash me-2"></i>Delete account
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

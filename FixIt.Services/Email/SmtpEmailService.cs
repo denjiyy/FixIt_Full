@@ -66,11 +66,11 @@ public class SmtpEmailService : IEmailService
             mailMessage.From = new MailAddress(_fromEmail, _fromName);
 
             await _smtpClient.SendMailAsync(mailMessage);
-            _logger.LogInformation($"Email sent successfully to {to}");
+            _logger.LogInformation("Email sent successfully to {RecipientEmail}", to);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Failed to send email to {to}: {ex.Message}");
+            _logger.LogError(ex, "Failed to send email to {RecipientEmail}", to);
             throw;
         }
     }

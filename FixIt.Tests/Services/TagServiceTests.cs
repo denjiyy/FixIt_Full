@@ -244,6 +244,7 @@ public class TagServiceTests
             UsageCount = 5,
             UpdatedAt = DateTime.UtcNow.AddHours(-1)
         };
+        var originalUpdatedAt = tag.UpdatedAt;
 
         Tag? updatedTag = null;
 
@@ -260,6 +261,6 @@ public class TagServiceTests
         // Assert
         Assert.NotNull(updatedTag);
         Assert.Equal(6, updatedTag.UsageCount);
-        Assert.True(updatedTag.UpdatedAt > tag.UpdatedAt);
+        Assert.True(updatedTag.UpdatedAt > originalUpdatedAt);
     }
 }

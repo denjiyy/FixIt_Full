@@ -118,14 +118,14 @@
             </div>
         </div>
 
-        @if (Model.Cities.Any())
+        @if (Model.Cities?.Any() == true)
         {
             <div class="cities-grid">
                 @foreach (var city in Model.Cities)
                 {
                     var isSelected = string.Equals(selectedCity, city.Name, StringComparison.OrdinalIgnoreCase);
                     <article class="city-card @(isSelected ? "city-card--selected" : string.Empty)">
-                        <div class="city-card__media" data-city-image-container>
+                        <div class="city-card__media @(string.IsNullOrEmpty(city.PhotoUrl) ? "is-fallback" : string.Empty)" data-city-image-container>
                             @if (!string.IsNullOrEmpty(city.PhotoUrl))
                             {
                                 <img src="@city.PhotoUrl"
@@ -133,12 +133,9 @@
                                      class="city-card__image"
                                      loading="lazy"
                                      decoding="async"
-                                     crossorigin="anonymous"
-                                     onerror="this.style.display='none'; this.parentElement.classList.add('is-fallback'); this.parentElement.querySelector('.city-card__placeholder').style.display='block';" />
+                                     crossorigin="anonymous" />
                             }
-                            <div class="city-card__placeholder" 
-                                 style="@(string.IsNullOrEmpty(city.PhotoUrl) ? "display: block;" : "display: none;")"
-                                 aria-hidden="@(string.IsNullOrEmpty(city.PhotoUrl) ? "false" : "true")">
+                            <div class="city-card__placeholder" aria-hidden="@(string.IsNullOrEmpty(city.PhotoUrl) ? "false" : "true")">
                                 <i class="bi bi-building"></i>
                             </div>
                             <div class="city-card__badge">
@@ -268,9 +265,9 @@
                         <i class="bi bi-plus-circle"></i>
                         Report an issue here
                     </a>
-                    @if (Model.Cities.Any(c => c.Name == selectedCity))
+                    @if (Model.Cities?.Any(c => c.Name == selectedCity) == true)
                     {
-                        var selectedCityObject = Model.Cities.FirstOrDefault(c => c.Name == selectedCity);
+                        var selectedCityObject = Model.Cities?.FirstOrDefault(c => c.Name == selectedCity);
                         if (selectedCityObject != null)
                         {
                             <a href="/Heatmaps/@selectedCityObject.Id" class="btn btn-outline-primary">

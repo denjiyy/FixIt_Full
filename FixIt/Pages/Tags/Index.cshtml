@@ -129,7 +129,7 @@
             {
                 <div class="results-header">
                     <p class="results-count mb-0">
-                        @Localizer["Showing"] <strong>@Model.Issues.Count</strong> @(Model.Issues.Count == 1 ? Localizer["Issue"] : Localizer["IssuePlural"]) ·
+                        @Localizer["Showing"] <strong>@(Model.Issues?.Count ?? 0)</strong> @((Model.Issues?.Count ?? 0) == 1 ? Localizer["Issue"] : Localizer["IssuePlural"]) ·
                         @Localizer["PageOf"] <strong>@Model.CurrentPage</strong> @Localizer["Of"] <strong>@Model.TotalPages</strong>
                     </p>
                     <a href="/issues/create" class="btn btn-outline-primary btn-sm">
@@ -139,7 +139,7 @@
                 </div>
 
                 <div class="issues-grid">
-                    @foreach (var issue in Model.Issues)
+                    @foreach (var issue in Model.Issues ?? Enumerable.Empty<FixIt.Models.Issues.Issue>())
                     {
                         <partial name="_IssueCard" model="issue" />
                     }

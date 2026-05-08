@@ -33,10 +33,10 @@ This document summarizes the production readiness improvements implemented for t
 **To Use:**
 ```bash
 # Development
-docker-compose up -d
+docker compose up -d
 
 # Production
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
 ---
@@ -175,10 +175,10 @@ cd FixIt
 cp .env.example .env
 
 # Start with Docker
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f fixit-app
+docker compose logs -f fixit-app
 
 # Access app
 open http://localhost:5092
@@ -197,7 +197,7 @@ dotnet test
 docker build -t fixit:dev .
 
 # Start with docker-compose
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 3. Deploy to Production
@@ -209,10 +209,10 @@ cp .env.example .env.production
 nano .env.production
 
 # Deploy
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
 
 # Monitor
-docker-compose logs -f fixit-app
+docker compose logs -f fixit-app
 ```
 
 ---
@@ -281,7 +281,7 @@ docker-compose logs -f fixit-app
 ## Verification Checklist
 
 - ✅ Dockerfile builds without errors
-- ✅ docker-compose.yml is valid (run `docker-compose config`)
+- ✅ docker-compose.yml is valid (run `docker compose config`)
 - ✅ GitHub Actions workflows are syntactically correct
 - ✅ Migration runner compiles and runs
 - ✅ Documentation is comprehensive and accurate

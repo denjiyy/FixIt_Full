@@ -238,10 +238,10 @@ public class IssueServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _issueService.UpdateIssueStatusAsync("issue1", IssueStatus.InProgress, "user1");
+        await _issueService.UpdateIssueStatusAsync("issue1", IssueStatus.Confirmed, "user1");
 
         // Assert
-        Assert.Equal(IssueStatus.InProgress, issue.Status);
+        Assert.Equal(IssueStatus.Confirmed, issue.Status);
     }
 
     [Fact]
@@ -498,8 +498,13 @@ public class IssueServiceTests
             new Issue { Id = "i2", CityId = "city2", Title = "Issue 2" }
         };
 
-        _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
-            .ReturnsAsync(issues);
+        _issueRepoMock.Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Issue, bool>>>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr, int skip, int limit) =>
+                new PagedResult<Issue>
+                {
+                    Items = issues.Where(expr.Compile()).Skip(skip).Take(limit),
+                    Total = issues.LongCount()
+                });
 
         // Act
         var result = await _issueService.GetAllIssuesAsync();
@@ -519,8 +524,13 @@ public class IssueServiceTests
             new() { Id = "i3", Title = "Issue 3", ViewCount = 10, LastActivityAt = DateTime.UtcNow.AddHours(-1) }
         };
 
-        _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
-            .ReturnsAsync((Expression<Func<Issue, bool>> expr) => issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Issue, bool>>>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr, int skip, int limit) =>
+                new PagedResult<Issue>
+                {
+                    Items = issues.Where(expr.Compile()).Skip(skip).Take(limit),
+                    Total = issues.LongCount()
+                });
 
         // Act
         var result = await _issueService.GetAllIssuesAsync(sort: IssueSortOption.MostViewed);
@@ -541,8 +551,13 @@ public class IssueServiceTests
             new() { Id = "i3", Title = "Old Road", Category = IssueCategory.Infrastructure, CreatedAt = now.AddDays(-40), LastActivityAt = now.AddDays(-40) }
         };
 
-        _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
-            .ReturnsAsync((Expression<Func<Issue, bool>> expr) => issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Issue, bool>>>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr, int skip, int limit) =>
+                new PagedResult<Issue>
+                {
+                    Items = issues.Where(expr.Compile()).Skip(skip).Take(limit),
+                    Total = issues.Where(expr.Compile()).LongCount()
+                });
 
         // Act
         var result = await _issueService.GetAllIssuesAsync(
@@ -604,6 +619,16 @@ public class IssueServiceTests
 
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
             .ReturnsAsync((Expression<Func<Issue, bool>> expr) => issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
+        _issueRepoMock.Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Issue, bool>>>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((Expression<Func<Issue, bool>> expr, int skip, int limit) =>
+                new PagedResult<Issue>
+                {
+                    Items = issues.Where(expr.Compile()).Skip(skip).Take(limit),
+                    Total = issues.Where(expr.Compile()).LongCount()
+                });
 
         // Act
         var result = await _issueService.GetPublicIssueOverviewAsync(2);
@@ -617,6 +642,8 @@ public class IssueServiceTests
         Assert.Equal(1, result.CriticalIssues);
         Assert.Equal(3, result.CitiesCovered);
         Assert.Equal(3, result.ActiveIssues);
-        Assert.Equal(new[] { "i2", "i3" }, result.FeaturedIssues.Select(issue => issue.Id));
+        // Featured issues are the first 2 from the repo, sorted by MostVoted (by LastActivityAt since all have 0 votes)
+        // i1 (older) and i2 (more recent) from repo are sorted to [i2, i1] by most recent activity
+        Assert.Equal(new[] { "i2", "i1" }, result.FeaturedIssues.Select(issue => issue.Id));
     }
 }

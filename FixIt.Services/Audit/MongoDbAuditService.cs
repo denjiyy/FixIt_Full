@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace FixIt.Services
@@ -113,17 +114,23 @@ namespace FixIt.Services
             string resource,
             string resourceId,
             Dictionary<string, object> changes,
-            string reason = null,
+            string? reason = null,
             string status = "Success",
-            string errorMessage = null
+            string? errorMessage = null
         )
         {
             try
             {
                 var httpContext = _httpContextAccessor.HttpContext;
-                var actorId = httpContext?.User?.FindFirst("sub")?.Value ?? "system";
-                var actorName = httpContext?.User?.FindFirst("email")?.Value ?? "System";
-                var actorRole = httpContext?.User?.FindFirst("role")?.Value ?? "System";
+                var actorId = httpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? httpContext?.User?.FindFirstValue("sub")
+                    ?? "system";
+                var actorName = httpContext?.User?.FindFirstValue(ClaimTypes.Name)
+                    ?? httpContext?.User?.FindFirstValue(ClaimTypes.Email)
+                    ?? "System";
+                var actorRole = httpContext?.User?.FindFirstValue(ClaimTypes.Role)
+                    ?? httpContext?.User?.FindFirstValue("role")
+                    ?? "System";
                 var ipAddress = GetClientIpAddress();
                 var userAgent = httpContext?.Request?.Headers["User-Agent"].ToString() ?? "Unknown";
 
@@ -161,10 +168,10 @@ namespace FixIt.Services
         /// Get audit logs with optional filtering.
         /// </summary>
         public async Task<List<AuditLog>> GetLogsAsync(
-            string eventType = null,
-            string resourceType = null,
-            string resourceId = null,
-            string actorId = null,
+            string? eventType = null,
+            string? resourceType = null,
+            string? resourceId = null,
+            string? actorId = null,
             DateTime? from = null,
             DateTime? to = null,
             int pageSize = 100
@@ -207,7 +214,7 @@ namespace FixIt.Services
         /// <summary>
         /// Get a single audit log by ID.
         /// </summary>
-        public async Task<AuditLog> GetLogAsync(string id)
+        public async Task<AuditLog?> GetLogAsync(string id)
         {
             if (!ObjectId.TryParse(id, out var objectId))
                 return null;
@@ -221,7 +228,7 @@ namespace FixIt.Services
         /// Get count of audit logs matching criteria.
         /// </summary>
         public async Task<long> GetCountAsync(
-            string eventType = null,
+            string? eventType = null,
             DateTime? from = null,
             DateTime? to = null
         )

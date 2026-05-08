@@ -5,6 +5,7 @@ using FixIt.Services.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Xunit;
 
 namespace FixIt.Tests.Services;
 
@@ -30,9 +31,10 @@ public class JwtTokenServiceTests
     public void GenerateAccessToken_ThenValidateToken_ReturnsPrincipalWithRole()
     {
         var service = CreateService();
+        var userId = MongoDB.Bson.ObjectId.GenerateNewId();
         var user = new ApplicationUser
         {
-            Id = "user-1",
+            Id = userId,
             Email = "user@example.com",
             DisplayName = "User One"
         };
@@ -41,19 +43,22 @@ public class JwtTokenServiceTests
         var principal = service.ValidateToken(token);
 
         Assert.NotNull(principal);
-        Assert.Equal("user-1", principal!.FindFirstValue(ClaimTypes.NameIdentifier));
+        Assert.Equal(userId.ToString(), principal!.FindFirstValue(ClaimTypes.NameIdentifier));
         Assert.Contains(principal.Claims, claim => claim.Type == ClaimTypes.Role && claim.Value == RoleNames.Admin);
+        Assert.Equal("access", principal.FindFirstValue("TokenType"));
     }
 
     [Fact]
     public void GenerateRefreshToken_ThenValidateToken_HasRefreshTokenType()
     {
         var service = CreateService();
+        var userId = MongoDB.Bson.ObjectId.GenerateNewId();
         var user = new ApplicationUser
         {
-            Id = "user-2",
+            Id = userId,
             Email = "refresh@example.com",
-            DisplayName = "Refresh User"
+            DisplayName = "Refresh User",
+            RefreshTokenVersion = 2
         };
 
         var refreshToken = service.GenerateRefreshToken(user);
@@ -61,5 +66,6 @@ public class JwtTokenServiceTests
 
         Assert.NotNull(principal);
         Assert.Equal("refresh", principal!.FindFirstValue("TokenType"));
+        Assert.Equal("2", principal.FindFirstValue("TokenVersion"));
     }
 }

@@ -111,7 +111,7 @@
                 radiusDisplay.textContent = `${value} km`;
             }
 
-            saveAlertPreference('alertRadius', value);
+            saveAlertPreference('alertRadius', Number(value));
         }
 
         async function saveAlertPreference(preference, value) {
@@ -119,8 +119,10 @@
                 const response = await fetch(`${apiBase}/alert-preferences`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': antiForgeryToken
                     },
+                    credentials: 'include',
                     body: JSON.stringify({ [preference]: value })
                 });
 
@@ -137,8 +139,10 @@
                 const response = await fetch(`${apiBase}/alert-preferences/severity`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': antiForgeryToken
                     },
+                    credentials: 'include',
                     body: JSON.stringify({ threshold })
                 });
 
@@ -155,8 +159,10 @@
                 const response = await fetch('/api/users/profile-visibility', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': antiForgeryToken
                     },
+                    credentials: 'include',
                     body: JSON.stringify({ visibility })
                 });
 

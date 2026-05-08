@@ -9,12 +9,14 @@ namespace FixIt.Controllers
     [Route("api/[controller]")]
     public class GeocodingController : ControllerBase
     {
+        private const int MaxCacheEntries = 5_000;
+        private static readonly TimeSpan CacheEntryTtl = TimeSpan.FromHours(6);
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly ILogger<GeocodingController> _logger;
         private readonly IRepository<City> _cityRepo;
 
         // Cache for geocoding results storing both address and city ID
-        private static readonly Dictionary<string, (string address, string cityId, string cityName)> _geocodingCache = new();
+        private static readonly Dictionary<string, GeocodingCacheEntry> _geocodingCache = new();
         private static readonly SemaphoreSlim _cacheSemaphore = new(1, 1);
 
         public GeocodingController(ILogger<GeocodingController> logger, IRepository<City> cityRepo)
@@ -47,19 +49,28 @@ namespace FixIt.Controllers
                 await _cacheSemaphore.WaitAsync();
                 try
                 {
-                    if (_geocodingCache.ContainsKey(cacheKey))
+                    if (_geocodingCache.TryGetValue(cacheKey, out var cachedEntry))
                     {
-                        _logger.LogInformation($"Cache hit for {cacheKey}");
-                        var (cachedAddress, cachedCityId, cachedCityName) = _geocodingCache[cacheKey];
-                        return Ok(new ReverseGeocodeResponse
+                        if (DateTimeOffset.UtcNow - cachedEntry.CachedAtUtc > CacheEntryTtl)
                         {
-                            Address = cachedAddress,
-                            CityName = cachedCityName,
-                            CityId = cachedCityId,
-                            IsCached = true,
-                            Latitude = latitude,
-                            Longitude = longitude
-                        });
+                            _geocodingCache.Remove(cacheKey);
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Cache hit for {cacheKey}");
+                            var cachedAddress = cachedEntry.Address;
+                            var cachedCityId = cachedEntry.CityId;
+                            var cachedCityName = cachedEntry.CityName;
+                            return Ok(new ReverseGeocodeResponse
+                            {
+                                Address = cachedAddress,
+                                CityName = cachedCityName,
+                                CityId = cachedCityId,
+                                IsCached = true,
+                                Latitude = latitude,
+                                Longitude = longitude
+                            });
+                        }
                     }
                 }
                 finally
@@ -77,7 +88,16 @@ namespace FixIt.Controllers
                 await _cacheSemaphore.WaitAsync();
                 try
                 {
-                    _geocodingCache[cacheKey] = (address, matchedCityId, matchedCityName);
+                    if (!_geocodingCache.ContainsKey(cacheKey))
+                    {
+                        EnforceCacheLimit();
+                    }
+
+                    _geocodingCache[cacheKey] = new GeocodingCacheEntry(
+                        address,
+                        matchedCityId,
+                        matchedCityName,
+                        DateTimeOffset.UtcNow);
                 }
                 finally
                 {
@@ -411,6 +431,29 @@ namespace FixIt.Controllers
             
             return "";
         }
+
+        private static void EnforceCacheLimit()
+        {
+            while (_geocodingCache.Count >= MaxCacheEntries)
+            {
+                var oldestKey = _geocodingCache
+                    .OrderBy(entry => entry.Value.CachedAtUtc)
+                    .Select(entry => entry.Key)
+                    .FirstOrDefault();
+                if (string.IsNullOrEmpty(oldestKey))
+                {
+                    break;
+                }
+
+                _geocodingCache.Remove(oldestKey);
+            }
+        }
+
+        private sealed record GeocodingCacheEntry(
+            string Address,
+            string CityId,
+            string CityName,
+            DateTimeOffset CachedAtUtc);
     }
 
     public class ReverseGeocodeResponse

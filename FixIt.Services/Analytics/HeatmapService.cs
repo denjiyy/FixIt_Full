@@ -35,12 +35,20 @@ public class HeatmapService : IHeatmapService
         var fromDateTime = fromDate ?? DateTime.UtcNow.AddDays(-30);
         var toDateTime = toDate ?? DateTime.UtcNow;
 
+        // Use CountAsync for simple counts instead of loading all issues
+        var totalIssuesCount = await _issueRepo.CountAsync(i => i.CityId == cityId);
+        var resolvedIssuesCount = await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Status == IssueStatus.Fixed);
+        var openIssuesCount = await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Status != IssueStatus.Fixed && i.Status != IssueStatus.Rejected);
+
+        // Load issues only for aggregation (grouping, hotspots, trends)
         var recentIssues = await _issueRepo.FindAsync(i => 
             i.CityId == cityId && 
             i.CreatedAt >= fromDateTime && 
             i.CreatedAt <= toDateTime);
-
         var allIssues = await _issueRepo.FindAsync(i => i.CityId == cityId);
+        
         var recentIssuesList = recentIssues.ToList();
         var allIssuesList = allIssues.ToList();
 
@@ -51,9 +59,9 @@ public class HeatmapService : IHeatmapService
         var data = new HeatmapData
         {
             CityId = cityId,
-            TotalIssues = allIssuesList.Count(),
-            ResolvedIssues = allIssuesList.Count(i => i.Status == IssueStatus.Fixed),
-            OpenIssues = allIssuesList.Count(i => i.Status != IssueStatus.Fixed && i.Status != IssueStatus.Rejected),
+            TotalIssues = (int)totalIssuesCount,
+            ResolvedIssues = (int)resolvedIssuesCount,
+            OpenIssues = (int)openIssuesCount,
             Hotspots = await GetIssueHotspots(cityId, allIssuesList, 100),
             IssuesByStatus = statusDict.Count > 0 ? statusDict : new Dictionary<string, int> { { "No Data", 0 } },
             IssuesByPriority = priorityDict.Count > 0 ? priorityDict : new Dictionary<string, int> { { "No Data", 0 } },

@@ -20,18 +20,24 @@ using FixIt.Services.Safety;
 using FixIt.Services.Background;
 using FixIt.Services.Email;
 using FixIt.Services.Constants;
+using FixIt.Configuration;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Net;
+using System.Security.Cryptography;
 using System.Globalization;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+var isProduction = builder.Environment.IsProduction();
 
 // Localization configuration
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -60,6 +66,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = isProduction ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
 });
 
 // Configure Rate Limiting - Store security config for later use
@@ -67,56 +74,82 @@ var securityConfig = builder.Configuration.GetSection("Security");
 var rateLimitingConfig = builder.Configuration.GetSection("Security:RateLimiting");
 var isRateLimitingEnabled = rateLimitingConfig.GetValue("Enabled", true);
 
-// Configure rate limiting (DDoS protection)
+// Configure rate limiting (DDoS protection) with per-client partitioning
 if (isRateLimitingEnabled)
 {
     builder.Services.AddRateLimiter(rateLimiterOptions =>
     {
         rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-        // Strict policy for authentication endpoints: 5 attempts per 15 minutes
-        rateLimiterOptions.AddFixedWindowLimiter(
-            policyName: RateLimitPolicyNames.AuthStrict,
-            options =>
+        
+        // Global rate limit key policy: partition by user ID (authenticated) or IP address (anonymous)
+        rateLimiterOptions.AddPolicy("PerClientKey", context =>
+        {
+            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clientKey = userId ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(clientKey, _ => new FixedWindowRateLimiterOptions
             {
-                options.PermitLimit = 5;
-                options.Window = TimeSpan.FromMinutes(15);
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                options.AutoReplenishment = true;
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
             });
+        });
 
-        // API policy: standard rate limit (60 per minute)
-        rateLimiterOptions.AddFixedWindowLimiter(
-            policyName: RateLimitPolicyNames.Api,
-            options =>
+        // Strict policy for authentication endpoints: 5 attempts per 15 minutes per user/IP
+        rateLimiterOptions.AddPolicy(RateLimitPolicyNames.AuthStrict, context =>
+        {
+            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clientKey = userId ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(clientKey, _ => new FixedWindowRateLimiterOptions
             {
-                options.PermitLimit = 60;
-                options.Window = TimeSpan.FromMinutes(1);
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                options.AutoReplenishment = true;
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
             });
+        });
 
-        // Reporting/Analytics: 30 per minute
-        rateLimiterOptions.AddFixedWindowLimiter(
-            policyName: RateLimitPolicyNames.Reporting,
-            options =>
+        // API policy: 60 per minute per user/IP
+        rateLimiterOptions.AddPolicy(RateLimitPolicyNames.Api, context =>
+        {
+            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clientKey = userId ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(clientKey, _ => new FixedWindowRateLimiterOptions
             {
-                options.PermitLimit = 30;
-                options.Window = TimeSpan.FromMinutes(1);
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                options.AutoReplenishment = true;
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
             });
+        });
 
-        // Upload policy: stricter for file uploads (10 per minute)
-        rateLimiterOptions.AddFixedWindowLimiter(
-            policyName: RateLimitPolicyNames.Upload,
-            options =>
+        // Reporting/Analytics: 30 per minute per user/IP
+        rateLimiterOptions.AddPolicy(RateLimitPolicyNames.Reporting, context =>
+        {
+            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clientKey = userId ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(clientKey, _ => new FixedWindowRateLimiterOptions
             {
-                options.PermitLimit = 10;
-                options.Window = TimeSpan.FromMinutes(1);
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                options.AutoReplenishment = true;
+                PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
             });
+        });
+
+        // Upload policy: 10 per minute per user/IP
+        rateLimiterOptions.AddPolicy(RateLimitPolicyNames.Upload, context =>
+        {
+            var userId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var clientKey = userId ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            return RateLimitPartition.GetFixedWindowLimiter(clientKey, _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                AutoReplenishment = true
+            });
+        });
     });
 }
 
@@ -200,22 +233,29 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/access-denied";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = isProduction ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
+    options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromHours(12);
 });
 
 // Add Google OAuth
 var googleSection = authConfig.GetSection("Google");
 var googleClientId = googleSection["ClientId"];
 var googleClientSecret = googleSection["ClientSecret"];
-if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+var hasGoogleClientId = StartupConfiguration.IsConfiguredSecret(googleClientId);
+var hasGoogleClientSecret = StartupConfiguration.IsConfiguredSecret(googleClientSecret);
+if (hasGoogleClientId && hasGoogleClientSecret)
 {
     authBuilder.AddGoogle(options =>
     {
-        options.ClientId = googleClientId;
-        options.ClientSecret = googleClientSecret;
+        options.ClientId = googleClientId!.Trim();
+        options.ClientSecret = googleClientSecret!.Trim();
         options.CallbackPath = "/signin-google";
     });
 }
-else
+else if (isProduction)
 {
     throw new InvalidOperationException("Google OAuth credentials are not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.");
 }
@@ -223,19 +263,15 @@ else
 // Add JWT Bearer authentication for mobile/API clients
 // This allows same endpoints to be used by both web (cookies) and mobile (JWT tokens) clients
 var jwtConfig = builder.Configuration.GetSection("Jwt");
-var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-if (string.IsNullOrWhiteSpace(jwtSecretKey))
-{
-    jwtSecretKey = jwtConfig["SecretKey"];
-}
+var jwtSecretKey = jwtConfig["SecretKey"];
 
-if (string.IsNullOrWhiteSpace(jwtSecretKey) || jwtSecretKey.StartsWith("${", StringComparison.Ordinal))
+if (!StartupConfiguration.IsConfiguredSecret(jwtSecretKey) || jwtSecretKey!.Trim().Length < 32)
 {
     throw new InvalidOperationException(
-        "JWT secret key is not configured. Set JWT_SECRET_KEY environment variable or configure Jwt:SecretKey via a secure secrets provider.");
+        "JWT secret key is not configured or too weak. Set Jwt:SecretKey via environment variable (Jwt__SecretKey) to a strong random secret with at least 32 characters.");
 }
 
-var key = System.Text.Encoding.ASCII.GetBytes(jwtSecretKey);
+var key = System.Text.Encoding.ASCII.GetBytes(jwtSecretKey.Trim());
 var issuer = jwtConfig["Issuer"] ?? "FixIt";
 var audience = jwtConfig["Audience"] ?? "FixItClients";
 
@@ -435,9 +471,13 @@ builder.Services.AddHostedService<LeaderboardRegenerationService>();
 builder.Services.AddHostedService<HealthReportGenerationService>();
 
 // Configure production-ready CORS
-var corsConfig = builder.Configuration.GetSection("Security");
-var corsOrigins = corsConfig.GetSection("CorsAllowedOrigins").Get<string[]>() 
-    ?? new[] { "http://localhost:3000", "http://localhost:5092" };
+var corsOrigins = StartupConfiguration.ResolveCorsOrigins(
+    builder.Configuration,
+    ["http://localhost:3000", "http://localhost:5092"]);
+if (isProduction && corsOrigins.Length == 0)
+{
+    throw new InvalidOperationException("At least one CORS allowed origin must be configured in production.");
+}
 
 builder.Services.AddCors(options =>
 {
@@ -518,7 +558,39 @@ builder.Services.AddMemoryCache(options =>
 });
 
 // Add data protection
-builder.Services.AddDataProtection();
+var dataProtectionBuilder = builder.Services
+    .AddDataProtection()
+    .SetApplicationName("FixIt");
+
+var dataProtectionKeyRingPath = builder.Configuration["DataProtection:KeyRingPath"]
+    ?? builder.Configuration["DATA_PROTECTION_KEY_RING_PATH"];
+if (!string.IsNullOrWhiteSpace(dataProtectionKeyRingPath))
+{
+    var fullPath = Path.GetFullPath(dataProtectionKeyRingPath);
+    Directory.CreateDirectory(fullPath);
+    dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(fullPath));
+}
+
+// Configure trusted proxy handling for reverse-proxy deployments
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardLimit = 2;
+
+    var trustedProxyList = builder.Configuration["Security:TrustedProxyIps"];
+    if (string.IsNullOrWhiteSpace(trustedProxyList))
+    {
+        return;
+    }
+
+    foreach (var proxyCandidate in trustedProxyList.Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+    {
+        if (IPAddress.TryParse(proxyCandidate, out var proxyIp))
+        {
+            options.KnownProxies.Add(proxyIp);
+        }
+    }
+});
 
 // Add logging with proper configuration for production
 builder.Services.AddLogging((config) =>
@@ -561,6 +633,24 @@ localizationOptions.RequestCultureProviders.Insert(0, new Microsoft.AspNetCore.L
 localizationOptions.RequestCultureProviders.Insert(1, new Microsoft.AspNetCore.Localization.CookieRequestCultureProvider());
 
 var app = builder.Build();
+
+if (!hasGoogleClientId || !hasGoogleClientSecret)
+{
+    if (isProduction)
+    {
+        // Defensive fallback: production guard is already enforced before build, but keep explicit safety log.
+        app.Logger.LogCritical("Google OAuth credentials are missing or invalid in production.");
+    }
+    else
+    {
+        app.Logger.LogWarning("Google OAuth is disabled because Authentication:Google credentials are missing or placeholder values.");
+    }
+}
+
+if (isProduction && string.IsNullOrWhiteSpace(dataProtectionKeyRingPath))
+{
+    app.Logger.LogWarning("DataProtection:KeyRingPath is not configured. Auth cookies may be invalidated after container restarts.");
+}
 
 // Initialize database (indexes and seed data) - optional if MongoDB is available
 try
@@ -727,6 +817,7 @@ catch (Exception ex)
 
 // Configure the HTTP request pipeline.
 app.UseMiddleware<FixIt.Middleware.GlobalExceptionHandlingMiddleware>();
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {
@@ -754,6 +845,8 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
     // Referrer policy
     context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    // Restrict high-risk browser capabilities by default
+    context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), payment=()";
     // Content Security Policy
     var csp = securityConfig.GetValue<string>("ContentSecurityPolicy");
     if (!string.IsNullOrEmpty(csp))
@@ -765,74 +858,99 @@ app.Use(async (context, next) =>
 
 app.UseResponseCompression();
 
-// Add output caching middleware (must be before routing)
-app.UseOutputCache();
-
-// Add middleware for cache control headers
+// Add middleware for cache control headers and selective ETag support
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? "";
     var method = context.Request.Method;
-    
-    // Only cache GET and HEAD requests
-    if (method != "GET" && method != "HEAD")
+
+    var isGetOrHead = HttpMethods.IsGet(method) || HttpMethods.IsHead(method);
+    var isApiRequest = path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase);
+    var isHealthRequest =
+        path.StartsWith("/api/health", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWith("/health", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWith("/ready", StringComparison.OrdinalIgnoreCase);
+    var isStaticAsset =
+        path.StartsWith("/lib/", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWith("/css/", StringComparison.OrdinalIgnoreCase)
+        || path.StartsWith("/js/", StringComparison.OrdinalIgnoreCase);
+
+    if (!isGetOrHead)
     {
         context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
     }
-    // Static assets - cache for 1 year
-    else if (path.StartsWith("/lib/") || path.StartsWith("/css/") || path.StartsWith("/js/"))
+    else if (isStaticAsset)
     {
         context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
     }
-    // API responses - depend on endpoint caching policy
-    else if (path.StartsWith("/api/health"))
+    else if (isHealthRequest)
     {
         context.Response.Headers["Cache-Control"] = "public, max-age=30";
     }
-    else if (path.StartsWith("/api/"))
+    else if (isApiRequest)
     {
-        // Default API caching: cacheable but revalidate after 60 seconds
-        context.Response.Headers["Cache-Control"] = "public, max-age=60, must-revalidate";
+        // Default API behavior is no-store unless an endpoint explicitly opts into caching.
+        context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
     }
-    
-    // Add ETag support for responses
+    else if (context.Request.Headers.ContainsKey("Cookie"))
+    {
+        // Avoid browser/proxy reuse of cookie-bearing HTML responses.
+        context.Response.Headers["Cache-Control"] = "private, no-cache, max-age=0, must-revalidate";
+    }
+
+    var isMediaEndpoint =
+        path.Contains("/api/media", StringComparison.OrdinalIgnoreCase)
+        || path.Contains("/api/uploads", StringComparison.OrdinalIgnoreCase);
+    var canBufferForEtag =
+        isGetOrHead
+        && isApiRequest
+        && !isHealthRequest
+        && !isMediaEndpoint;
+
+    if (!canBufferForEtag)
+    {
+        await next();
+        return;
+    }
+
     var originalBody = context.Response.Body;
-    using var memoryStream = new System.IO.MemoryStream();
+    await using var memoryStream = new MemoryStream();
     context.Response.Body = memoryStream;
-    
     await next();
-    
-    // Skip ETag for non-cacheable responses
-    if (context.Response.StatusCode == 200 && 
-        (context.Response.ContentType?.Contains("application/json") ?? false))
+    context.Response.Body = originalBody;
+
+    var responseBytes = memoryStream.ToArray();
+    var contentType = context.Response.ContentType ?? string.Empty;
+    var isJsonResponse =
+        contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase)
+        || contentType.Contains("+json", StringComparison.OrdinalIgnoreCase);
+
+    if (isJsonResponse && context.Response.StatusCode == StatusCodes.Status200OK && responseBytes.Length > 0 && responseBytes.Length < 1_000_000)
     {
-        memoryStream.Position = 0;
-        using var reader = new System.IO.StreamReader(memoryStream);
-        var body = await reader.ReadToEndAsync();
-        var etag = $"\"{body.GetHashCode():x}\"";
+        var hashBytes = SHA256.HashData(responseBytes);
+        var etag = $"\"{Convert.ToHexString(hashBytes)}\"";
         context.Response.Headers["ETag"] = etag;
-        
-        // Check If-None-Match header  
-        if (context.Request.Headers.TryGetValue("If-None-Match", out var clientEtag) && 
-            clientEtag.ToString() == etag)
+
+        if (context.Request.Headers.TryGetValue("If-None-Match", out var clientEtag) &&
+            clientEtag.ToString().Split(',').Select(v => v.Trim()).Any(v => v == "*" || v.Equals(etag, StringComparison.Ordinal)))
         {
-            context.Response.StatusCode = 304; // Not Modified
+            context.Response.StatusCode = StatusCodes.Status304NotModified;
             context.Response.ContentLength = 0;
-        }
-        else
-        {
-            memoryStream.Position = 0;
-            await memoryStream.CopyToAsync(originalBody);
+            return;
         }
     }
-    else
-    {
-        memoryStream.Position = 0;
-        await memoryStream.CopyToAsync(originalBody);
-    }
+
+    context.Response.ContentLength = responseBytes.Length;
+    await originalBody.WriteAsync(responseBytes);
 });
 
-if (securityConfig.GetValue<bool>("RequireHttps"))
+var requireHttps = app.Environment.IsProduction() || securityConfig.GetValue<bool>("RequireHttps");
+if (app.Environment.IsProduction() && !securityConfig.GetValue<bool>("RequireHttps"))
+{
+    app.Logger.LogWarning("Security:RequireHttps is false, but HTTPS redirection is enforced in production.");
+}
+
+if (requireHttps)
 {
     app.UseHttpsRedirection();
 }
@@ -841,9 +959,12 @@ app.UseStaticFiles();
 
 app.UseRequestLocalization(localizationOptions);
 
+app.UseRouting();
+
 app.UseCors("ProductionCors");
 
-app.UseRouting();
+// Add output caching middleware. It must run after routing and CORS for endpoint metadata/policies.
+app.UseOutputCache();
 
 if (isRateLimitingEnabled)
 {
@@ -853,6 +974,24 @@ if (isRateLimitingEnabled)
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Handle 404 Not Found - redirect to custom 404 page
+app.UseStatusCodePagesWithReExecute("/404");
+
+// Handle 500 Internal Server Error and other status codes - redirect to error page
+app.Use(async (context, next) =>
+{
+    await next();
+    
+    // Redirect 5xx errors to the error page
+    if (context.Response.StatusCode >= 500 && context.Response.StatusCode < 600)
+    {
+        if (!context.Response.HasStarted)
+        {
+            context.Response.Redirect($"/error?code={context.Response.StatusCode}", permanent: false);
+        }
+    }
+});
 
 // Run pending database migrations on startup
 // This ensures schema is up-to-date before any requests are processed
@@ -877,5 +1016,12 @@ app.MapAreaControllerRoute(
     name: "Identity",
     areaName: "Identity",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+// Fallback catch-all route for unmatched URLs - redirects to 404
+app.MapFallback(context =>
+{
+    context.Response.StatusCode = StatusCodes.Status404NotFound;
+    return context.Response.WriteAsync(string.Empty);
+});
 
 app.Run();

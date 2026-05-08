@@ -8,7 +8,6 @@ using FixIt.Services.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text;
 
 namespace FixIt.Tests.Services;
 
@@ -17,7 +16,7 @@ public class MediaServiceTests
     private readonly Mock<IRepository<Media>> _mediaRepoMock;
     private readonly Mock<IRepository<MediaReference>> _mediaRefRepoMock;
     private readonly Mock<IFileStorage> _fileStorageMock;
-    private readonly Mock<IConfiguration> _configurationMock;
+    private readonly IConfiguration _configuration;
     private readonly Mock<ILogger<MediaService>> _loggerMock;
     private readonly MediaService _mediaService;
 
@@ -31,17 +30,20 @@ public class MediaServiceTests
         _fileStorageMock = new Mock<IFileStorage>();
         _loggerMock = new Mock<ILogger<MediaService>>();
 
-        _configurationMock = new Mock<IConfiguration>();
-        _configurationMock.Setup(c => c.GetValue<long>("Media:MaxFileSizeBytes", It.IsAny<long>()))
-            .Returns(_maxFileSizeBytes);
-        _configurationMock.Setup(c => c.GetValue<long>("Media:MaxVideoFileSizeBytes", It.IsAny<long>()))
-            .Returns(_maxVideoFileSizeBytes);
+        _configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Media:MaxFileSizeBytes"] = _maxFileSizeBytes.ToString(),
+                ["Media:MaxVideoFileSizeBytes"] = _maxVideoFileSizeBytes.ToString(),
+                ["Media:MaxFilesPerUpload"] = "10"
+            })
+            .Build();
 
         _mediaService = new MediaService(
             _mediaRepoMock.Object,
             _mediaRefRepoMock.Object,
             _fileStorageMock.Object,
-            _configurationMock.Object,
+            _configuration,
             _loggerMock.Object
         );
     }
@@ -49,7 +51,8 @@ public class MediaServiceTests
     private IFormFile CreateMockFile(string fileName, long fileSize, string contentType = "image/jpeg")
     {
         var fileMock = new Mock<IFormFile>();
-        var streamMock = new MemoryStream(Encoding.UTF8.GetBytes(new string('a', (int)fileSize)));
+        var streamLength = (int)Math.Min(fileSize, 1024L);
+        var streamMock = new MemoryStream(new byte[streamLength]);
 
         fileMock.Setup(f => f.FileName).Returns(fileName);
         fileMock.Setup(f => f.Length).Returns(fileSize);
@@ -186,7 +189,7 @@ public class MediaServiceTests
         fileMock.Setup(f => f.Length).Returns(1024);
 
         // Act & Assert
-        await Assert.ThrowsAsync<Exception>(
+        await Assert.ThrowsAsync<InvalidOperationException>(
             () => _mediaService.UploadFileAsync(fileMock.Object, "user1", MediaReferenceType.Issue, "issue1"));
     }
 }

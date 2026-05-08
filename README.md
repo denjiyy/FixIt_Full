@@ -267,22 +267,20 @@ To create a development admin user, add to `appsettings.Development.json`:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `MONGODB_CONNECTION_STRING` | MongoDB connection string | `mongodb://localhost:27017` |
+| `MONGODB_CONNECTION_STRING` | MongoDB connection string | `mongodb://root:<password>@mongodb:27017` |
 | `MONGODB_DATABASE_NAME` | Database name | `fixit` |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456...apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret | `GOCSPX-...` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth client ID | `Iv1...` |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth secret | `...` |
-| `FACEBOOK_APP_ID` | Facebook app ID | `123456789` |
-| `FACEBOOK_APP_SECRET` | Facebook app secret | `...` |
-| `MICROSOFT_CLIENT_ID` | Microsoft OAuth client ID | `...` |
-| `MICROSOFT_CLIENT_SECRET` | Microsoft OAuth secret | `...` |
 | `OPENAI_API_KEY` | OpenAI API key | `<openai-api-key>` |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins | `https://fixit.app,https://admin.fixit.app` |
+| `ALLOWED_HOSTS` | Allowed hostnames | `fixit.app;api.fixit.app` |
+| `SECURITY_TRUSTED_PROXY_IPS` | Reverse proxy IP allowlist | `10.0.0.10,10.0.0.11` |
 | `SMTP_HOST` | SMTP server host | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP server port | `587` |
 | `SMTP_USERNAME` | SMTP username | `noreply@fixit.local` |
 | `SMTP_PASSWORD` | SMTP password (app password) | `...` |
 | `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-super-secret-key-here` |
+| `DATA_PROTECTION_KEY_RING_PATH` | Shared key storage path for cookie encryption keys | `/app/data-protection-keys` |
 
 ### appsettings.json Configuration
 
@@ -315,7 +313,7 @@ To create a development admin user, add to `appsettings.Development.json`:
     "RefreshTokenExpirationDays": 7
   },
   "OpenAI": {
-    "ApiKey": "${OPENAI_API_KEY}",
+    "ApiKey": "",
     "Model": "gpt-4o-mini",
     "Enabled": true,
     "TimeoutSeconds": 30
@@ -592,10 +590,10 @@ FixIt.Tests/
 
 ```bash
 # Development
-docker-compose up -d
+docker compose up -d
 
 # Production
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
 ```
 
 ### Production Deployment

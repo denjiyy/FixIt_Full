@@ -1,17 +1,12 @@
-version: '3.8'
-
 services:
-  # MongoDB database
   mongodb:
     image: mongo:7.0
     container_name: fixit-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
-      MONGO_INITDB_DATABASE: fixit
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-change-me-local-db-password}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE_NAME:-fixit}
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -24,49 +19,50 @@ services:
     networks:
       - fixit-network
 
-  # FixIt Application
   fixit-app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: fixit-app
     restart: unless-stopped
-    ports:
-      - "5092:8080"
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      MongoDB__ConnectionString: "mongodb://root:rootpassword@mongodb:27017"
-      MongoDB__DatabaseName: "fixit"
-      
-      # OAuth Configuration
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      
-      # AI Service
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      
-      # Security
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-super-secret-key-min-32-characters-long-1234567890}
-      ALLOWED_HOSTS: "localhost,127.0.0.1"
-      CORS_ALLOWED_ORIGINS: "http://localhost:5092,http://localhost:3000"
-      
-      # Email Configuration
-      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-Console}
-      SMTP_HOST: ${SMTP_HOST:-}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USERNAME: ${SMTP_USERNAME:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-noreply@fixit.local}
-      
-      # Application Settings
-      DetailedErrors: "true"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+
+      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING:-mongodb://root:${MONGODB_ROOT_PASSWORD:-change-me-local-db-password}@mongodb:27017}
+      MongoDB__DatabaseName: ${MONGODB_DATABASE_NAME:-fixit}
+
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+
+      OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+
+      Jwt__SecretKey: ${JWT_SECRET_KEY:-change-me-local-jwt-secret-key-at-least-32-chars}
+      AllowedHosts: ${ALLOWED_HOSTS:-localhost;127.0.0.1}
+      Security__CorsAllowedOrigins: ${CORS_ALLOWED_ORIGINS:-http://localhost:5092,http://localhost:3000}
+      Security__TrustedProxyIps: ${SECURITY_TRUSTED_PROXY_IPS:-}
+
+      Email__Provider: ${EMAIL_PROVIDER:-Console}
+      Email__FromAddress: ${EMAIL_FROM_ADDRESS:-noreply@fixit.local}
+      Email__FromName: ${EMAIL_FROM_NAME:-FixIt}
+      Email__Smtp__Host: ${SMTP_HOST:-localhost}
+      Email__Smtp__Port: ${SMTP_PORT:-587}
+      Email__Smtp__Username: ${SMTP_USERNAME:-}
+      Email__Smtp__Password: ${SMTP_PASSWORD:-}
+      Email__Smtp__EnableSsl: ${SMTP_ENABLE_SSL:-true}
+
+      DataProtection__KeyRingPath: ${DATA_PROTECTION_KEY_RING_PATH:-/app/data-protection-keys}
+      Database__ResetOnStartup: ${DATABASE_RESET_ON_STARTUP:-false}
+      Database__EnableDevelopmentAdminSeed: ${DATABASE_ENABLE_DEVELOPMENT_ADMIN_SEED:-false}
+      Database__DevelopmentAdmin__UserName: ${DATABASE_DEVELOPMENT_ADMIN_USERNAME:-admin}
+      Database__DevelopmentAdmin__Email: ${DATABASE_DEVELOPMENT_ADMIN_EMAIL:-admin@fixit.local}
+      Database__DevelopmentAdmin__Password: ${DATABASE_DEVELOPMENT_ADMIN_PASSWORD:-}
     depends_on:
       mongodb:
         condition: service_healthy
     volumes:
-      # Mount wwwroot/uploads for persistent file storage
       - fixit_uploads:/app/wwwroot/uploads
+      - fixit_dataprotection:/app/data-protection-keys
     healthcheck:
       test: curl -f http://localhost:8080/health/live || exit 1
       interval: 30s
@@ -80,6 +76,7 @@ volumes:
   mongodb_data:
   mongodb_config:
   fixit_uploads:
+  fixit_dataprotection:
 
 networks:
   fixit-network:

@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Globalization;
 using FixIt.Models.Users;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
@@ -36,8 +37,7 @@ public class JwtTokenService : ITokenService
     /// </summary>
     public string GenerateAccessToken(ApplicationUser user, IEnumerable<string> roles)
     {
-        var secretKey = _configuration["Jwt:SecretKey"]
-            ?? throw new InvalidOperationException("JWT:SecretKey is not configured");
+        var secretKey = GetSecretKey();
         var issuer = _configuration["Jwt:Issuer"] ?? "FixIt";
         var audience = _configuration["Jwt:Audience"] ?? "FixItClients";
 
@@ -47,6 +47,7 @@ public class JwtTokenService : ITokenService
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim("TokenType", "access"),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
             new Claim(ClaimTypes.Name, user.DisplayName ?? user.UserName ?? ""),
             new Claim(CustomClaimTypes.DisplayName, user.DisplayName ?? ""),
@@ -88,8 +89,7 @@ public class JwtTokenService : ITokenService
     /// </summary>
     public string GenerateRefreshToken(ApplicationUser user)
     {
-        var secretKey = _configuration["Jwt:SecretKey"]
-            ?? throw new InvalidOperationException("JWT:SecretKey is not configured");
+        var secretKey = GetSecretKey();
         var issuer = _configuration["Jwt:Issuer"] ?? "FixIt";
         var audience = _configuration["Jwt:Audience"] ?? "FixItClients";
 
@@ -100,6 +100,8 @@ public class JwtTokenService : ITokenService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim("TokenType", "refresh"),
+            new Claim("TokenVersion", user.RefreshTokenVersion.ToString(CultureInfo.InvariantCulture)),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
             new Claim(ClaimTypes.Email, user.Email ?? ""),
         };
 
@@ -122,32 +124,45 @@ public class JwtTokenService : ITokenService
     {
         try
         {
-            var secretKey = _configuration["Jwt:SecretKey"]
-                ?? throw new InvalidOperationException("JWT:SecretKey is not configured");
-            var issuer = _configuration["Jwt:Issuer"] ?? "FixIt";
-            var audience = _configuration["Jwt:Audience"] ?? "FixItClients";
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-
             var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = key,
-                ValidateIssuer = true,
-                ValidIssuer = issuer,
-                ValidateAudience = true,
-                ValidAudience = audience,
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromSeconds(0)
-            }, out SecurityToken validatedToken);
+            var principal = tokenHandler.ValidateToken(
+                token,
+                GetTokenValidationParameters(),
+                out _);
 
             return principal;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning($"Token validation failed: {ex.Message}");
+            _logger.LogWarning(ex, "Token validation failed");
             return null;
         }
+    }
+
+    private string GetSecretKey()
+    {
+        return Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+            ?? _configuration["Jwt:SecretKey"]
+            ?? throw new InvalidOperationException("JWT:SecretKey is not configured");
+    }
+
+    private TokenValidationParameters GetTokenValidationParameters()
+    {
+        var secretKey = GetSecretKey();
+        var issuer = _configuration["Jwt:Issuer"] ?? "FixIt";
+        var audience = _configuration["Jwt:Audience"] ?? "FixItClients";
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        return new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = key,
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+            ValidateAudience = true,
+            ValidAudience = audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(0)
+        };
     }
 }

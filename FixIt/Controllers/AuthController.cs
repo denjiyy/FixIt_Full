@@ -82,7 +82,7 @@ public class AuthController : ControllerBase
         var result = await HttpContext.AuthenticateAsync(provider);
         if (!result.Succeeded)
         {
-            _logger.LogWarning($"Failed to authenticate with {provider}");
+            _logger.LogWarning("Failed to authenticate with provider {Provider}", provider);
             if (mobile)
             {
                 return Ok(ApiResponse<object>.CreateError("Authentication failed"));
@@ -95,7 +95,7 @@ public class AuthController : ControllerBase
 
         if (string.IsNullOrEmpty(providerUserId))
         {
-            _logger.LogWarning($"Could not extract provider ID from {provider}");
+            _logger.LogWarning("Could not extract provider ID from provider {Provider}", provider);
             if (mobile)
             {
                 return Ok(ApiResponse<object>.CreateError("Invalid provider response"));
@@ -107,7 +107,7 @@ public class AuthController : ControllerBase
         var user = await _oauthService.GetOrCreateUserFromExternalLoginAsync(provider, providerUserId, principal!);
         if (user == null)
         {
-            _logger.LogWarning($"Failed to create user from {provider} login");
+            _logger.LogWarning("Failed to create user from provider {Provider} login", provider);
             if (mobile)
             {
                 return Ok(ApiResponse<object>.CreateError("User creation failed"));
@@ -115,12 +115,32 @@ public class AuthController : ControllerBase
             return Redirect("/login?error=user_creation_failed");
         }
 
+        if (user.IsDeleted)
+        {
+            _logger.LogWarning("Blocked sign-in attempt for soft-deleted user {UserId}", user.Id);
+            if (mobile)
+            {
+                return Ok(ApiResponse<object>.CreateError("User account is not active"));
+            }
+            return Redirect("/login?error=account_inactive");
+        }
+
         // Sign in the user with custom claims
+        // Get user roles for claims
+        var userRoles = await _userManager.GetRolesAsync(user);
+        
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(CustomClaimTypes.DisplayName, user.DisplayName),
             new Claim(ClaimTypes.Email, user.Email ?? "")
         };
+        
+        // Add role claims for authorization
+        foreach (var role in userRoles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
         
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var customPrincipal = new ClaimsPrincipal(identity);
@@ -129,7 +149,6 @@ public class AuthController : ControllerBase
         await _oauthService.UpdateLastSignInAsync(user, provider);
 
         // Log admin logins for audit compliance
-        var userRoles = await _userManager.GetRolesAsync(user);
         if (userRoles.Contains(RoleNames.Admin) || userRoles.Contains(RoleNames.Moderator))
         {
             await _auditService.LogEventAsync(
@@ -139,18 +158,25 @@ public class AuthController : ControllerBase
                 resourceId: user.Id.ToString(),
                 changes: new Dictionary<string, object>
                 {
-                    { "Email", user.Email ?? string.Empty },
+                    { "UserId", user.Id.ToString() },
                     { "Roles", string.Join(", ", userRoles) },
                     { "Provider", provider }
                 }
             );
         }
 
-        _logger.LogInformation($"User {user.Email} signed in via {provider}");
-        
+        _logger.LogInformation("User {UserId} signed in via provider {Provider}", user.Id, provider);
+
         // Return JWT tokens for mobile/API clients
         if (mobile)
         {
+            user.LastRefreshTokenIssuedAt = DateTime.UtcNow;
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to persist token issuance metadata for user {UserId}", user.Id);
+            }
+
             var accessToken = _tokenService.GenerateAccessToken(user, userRoles);
             var refreshToken = _tokenService.GenerateRefreshToken(user);
 
@@ -194,9 +220,20 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<ApiResponse<object>>> Logout()
     {
         var user = await _userManager.GetUserAsync(User);
+
+        if (user != null)
+        {
+            user.RefreshTokenVersion += 1;
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to rotate refresh token version during logout for user {UserId}", user.Id);
+            }
+        }
+
         await _signInManager.SignOutAsync();
-        
-        _logger.LogInformation($"User {user?.Email ?? "Unknown"} logged out");
+
+        _logger.LogInformation("User {UserId} logged out", user?.Id.ToString() ?? "unknown");
         
         return Ok(ApiResponse<object>.CreateSuccess(new { message = "Logged out successfully" }, "Logout successful"));
     }
@@ -228,6 +265,13 @@ public class AuthController : ControllerBase
                 return Unauthorized(ApiResponse<object>.CreateError("Invalid or expired refresh token"));
             }
 
+            var tokenType = principal.FindFirst("TokenType")?.Value;
+            if (!string.Equals(tokenType, "refresh", StringComparison.Ordinal))
+            {
+                _logger.LogWarning("Rejected refresh request with non-refresh token type: {TokenType}", tokenType);
+                return Unauthorized(ApiResponse<object>.CreateError("Invalid refresh token"));
+            }
+
             // Extract user ID from refresh token claims
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim?.Value))
@@ -239,8 +283,14 @@ public class AuthController : ControllerBase
             var user = await _userManager.FindByIdAsync(userIdClaim.Value);
             if (user == null)
             {
-                _logger.LogWarning($"User not found for refresh token");
+                _logger.LogWarning("User not found for refresh token");
                 return Unauthorized(ApiResponse<object>.CreateError("User not found"));
+            }
+
+            if (user.IsDeleted)
+            {
+                _logger.LogWarning("Rejected refresh token for deleted user {UserId}", user.Id);
+                return Unauthorized(ApiResponse<object>.CreateError("User account is not active"));
             }
 
             // Check if user is banned or restricted
@@ -254,18 +304,47 @@ public class AuthController : ControllerBase
                 return Unauthorized(ApiResponse<object>.CreateError("User account is restricted"));
             }
 
+            var tokenVersionClaim = principal.FindFirst("TokenVersion")?.Value;
+            if (!int.TryParse(tokenVersionClaim, out var tokenVersion))
+            {
+                _logger.LogWarning("Refresh token missing valid token version claim for user {UserId}", user.Id);
+                return Unauthorized(ApiResponse<object>.CreateError("Invalid refresh token"));
+            }
+
+            if (tokenVersion != user.RefreshTokenVersion)
+            {
+                _logger.LogWarning(
+                    "Refresh token replay/stale token detected for user {UserId}. Token version {TokenVersion}, expected {ExpectedVersion}",
+                    user.Id,
+                    tokenVersion,
+                    user.RefreshTokenVersion);
+                return Unauthorized(ApiResponse<object>.CreateError("Invalid or expired refresh token"));
+            }
+
+            user.RefreshTokenVersion += 1;
+            user.LastRefreshTokenIssuedAt = DateTime.UtcNow;
+            var rotateResult = await _userManager.UpdateAsync(user);
+            if (!rotateResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to rotate refresh token version for user {UserId}", user.Id);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    ApiResponse<object>.CreateError("Failed to refresh access token"));
+            }
+
             // Generate new access token
             var userRoles = await _userManager.GetRolesAsync(user);
             var newAccessToken = _tokenService.GenerateAccessToken(user, userRoles);
+            var newRefreshToken = _tokenService.GenerateRefreshToken(user);
 
             var response = new RefreshTokenResponse
             {
                 AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
                 TokenType = "Bearer",
                 ExpiresIn = _tokenService.AccessTokenExpirationMinutes * 60
             };
 
-            _logger.LogInformation($"Access token refreshed for user {user.Email}");
+            _logger.LogInformation("Access token refreshed for user {UserId}", user.Id);
             return Ok(ApiResponse<RefreshTokenResponse>.CreateSuccess(
                 response,
                 "Access token refreshed successfully"
@@ -366,7 +445,7 @@ public class AuthController : ControllerBase
         var result = await HttpContext.AuthenticateAsync(provider);
         if (!result.Succeeded)
         {
-            _logger.LogWarning($"Failed to link {provider} for user {user.Email}");
+            _logger.LogWarning("Failed to link provider {Provider} for user {UserId}", provider, user.Id);
             if (mobile)
             {
                 return Ok(ApiResponse<object>.CreateError("Provider linking failed"));
@@ -379,7 +458,7 @@ public class AuthController : ControllerBase
 
         if (string.IsNullOrEmpty(providerUserId))
         {
-            _logger.LogWarning($"Invalid response from {provider}");
+            _logger.LogWarning("Invalid response from provider {Provider}", provider);
             if (mobile)
             {
                 return Ok(ApiResponse<object>.CreateError("Invalid provider response"));
@@ -390,7 +469,7 @@ public class AuthController : ControllerBase
         // Link the external identity
         await _oauthService.LinkExternalIdentityAsync(user, provider, providerUserId, principal!);
 
-        _logger.LogInformation($"Linked {provider} to user {user.Email}");
+        _logger.LogInformation("Linked provider {Provider} to user {UserId}", provider, user.Id);
         
         if (mobile)
         {
@@ -433,7 +512,7 @@ public class AuthController : ControllerBase
         {
             user.ExternalIdentities.Remove(identity);
             await _userManager.UpdateAsync(user);
-            _logger.LogInformation($"Unlinked {provider} from user {user.Email}");
+            _logger.LogInformation("Unlinked provider {Provider} from user {UserId}", provider, user.Id);
         }
 
         return Ok(ApiResponse<object>.CreateSuccess(

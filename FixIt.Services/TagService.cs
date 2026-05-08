@@ -51,7 +51,8 @@ public class TagService : ITagService
         if (string.IsNullOrWhiteSpace(name))
             return null;
 
-        var tags = await _tagRepo.FindAsync(t => t.Name == name.ToLowerInvariant());
+        var normalizedName = name.ToLowerInvariant().Trim();
+        var tags = await _tagRepo.FindAsync(t => t.Name == normalizedName);
         return tags.FirstOrDefault();
     }
 

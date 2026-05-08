@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using FixIt.Services.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.AI;
 using FixIt.Models.Engagement;
+using FixIt.Models.Users;
 using FixIt.Services.AI;
 using FixIt.Services.Background;
 using FixIt.Services.Constants;
@@ -18,6 +19,7 @@ public class IssueDetailModel : PageModel
     private readonly IMediaService _mediaService;
     private readonly IIssueAnalysisService _analysisService;
     private readonly IIssueAnalysisQueue _issueAnalysisQueue;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<IssueDetailModel> _logger;
 
     public IssueDetailModel(
@@ -25,12 +27,14 @@ public class IssueDetailModel : PageModel
         IMediaService mediaService,
         IIssueAnalysisService analysisService,
         IIssueAnalysisQueue issueAnalysisQueue,
+        UserManager<ApplicationUser> userManager,
         ILogger<IssueDetailModel> logger)
     {
         _issueService = issueService;
         _mediaService = mediaService;
         _analysisService = analysisService;
         _issueAnalysisQueue = issueAnalysisQueue;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -117,13 +121,15 @@ public class IssueDetailModel : PageModel
             // Load comments
             Comments = await _issueService.GetCommentsForIssueAsync(Id);
 
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User?.IsInRole(RoleNames.Admin) == true;
             CanManageIssue = !string.IsNullOrWhiteSpace(currentUserId) &&
-                (User.IsInRole(RoleNames.Admin) || Issue.Reporter?.Id == currentUserId);
+                (isAdmin || Issue?.Reporter?.Id == currentUserId);
 
-            if (!(Issue?.IsAnonymous ?? true) && !string.IsNullOrWhiteSpace(Issue?.Reporter?.Id))
+            var reporterId = Issue?.Reporter?.Id;
+            if (!(Issue?.IsAnonymous ?? true) && !string.IsNullOrWhiteSpace(reporterId))
             {
-                var reporterIssues = await _issueService.GetUserIssuesAsync(Issue.Reporter.Id, 1, 1);
+                var reporterIssues = await _issueService.GetUserIssuesAsync(reporterId, 1, 1);
                 IssueCount = (int)reporterIssues.Total;
             }
             
@@ -142,7 +148,6 @@ public class IssueDetailModel : PageModel
         }
     }
 
-    [Authorize]
     public async Task<IActionResult> OnPostAddCommentAsync(string commentText)
     {
         if (string.IsNullOrWhiteSpace(commentText))
@@ -161,8 +166,7 @@ public class IssueDetailModel : PageModel
 
             // Check if user has enabled anonymous reporting in their privacy settings
             // Comments respect the same privacy setting as issues
-            var _userManager = HttpContext.RequestServices.GetService(typeof(Microsoft.AspNetCore.Identity.UserManager<FixIt.Models.Users.ApplicationUser>)) as Microsoft.AspNetCore.Identity.UserManager<FixIt.Models.Users.ApplicationUser>;
-            var user = await _userManager?.GetUserAsync(User)!;
+            var user = await _userManager.GetUserAsync(User);
             bool isAnonymous = user?.AnonymousReportingEnabled ?? false;
 
             // Add comment via service

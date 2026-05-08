@@ -19,19 +19,19 @@ namespace FixIt.Services.Contracts
             string resource,
             string resourceId,
             Dictionary<string, object> changes,
-            string reason = null,
+            string? reason = null,
             string status = "Success",
-            string errorMessage = null
+            string? errorMessage = null
         );
 
         /// <summary>
         /// Get audit logs with optional filtering.
         /// </summary>
         Task<List<AuditLog>> GetLogsAsync(
-            string eventType = null,
-            string resourceType = null,
-            string resourceId = null,
-            string actorId = null,
+            string? eventType = null,
+            string? resourceType = null,
+            string? resourceId = null,
+            string? actorId = null,
             DateTime? from = null,
             DateTime? to = null,
             int pageSize = 100
@@ -40,13 +40,13 @@ namespace FixIt.Services.Contracts
         /// <summary>
         /// Get a single audit log by ID.
         /// </summary>
-        Task<AuditLog> GetLogAsync(string id);
+        Task<AuditLog?> GetLogAsync(string id);
 
         /// <summary>
         /// Get count of audit logs matching the criteria.
         /// </summary>
         Task<long> GetCountAsync(
-            string eventType = null,
+            string? eventType = null,
             DateTime? from = null,
             DateTime? to = null
         );

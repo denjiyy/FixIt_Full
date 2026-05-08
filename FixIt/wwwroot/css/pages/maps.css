@@ -384,6 +384,22 @@
     transition: background-color var(--transition-fast), transform var(--transition-fast);
 }
 
+.hazard-item__select {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+}
+
+.hazard-item__select:focus-visible {
+    outline: 0;
+    border-radius: var(--radius-base);
+    box-shadow: 0 0 0 3px var(--raw-rgba-14-165-233-0-18);
+}
+
 .hazard-item:hover {
     background: var(--raw-rgba-248-250-252-0-92);
     transform: translateX(2px);
@@ -609,10 +625,15 @@
     margin: 0 0 0.15rem;
     font-size: var(--text-base);
     color: var(--gray-950);
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .hazard-info small {
+    display: block;
     color: var(--gray-500);
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .hazard-item-footer {

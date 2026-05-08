@@ -69,7 +69,6 @@
 
 .cities-hero__actions,
 .city-focus__actions,
-.city-card__actions,
 .cities-empty .btn {
     display: flex;
     flex-wrap: wrap;
@@ -387,11 +386,28 @@
 
 .city-card__actions {
     margin-top: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: var(--space-3);
 }
 
 .city-card__actions .btn {
-    flex: 1 1 calc(50% - var(--space-3));
+    width: 100%;
+    min-height: 3.05rem;
+    padding: 0.7rem 0.95rem;
     justify-content: center;
+    align-items: center;
+    gap: 0.55rem;
+    line-height: 1.25;
+}
+
+.city-card__actions .btn i {
+    flex-shrink: 0;
+}
+
+.city-card__actions .btn:last-child {
+    grid-column: 1 / -1;
 }
 
 .cities-pagination {
@@ -565,16 +581,22 @@
     }
 
     .cities-hero__actions,
-    .city-focus__actions,
-    .city-card__actions {
+    .city-focus__actions {
         flex-direction: column;
     }
 
     .cities-hero__actions > *,
-    .city-focus__actions > *,
-    .city-card__actions > * {
+    .city-focus__actions > * {
         width: 100%;
         justify-content: center;
+    }
+
+    .city-card__actions {
+        grid-template-columns: 1fr;
+    }
+
+    .city-card__actions .btn:last-child {
+        grid-column: auto;
     }
 
     .cities-pagination {

@@ -1,5 +1,6 @@
 using FixIt.Services.Contracts;
 using FixIt.Models.Issues;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FixIt.Pages.Tags;
@@ -27,10 +28,10 @@ public class TagIssuesModel : PageModel
     public int PageSize { get; set; } = 12;
     public int TotalPages { get; set; } = 1;
 
-    public async Task OnGetAsync(string tag, int page = 1)
+    public async Task OnGetAsync(string tag, [FromQuery(Name = "page")] int pageNumber = 1)
     {
         Tag = tag?.Trim() ?? string.Empty;
-        CurrentPage = Math.Max(1, page);
+        CurrentPage = Math.Max(1, pageNumber);
 
         if (string.IsNullOrWhiteSpace(Tag))
         {

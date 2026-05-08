@@ -26,6 +26,8 @@ public interface IReputationService
 
 public class ReputationService : IReputationService
 {
+    private sealed record LeaderboardCandidate(string UserId, int Points);
+
     private readonly IRepository<UserReputation> _reputationRepository;
     private readonly IRepository<ReputationTransaction> _transactionRepository;
     private readonly IRepository<LeaderboardEntry> _leaderboardRepository;
@@ -64,7 +66,7 @@ public class ReputationService : IReputationService
             };
             
             await _reputationRepository.InsertAsync(reputation);
-            _logger.LogInformation($"Created reputation record for user {userId}");
+            _logger.LogInformation("Created reputation record for user {UserId}", userId);
         }
 
         return reputation;
@@ -136,7 +138,11 @@ public class ReputationService : IReputationService
         // FINAL trust level update (achievements may have added more points)
         await UpdateTrustLevelAsync(userId);
 
-        _logger.LogInformation($"Added {points} points to user {userId} for: {reason}");
+        _logger.LogInformation(
+            "Added {Points} points to user {UserId} for reason {Reason}",
+            points,
+            userId,
+            reason);
     }
 
     /// <summary>
@@ -202,7 +208,7 @@ public class ReputationService : IReputationService
         }
 
         // Add new achievements
-        if (achievementsToAdd.Any())
+        if (achievementsToAdd.Count > 0)
         {
             reputation.Achievements.AddRange(achievementsToAdd);
             
@@ -216,7 +222,10 @@ public class ReputationService : IReputationService
             }
 
             await _reputationRepository.ReplaceAsync(reputation.Id, reputation);
-            _logger.LogInformation($"Awarded {achievementsToAdd.Count} new achievements to user {userId}");
+            _logger.LogInformation(
+                "Awarded {AchievementCount} new achievements to user {UserId}",
+                achievementsToAdd.Count,
+                userId);
         }
     }
 
@@ -249,7 +258,10 @@ public class ReputationService : IReputationService
                 await _userManager.UpdateAsync(user);
             }
 
-            _logger.LogInformation($"Updated user {userId} trust level to {newTrustLevel}");
+            _logger.LogInformation(
+                "Updated user {UserId} trust level to {TrustLevel}",
+                userId,
+                newTrustLevel);
         }
     }
 
@@ -310,21 +322,21 @@ public class ReputationService : IReputationService
     }
 
     /// <summary>
-    /// <summary>
     /// Internal method to regenerate leaderboard for a period
     /// </summary>
     private async Task RegenerateLeaderboardAsync(LeaderboardPeriod period, DateTime sinceDate)
     {
-        var entries = new List<dynamic>();
+        List<LeaderboardCandidate> entries;
 
         if (period == LeaderboardPeriod.AllTime)
         {
             // For AllTime, use UserReputation.TotalPoints directly (more reliable than summing transactions)
             var allReputations = await _reputationRepository.FindAsync(r => r.TotalPoints > 0);
             entries = allReputations
-                .OrderByDescending(r => r.TotalPoints)
-                .Select(r => new { UserId = r.UserId, Points = r.TotalPoints })
-                .Cast<dynamic>()
+                .Where(r => !string.IsNullOrWhiteSpace(r.UserId))
+                .Select(r => new LeaderboardCandidate(r.UserId, r.TotalPoints))
+                .OrderByDescending(r => r.Points)
+                .ThenBy(r => r.UserId, StringComparer.Ordinal)
                 .ToList();
         }
         else
@@ -332,10 +344,11 @@ public class ReputationService : IReputationService
             // For Weekly/Monthly, use points earned in the specific period from transactions
             var transactions = await _transactionRepository.FindAsync(t => t.CreatedAt >= sinceDate);
             entries = transactions
+                .Where(t => !string.IsNullOrWhiteSpace(t.UserId))
                 .GroupBy(t => t.UserId)
-                .Select(g => new { UserId = g.Key, Points = g.Sum(t => t.Points) })
+                .Select(g => new LeaderboardCandidate(g.Key, g.Sum(t => t.Points)))
                 .OrderByDescending(x => x.Points)
-                .Cast<dynamic>()
+                .ThenBy(x => x.UserId, StringComparer.Ordinal)
                 .ToList();
         }
 
@@ -349,9 +362,9 @@ public class ReputationService : IReputationService
 
         // Create new leaderboard entries
         var newEntries = new List<LeaderboardEntry>();
-        for (int i = 0; i < entries.Count; i++)
+        var rank = 1;
+        foreach (var entry in entries)
         {
-            var entry = entries[i];
             var user = await _userManager.FindByIdAsync(entry.UserId);
             var userReputation = await GetUserReputationAsync(entry.UserId);
             
@@ -363,7 +376,7 @@ public class ReputationService : IReputationService
                     UserDisplayName = user.DisplayName,
                     UserAvatarId = user.AvatarMediaId,
                     Points = entry.Points,
-                    Rank = i + 1,
+                    Rank = rank++,
                     TrustLevel = userReputation?.TrustLevel ?? 0,
                     Period = period
                 });
@@ -376,7 +389,10 @@ public class ReputationService : IReputationService
             await _leaderboardRepository.InsertAsync(entry);
         }
 
-        _logger.LogInformation($"Regenerated {period} leaderboard with {newEntries.Count} entries");
+        _logger.LogInformation(
+            "Regenerated {LeaderboardPeriod} leaderboard with {EntryCount} entries",
+            period,
+            newEntries.Count);
     }
 
     /// <summary>

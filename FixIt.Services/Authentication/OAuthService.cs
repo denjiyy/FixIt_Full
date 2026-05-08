@@ -46,6 +46,11 @@ public class OAuthService : IOAuthService
         {
             var user = await _userManager.FindByEmailAsync(
                 principal.FindFirstValue(ClaimTypes.Email) ?? "");
+            if (user?.IsDeleted == true)
+            {
+                _logger.LogWarning("Blocked OAuth sign-in for soft-deleted user {UserId}", user.Id);
+                return null;
+            }
             return user;
         }
 
@@ -67,9 +72,15 @@ public class OAuthService : IOAuthService
 
         if (existingUser != null)
         {
+            if (existingUser.IsDeleted)
+            {
+                _logger.LogWarning("Blocked external identity link for soft-deleted user {UserId}", existingUser.Id);
+                return null;
+            }
+
             // Link external identity to existing user
             await LinkExternalIdentityAsync(existingUser, provider, providerId, principal);
-            _logger.LogInformation($"Linked {provider} identity to existing user {existingUser.Email}");
+            _logger.LogInformation("Linked provider {Provider} identity to existing user {UserId}", provider, existingUser.Id);
             return existingUser;
         }
 
@@ -98,14 +109,17 @@ public class OAuthService : IOAuthService
         var result = await _userManager.CreateAsync(newUser);
         if (!result.Succeeded)
         {
-            _logger.LogError($"Failed to create user from {provider} login: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            _logger.LogError(
+                "Failed to create user from provider {Provider} login: {Errors}",
+                provider,
+                string.Join(", ", result.Errors.Select(e => e.Description)));
             return null;
         }
 
         // Assign default user role
         await _userManager.AddToRoleAsync(newUser, "User");
 
-        _logger.LogInformation($"Created new user from {provider} login: {newUser.Email}");
+        _logger.LogInformation("Created new user from provider {Provider} login with user id {UserId}", provider, newUser.Id);
         return newUser;
     }
 
@@ -135,7 +149,7 @@ public class OAuthService : IOAuthService
         });
 
         await _userManager.UpdateAsync(user);
-        _logger.LogInformation($"Linked {provider} identity to user {user.Email}");
+        _logger.LogInformation("Linked provider {Provider} identity to user {UserId}", provider, user.Id);
     }
 
     /// <summary>
@@ -189,16 +203,25 @@ public class OAuthService : IOAuthService
     /// <summary>
     /// Finds external identity by provider and provider ID
     /// </summary>
-    public Task<ExternalIdentity?> FindExternalIdentityAsync(string provider, string providerId)
+    public async Task<ExternalIdentity?> FindExternalIdentityAsync(string provider, string providerId)
     {
-        // This is a simplified approach - in production, you might want to index this in MongoDB
-        // For now, we're searching through all users (should add a query method to UserManager)
-        var allUsers = _userManager.Users.ToList();
-        var user = allUsers.FirstOrDefault(u => 
-            u.ExternalIdentities.Any(e => e.Provider == provider && e.ProviderId == providerId));
-        
-        return Task.FromResult(
-            user?.ExternalIdentities.FirstOrDefault(e => e.Provider == provider && e.ProviderId == providerId)
-        );
+        // Find user with matching external identity
+        // Uses LINQ-to-MongoDB via UserManager to filter on the server
+        try
+        {
+            var users = _userManager.Users
+                .Where(u => u.ExternalIdentities.Any(e => e.Provider == provider && e.ProviderId == providerId))
+                .ToList(); // Materialize the small result set
+            
+            var user = users.FirstOrDefault();
+            var identity = user?.ExternalIdentities
+                .FirstOrDefault(e => e.Provider == provider && e.ProviderId == providerId);
+            return await Task.FromResult(identity);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error finding external identity for provider {Provider}", provider);
+            return await Task.FromResult<ExternalIdentity?>(null);
+        }
     }
 }

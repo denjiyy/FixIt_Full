@@ -9,6 +9,7 @@ namespace FixIt.Services.Storage;
 public class LocalFileStorage : IFileStorage
 {
     private readonly string _baseStoragePath;
+    private readonly string _normalizedBaseStoragePath;
     private readonly ILogger<LocalFileStorage> _logger;
 
     public LocalFileStorage(IConfiguration configuration, ILogger<LocalFileStorage> logger)
@@ -18,11 +19,12 @@ public class LocalFileStorage : IFileStorage
         // Get storage path from config or use default
         _baseStoragePath = configuration["Media:StoragePath"] 
             ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        _normalizedBaseStoragePath = Path.GetFullPath(_baseStoragePath);
 
         // Ensure directory exists
-        Directory.CreateDirectory(_baseStoragePath);
+        Directory.CreateDirectory(_normalizedBaseStoragePath);
         
-        _logger.LogInformation("Using local file storage at: {Path}", _baseStoragePath);
+        _logger.LogInformation("Using local file storage at: {Path}", _normalizedBaseStoragePath);
     }
 
     public async Task SaveFileAsync(string path, Stream fileStream)
@@ -87,9 +89,28 @@ public class LocalFileStorage : IFileStorage
 
     private string GetFullPath(string relativePath)
     {
-        // Remove leading slash if present
-        relativePath = relativePath.TrimStart('/');
-        
-        return Path.Combine(_baseStoragePath, relativePath);
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            throw new InvalidOperationException("Storage path cannot be empty.");
+        }
+
+        // Normalize separators and avoid absolute-path injection.
+        var normalizedRelativePath = relativePath.Trim().Replace('\\', '/').TrimStart('/');
+        if (Path.IsPathRooted(normalizedRelativePath))
+        {
+            throw new UnauthorizedAccessException("Absolute paths are not allowed for file storage operations.");
+        }
+
+        var candidatePath = Path.GetFullPath(Path.Combine(_normalizedBaseStoragePath, normalizedRelativePath));
+        var isWithinBasePath =
+            candidatePath.Equals(_normalizedBaseStoragePath, StringComparison.Ordinal)
+            || candidatePath.StartsWith(_normalizedBaseStoragePath + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+
+        if (!isWithinBasePath)
+        {
+            throw new UnauthorizedAccessException("Path traversal attempt detected.");
+        }
+
+        return candidatePath;
     }
 }

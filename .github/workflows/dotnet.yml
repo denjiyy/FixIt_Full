@@ -55,8 +55,8 @@ jobs:
         fail_ci_if_error: false
         verbose: true
 
-    - name: Check for NuGet vulnerabilities
-      run: dotnet list package --vulnerable
+    - name: Check for NuGet vulnerabilities (including transitive)
+      run: dotnet list ${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
 
   code-quality:
     runs-on: ubuntu-latest

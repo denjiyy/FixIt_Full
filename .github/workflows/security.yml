@@ -47,9 +47,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore FixIt.sln
 
-    - name: List vulnerable packages
-      run: dotnet list package --vulnerable --include-transitive
-      continue-on-error: true
+    - name: Fail on vulnerable packages (including transitive)
+      run: dotnet list FixIt.sln package --vulnerable --include-transitive
 
     - name: Check for outdated packages
-      run: dotnet package search --exact FixIt 2>/dev/null || true
+      run: dotnet list FixIt.sln package --outdated || true

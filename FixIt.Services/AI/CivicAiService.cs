@@ -736,7 +736,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
             FallbackUsed = true
         };
 
-        var lowered = query.ToLowerInvariant();
+        var lowered = query?.ToLowerInvariant() ?? string.Empty;
 
         result.Status = ParseStatusFromKeywords(lowered);
         result.Priority = ParsePriorityFromKeywords(lowered);

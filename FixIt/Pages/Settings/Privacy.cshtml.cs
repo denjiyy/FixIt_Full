@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Users;
-using FixIt.Data.Repository.Contracts;
-using System.Security.Claims;
 
 namespace FixIt.Pages.Settings;
 
@@ -24,9 +22,30 @@ public class PrivacyModel : PageModel
     public async Task OnGetAsync()
     {
         CurrentUser = await _userManager.GetUserAsync(User);
-        
-        // Load alert preferences (stored in user metadata or separate collection)
+
+        if (CurrentUser == null)
+        {
+            AlertPreferences = BuildDefaultPreferences();
+            ProfileVisibility = "public";
+            return;
+        }
+
         AlertPreferences = new AlertPreferences
+        {
+            CrimeAlerts = CurrentUser.CrimeAlertsEnabled,
+            AccidentAlerts = CurrentUser.AccidentAlertsEnabled,
+            InfrastructureAlerts = CurrentUser.InfrastructureAlertsEnabled,
+            AllHazards = CurrentUser.AllHazardAlertsEnabled,
+            AlertRadiusKm = CurrentUser.AlertRadiusKm,
+            SeverityThreshold = CurrentUser.HazardSeverityThreshold
+        };
+
+        ProfileVisibility = CurrentUser.ProfileVisibility;
+    }
+
+    private static AlertPreferences BuildDefaultPreferences()
+    {
+        return new AlertPreferences
         {
             CrimeAlerts = true,
             AccidentAlerts = true,

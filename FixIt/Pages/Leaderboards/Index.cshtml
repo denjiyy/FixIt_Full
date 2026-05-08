@@ -164,7 +164,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var entry in entries.Skip(3).Take(20))
+                                @{
+                                    var tableEntries = entries.Count >= 3
+                                        ? entries.Skip(3).Take(20)
+                                        : entries.Take(20);
+                                }
+                                @foreach (var entry in tableEntries)
                                 {
                                     <tr class="leaderboard-row">
                                         <td class="ps-4 py-3">
@@ -175,7 +180,7 @@
                                         <td class="py-3">
                                             <a href="/user/@entry.UserId" class="text-decoration-none d-flex align-items-center">
                                                 <div class="avatar-circle me-2">
-                                                    @entry.UserDisplayName.Substring(0, 1).ToUpper()
+                                                    @GetDisplayInitial(entry.UserDisplayName)
                                                 </div>
                                                 <span class="fw-bold">@entry.UserDisplayName</span>
                                             </a>
@@ -204,6 +209,16 @@
 }
 
 @functions {
+    private static string GetDisplayInitial(string? displayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            return "?";
+        }
+
+        return displayName.Trim().Substring(0, 1).ToUpperInvariant();
+    }
+
     private string GetTrustLevelLabel(int level) => level switch
     {
         0 => Localizer["TrustLevel_NewMember"],

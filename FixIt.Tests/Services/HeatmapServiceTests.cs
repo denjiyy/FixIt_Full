@@ -68,6 +68,10 @@ public class HeatmapServiceTests
             .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
                 issues.Where(expr.Compile()).ToList());
         
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
+        
         _tagRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Tag, bool>>>()))
             .ReturnsAsync(new List<Tag>());
 
@@ -112,7 +116,7 @@ public class HeatmapServiceTests
         {
             CreateTestIssue("i1", "city1", IssueStatus.New),
             CreateTestIssue("i2", "city1", IssueStatus.Fixed), // Should be excluded
-            CreateTestIssue("i3", "city1", IssueStatus.InProgress)
+            CreateTestIssue("i3", "city1", IssueStatus.InProgress, lat: 35.0522, lon: -117.2437)
         };
 
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
@@ -213,6 +217,10 @@ public class HeatmapServiceTests
 
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync(issues);
+        
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
         
         _tagRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Tag, bool>>>()))
             .ReturnsAsync(new List<Tag>());

@@ -38,7 +38,9 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish .
 
 # Create non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser \
+    && mkdir -p /app/wwwroot/uploads /app/data-protection-keys \
+    && chown -R appuser:appuser /app
 USER appuser
 
 # Expose port

@@ -98,7 +98,7 @@ public class RefreshTokenRequest
 
 /// <summary>
 /// Response for token refresh request
-/// Contains a new access token
+/// Contains a new access token and rotated refresh token
 /// </summary>
 public class RefreshTokenResponse
 {
@@ -106,6 +106,11 @@ public class RefreshTokenResponse
     /// New JWT access token
     /// </summary>
     public string AccessToken { get; set; } = null!;
+
+    /// <summary>
+    /// New refresh token replacing the previous one
+    /// </summary>
+    public string RefreshToken { get; set; } = null!;
 
     /// <summary>
     /// Token type (always "Bearer")

@@ -1,0 +1,11 @@
+services:
+  mongodb:
+    ports:
+      - "27017:27017"
+
+  fixit-app:
+    ports:
+      - "5092:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DetailedErrors: "true"

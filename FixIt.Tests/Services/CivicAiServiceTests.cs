@@ -2,6 +2,7 @@ using FixIt.Models.Enums;
 using FixIt.Services.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace FixIt.Tests.Services;
 

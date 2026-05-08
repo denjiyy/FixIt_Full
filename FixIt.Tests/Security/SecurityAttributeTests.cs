@@ -5,6 +5,7 @@ using FixIt.Services.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Xunit;
 
 namespace FixIt.Tests.Security;
 
@@ -24,6 +25,24 @@ public class SecurityAttributeTests
     public void SafetyController_ToggleAnonymousReporting_RequiresAntiforgery()
     {
         var method = typeof(SafetyController).GetMethod(nameof(SafetyController.ToggleAnonymousReporting));
+        var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
+
+        Assert.NotNull(antiforgery);
+    }
+
+    [Fact]
+    public void SafetyController_UpdateAlertPreferences_RequiresAntiforgery()
+    {
+        var method = typeof(SafetyController).GetMethod(nameof(SafetyController.UpdateAlertPreferences));
+        var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
+
+        Assert.NotNull(antiforgery);
+    }
+
+    [Fact]
+    public void UsersController_UpdateProfileVisibility_RequiresAntiforgery()
+    {
+        var method = typeof(UsersController).GetMethod(nameof(UsersController.UpdateProfileVisibility));
         var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
 
         Assert.NotNull(antiforgery);

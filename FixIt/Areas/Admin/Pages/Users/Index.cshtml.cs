@@ -12,6 +12,7 @@ namespace FixIt.Areas.Admin.Pages.Users;
 public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ILogger<IndexModel> _logger;
 
     public List<ApplicationUser> Users { get; set; } = new();
@@ -23,9 +24,10 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? SearchTerm { get; set; }
 
-    public IndexModel(UserManager<ApplicationUser> userManager, ILogger<IndexModel> logger)
+    public IndexModel(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<IndexModel> logger)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _logger = logger;
     }
 
@@ -191,13 +193,55 @@ public class IndexModel : PageModel
             if (user == null)
                 return NotFound();
 
+            // Remove all existing roles
+            var existingRoles = await _userManager.GetRolesAsync(user);
+            if (existingRoles.Count > 0)
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, existingRoles);
+                if (!removeResult.Succeeded)
+                {
+                    _logger.LogWarning("Failed to remove existing roles from user {UserId}", user.Id);
+                }
+            }
+
+            // Add new role based on UserRole enum
+            string? newRole = role switch
+            {
+                UserRole.Admin => RoleNames.Admin,
+                UserRole.Moderator => RoleNames.Moderator,
+                _ => null // User role doesn't need Identity role entry
+            };
+
+            if (newRole != null)
+            {
+                // Ensure role exists in Identity role store
+                if (!await _roleManager.RoleExistsAsync(newRole))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(newRole));
+                }
+
+                var addResult = await _userManager.AddToRoleAsync(user, newRole);
+                if (!addResult.Succeeded)
+                {
+                    _logger.LogWarning("Failed to add role {Role} to user {UserId}", newRole, user.Id);
+                    TempData["ErrorMessage"] = "Failed to update user role";
+                    return RedirectToPage(new { pageNumber = PageNumber });
+                }
+            }
+
+            // Also update the user.Role property for backward compatibility
             user.Role = role;
-            var result = await _userManager.UpdateAsync(user);
+            var updateResult = await _userManager.UpdateAsync(user);
             
-            if (result.Succeeded)
+            if (updateResult.Succeeded)
             {
                 _logger.LogInformation($"User {user.UserName} role changed to {role}");
                 TempData["SuccessMessage"] = $"{user.UserName} role has been changed to {role}.";
+            }
+            else
+            {
+                _logger.LogWarning("Failed to update user role property for user {UserId}", user.Id);
+                TempData["ErrorMessage"] = "Role added but failed to update user profile";
             }
 
             return RedirectToPage(new { pageNumber = PageNumber });

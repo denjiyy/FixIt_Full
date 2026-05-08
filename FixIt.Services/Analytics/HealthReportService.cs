@@ -2,7 +2,6 @@ using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Locations;
 using FixIt.Models.Enums;
-using FixIt.Models.Users;
 using FixIt.Services.Analytics.Models;
 
 namespace FixIt.Services.Analytics;
@@ -29,15 +28,21 @@ public class HealthReportService : IHealthReportService
     public async Task<HealthReport> GetCityHealthReportAsync(string cityId)
     {
         var city = await _cityRepo.GetByIdAsync(cityId);
-        var issues = (await _issueRepo.FindAsync(i => i.CityId == cityId)).ToList();
-
+        
+        // Use CountAsync for simple counts instead of loading all issues
+        var totalIssuesCount = await _issueRepo.CountAsync(i => i.CityId == cityId);
+        var resolvedIssuesCount = await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Status == IssueStatus.Fixed);
+        var openIssuesCount = await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Status != IssueStatus.Fixed && i.Status != IssueStatus.Rejected);
+        
         var report = new HealthReport
         {
             CityId = cityId,
             CityName = city?.Name ?? "Unknown",
-            TotalIssues = issues.Count(),
-            ResolvedIssues = issues.Count(i => i.Status == IssueStatus.Fixed),
-            OpenIssues = issues.Count(i => i.Status != IssueStatus.Fixed && i.Status != IssueStatus.Rejected),
+            TotalIssues = (int)totalIssuesCount,
+            ResolvedIssues = (int)resolvedIssuesCount,
+            OpenIssues = (int)openIssuesCount,
         };
 
         // Calculate resolution rate
@@ -45,9 +50,10 @@ public class HealthReportService : IHealthReportService
             ? (report.ResolvedIssues / (double)report.TotalIssues) * 100 
             : 0;
 
-        // Calculate time metrics
-        var resolvedIssues = issues.Where(i => i.Status == IssueStatus.Fixed).ToList();
-        if (resolvedIssues.Any())
+        // Load only resolved issues for time calculations
+        var resolvedIssues = (await _issueRepo.FindAsync(i => 
+            i.CityId == cityId && i.Status == IssueStatus.Fixed)).ToList();
+        if (resolvedIssues.Count > 0)
         {
             var resolutionTimes = resolvedIssues
                 .Select(i => (i.UpdatedAt - i.CreatedAt).TotalHours)
@@ -55,9 +61,10 @@ public class HealthReportService : IHealthReportService
             report.AverageResolutionTimeHours = resolutionTimes.Average();
         }
 
-        // Response time (time to first update or status change)
-        var issuesWithUpdates = issues.Where(i => i.UpdatedAt > i.CreatedAt).ToList();
-        if (issuesWithUpdates.Any())
+        // Response time (time to first update or status change) - load only issues with updates
+        var issuesWithUpdates = (await _issueRepo.FindAsync(i => 
+            i.CityId == cityId && i.UpdatedAt > i.CreatedAt)).ToList();
+        if (issuesWithUpdates.Count > 0)
         {
             var responseTimes = issuesWithUpdates
                 .Select(i => (i.UpdatedAt - i.CreatedAt).TotalHours)
@@ -67,16 +74,26 @@ public class HealthReportService : IHealthReportService
 
         // Last 7 days metrics
         var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
-        report.IssuesCreatedLast7Days = issues.Count(i => i.CreatedAt >= sevenDaysAgo);
-        report.IssuesResolvedLast7Days = issues.Count(i => 
-            i.Status == IssueStatus.Fixed && 
-            i.UpdatedAt >= sevenDaysAgo);
+        var issuesCreatedLast7Days = await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.CreatedAt >= sevenDaysAgo);
+        var issuesResolvedLast7Days = await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Status == IssueStatus.Fixed && i.UpdatedAt >= sevenDaysAgo);
+        
+        report.IssuesCreatedLast7Days = (int)issuesCreatedLast7Days;
+        report.IssuesResolvedLast7Days = (int)issuesResolvedLast7Days;
 
-        // Priority distribution
-        report.CriticalIssues = issues.Count(i => i.Priority == IssuePriority.Critical);
-        report.HighIssues = issues.Count(i => i.Priority == IssuePriority.High);
-        report.MediumIssues = issues.Count(i => i.Priority == IssuePriority.Medium);
-        report.LowIssues = issues.Count(i => i.Priority == IssuePriority.Low);
+        // Priority distribution using CountAsync
+        report.CriticalIssues = (int)await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Priority == IssuePriority.Critical);
+        report.HighIssues = (int)await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Priority == IssuePriority.High);
+        report.MediumIssues = (int)await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Priority == IssuePriority.Medium);
+        report.LowIssues = (int)await _issueRepo.CountAsync(i => 
+            i.CityId == cityId && i.Priority == IssuePriority.Low);
+
+        // Load all issues for this city (needed for status breakdown, engagement, top issues)
+        var issues = (await _issueRepo.FindAsync(i => i.CityId == cityId)).ToList();
 
         // Status breakdown
         report.IssuesByStatus = issues
@@ -129,7 +146,7 @@ public class HealthReportService : IHealthReportService
         {
             CityId = "global",
             CityName = "Global",
-            TotalIssues = allIssues.Count(),
+            TotalIssues = allIssues.Count,
             ResolvedIssues = allIssues.Count(i => i.Status == IssueStatus.Fixed),
             OpenIssues = allIssues.Count(i => i.Status != IssueStatus.Fixed && i.Status != IssueStatus.Rejected),
         };
@@ -141,7 +158,7 @@ public class HealthReportService : IHealthReportService
 
         // Calculate time metrics
         var resolvedIssues = allIssues.Where(i => i.Status == IssueStatus.Fixed).ToList();
-        if (resolvedIssues.Any())
+        if (resolvedIssues.Count > 0)
         {
             var resolutionTimes = resolvedIssues
                 .Select(i => (i.UpdatedAt - i.CreatedAt).TotalHours)
@@ -197,7 +214,7 @@ public class HealthReportService : IHealthReportService
         return report;
     }
 
-    private double CalculateHealthScore(HealthReport report)
+    private static double CalculateHealthScore(HealthReport report)
     {
         // If there are no open issues, the city is in perfect health
         if (report.OpenIssues == 0)

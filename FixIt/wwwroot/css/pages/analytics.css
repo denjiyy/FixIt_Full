@@ -9,7 +9,7 @@
     padding: clamp(2rem, 4vw, 3rem);
     background:
         radial-gradient(circle at top right, var(--raw-rgba-255-255-255-0-22), transparent 28%),
-        linear-gradient(135deg, var(--raw-hex-4f46e5), var(--raw-hex-7c3aed));
+        linear-gradient(135deg, var(--raw-hex-0f4c81), var(--raw-hex-2563eb) 58%, var(--raw-hex-60a5fa));
     color: var(--white);
 }
 

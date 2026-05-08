@@ -640,44 +640,53 @@ public class IssueService : IIssueService
                 combined, parameter);
         }
 
-        // Get total count
-        var allIssues = await _issueRepo.FindAsync(combinedFilter);
-        var totalCount = allIssues.Count();
-        // Get paginated results
-        var issues = ApplySort(allIssues, sort)
-            .Skip(skip)
-            .Take(pageSize)
-            .ToList();
+        // Use QueryAsync for paginated results - database handles sorting and pagination
+        var results = await _issueRepo.QueryAsync(combinedFilter, skip, pageSize);
+        
+        // Apply sorting on the paginated results (limited to pageSize items, not all)
+        var sortedIssues = ApplySort(results.Items.AsEnumerable(), sort).ToList();
 
         return new PagedResult<Issue>
         {
-            Items = issues,
-            Total = totalCount
+            Items = sortedIssues,
+            Total = results.Total
         };
     }
 
     public async Task<IssuePublicOverview> GetPublicIssueOverviewAsync(int featuredCount = 3)
     {
-        var issues = (await _issueRepo.FindAsync(i => !i.IsDeleted)).ToList();
+        // Use CountAsync for each status - no need to load all issues into memory
+        var totalIssues = await _issueRepo.CountAsync(i => !i.IsDeleted);
+        var newIssues = await _issueRepo.CountAsync(i => !i.IsDeleted && i.Status == IssueStatus.New);
+        var confirmedIssues = await _issueRepo.CountAsync(i => !i.IsDeleted && i.Status == IssueStatus.Confirmed);
+        var inProgressIssues = await _issueRepo.CountAsync(i => !i.IsDeleted && i.Status == IssueStatus.InProgress);
+        var fixedIssues = await _issueRepo.CountAsync(i => !i.IsDeleted && i.Status == IssueStatus.Fixed);
+        var criticalIssues = await _issueRepo.CountAsync(i => !i.IsDeleted && i.Priority == IssuePriority.Critical);
+
+        // Get featured issues - only load top N items
+        var pagedFeaturedIssues = await _issueRepo.QueryAsync(i => !i.IsDeleted, 0, featuredCount);
+        var featured = ApplySort(pagedFeaturedIssues.Items.AsEnumerable(), IssueSortOption.MostVoted)
+            .ToList();
+
+        // For cities covered, we still need to load some data, but limit to a reasonable amount
+        // TODO: Consider adding a CountDistinctAsync method to the repository
+        var allIssues = await _issueRepo.FindAsync(i => !i.IsDeleted);
+        var citiesCovered = allIssues
+            .Where(i => !string.IsNullOrWhiteSpace(i.CityId))
+            .Select(i => i.CityId)
+            .Distinct(StringComparer.Ordinal)
+            .Count();
 
         return new IssuePublicOverview
         {
-            TotalIssues = issues.Count,
-            NewIssues = issues.Count(i => i.Status == IssueStatus.New),
-            ConfirmedIssues = issues.Count(i => i.Status == IssueStatus.Confirmed),
-            InProgressIssues = issues.Count(i => i.Status == IssueStatus.InProgress),
-            FixedIssues = issues.Count(i => i.Status == IssueStatus.Fixed),
-            CriticalIssues = issues.Count(i => i.Priority == IssuePriority.Critical),
-            CitiesCovered = issues
-                .Where(i => !string.IsNullOrWhiteSpace(i.CityId))
-                .Select(i => i.CityId)
-                .Distinct(StringComparer.Ordinal)
-                .Count(),
-            FeaturedIssues = issues
-                .OrderByDescending(i => i.LastActivityAt)
-                .ThenByDescending(i => i.CreatedAt)
-                .Take(Math.Max(0, featuredCount))
-                .ToList()
+            TotalIssues = (int)totalIssues,
+            NewIssues = (int)newIssues,
+            ConfirmedIssues = (int)confirmedIssues,
+            InProgressIssues = (int)inProgressIssues,
+            FixedIssues = (int)fixedIssues,
+            CriticalIssues = (int)criticalIssues,
+            CitiesCovered = citiesCovered,
+            FeaturedIssues = featured
         };
     }
 
@@ -719,8 +728,7 @@ public class IssueService : IIssueService
 
     public async Task UpdateIssueAsync(Issue issue)
     {
-        if (issue == null)
-            throw new ArgumentNullException(nameof(issue));
+        ArgumentNullException.ThrowIfNull(issue);
             
         issue.UpdatedAt = DateTime.UtcNow;
         await _issueRepo.ReplaceAsync(issue.Id, issue);

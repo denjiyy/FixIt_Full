@@ -2,20 +2,22 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using FixIt.Models.Users;
+using AspNetCore.Identity.Mongo.Model;  // <-- add this
 
 namespace FixIt.Services.Authentication;
 
-/// <summary>
-/// Custom claims principal factory that adds the user's role as a claim.
-/// This allows User.IsInRole() to work correctly in Razor pages and controllers.
-/// </summary>
-public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<ApplicationUser>
+public class ApplicationUserClaimsPrincipalFactory 
+    : UserClaimsPrincipalFactory<ApplicationUser, MongoRole>  // <-- change to MongoRole
 {
+    private readonly UserManager<ApplicationUser> _userManager;
+
     public ApplicationUserClaimsPrincipalFactory(
         UserManager<ApplicationUser> userManager,
+        RoleManager<MongoRole> roleManager,                    // <-- use MongoRole
         IOptions<IdentityOptions> optionsAccessor)
-        : base(userManager, optionsAccessor)
+        : base(userManager, roleManager, optionsAccessor)
     {
+        _userManager = userManager;
     }
 
     public override async Task<ClaimsPrincipal> CreateAsync(ApplicationUser user)
@@ -25,8 +27,11 @@ public class ApplicationUserClaimsPrincipalFactory : UserClaimsPrincipalFactory<
 
         if (identity != null)
         {
-            // Add the user's role as a role claim so IsInRole() works
-            identity.AddClaim(new Claim(ClaimTypes.Role, user.Role.ToString()));
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, role));
+            }
         }
 
         return principal;

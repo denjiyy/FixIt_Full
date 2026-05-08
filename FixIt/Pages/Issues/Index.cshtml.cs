@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc;
 using FixIt.Services.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Enums;
@@ -31,9 +32,9 @@ public class IssueListModel : PageModel
     public long FilteredTotal { get; set; }
     public IssuePublicOverview Overview { get; set; } = new();
 
-    public async Task OnGetAsync(int page = 1, string searchQuery = "", int? status = null, int? priority = null, string? category = null, DateTime? from = null, DateTime? to = null, string sort = "newest")
+    public async Task OnGetAsync([FromQuery(Name = "page")] int pageNumber = 1, string searchQuery = "", int? status = null, int? priority = null, string? category = null, DateTime? from = null, DateTime? to = null, string sort = "newest")
     {
-        CurrentPage = Math.Max(1, page);
+        CurrentPage = Math.Max(1, pageNumber);
         SearchQuery = searchQuery ?? "";
         SelectedStatus = status ?? -1;
         SelectedPriority = priority ?? -1;

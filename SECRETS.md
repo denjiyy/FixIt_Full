@@ -35,16 +35,16 @@ This document covers best practices for managing sensitive data (API keys, datab
 3. **Use development-safe defaults:**
    ```env
    # .env (local development)
-   MONGODB_CONNECTION_STRING=mongodb://root:rootpassword@localhost:27017
+   MONGODB_CONNECTION_STRING=mongodb://root:<local-db-password>@localhost:27017
    GOOGLE_CLIENT_ID=dev-client-id-not-used
    OPENAI_API_KEY=<local-non-production-key>
-   JWT_SECRET_KEY=dev-key-32-chars-minimum-for-testing
+   JWT_SECRET_KEY=<local-32-char-minimum-secret>
    EMAIL_PROVIDER=Console  # Logs emails instead of sending
    ```
 
 ### Docker Development
 
-**Using docker-compose with secrets:**
+**Using docker compose with secrets:**
 
 ```bash
 # Create .env file (git-ignored)
@@ -53,10 +53,10 @@ cp .env.example .env
 nano .env
 
 # Start with environment file
-docker-compose --env-file .env up -d
+docker compose --env-file .env up -d
 
 # Or use default environment in docker-compose.yml
-docker-compose up -d
+docker compose up -d
 ```
 
 ### User Secrets (Local Development)
@@ -266,7 +266,7 @@ aws secretsmanager update-secret --secret-id fixit/prod/jwt-key \
   --secret-string "$NEW_KEY"
 
 # 3. Deploy application (picks up new secret on restart)
-docker-compose restart fixit-app
+docker compose restart fixit-app
 
 # 4. Remove old secret (after verification)
 # (keep in history for emergency rollback)
@@ -492,7 +492,7 @@ jobs:
         run: |
           export MONGODB_CONNECTION_STRING=$(aws secretsmanager get-secret-value \
             --secret-id fixit/prod/mongodb --query SecretString --output text)
-          docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ---

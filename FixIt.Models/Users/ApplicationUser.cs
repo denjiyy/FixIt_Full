@@ -107,9 +107,55 @@ public class ApplicationUser : MongoUser
     public bool ReceiveWeeklyReminders { get; set; } = true;
 
     /// <summary>
+    /// Whether to receive crime-related hazard alerts.
+    /// </summary>
+    public bool CrimeAlertsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether to receive traffic accident hazard alerts.
+    /// </summary>
+    public bool AccidentAlertsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether to receive infrastructure hazard alerts.
+    /// </summary>
+    public bool InfrastructureAlertsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether all hazard categories should be enabled regardless of individual toggles.
+    /// </summary>
+    public bool AllHazardAlertsEnabled { get; set; } = false;
+
+    /// <summary>
+    /// Radius used for proximity-based hazard alerts.
+    /// </summary>
+    public int AlertRadiusKm { get; set; } = 5;
+
+    /// <summary>
+    /// Alert severity threshold: All, High, or Critical.
+    /// </summary>
+    public string HazardSeverityThreshold { get; set; } = "All";
+
+    /// <summary>
+    /// Profile visibility mode: public or private.
+    /// </summary>
+    public string ProfileVisibility { get; set; } = "public";
+
+    /// <summary>
     /// Whether the user account is banned
     /// </summary>
     public bool IsBanned { get; set; } = false;
+
+    /// <summary>
+    /// Monotonic counter used to rotate and revoke refresh tokens.
+    /// </summary>
+    public int RefreshTokenVersion { get; set; } = 0;
+
+    /// <summary>
+    /// Timestamp of the most recent refresh token issuance.
+    /// </summary>
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+    public DateTime? LastRefreshTokenIssuedAt { get; set; }
 
     /// <summary>
     /// When the user was banned (if applicable)

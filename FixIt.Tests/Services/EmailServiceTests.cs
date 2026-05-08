@@ -23,7 +23,7 @@ public class ConsoleEmailServiceTests
         // Act
         await _emailService.SendEmailAsync("test@example.com", "Test Subject", "<h1>Test</h1>");
 
-        // Assert
+        // Assert - ConsoleEmailService logs multiple lines (summary + to + subject + body)
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
@@ -32,7 +32,7 @@ public class ConsoleEmailServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             ),
-            Times.Once);
+            Times.AtLeastOnce);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class ConsoleEmailServiceTests
         await _emailService.SendHealthReportEmailAsync(
             "user@example.com", "John Doe", "New York", "<h1>Health Report</h1>");
 
-        // Assert
+        // Assert - SendHealthReportEmailAsync calls SendEmailAsync which logs multiple times
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
@@ -51,7 +51,7 @@ public class ConsoleEmailServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             ),
-            Times.Once);
+            Times.AtLeastOnce);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class ConsoleEmailServiceTests
         await _emailService.SendWeeklyReminderEmailAsync(
             "user@example.com", "Jane Smith", 5, "San Francisco");
 
-        // Assert
+        // Assert - SendWeeklyReminderEmailAsync calls SendEmailAsync which logs multiple times
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
@@ -70,7 +70,7 @@ public class ConsoleEmailServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             ),
-            Times.Once);
+            Times.AtLeastOnce);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class ConsoleEmailServiceTests
         await _emailService.SendHazardAlertEmailAsync(
             "user@example.com", "Test User", "Pothole", "Pothole", 1.5);
 
-        // Assert
+        // Assert - SendHazardAlertEmailAsync calls SendEmailAsync which logs multiple times
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
@@ -89,46 +89,46 @@ public class ConsoleEmailServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()
             ),
-            Times.Once);
+            Times.AtLeastOnce);
     }
 }
 
 public class SmtpEmailServiceTests
 {
-    private readonly Mock<IConfiguration> _configurationMock;
+    private readonly IConfiguration _configuration;
     private readonly Mock<ILogger<SmtpEmailService>> _loggerMock;
     private readonly SmtpEmailService _emailService;
 
     public SmtpEmailServiceTests()
     {
-        _configurationMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<SmtpEmailService>>();
 
-        // Configure mock settings
-        _configurationMock.Setup(c => c["Smtp:Host"]).Returns("smtp.gmail.com");
-        _configurationMock.Setup(c => c["Smtp:Port"]).Returns("587");
-        _configurationMock.Setup(c => c["Smtp:Username"]).Returns("test@gmail.com");
-        _configurationMock.Setup(c => c["Smtp:Password"]).Returns("password");
-        _configurationMock.Setup(c => c["Smtp:FromAddress"]).Returns("noreply@fixit.com");
-        _configurationMock.Setup(c => c["Smtp:FromName"]).Returns("FixIt");
+        _configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Email:Smtp:Host"] = "127.0.0.1",
+                ["Email:Smtp:Port"] = "1",
+                ["Email:Smtp:EnableSsl"] = "false",
+                ["Email:FromAddress"] = "noreply@fixit.com",
+                ["Email:FromName"] = "FixIt",
+                ["App:BaseUrl"] = "https://example.com"
+            })
+            .Build();
 
-        _emailService = new SmtpEmailService(_configurationMock.Object, _loggerMock.Object);
+        _emailService = new SmtpEmailService(_configuration, _loggerMock.Object);
     }
 
     [Fact]
     public async Task SendEmailAsync_WithValidSmtpConfig_SendsEmail()
     {
-        // Arrange
-        _configurationMock.Setup(c => c["Smtp:Host"]).Returns("localhost");
-        _configurationMock.Setup(c => c["Smtp:Port"]).Returns("1025"); // Test port
-
         // Act
-        await _emailService.SendEmailAsync("test@example.com", "Test Subject", "<h1>Test</h1>");
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _emailService.SendEmailAsync("test@example.com", "Test Subject", "<h1>Test</h1>"));
 
-        // Assert - Email service should attempt to log (won't actually send in test)
+        // Assert
         _loggerMock.Verify(
             x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
@@ -145,13 +145,13 @@ public class SmtpEmailServiceTests
         const string plainTextContent = "Plain Text Content";
 
         // Act
-        await _emailService.SendEmailAsync(
-            "test@example.com", "Test Subject", htmlContent, plainTextContent);
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _emailService.SendEmailAsync("test@example.com", "Test Subject", htmlContent, plainTextContent));
 
         // Assert
         _loggerMock.Verify(
             x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
@@ -164,17 +164,17 @@ public class SmtpEmailServiceTests
     public async Task SendHealthReportEmailAsync_CreatesProperEmail()
     {
         // Act
-        await _emailService.SendHealthReportEmailAsync(
-            "user@example.com",
-            "John Doe",
-            "New York",
-            "<h1>Health Report for New York</h1>"
-        );
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _emailService.SendHealthReportEmailAsync(
+                "user@example.com",
+                "John Doe",
+                "New York",
+                "<h1>Health Report for New York</h1>"));
 
         // Assert
         _loggerMock.Verify(
             x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
@@ -187,17 +187,17 @@ public class SmtpEmailServiceTests
     public async Task SendWeeklyReminderEmailAsync_IncludesIssueCount()
     {
         // Act
-        await _emailService.SendWeeklyReminderEmailAsync(
-            "user@example.com",
-            "Jane Smith",
-            10,
-            "San Francisco"
-        );
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _emailService.SendWeeklyReminderEmailAsync(
+                "user@example.com",
+                "Jane Smith",
+                10,
+                "San Francisco"));
 
         // Assert
         _loggerMock.Verify(
             x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
@@ -210,18 +210,18 @@ public class SmtpEmailServiceTests
     public async Task SendHazardAlertEmailAsync_IncludesHazardDetails()
     {
         // Act
-        await _emailService.SendHazardAlertEmailAsync(
-            "user@example.com",
-            "Alert User",
-            "Traffic Congestion",
-            "TrafficCongestion",
-            2.5
-        );
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _emailService.SendHazardAlertEmailAsync(
+                "user@example.com",
+                "Alert User",
+                "Traffic Congestion",
+                "TrafficCongestion",
+                2.5));
 
         // Assert
         _loggerMock.Verify(
             x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),
@@ -234,12 +234,13 @@ public class SmtpEmailServiceTests
     public async Task SendEmailAsync_WithEmptyHtmlContent_StillSends()
     {
         // Act
-        await _emailService.SendEmailAsync("test@example.com", "Test", "");
+        await Assert.ThrowsAnyAsync<Exception>(() =>
+            _emailService.SendEmailAsync("test@example.com", "Test", ""));
 
         // Assert
         _loggerMock.Verify(
             x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception>(),

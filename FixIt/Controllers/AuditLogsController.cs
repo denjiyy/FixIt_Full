@@ -128,7 +128,8 @@ namespace FixIt.Controllers
         [HttpGet("export/csv")]
         public async Task<IActionResult> ExportCsv(
             [FromQuery] DateTime? from = null,
-            [FromQuery] DateTime? to = null
+            [FromQuery] DateTime? to = null,
+            [FromQuery] bool includeSensitive = false
         )
         {
             var fromDate = from ?? DateTime.UtcNow.AddMonths(-3);
@@ -145,8 +146,21 @@ namespace FixIt.Controllers
             foreach (var log in logs)
             {
                 var timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                var actorName = includeSensitive ? log.ActorName : MaskActorName(log.ActorName);
+                var ipAddress = includeSensitive ? log.IpAddress : MaskIpAddress(log.IpAddress);
                 var reason = log.Reason ?? "";
-                csv += $"\"{timestamp}\",\"{log.EventType}\",\"{log.Action}\",\"{log.Resource}\",\"{log.ActorId}\",\"{log.ActorName}\",\"{log.Status}\",\"{log.IpAddress}\",\"{reason}\"\n";
+                csv += string.Join(",", new[]
+                {
+                    EscapeCsv(timestamp),
+                    EscapeCsv(log.EventType),
+                    EscapeCsv(log.Action),
+                    EscapeCsv(log.Resource),
+                    EscapeCsv(log.ActorId),
+                    EscapeCsv(actorName),
+                    EscapeCsv(log.Status),
+                    EscapeCsv(ipAddress),
+                    EscapeCsv(reason)
+                }) + "\n";
             }
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
@@ -155,6 +169,57 @@ namespace FixIt.Controllers
                 "text/csv",
                 $"audit-logs-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv"
             );
+        }
+
+        private static string EscapeCsv(string? value)
+        {
+            var safeValue = value ?? string.Empty;
+
+            // Prevent CSV formula injection when opened in spreadsheet tools.
+            if (safeValue.StartsWith('=') || safeValue.StartsWith('+') || safeValue.StartsWith('-') || safeValue.StartsWith('@'))
+            {
+                safeValue = "'" + safeValue;
+            }
+
+            safeValue = safeValue.Replace("\"", "\"\"");
+            return $"\"{safeValue}\"";
+        }
+
+        private static string MaskActorName(string? actorName)
+        {
+            if (string.IsNullOrWhiteSpace(actorName))
+            {
+                return "Unknown";
+            }
+
+            return "Redacted";
+        }
+
+        private static string MaskIpAddress(string? ipAddress)
+        {
+            if (string.IsNullOrWhiteSpace(ipAddress))
+            {
+                return "Unknown";
+            }
+
+            if (ipAddress.Contains(':'))
+            {
+                var segments = ipAddress.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                if (segments.Length >= 2)
+                {
+                    return $"{segments[0]}:{segments[1]}::";
+                }
+
+                return "Redacted";
+            }
+
+            var octets = ipAddress.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            if (octets.Length == 4)
+            {
+                return $"{octets[0]}.{octets[1]}.x.x";
+            }
+
+            return "Redacted";
         }
     }
 }

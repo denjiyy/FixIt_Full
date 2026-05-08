@@ -152,9 +152,8 @@ public class HazardService : IHazardService
         if (hazard == null || hazard.IsResolved)
             return false;
 
-        if (!hazard.ConfirmedByUserIds.Contains(userId))
+        if (hazard.ConfirmedByUserIds.Add(userId))
         {
-            hazard.ConfirmedByUserIds.Add(userId);
             hazard.Confirmations++;
             hazard.UpdatedAt = DateTime.UtcNow;
             await _hazardRepo.ReplaceAsync(hazardId, hazard);

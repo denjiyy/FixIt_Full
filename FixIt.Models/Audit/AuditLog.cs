@@ -18,43 +18,43 @@ namespace FixIt.Models
         /// Event type (e.g., "UserRoleChanged", "AccountDisabled", "IssueDeleted", "AdminLogin")
         /// </summary>
         [BsonElement("eventType")]
-        public string EventType { get; set; }
+        public string EventType { get; set; } = null!;
 
         /// <summary>
         /// Action performed (e.g., "Create", "Update", "Delete", "Login")
         /// </summary>
         [BsonElement("action")]
-        public string Action { get; set; }
+        public string Action { get; set; } = null!;
 
         /// <summary>
         /// Resource type affected (e.g., "User", "Issue", "Comment", "Report")
         /// </summary>
         [BsonElement("resource")]
-        public string Resource { get; set; }
+        public string Resource { get; set; } = null!;
 
         /// <summary>
         /// ID of the affected resource
         /// </summary>
         [BsonElement("resourceId")]
-        public string ResourceId { get; set; }
+        public string ResourceId { get; set; } = null!;
 
         /// <summary>
         /// User ID of the admin who performed the action
         /// </summary>
         [BsonElement("actorId")]
-        public string ActorId { get; set; }
+        public string ActorId { get; set; } = null!;
 
         /// <summary>
         /// Email/name of the admin who performed the action
         /// </summary>
         [BsonElement("actorName")]
-        public string ActorName { get; set; }
+        public string ActorName { get; set; } = null!;
 
         /// <summary>
         /// Role of the actor (e.g., "Admin", "Moderator")
         /// </summary>
         [BsonElement("actorRole")]
-        public string ActorRole { get; set; }
+        public string ActorRole { get; set; } = null!;
 
         /// <summary>
         /// UTC timestamp when the action occurred
@@ -66,13 +66,13 @@ namespace FixIt.Models
         /// Source IP address
         /// </summary>
         [BsonElement("ipAddress")]
-        public string IpAddress { get; set; }
+        public string IpAddress { get; set; } = null!;
 
         /// <summary>
         /// User agent/browser information
         /// </summary>
         [BsonElement("userAgent")]
-        public string UserAgent { get; set; }
+        public string UserAgent { get; set; } = null!;
 
         /// <summary>
         /// Dictionary of changes made (keys and values of what changed)
@@ -84,7 +84,7 @@ namespace FixIt.Models
         /// Optional reason/justification for the action
         /// </summary>
         [BsonElement("reason")]
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
 
         /// <summary>
         /// Status: "Success" or "Failed"
@@ -96,6 +96,6 @@ namespace FixIt.Models
         /// If Status is "Failed", the error message
         /// </summary>
         [BsonElement("errorMessage")]
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 }

@@ -287,21 +287,21 @@ public class MediaService : IMediaService
         return (true, null);
     }
 
-    private bool IsImage(IFormFile file)
+    private static bool IsImage(IFormFile file)
     {
         return file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool IsVideo(IFormFile file)
+    private static bool IsVideo(IFormFile file)
     {
         return file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase);
     }
 
-    private MediaType DetermineMediaType(IFormFile file)
+    private static MediaType DetermineMediaType(IFormFile file)
     {
-        if (file.ContentType.StartsWith("image/"))
+        if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
             return MediaType.Image;
-        if (file.ContentType.StartsWith("video/"))
+        if (file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
             return MediaType.Video;
         return MediaType.Document;
     }

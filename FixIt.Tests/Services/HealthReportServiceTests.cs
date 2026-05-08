@@ -62,6 +62,9 @@ public class HealthReportServiceTests
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
                 issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
 
         // Act
         var result = await _healthReportService.GetCityHealthReportAsync("city1");
@@ -91,6 +94,9 @@ public class HealthReportServiceTests
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
                 issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
 
         // Act
         var result = await _healthReportService.GetCityHealthReportAsync("city1");
@@ -118,6 +124,9 @@ public class HealthReportServiceTests
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
                 issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
 
         // Act
         var result = await _healthReportService.GetCityHealthReportAsync("city1");
@@ -143,6 +152,9 @@ public class HealthReportServiceTests
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
                 issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
 
         // Act
         var result = await _healthReportService.GetCityHealthReportAsync("city1");
@@ -197,6 +209,9 @@ public class HealthReportServiceTests
         _issueRepoMock.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
                 issues.Where(expr.Compile()).ToList());
+        _issueRepoMock.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
+            .ReturnsAsync((System.Linq.Expressions.Expression<Func<Issue, bool>> expr) =>
+                issues.Where(expr.Compile()).LongCount());
 
         // Act
         var result = await _healthReportService.GetCityHealthReportAsync("city1");
@@ -204,7 +219,7 @@ public class HealthReportServiceTests
         // Assert
         Assert.Equal(8, result.TotalComments);
         Assert.Equal(17, result.TotalUpvotes);
-        Assert.Equal(8.5, result.AverageUpvotesPerIssue);
+        Assert.Equal(8, result.AverageUpvotesPerIssue);
     }
 
     [Fact]

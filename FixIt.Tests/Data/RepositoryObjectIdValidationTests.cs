@@ -2,6 +2,7 @@ using FixIt.Data.Repository;
 using FixIt.Models.Issues;
 using MongoDB.Driver;
 using Moq;
+using Xunit;
 
 namespace FixIt.Tests.Data;
 

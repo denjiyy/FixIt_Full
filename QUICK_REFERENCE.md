@@ -17,7 +17,7 @@ cd FixIt
 cp .env.example .env
 
 # Start development environment
-docker-compose up -d
+docker compose up -d
 
 # View application
 open http://localhost:5092
@@ -27,13 +27,13 @@ open http://localhost:5092
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Just the app
-docker-compose logs -f fixit-app
+docker compose logs -f fixit-app
 
 # Just MongoDB
-docker-compose logs -f mongodb
+docker compose logs -f mongodb
 ```
 
 ---
@@ -101,7 +101,7 @@ dotnet build -c Release
 
 ```bash
 # Connect to MongoDB
-docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin
+docker compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin
 
 # View databases
 show dbs
@@ -127,7 +127,7 @@ dotnet add package PackageName --version 1.2.3
 1. Create file: `FixIt.Data/Infrastructure/Migrations/Migration_YYYYMMDD_001_Description.cs`
 2. Implement `IMigration` interface
 3. Write `UpAsync` method
-4. Test locally with `docker-compose down -v && docker-compose up -d`
+4. Test locally with `docker compose down -v && docker compose up -d`
 
 See [MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md) for examples.
 
@@ -139,10 +139,10 @@ See [MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md) for ex
 
 ```bash
 # Required for local testing
-MONGODB_CONNECTION_STRING=mongodb://root:rootpassword@mongodb:27017
+MONGODB_CONNECTION_STRING=mongodb://root:<local-db-password>@mongodb:27017
 GOOGLE_CLIENT_ID=dev-id
 GOOGLE_CLIENT_SECRET=dev-secret
-JWT_SECRET_KEY=dev-key-min-32-chars
+JWT_SECRET_KEY=<local-32-char-minimum-secret>
 EMAIL_PROVIDER=Console  # Logs emails to console
 ```
 
@@ -162,40 +162,40 @@ See [SECRETS.md](./SECRETS.md) for complete guide on configuring:
 
 ```bash
 # Development (with hot reload support)
-docker-compose up -d
+docker compose up -d
 
 # Production
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
 ### Stop Services
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### Clean Everything
 
 ```bash
 # Remove containers and volumes
-docker-compose down -v
+docker compose down -v
 
 # Rebuild after code changes
-docker-compose build --no-cache fixit-app
-docker-compose up -d
+docker compose build --no-cache fixit-app
+docker compose up -d
 ```
 
 ### Execute Command in Container
 
 ```bash
 # Run bash in app container
-docker-compose exec fixit-app /bin/bash
+docker compose exec fixit-app /bin/bash
 
 # Run bash in MongoDB
-docker-compose exec mongodb bash
+docker compose exec mongodb bash
 
 # View environment variables
-docker-compose exec fixit-app env | grep ASPNETCORE
+docker compose exec fixit-app env | grep ASPNETCORE
 ```
 
 ---
@@ -244,7 +244,7 @@ Workflows trigger automatically on:
 
 ```bash
 # Check logs
-docker-compose logs fixit-app
+docker compose logs fixit-app
 
 # Common issues:
 # - MongoDB connection string wrong
@@ -256,10 +256,10 @@ docker-compose logs fixit-app
 
 ```bash
 # Ensure MongoDB is running
-docker-compose ps
+docker compose ps
 
 # Restart services
-docker-compose restart
+docker compose restart
 
 # Run tests with verbose output
 dotnet test -v detailed
@@ -304,10 +304,10 @@ docker stats
 
 ```bash
 # From container
-docker-compose exec fixit-app curl http://localhost:8080/health/ready
+docker compose exec fixit-app curl http://localhost:8080/health/ready
 
 # Or manually
-docker-compose exec mongodb mongosh -u root -p rootpassword ping
+docker compose exec mongodb mongosh -u root -p rootpassword ping
 ```
 
 ---

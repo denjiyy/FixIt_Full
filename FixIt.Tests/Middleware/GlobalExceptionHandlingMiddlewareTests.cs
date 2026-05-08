@@ -4,6 +4,7 @@ using FixIt.Middleware;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Xunit;
 
 namespace FixIt.Tests.Middleware;
 

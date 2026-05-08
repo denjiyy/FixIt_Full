@@ -6,7 +6,8 @@ This project includes Docker configuration for both local development and produc
 
 ### Files
 - **Dockerfile** - Multi-stage build for production (includes tests and health checks)
-- **docker-compose.yml** - Development environment with MongoDB
+- **docker-compose.yml** - Base/shared compose configuration
+- **docker-compose.override.yml** - Development overrides (local ports, dev settings)
 - **docker-compose.prod.yml** - Production overrides (security hardening)
 - **.dockerignore** - Files excluded from Docker build
 
@@ -27,50 +28,50 @@ This project includes Docker configuration for both local development and produc
 
 2. **Start services:**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 3. **Verify services are running:**
    ```bash
-   docker-compose ps
+   docker compose ps
    ```
 
 4. **View logs:**
    ```bash
-   docker-compose logs -f fixit-app
-   docker-compose logs -f mongodb
+   docker compose logs -f fixit-app
+   docker compose logs -f mongodb
    ```
 
 5. **Access the application:**
    - Web: http://localhost:5092
-   - MongoDB: `mongodb://root:rootpassword@localhost:27017`
+   - MongoDB: `mongodb://root:<your-local-db-password>@localhost:27017`
 
 ### Useful Commands
 
 **Stop services:**
 ```bash
-docker-compose down
+docker compose down
 ```
 
 **Clean up (including volumes):**
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 **Rebuild after code changes:**
 ```bash
-docker-compose build fixit-app
-docker-compose up -d
+docker compose build fixit-app
+docker compose up -d
 ```
 
 **Run shell in container:**
 ```bash
-docker-compose exec fixit-app /bin/bash
+docker compose exec fixit-app /bin/bash
 ```
 
 **Access MongoDB shell:**
 ```bash
-docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin
+docker compose exec mongodb mongosh -u root -p "$MONGODB_ROOT_PASSWORD" --authenticationDatabase admin
 ```
 
 ---
@@ -95,12 +96,12 @@ docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationData
 
 2. **Deploy with production overrides:**
    ```bash
-   docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
    ```
 
 3. **Monitor deployment:**
    ```bash
-   docker-compose logs -f fixit-app
+   docker compose logs -f fixit-app
    ```
 
 ### Production Recommendations
@@ -151,7 +152,7 @@ docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationData
 6. **Logging**
    - Logs output to stdout (Docker captures)
    - Configure log driver: `json-file`, `awslogs`, `splunk`, etc.
-   - Example: `docker logs fixit-app` or `docker-compose logs`
+   - Example: `docker logs fixit-app` or `docker compose logs`
 
 7. **Networking**
    - Docker creates isolated network `fixit-network`
@@ -175,14 +176,14 @@ docker push myregistry.azurecr.io/fixit:latest
 
 ### App won't start
 ```bash
-docker-compose logs fixit-app
+docker compose logs fixit-app
 # Check MongoDB connection string, API keys
 ```
 
 ### MongoDB connection failed
 ```bash
-docker-compose logs mongodb
-# Verify MongoDB is healthy: docker-compose ps
+docker compose logs mongodb
+# Verify MongoDB is healthy: docker compose ps
 ```
 
 ### Port already in use
@@ -194,7 +195,7 @@ lsof -i :5092  # Find what's using port
 
 ### Rebuilding after dependencies change
 ```bash
-docker-compose build --no-cache fixit-app
+docker compose build --no-cache fixit-app
 ```
 
 ---
@@ -239,13 +240,13 @@ docker-compose build --no-cache fixit-app
 ### Docker Logs
 ```bash
 # View real-time logs
-docker-compose logs -f
+docker compose logs -f
 
 # View last 100 lines
-docker-compose logs --tail=100
+docker compose logs --tail=100
 
 # View logs since timestamp
-docker-compose logs --since 2024-01-01
+docker compose logs --since 2024-01-01
 ```
 
 ### Health Endpoint

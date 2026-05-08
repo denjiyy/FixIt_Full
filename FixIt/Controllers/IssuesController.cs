@@ -126,7 +126,7 @@ public class IssuesController : ControllerBase
                 )
             );
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -316,7 +316,7 @@ public class IssuesController : ControllerBase
                 "Issue status updated successfully"
             ));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -362,7 +362,7 @@ public class IssuesController : ControllerBase
                 "Issue priority updated successfully"
             ));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -410,7 +410,7 @@ public class IssuesController : ControllerBase
                 "Vote recorded"
             ));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -497,7 +497,7 @@ public class IssuesController : ControllerBase
                 "Issue deleted"
             ));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -637,11 +637,11 @@ public class IssuesController : ControllerBase
                 )
             );
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -724,9 +724,9 @@ public class IssuesController : ControllerBase
 
             _logger.LogInformation("Comment {CommentId} deleted by user {UserId}", commentId, userId);
 
-            return Ok(ApiResponse<object>.CreateSuccess((object?)null, "Comment deleted successfully"));
+            return Ok(ApiResponse<object>.CreateSuccess(new { message = "Comment deleted successfully" }, "Comment deleted successfully"));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return NotFound(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -781,7 +781,7 @@ public class IssuesController : ControllerBase
                 "Comment liked successfully"
             ));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return NotFound(ApiResponse<object>.CreateError("Request could not be processed"));
         }
@@ -836,7 +836,7 @@ public class IssuesController : ControllerBase
                 "Comment disliked successfully"
             ));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             return NotFound(ApiResponse<object>.CreateError("Request could not be processed"));
         }
