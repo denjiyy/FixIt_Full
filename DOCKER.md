@@ -104,6 +104,16 @@ docker compose exec mongodb mongosh -u root -p "$MONGODB_ROOT_PASSWORD" --authen
    docker compose logs -f fixit-app
    ```
 
+4. **Run release smoke test:**
+   ```bash
+   scripts/ops/smoke.sh http://localhost:8080
+   ```
+
+5. **Run light-load gate (10-20 users):**
+   ```bash
+   CONCURRENCY=20 DURATION_SECONDS=90 scripts/ops/load-lite.sh http://localhost:8080
+   ```
+
 ### Production Recommendations
 
 1. **Reverse Proxy (Required)**
@@ -253,6 +263,10 @@ docker compose logs --since 2024-01-01
 ```bash
 curl http://localhost:5092/health/live
 ```
+
+### Beta Release Checklist
+
+Use `BETA_RELEASE_CHECKLIST.md` as the final go/no-go gate before launch.
 
 ### Container Stats
 ```bash

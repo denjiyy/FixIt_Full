@@ -101,7 +101,7 @@ dotnet build -c Release
 
 ```bash
 # Connect to MongoDB
-docker compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin
+docker compose exec mongodb mongosh -u root -p "$MONGODB_ROOT_PASSWORD" --authenticationDatabase admin
 
 # View databases
 show dbs
@@ -130,6 +130,16 @@ dotnet add package PackageName --version 1.2.3
 4. Test locally with `docker compose down -v && docker compose up -d`
 
 See [MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md) for examples.
+
+### Beta Ops Gates
+
+```bash
+# Smoke test
+scripts/ops/smoke.sh http://localhost:8080
+
+# Light load for 10-20 users
+CONCURRENCY=20 DURATION_SECONDS=90 scripts/ops/load-lite.sh http://localhost:8080
+```
 
 ---
 

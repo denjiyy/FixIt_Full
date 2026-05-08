@@ -601,6 +601,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 Complete production deployment documentation is available in:
 - **[DOCKER.md](./DOCKER.md)** - Container setup, deployment, and troubleshooting
 - **[PRODUCTION_READINESS.md](./PRODUCTION_READINESS.md)** - Implementation status and next steps
+- **[BETA_RELEASE_CHECKLIST.md](./BETA_RELEASE_CHECKLIST.md)** - Final go/no-go checklist for beta launch
 
 For secrets management:
 - **[SECRETS.md](./SECRETS.md)** - Comprehensive secrets management guide for all environments
@@ -621,6 +622,20 @@ For CI/CD automation:
 - [ ] Configure logging provider (Application Insights, Serilog, etc.)
 - [ ] Set up automated backups
 - [ ] Configure monitoring and alerts
+
+### Operational Scripts
+
+```bash
+# Smoke test a running instance
+scripts/ops/smoke.sh http://localhost:8080
+
+# Light-load gate (10-20 users)
+CONCURRENCY=20 DURATION_SECONDS=90 scripts/ops/load-lite.sh http://localhost:8080
+
+# Backup/restore
+MONGODB_ROOT_PASSWORD=<password> scripts/ops/mongo-backup.sh ./backups
+MONGODB_ROOT_PASSWORD=<password> scripts/ops/mongo-restore.sh ./backups/<file>.archive.gz --drop
+```
 
 ---
 

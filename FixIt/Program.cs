@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
@@ -38,6 +39,28 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var isProduction = builder.Environment.IsProduction();
+
+// Normalize allowed hosts so both comma- and semicolon-delimited env values are supported.
+var allowedHostsRaw = builder.Configuration["AllowedHosts"];
+if (!string.IsNullOrWhiteSpace(allowedHostsRaw))
+{
+    var normalizedAllowedHosts = allowedHostsRaw
+        .Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+    if (normalizedAllowedHosts.Length > 0)
+    {
+        builder.Services.Configure<HostFilteringOptions>(options =>
+        {
+            options.AllowedHosts.Clear();
+            foreach (var host in normalizedAllowedHosts)
+            {
+                options.AllowedHosts.Add(host);
+            }
+        });
+    }
+}
 
 // Localization configuration
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
