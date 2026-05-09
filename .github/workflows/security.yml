@@ -13,6 +13,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       security-events: write
     
     steps:
@@ -36,6 +37,8 @@ jobs:
 
   dependency-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
