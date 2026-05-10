@@ -27,8 +27,12 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
 
-      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING:-mongodb://root:${MONGODB_ROOT_PASSWORD:-change-me-local-db-password}@mongodb:27017}
-      MongoDB__DatabaseName: ${MONGODB_DATABASE_NAME:-fixit}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://root:${MONGODB_ROOT_PASSWORD:-change-me-local-db-password}@mongodb:27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-fixit}
+
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
 
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}

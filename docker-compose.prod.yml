@@ -11,8 +11,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
 
-      MongoDB__ConnectionString: ${MONGODB_CONNECTION_STRING:?MONGODB_CONNECTION_STRING is required}
-      MongoDB__DatabaseName: ${MONGODB_DATABASE_NAME:-fixit}
+      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI is required}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-fixit-prod}
+
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:?CLOUDINARY_CLOUD_NAME is required}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:?CLOUDINARY_API_KEY is required}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:?CLOUDINARY_API_SECRET is required}
 
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET is required}
