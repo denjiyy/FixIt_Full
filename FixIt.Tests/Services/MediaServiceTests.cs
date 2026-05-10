@@ -1,5 +1,6 @@
 using Xunit;
 using Moq;
+using CloudinaryDotNet;
 using FixIt.Services;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Media;
@@ -16,6 +17,7 @@ public class MediaServiceTests
     private readonly Mock<IRepository<Media>> _mediaRepoMock;
     private readonly Mock<IRepository<MediaReference>> _mediaRefRepoMock;
     private readonly Mock<IFileStorage> _fileStorageMock;
+    private readonly Mock<CloudinaryService> _cloudinaryServiceMock;
     private readonly IConfiguration _configuration;
     private readonly Mock<ILogger<MediaService>> _loggerMock;
     private readonly MediaService _mediaService;
@@ -28,6 +30,11 @@ public class MediaServiceTests
         _mediaRepoMock = new Mock<IRepository<Media>>();
         _mediaRefRepoMock = new Mock<IRepository<MediaReference>>();
         _fileStorageMock = new Mock<IFileStorage>();
+        _cloudinaryServiceMock = new Mock<CloudinaryService>(
+            new Mock<Cloudinary>(new Account("test", "test", "test")).Object,
+            new ConfigurationBuilder().Build(),
+            new Mock<ILogger<CloudinaryService>>().Object
+        );
         _loggerMock = new Mock<ILogger<MediaService>>();
 
         _configuration = new ConfigurationBuilder()
@@ -43,6 +50,7 @@ public class MediaServiceTests
             _mediaRepoMock.Object,
             _mediaRefRepoMock.Object,
             _fileStorageMock.Object,
+            _cloudinaryServiceMock.Object,
             _configuration,
             _loggerMock.Object
         );

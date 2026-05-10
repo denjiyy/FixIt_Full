@@ -14,6 +14,7 @@ public class MediaService : IMediaService
     private readonly IRepository<Models.Media.Media> _mediaRepo;
     private readonly IRepository<MediaReference> _mediaRefRepo;
     private readonly IFileStorage _fileStorage;
+    private readonly CloudinaryService? _cloudinaryService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<MediaService> _logger;
 
@@ -28,12 +29,14 @@ public class MediaService : IMediaService
         IRepository<Models.Media.Media> mediaRepo,
         IRepository<MediaReference> mediaRefRepo,
         IFileStorage fileStorage,
+        CloudinaryService? cloudinaryService,
         IConfiguration configuration,
         ILogger<MediaService> logger)
     {
         _mediaRepo = mediaRepo;
         _mediaRefRepo = mediaRefRepo;
         _fileStorage = fileStorage;
+        _cloudinaryService = cloudinaryService;
         _configuration = configuration;
         _logger = logger;
 
@@ -55,67 +58,79 @@ public class MediaService : IMediaService
             throw new InvalidOperationException(errorMessage);
         }
 
-        // Generate unique filename
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-        var storagePath = $"uploads/{DateTime.UtcNow:yyyy/MM/dd}/{uniqueFileName}";
+        // Try to upload to Cloudinary first (if available), otherwise use local storage
+        string? cloudinaryUrl = null;
+        string? storagePath = null;
 
-        try
+        if (_cloudinaryService != null)
         {
-            // Upload to storage
-            await using var stream = file.OpenReadStream();
-            await _fileStorage.SaveFileAsync(storagePath, stream);
-
-            // Create thumbnail for images only (not for videos)
-            string? thumbnailPath = null;
-            if (IsImage(file))
-            {
-                thumbnailPath = await CreateThumbnailAsync(file, storagePath);
-            }
-
-            // Create media record
-            var media = new Models.Media.Media
-            {
-                OwnerId = ownerId,
-                Type = DetermineMediaType(file),
-                MimeType = file.ContentType,
-                SizeBytes = file.Length,
-                StoragePath = storagePath,
-                ThumbnailPath = thumbnailPath,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _mediaRepo.InsertAsync(media);
-
-            // Create media reference
-            var mediaRef = new MediaReference
-            {
-                MediaId = media.Id,
-                ReferenceType = referenceType,
-                ReferenceId = referenceId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _mediaRefRepo.InsertAsync(mediaRef);
-
-            _logger.LogInformation("Uploaded file {FileName} ({MediaType}) for user {UserId}", 
-                file.FileName, DetermineMediaType(file), ownerId);
-
-            return media;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to upload file {FileName}", file.FileName);
+            _logger.LogInformation("Uploading file {FileName} to Cloudinary", file.FileName);
+            cloudinaryUrl = await _cloudinaryService.UploadAsync(file);
             
-            // Clean up if upload failed
+            if (cloudinaryUrl == null)
+            {
+                _logger.LogWarning("Cloudinary upload failed for {FileName}, falling back to local storage", file.FileName);
+            }
+        }
+
+        // If Cloudinary upload failed or unavailable, use local file storage
+        if (cloudinaryUrl == null)
+        {
+            _logger.LogInformation("Using local file storage for {FileName}", file.FileName);
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            storagePath = $"uploads/{DateTime.UtcNow:yyyy/MM/dd}/{uniqueFileName}";
+
             try
             {
-                await _fileStorage.DeleteFileAsync(storagePath);
+                // Upload to storage
+                await using var stream = file.OpenReadStream();
+                await _fileStorage.SaveFileAsync(storagePath, stream);
             }
-            catch { /* Ignore cleanup errors */ }
-
-            throw new InvalidOperationException("Failed to upload file", ex);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to upload file {FileName} to local storage", file.FileName);
+                throw new InvalidOperationException("Failed to upload file", ex);
+            }
         }
+
+        // Create thumbnail for images only (not for videos) - local storage only
+        string? thumbnailPath = null;
+        if (IsImage(file) && storagePath != null)
+        {
+            thumbnailPath = await CreateThumbnailAsync(file, storagePath);
+        }
+
+        // Create media record
+        var media = new Models.Media.Media
+        {
+            OwnerId = ownerId,
+            Type = DetermineMediaType(file),
+            MimeType = file.ContentType,
+            SizeBytes = file.Length,
+            StoragePath = storagePath,
+            CloudinaryUrl = cloudinaryUrl,
+            ThumbnailPath = thumbnailPath,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _mediaRepo.InsertAsync(media);
+
+        // Create media reference
+        var mediaRef = new MediaReference
+        {
+            MediaId = media.Id,
+            ReferenceType = referenceType,
+            ReferenceId = referenceId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _mediaRefRepo.InsertAsync(mediaRef);
+
+        _logger.LogInformation("Uploaded file {FileName} ({MediaType}) for user {UserId}", 
+            file.FileName, DetermineMediaType(file), ownerId);
+
+        return media;
     }
 
     public async Task<List<Models.Media.Media>> UploadFilesAsync(
@@ -175,6 +190,20 @@ public class MediaService : IMediaService
             return null;
         }
 
+        // If media is stored in Cloudinary, we cannot directly return a stream
+        // Instead, the caller should use the CloudinaryUrl directly
+        if (!string.IsNullOrEmpty(media.CloudinaryUrl))
+        {
+            _logger.LogWarning("Media {MediaId} is stored in Cloudinary and cannot be streamed via local storage. Use CloudinaryUrl instead.", mediaId);
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(media.StoragePath))
+        {
+            _logger.LogWarning("Media {MediaId} has no storage path or Cloudinary URL", mediaId);
+            return null;
+        }
+
         var stream = await _fileStorage.GetFileStreamAsync(media.StoragePath);
         if (stream == null)
         {
@@ -201,14 +230,23 @@ public class MediaService : IMediaService
             return;
         }
 
-        // Delete from storage
+        // Delete from storage (local or Cloudinary)
         try
         {
-            await _fileStorage.DeleteFileAsync(media.StoragePath);
-            
-            if (!string.IsNullOrEmpty(media.ThumbnailPath))
+            if (!string.IsNullOrEmpty(media.StoragePath))
             {
-                await _fileStorage.DeleteFileAsync(media.ThumbnailPath);
+                await _fileStorage.DeleteFileAsync(media.StoragePath);
+            
+                if (!string.IsNullOrEmpty(media.ThumbnailPath))
+                {
+                    await _fileStorage.DeleteFileAsync(media.ThumbnailPath);
+                }
+            }
+            else if (!string.IsNullOrEmpty(media.CloudinaryUrl))
+            {
+                // Note: We don't delete from Cloudinary to avoid accidental deletion
+                // and because the URL might be used elsewhere. Rely on Cloudinary's retention policy.
+                _logger.LogInformation("Media {MediaId} is stored in Cloudinary. Manual deletion from Cloudinary not implemented.", mediaId);
             }
         }
         catch (Exception ex)

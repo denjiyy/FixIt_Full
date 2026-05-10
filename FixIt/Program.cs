@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using CloudinaryDotNet;
 using AspNetCore.Identity.Mongo;
 using AspNetCore.Identity.Mongo.Model;
 using FixIt.Models.Users;
@@ -185,10 +186,15 @@ if (isRateLimitingEnabled)
 }
 
 // Configure MongoDB
-var mongoConnectionString = builder.Configuration["MongoDB:ConnectionString"]
-    ?? throw new InvalidOperationException("MongoDB connection string not found");
-var mongoDatabaseName = builder.Configuration["MongoDB:DatabaseName"]
-    ?? throw new InvalidOperationException("MongoDB database name not found");
+// Priority: Environment variable (MONGODB_URI) → appsettings.json fallback
+var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_URI") 
+    ?? builder.Configuration["MongoDB:ConnectionString"]
+    ?? throw new InvalidOperationException("MongoDB connection string not found. Set MONGODB_URI environment variable or configure MongoDB:ConnectionString in appsettings.json");
+
+var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE") 
+    ?? builder.Configuration["MongoDB:DatabaseName"]
+    ?? throw new InvalidOperationException("MongoDB database name not found. Set MONGODB_DATABASE environment variable or configure MongoDB:DatabaseName in appsettings.json");
+
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(MongoDbSettings.SectionName));
 
 // Register MongoClient as singleton with connection pooling and optimizations
@@ -466,6 +472,43 @@ builder.Services.AddScoped<ICivicAiService, OpenAiCivicAiService>();
 builder.Services.AddScoped<FixIt.Services.AI.IAdminSuggestionsService, FixIt.Services.AI.AdminSuggestionsService>();
 builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 builder.Services.AddScoped<IMediaService, MediaService>();
+
+// Configure Cloudinary with environment variables priority
+var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") 
+    ?? builder.Configuration["Cloudinary:CloudName"];
+var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY")
+    ?? builder.Configuration["Cloudinary:ApiKey"];
+var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET")
+    ?? builder.Configuration["Cloudinary:ApiSecret"];
+
+// Only register Cloudinary if credentials are provided
+if (!string.IsNullOrWhiteSpace(cloudinaryCloudName) && 
+    !string.IsNullOrWhiteSpace(cloudinaryApiKey) && 
+    !string.IsNullOrWhiteSpace(cloudinaryApiSecret))
+{
+    // Register Cloudinary as singleton
+    builder.Services.AddSingleton(sp =>
+    {
+        var account = new Account(cloudinaryCloudName, cloudinaryApiKey, cloudinaryApiSecret);
+        return new Cloudinary(account);
+    });
+
+    // Register CloudinaryService as singleton
+    builder.Services.AddSingleton<CloudinaryService>();
+}
+else
+{
+    if (isProduction)
+    {
+        throw new InvalidOperationException(
+            "Cloudinary credentials are not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables, or configure Cloudinary section in appsettings.json");
+    }
+    else
+    {
+        builder.Services.AddScoped<CloudinaryService?>(sp => null);  // Allow null in development
+    }
+}
+
 builder.Services.AddScoped<IHeatmapService, HeatmapService>();
 builder.Services.AddScoped<IHealthReportService, HealthReportService>();
 builder.Services.AddScoped<IHazardService, HazardService>();
@@ -1075,5 +1118,12 @@ app.MapFallback(context =>
     context.Response.StatusCode = StatusCodes.Status404NotFound;
     return context.Response.WriteAsync(string.Empty);
 });
+
+// Configure port for Railway deployment
+// Priority: PORT environment variable → ASPNETCORE_URLS → default to 8080
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var urls = $"http://0.0.0.0:{port}";
+app.Urls.Add(urls);
+app.Logger.LogInformation("Application configured to listen on {URLs}", urls);
 
 app.Run();
