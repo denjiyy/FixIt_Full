@@ -42,6 +42,50 @@ using System.Threading.RateLimiting;
 var builder = WebApplication.CreateBuilder(args);
 var isProduction = builder.Environment.IsProduction();
 
+// Resolve placeholder-style environment/config expressions like:
+// - ${MONGODB_URI}
+// - ${MONGODB_URI:someDefault}
+static string? ResolveRailwayStylePlaceholder(string? value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+        return value;
+
+    var trimmed = value.Trim();
+
+    // Fast path: only attempt placeholder resolution when string contains "${"
+    if (!trimmed.Contains("${", StringComparison.Ordinal))
+        return value;
+
+    // Support a single placeholder pattern for now (sufficient for connection strings).
+    // Examples matched:
+    //   ${MONGODB_URI}
+    //   ${MONGODB_URI:defaultValue}
+    var start = trimmed.IndexOf("${", StringComparison.Ordinal);
+    var end = trimmed.IndexOf('}', start + 2);
+    if (start < 0 || end < 0)
+        return value;
+
+    var placeholderBody = trimmed.Substring(start + 2, end - (start + 2)); // "MONGODB_URI" or "MONGODB_URI:default"
+    var parts = placeholderBody.Split(':', 2, StringSplitOptions.None);
+    var envVarName = parts[0].Trim();
+
+    if (string.IsNullOrWhiteSpace(envVarName))
+        return value;
+
+    var envValue = Environment.GetEnvironmentVariable(envVarName);
+    if (!string.IsNullOrWhiteSpace(envValue))
+        return envValue;
+
+    // default value (optional)
+    if (parts.Length == 2)
+    {
+        var defaultValue = parts[1];
+        return defaultValue ?? value;
+    }
+
+    return value;
+}
+
 // Normalize allowed hosts so both comma- and semicolon-delimited env values are supported.
 var allowedHostsRaw = builder.Configuration["AllowedHosts"];
 if (!string.IsNullOrWhiteSpace(allowedHostsRaw))
@@ -185,15 +229,63 @@ if (isRateLimitingEnabled)
     });
 }
 
-// Configure MongoDB
-// Priority: Environment variable (MONGODB_URI) → appsettings.json fallback
-var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_URI") 
-    ?? builder.Configuration["MongoDB:ConnectionString"]
-    ?? throw new InvalidOperationException("MongoDB connection string not found. Set MONGODB_URI environment variable or configure MongoDB:ConnectionString in appsettings.json");
+/*
+Configure MongoDB
 
-var mongoDatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE") 
-    ?? builder.Configuration["MongoDB:DatabaseName"]
-    ?? throw new InvalidOperationException("MongoDB database name not found. Set MONGODB_DATABASE environment variable or configure MongoDB:DatabaseName in appsettings.json");
+Priority:
+1) Environment variable (MONGODB_URI) (and MONGODB_DATABASE)
+2) appsettings.json fallback (MongoDB:ConnectionString, MongoDB:DatabaseName)
+
+Additionally, Railway sometimes leaves placeholder expressions as-is (e.g. "${MONGODB_URI}")
+which then reach the Mongo driver and fail parsing with a confusing error.
+We resolve simple placeholder expressions and validate that the final string is not still a placeholder.
+*/
+
+// Priority: Environment variable (MONGODB_URI) → appsettings.json fallback
+var mongoConnectionStringRaw =
+    Environment.GetEnvironmentVariable("MONGODB_URI")
+    ?? builder.Configuration["MongoDB:ConnectionString"];
+
+mongoConnectionStringRaw = ResolveRailwayStylePlaceholder(mongoConnectionStringRaw);
+
+if (string.IsNullOrWhiteSpace(mongoConnectionStringRaw))
+{
+    throw new InvalidOperationException(
+        "MongoDB connection string not found. Set MONGODB_URI environment variable (or MongoDB:ConnectionString in appsettings.json).");
+}
+
+if (mongoConnectionStringRaw.Contains("${", StringComparison.Ordinal) || mongoConnectionStringRaw.Contains("}", StringComparison.Ordinal))
+{
+    // Keep this deliberately strict and explicit for deployment diagnostics.
+    throw new InvalidOperationException(
+        "MongoDB connection string still contains a placeholder expression. " +
+        "Railway likely did not substitute MONGODB_URI. " +
+        $"Value received: '{mongoConnectionStringRaw}'.");
+}
+
+var mongoConnectionString = mongoConnectionStringRaw;
+
+var mongoDatabaseNameRaw =
+    Environment.GetEnvironmentVariable("MONGODB_DATABASE")
+    ?? builder.Configuration["MongoDB:DatabaseName"];
+
+mongoDatabaseNameRaw = ResolveRailwayStylePlaceholder(mongoDatabaseNameRaw);
+
+if (string.IsNullOrWhiteSpace(mongoDatabaseNameRaw))
+{
+    throw new InvalidOperationException(
+        "MongoDB database name not found. Set MONGODB_DATABASE environment variable (or MongoDB:DatabaseName in appsettings.json).");
+}
+
+if (mongoDatabaseNameRaw.Contains("${", StringComparison.Ordinal))
+{
+    throw new InvalidOperationException(
+        "MongoDB database name still contains a placeholder expression. " +
+        "Railway likely did not substitute MONGODB_DATABASE. " +
+        $"Value received: '{mongoDatabaseNameRaw}'.");
+}
+
+var mongoDatabaseName = mongoDatabaseNameRaw;
 
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(MongoDbSettings.SectionName));
 
@@ -473,13 +565,39 @@ builder.Services.AddScoped<FixIt.Services.AI.IAdminSuggestionsService, FixIt.Ser
 builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 
-// Configure Cloudinary with environment variables priority
-var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") 
-    ?? builder.Configuration["Cloudinary:CloudName"];
-var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY")
-    ?? builder.Configuration["Cloudinary:ApiKey"];
-var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET")
-    ?? builder.Configuration["Cloudinary:ApiSecret"];
+/*
+Configure Cloudinary with environment variables priority.
+Also resolve placeholder-style expressions in case Railway passes through ${...}.
+*/
+var cloudinaryCloudName =
+    ResolveRailwayStylePlaceholder(Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME"))
+    ?? ResolveRailwayStylePlaceholder(builder.Configuration["Cloudinary:CloudName"]);
+
+var cloudinaryApiKey =
+    ResolveRailwayStylePlaceholder(Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY"))
+    ?? ResolveRailwayStylePlaceholder(builder.Configuration["Cloudinary:ApiKey"]);
+
+var cloudinaryApiSecret =
+    ResolveRailwayStylePlaceholder(Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET"))
+    ?? ResolveRailwayStylePlaceholder(builder.Configuration["Cloudinary:ApiSecret"]);
+
+/*
+Validate Cloudinary placeholders.
+If Railway didn't provide the variables and the placeholders come through as-is,
+throw a clear error in production (matching existing behavior intent).
+*/
+var cloudinaryAnyPlaceholder =
+    (!string.IsNullOrWhiteSpace(cloudinaryCloudName) && cloudinaryCloudName.Contains("${", StringComparison.Ordinal))
+    || (!string.IsNullOrWhiteSpace(cloudinaryApiKey) && cloudinaryApiKey.Contains("${", StringComparison.Ordinal))
+    || (!string.IsNullOrWhiteSpace(cloudinaryApiSecret) && cloudinaryApiSecret.Contains("${", StringComparison.Ordinal));
+
+if (cloudinaryAnyPlaceholder && isProduction)
+{
+    throw new InvalidOperationException(
+        "Cloudinary credentials appear to contain placeholder expressions. " +
+        "Railway likely did not substitute CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET. " +
+        "Set these environment variables in Railway or configure Cloudinary section in appsettings.json.");
+}
 
 // Only register Cloudinary if credentials are provided
 if (!string.IsNullOrWhiteSpace(cloudinaryCloudName) && 
