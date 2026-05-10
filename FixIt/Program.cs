@@ -39,6 +39,7 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 
+System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls13;
 var builder = WebApplication.CreateBuilder(args);
 var isProduction = builder.Environment.IsProduction();
 
@@ -239,6 +240,13 @@ Priority:
 Additionally, Railway sometimes leaves placeholder expressions as-is (e.g. "${MONGODB_URI}")
 which then reach the Mongo driver and fail parsing with a confusing error.
 We resolve simple placeholder expressions and validate that the final string is not still a placeholder.
+*/
+
+/*
+Priority: Environment variable (MONGODB_URI) → appsettings.json fallback (MongoDB:ConnectionString)
+
+Railway may surface placeholder expressions (e.g. "${MONGODB_URI:}") as literal strings via
+appsettings/deployment variables. Resolve these expressions before handing them to the Mongo driver.
 */
 
 // Priority: Environment variable (MONGODB_URI) → appsettings.json fallback
