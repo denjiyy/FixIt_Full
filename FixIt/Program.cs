@@ -242,7 +242,8 @@ We resolve simple placeholder expressions and validate that the final string is 
 */
 
 /*
-Priority: Environment variable (MONGODB_URI) → appsettings.json fallback (MongoDB:ConnectionString)
+Priority: Environment variable (MONGODB_URI) → appsettings.json fallback
+(ConnectionStrings:MongoDB, then MongoDB:ConnectionString)
 
 Railway may surface placeholder expressions (e.g. "${MONGODB_URI:}") as literal strings via
 appsettings/deployment variables. Resolve these expressions before handing them to the Mongo driver.
@@ -251,6 +252,7 @@ appsettings/deployment variables. Resolve these expressions before handing them 
 // Priority: Environment variable (MONGODB_URI) → appsettings.json fallback
 var mongoConnectionStringRaw =
     Environment.GetEnvironmentVariable("MONGODB_URI")
+    ?? builder.Configuration["ConnectionStrings:MongoDB"]
     ?? builder.Configuration["MongoDB:ConnectionString"];
 
 mongoConnectionStringRaw = ResolveRailwayStylePlaceholder(mongoConnectionStringRaw);
@@ -258,7 +260,7 @@ mongoConnectionStringRaw = ResolveRailwayStylePlaceholder(mongoConnectionStringR
 if (string.IsNullOrWhiteSpace(mongoConnectionStringRaw))
 {
     throw new InvalidOperationException(
-        "MongoDB connection string not found. Set MONGODB_URI environment variable (or MongoDB:ConnectionString in appsettings.json).");
+        "MongoDB connection string not found. Set MONGODB_URI environment variable (or ConnectionStrings:MongoDB / MongoDB:ConnectionString in appsettings.json).");
 }
 
 if (mongoConnectionStringRaw.Contains("${", StringComparison.Ordinal) || mongoConnectionStringRaw.Contains("}", StringComparison.Ordinal))
@@ -274,7 +276,8 @@ var mongoConnectionString = mongoConnectionStringRaw;
 
 var mongoDatabaseNameRaw =
     Environment.GetEnvironmentVariable("MONGODB_DATABASE")
-    ?? builder.Configuration["MongoDB:DatabaseName"];
+    ?? builder.Configuration["MongoDB:DatabaseName"]
+    ?? "fixit";
 
 mongoDatabaseNameRaw = ResolveRailwayStylePlaceholder(mongoDatabaseNameRaw);
 
