@@ -373,10 +373,10 @@ var authBuilder = builder.Services.AddAuthentication(options =>
 
 // Add Google OAuth
 var googleSection = authConfig.GetSection("Google");
-var googleClientId = googleSection["ClientId"];
-var googleClientSecret = googleSection["ClientSecret"];
-var hasGoogleClientId = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID"));
-var hasGoogleClientSecret = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET"));
+var googleClientId = googleSection["ClientId"] ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+var googleClientSecret = googleSection["ClientSecret"] ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+var hasGoogleClientId = !string.IsNullOrWhiteSpace(googleClientId);
+var hasGoogleClientSecret = !string.IsNullOrWhiteSpace(googleClientSecret);
 if (hasGoogleClientId && hasGoogleClientSecret)
 {
     authBuilder.AddGoogle(options =>
@@ -394,12 +394,12 @@ else if (isProduction)
 // Add JWT Bearer authentication for mobile/API clients
 // This allows same endpoints to be used by both web (cookies) and mobile (JWT tokens) clients
 var jwtConfig = builder.Configuration.GetSection("Jwt");
-var jwtSecretKey = jwtConfig["SecretKey"];
+var jwtSecretKey = jwtConfig["SecretKey"] ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
-if (!StartupConfiguration.IsConfiguredSecret(jwtSecretKey) || jwtSecretKey!.Trim().Length < 32)
+if (string.IsNullOrWhiteSpace(jwtSecretKey) || jwtSecretKey.Trim().Length < 32)
 {
     throw new InvalidOperationException(
-        "JWT secret key is not configured or too weak. Set Jwt:SecretKey via environment variable (Jwt__SecretKey) to a strong random secret with at least 32 characters.");
+        "JWT secret key is not configured or too weak. Set Jwt:SecretKey or JWT_SECRET_KEY to a strong random secret with at least 32 characters.");
 }
 
 var key = System.Text.Encoding.ASCII.GetBytes(jwtSecretKey.Trim());
