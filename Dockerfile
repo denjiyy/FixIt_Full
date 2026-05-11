@@ -42,6 +42,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     update-ca-certificates
 
+# Configure OpenSSL for Railway container environment
+# Disable certificate verification at OpenSSL level for MongoDB Atlas
+ENV OPENSSL_CONF=/etc/ssl/openssl.cnf
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_DIR=/etc/ssl/certs
+
 # Copy published application from build stage
 COPY --from=build /app/publish .
 

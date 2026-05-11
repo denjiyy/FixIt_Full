@@ -273,16 +273,10 @@ if (mongoConnectionStringRaw.Contains("${", StringComparison.Ordinal) || mongoCo
 
 var mongoConnectionString = mongoConnectionStringRaw;
 
-// For Railway/container environments: add tlsInsecure parameter to handle TLS negotiation issues
+// Log the connection attempt
 if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
 {
-    // Append tlsInsecure=true to disable certificate validation at the driver level
-    var separator = mongoConnectionString.Contains("?") ? "&" : "?";
-    mongoConnectionString = $"{mongoConnectionString}{separator}tlsInsecure=true";
-    
-    // Log the connection attempt (without exposing the password)
-    var connLog = mongoConnectionString.Replace(mongoConnectionString.Substring(mongoConnectionString.IndexOf("://") + 3, mongoConnectionString.IndexOf("@") - mongoConnectionString.IndexOf("://") - 3), "***REDACTED***");
-    Console.WriteLine($"[STARTUP] Connecting to MongoDB Atlas with tlsInsecure=true: {connLog}");
+    Console.WriteLine($"[STARTUP] MongoDB Atlas connection detected - using code-level TLS settings");
 }
 
 var mongoDatabaseNameRaw =
@@ -319,16 +313,28 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     settings.MaxConnecting = 50;
     // Optimize read preferences for better performance
     settings.ReadPreference = ReadPreference.PrimaryPreferred;
-    settings.ConnectTimeout = TimeSpan.FromSeconds(10);
-    settings.SocketTimeout = TimeSpan.FromSeconds(30);
-    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(30); // Increased from 10 to 30 for Railway
+    settings.ConnectTimeout = TimeSpan.FromSeconds(30);  // Increased for Railway's slow connections
+    settings.SocketTimeout = TimeSpan.FromSeconds(60);   // Increased for large operations
+    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(60); // Increased for server discovery
+    settings.HeartbeatInterval = TimeSpan.FromSeconds(5); // More frequent heartbeats in Railway
     
+    // Enable debug logging for connection diagnostics in production
+    if (isProduction)
+    {
+        Console.WriteLine($"[STARTUP] MongoDB Settings - UseTls: {settings.UseTls}, AllowInsecureTls: {settings.AllowInsecureTls}");
+    }
     // Configure SSL/TLS based on connection string type
     if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
     {
         // MongoDB Atlas requires TLS
         settings.UseTls = true;
         settings.AllowInsecureTls = true;  // Required for Railway/container environments
+        
+        // Disable certificate revocation checking - CRL servers often unreachable in containers
+        settings.SslSettings = new SslSettings
+        {
+            CheckCertificateRevocation = false
+        };
     }
     
     return new MongoClient(settings);
