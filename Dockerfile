@@ -27,6 +27,10 @@ RUN dotnet test "FixIt.Tests/FixIt.Tests.csproj" -c Release --no-build --logger 
 # Publish application
 RUN dotnet publish "FixIt/FixIt.csproj" -c Release -o /app/publish --no-build
 
+# Ensure static vendor libraries are present in publish output for runtime static file serving
+RUN mkdir -p /app/publish/wwwroot/lib && \
+    cp -a FixIt/wwwroot/lib/. /app/publish/wwwroot/lib/
+
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
