@@ -27,6 +27,8 @@ RUN dotnet test "FixIt.Tests/FixIt.Tests.csproj" -c Release --no-build --logger 
 # Publish application
 RUN dotnet publish "FixIt/FixIt.csproj" -c Release -o /app/publish --no-build
 
+RUN ls /app/publish/wwwroot/lib/bootstrap/dist/css/ || echo "MISSING - bootstrap css not in publish output"
+
 # Ensure static vendor libraries are present in publish output for runtime static file serving
 RUN mkdir -p /app/publish/wwwroot/lib && \
     cp -a FixIt/wwwroot/lib/. /app/publish/wwwroot/lib/

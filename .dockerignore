@@ -10,7 +10,6 @@
 **/secrets.json
 **/node_modules
 **/.angular
-**/dist
 **/.next
 **/out
 **/.nuxt
