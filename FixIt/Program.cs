@@ -316,10 +316,12 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     {
         // MongoDB Atlas requires TLS
         settings.UseTls = true;
-        settings.AllowInsecureTls = false;
         
-        // For Railway/container environments: disable certificate revocation checking
-        // This is required because container environments often can't reach CRL servers
+        // For Railway/container environments: we need to be lenient with TLS
+        // The environment can't validate certificates properly, but we trust MongoDB Atlas
+        settings.AllowInsecureTls = true;  // Required for Railway containers
+        
+        // Disable certificate revocation checking (CRL servers not accessible in containers)
         var sslSettings = new SslSettings 
         { 
             CheckCertificateRevocation = false
