@@ -790,25 +790,12 @@ if (!string.IsNullOrWhiteSpace(dataProtectionCertificatePath))
     dataProtectionBuilder.ProtectKeysWithCertificate(certificate);
 }
 
-// Configure trusted proxy handling for reverse-proxy deployments
+// Configure forwarded headers for reverse-proxy deployments (e.g., Railway)
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-    options.ForwardLimit = 2;
-
-    var trustedProxyList = builder.Configuration["Security:TrustedProxyIps"];
-    if (string.IsNullOrWhiteSpace(trustedProxyList))
-    {
-        return;
-    }
-
-    foreach (var proxyCandidate in trustedProxyList.Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-    {
-        if (IPAddress.TryParse(proxyCandidate, out var proxyIp))
-        {
-            options.KnownProxies.Add(proxyIp);
-        }
-    }
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 // Add logging with proper configuration for production
@@ -1041,7 +1028,10 @@ catch (Exception ex)
 
 // Configure the HTTP request pipeline.
 app.UseMiddleware<FixIt.Middleware.GlobalExceptionHandlingMiddleware>();
-app.UseForwardedHeaders();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 if (app.Environment.IsDevelopment())
 {
