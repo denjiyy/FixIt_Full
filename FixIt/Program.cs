@@ -294,6 +294,12 @@ if (mongoDatabaseNameRaw.Contains("${", StringComparison.Ordinal))
 
 var mongoDatabaseName = mongoDatabaseNameRaw;
 
+builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
+builder.Services.AddSingleton<IMongoDatabase>(sp =>
+    sp.GetRequiredService<IMongoClient>().GetDatabase(mongoDatabaseName));
+builder.Services.AddSingleton<MongoDbContext>(sp =>
+    new MongoDbContext(sp.GetRequiredService<IMongoClient>(), mongoDatabaseName));
+
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(MongoDbSettings.SectionName));
 
  // Register migration runner for schema versioning
