@@ -273,6 +273,14 @@ if (mongoConnectionStringRaw.Contains("${", StringComparison.Ordinal) || mongoCo
 
 var mongoConnectionString = mongoConnectionStringRaw;
 
+// For Railway/container environments: add tlsInsecure parameter to handle TLS negotiation issues
+if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
+{
+    // Append tlsInsecure=true to disable certificate validation at the driver level
+    var separator = mongoConnectionString.Contains("?") ? "&" : "?";
+    mongoConnectionString = $"{mongoConnectionString}{separator}tlsInsecure=true";
+}
+
 var mongoDatabaseNameRaw =
     Environment.GetEnvironmentVariable("MONGODB_DATABASE")
     ?? builder.Configuration["MongoDB:DatabaseName"];
@@ -316,26 +324,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     {
         // MongoDB Atlas requires TLS
         settings.UseTls = true;
-        
-        // For Railway/container environments: we need to be lenient with TLS
-        // The environment can't validate certificates properly, but we trust MongoDB Atlas
-        settings.AllowInsecureTls = true;  // Required for Railway containers
-        
-        // Disable certificate revocation checking (CRL servers not accessible in containers)
-        var sslSettings = new SslSettings 
-        { 
-            CheckCertificateRevocation = false
-        };
-        settings.SslSettings = sslSettings;
-    }
-    else
-    {
-        // Local/self-managed MongoDB: disable TLS (unless explicitly enabled in connection string)
-        if (!mongoConnectionString.Contains("tls=true", StringComparison.OrdinalIgnoreCase) &&
-            !mongoConnectionString.Contains("ssl=true", StringComparison.OrdinalIgnoreCase))
-        {
-            settings.UseTls = false;
-        }
+        settings.AllowInsecureTls = true;  // Required for Railway/container environments
     }
     
     return new MongoClient(settings);
