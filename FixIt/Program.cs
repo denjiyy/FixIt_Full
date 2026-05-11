@@ -273,17 +273,6 @@ if (mongoConnectionStringRaw.Contains("${", StringComparison.Ordinal) || mongoCo
 
 var mongoConnectionString = mongoConnectionStringRaw;
 
-// Log the connection attempt
-if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
-{
-    // Add MongoDB TLS parameters for Railway container compatibility
-    // Only add certificate bypass params - let .NET handle TLS protocol version negotiation
-    var separator = mongoConnectionString.Contains("?") ? "&" : "?";
-    mongoConnectionString = $"{mongoConnectionString}{separator}tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true";
-    
-    Console.WriteLine($"[STARTUP] MongoDB Atlas connection configured with certificate bypass");
-}
-
 var mongoDatabaseNameRaw =
     Environment.GetEnvironmentVariable("MONGODB_DATABASE")
     ?? builder.Configuration["MongoDB:DatabaseName"];
@@ -308,61 +297,128 @@ var mongoDatabaseName = mongoDatabaseNameRaw;
 
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection(MongoDbSettings.SectionName));
 
-// Register MongoClient as singleton with connection pooling and optimizations
-builder.Services.AddSingleton<IMongoClient>(sp =>
+// Helper function to create properly configured MongoClientSettings with explicit TLS 1.2/1.3
+static MongoClientSettings CreateMongoClientSettings(string connectionString)
 {
-    var settings = MongoClientSettings.FromConnectionString(mongoConnectionString);
+    var settings = MongoClientSettings.FromConnectionString(connectionString);
+
     // Optimize connection pooling
     settings.MaxConnectionPoolSize = 100;
     settings.MinConnectionPoolSize = 10;
     settings.MaxConnecting = 50;
+
     // Optimize read preferences for better performance
     settings.ReadPreference = ReadPreference.PrimaryPreferred;
-    settings.ConnectTimeout = TimeSpan.FromSeconds(30);  // Increased for Railway's slow connections
-    settings.SocketTimeout = TimeSpan.FromSeconds(60);   // Increased for large operations
-    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(60); // Increased for server discovery
-    settings.HeartbeatInterval = TimeSpan.FromSeconds(5); // More frequent heartbeats in Railway
-    
-    // Enable debug logging for connection diagnostics in production
-    if (isProduction)
+
+    settings.ConnectTimeout = TimeSpan.FromSeconds(30);
+    settings.SocketTimeout = TimeSpan.FromSeconds(60);
+    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(60);
+    settings.HeartbeatInterval = TimeSpan.FromSeconds(5);
+
+    // For MongoDB Atlas (mongodb+srv://), enforce TLS 1.2+ explicitly
+    if (connectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
     {
-        Console.WriteLine($"[STARTUP] MongoDB Settings - UseTls: {settings.UseTls}");
-    }
-    // Configure SSL/TLS based on connection string type
-    if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
-    {
-        // MongoDB Atlas requires TLS 1.2+
         settings.UseTls = true;
-        settings.AllowInsecureTls = true;
-        
-        // Explicitly restrict to TLS 1.2 and 1.3 - MongoDB Atlas rejects older versions
         settings.SslSettings = new SslSettings
         {
             EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 |
-                                  System.Security.Authentication.SslProtocols.Tls13,
-            CheckCertificateRevocation = false
+                                  System.Security.Authentication.SslProtocols.Tls13
+
+            // Do NOT disable revocation checks unless strictly required.
+            // Atlas will use publicly trusted certificates; disabling revocation can mask real TLS issues.
+            // (Leaving default behavior.)
         };
     }
-    
-    return new MongoClient(settings);
-});
 
-// Register MongoDbContext
+    return settings;
+}
+
+// IMPORTANT DIAGNOSTIC CHANGE:
+/// Remove the app-level singleton IMongoClient so we can verify which MongoClient instance
+/// AspNetCore.Identity.Mongo actually uses internally during its migrations.
+/// We still need our own MongoDbContext/IMongoDatabase for application data access later,
+/// but we create those using a client constructed from our settings (single-path within app code).
 builder.Services.AddSingleton<MongoDbContext>(sp =>
 {
-    var client = sp.GetRequiredService<IMongoClient>();
+    var settings = CreateMongoClientSettings(mongoConnectionString);
+    var client = new MongoClient(settings);
     return new MongoDbContext(client, mongoDatabaseName);
 });
 
 // Register IMongoDatabase (needed for Repository<T>)
 builder.Services.AddSingleton<IMongoDatabase>(sp =>
 {
-    var client = sp.GetRequiredService<IMongoClient>();
+    var settings = CreateMongoClientSettings(mongoConnectionString);
+    var client = new MongoClient(settings);
     return client.GetDatabase(mongoDatabaseName);
 });
 
 // Register migration runner for schema versioning
 builder.Services.AddScoped<MigrationRunner>();
+
+static void LogIdentityMongoClientTlsDiagnostics(IServiceProvider sp, bool isProductionLog)
+{
+    try
+    {
+        var logger = sp.GetService<ILogger<Program>>();
+        if (!isProductionLog || logger is null)
+        {
+            return;
+        }
+
+        // Identity.Mongo may register an IMongoClient. If it does, resolve it and reflect into runtime settings.
+        var client = sp.GetService<IMongoClient>();
+        if (client is null)
+        {
+            logger.LogWarning("[STARTUP][TLS DIAG] IMongoClient was not resolvable from DI; cannot introspect Identity.Mongo client settings.");
+            return;
+        }
+
+        var clientType = client.GetType();
+
+        // MongoClient exposes a Settings property; attempt reflection safely.
+        var settingsProp = clientType.GetProperty("Settings");
+        var rawSettings = settingsProp?.GetValue(client);
+
+        var useTls = rawSettings?.GetType().GetProperty("UseTls")?.GetValue(rawSettings);
+        var sslSettingsObj = rawSettings?.GetType().GetProperty("SslSettings")?.GetValue(rawSettings);
+
+        object? enabledProtocols = null;
+        object? checkRevocation = null;
+        object? certificateCallback = null;
+
+        if (sslSettingsObj is not null)
+        {
+            var sslType = sslSettingsObj.GetType();
+            enabledProtocols = sslType.GetProperty("EnabledSslProtocols")?.GetValue(sslSettingsObj);
+            checkRevocation = sslType.GetProperty("CheckCertificateRevocation")?.GetValue(sslSettingsObj);
+
+            // Some MongoDB driver versions expose CertificateValidationCallback; reflect if present.
+            certificateCallback = sslType.GetProperty("SslClientAuthenticationOptions")
+                ?.GetValue(sslSettingsObj);
+            if (certificateCallback is null)
+            {
+                certificateCallback = sslType.GetProperty("CertificateValidationCallback")?.GetValue(sslSettingsObj);
+            }
+        }
+
+        logger.LogWarning("[STARTUP][TLS DIAG] Identity.Mongo resolved MongoClient runtime type: {ClientType}", clientType.FullName);
+        logger.LogWarning("[STARTUP][TLS DIAG]   Settings runtime type: {SettingsType}", rawSettings?.GetType().FullName ?? "(null)");
+        logger.LogWarning("[STARTUP][TLS DIAG]   UseTls: {UseTls}", useTls?.ToString() ?? "(null)");
+        logger.LogWarning("[STARTUP][TLS DIAG]   SslSettings.EnabledSslProtocols: {EnabledSslProtocols}", enabledProtocols?.ToString() ?? "(null)");
+        logger.LogWarning("[STARTUP][TLS DIAG]   SslSettings.CheckCertificateRevocation: {CheckCertificateRevocation}", checkRevocation?.ToString() ?? "(null)");
+        logger.LogWarning("[STARTUP][TLS DIAG]   CertificateValidationCallback exists: {HasCallback}",
+            certificateCallback is not null ? "true" : "false");
+    }
+    catch (Exception ex)
+    {
+        if (isProductionLog)
+        {
+            var logger = sp.GetService<ILogger<Program>>();
+            logger?.LogWarning(ex, "[STARTUP][TLS DIAG] Failed to introspect Identity.Mongo MongoClient TLS settings.");
+        }
+    }
+}
 
 // Configure ASP.NET Core Identity with MongoDB
 builder.Services.AddIdentityMongoDbProvider<ApplicationUser, MongoRole>(identity =>
@@ -376,22 +432,33 @@ builder.Services.AddIdentityMongoDbProvider<ApplicationUser, MongoRole>(identity
     
     // Configure lockout settings
     identity.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    identity.Lockout.MaxFailedAccessAttempts = 5; // Lock after 5 failed attempts
+    identity.Lockout.MaxFailedAccessAttempts = 5;
     identity.Lockout.AllowedForNewUsers = true;
 },
 mongo =>
 {
     mongo.ConnectionString = mongoConnectionString;
     
-    // CRITICAL: Configure TLS 1.2+ directly on the library's SslSettings
-    // The library builds its own IMongoClient internally and must have explicit
-    // TLS protocol restrictions to prevent downgrade to weak versions
-    mongo.SslSettings = new SslSettings
+    // CRITICAL FIX: Configure TLS 1.2+ explicitly for the Identity.Mongo library's internal MongoClient
+    // The library creates its own MongoClient via MongoUtil.FromConnectionString(), so we must ensure
+    // TLS settings are applied at this exact configuration point before the library builds its client.
+    // Do NOT use certificate bypass - instead, explicitly configure TLS protocols.
+    if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
     {
-        EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 |
-                              System.Security.Authentication.SslProtocols.Tls13,
-        CheckCertificateRevocation = false
-    };
+        mongo.SslSettings = new SslSettings
+        {
+            EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 |
+                                  System.Security.Authentication.SslProtocols.Tls13,
+            CheckCertificateRevocation = false
+        };
+        
+        if (isProduction)
+        {
+            Console.WriteLine($"[STARTUP] Identity.Mongo SslSettings configured:");
+            Console.WriteLine($"[STARTUP]   EnabledSslProtocols: Tls12 | Tls13");
+            Console.WriteLine($"[STARTUP]   CheckCertificateRevocation: false");
+        }
+    }
 });
 
 // Register custom claims principal factory to include user role in claims
@@ -401,6 +468,13 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(PolicyNames.AdminOnly, policy => policy.RequireRole(RoleNames.Admin));
 });
+
+/*
+The previous MongoDBTlsVerificationService reference was removed because the class
+is not present in this repository (build would fail).
+
+We keep the built-in TLS introspection diagnostics below instead.
+*/
 
 // ========== STARTUP DIAGNOSTICS ==========
 if (isProduction)
