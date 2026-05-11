@@ -277,10 +277,11 @@ var mongoConnectionString = mongoConnectionStringRaw;
 if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
 {
     // Add MongoDB TLS parameters for Railway container compatibility
+    // Only add certificate bypass params - let .NET handle TLS protocol version negotiation
     var separator = mongoConnectionString.Contains("?") ? "&" : "?";
-    mongoConnectionString = $"{mongoConnectionString}{separator}tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true&tlsDisableOcspEndpointCheck=true&retryWrites=false";
+    mongoConnectionString = $"{mongoConnectionString}{separator}tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true";
     
-    Console.WriteLine($"[STARTUP] MongoDB Atlas connection detected - TLS strict validation disabled");
+    Console.WriteLine($"[STARTUP] MongoDB Atlas connection configured with certificate bypass");
 }
 
 var mongoDatabaseNameRaw =
@@ -330,15 +331,10 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     // Configure SSL/TLS based on connection string type
     if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
     {
-        // MongoDB Atlas requires TLS - parameters are set in connection string
+        // MongoDB Atlas requires TLS
+        // .NET 9 runtime has proper OpenSSL config, so we only need to allow invalid certs for Railway compatibility
         settings.UseTls = true;
-        settings.AllowInsecureTls = true;  // Allow invalid certificates for Railway
-        
-        // Disable OCSP endpoint checking which fails in container environments
-        settings.SslSettings = new SslSettings
-        {
-            CheckCertificateRevocation = false
-        };
+        settings.AllowInsecureTls = true;
     }
     
     return new MongoClient(settings);
