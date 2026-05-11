@@ -276,7 +276,11 @@ var mongoConnectionString = mongoConnectionStringRaw;
 // Log the connection attempt
 if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
 {
-    Console.WriteLine($"[STARTUP] MongoDB Atlas connection detected - using code-level TLS settings");
+    // Add MongoDB TLS parameters that are properly supported by the driver
+    var separator = mongoConnectionString.Contains("?") ? "&" : "?";
+    mongoConnectionString = $"{mongoConnectionString}{separator}tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true";
+    
+    Console.WriteLine($"[STARTUP] MongoDB Atlas connection detected - TLS strict validation disabled at driver level");
 }
 
 var mongoDatabaseNameRaw =
@@ -321,20 +325,13 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     // Enable debug logging for connection diagnostics in production
     if (isProduction)
     {
-        Console.WriteLine($"[STARTUP] MongoDB Settings - UseTls: {settings.UseTls}, AllowInsecureTls: {settings.AllowInsecureTls}");
+        Console.WriteLine($"[STARTUP] MongoDB Settings - UseTls: {settings.UseTls}");
     }
     // Configure SSL/TLS based on connection string type
     if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
     {
-        // MongoDB Atlas requires TLS
+        // MongoDB Atlas requires TLS - parameters are set in connection string
         settings.UseTls = true;
-        settings.AllowInsecureTls = true;  // Required for Railway/container environments
-        
-        // Disable certificate revocation checking - CRL servers often unreachable in containers
-        settings.SslSettings = new SslSettings
-        {
-            CheckCertificateRevocation = false
-        };
     }
     
     return new MongoClient(settings);
