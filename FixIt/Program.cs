@@ -375,8 +375,8 @@ var authBuilder = builder.Services.AddAuthentication(options =>
 var googleSection = authConfig.GetSection("Google");
 var googleClientId = googleSection["ClientId"];
 var googleClientSecret = googleSection["ClientSecret"];
-var hasGoogleClientId = StartupConfiguration.IsConfiguredSecret(googleClientId);
-var hasGoogleClientSecret = StartupConfiguration.IsConfiguredSecret(googleClientSecret);
+var hasGoogleClientId = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID"));
+var hasGoogleClientSecret = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET"));
 if (hasGoogleClientId && hasGoogleClientSecret)
 {
     authBuilder.AddGoogle(options =>
