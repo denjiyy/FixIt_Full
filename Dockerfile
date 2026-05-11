@@ -47,6 +47,23 @@ RUN apt-get update && \
 ENV OPENSSL_CONF=/etc/ssl/openssl.cnf
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_DIR=/etc/ssl/certs
+ENV OPENSSL_ALLOW_PROXY_CERTS=1
+
+# Create minimal openssl config for Railway - reduce security level to allow connections
+RUN mkdir -p /tmp && cat > /tmp/openssl.cnf << 'EOF'
+[ default_conf ]
+ssl_conf = ssl_sect
+
+[ssl_sect]
+system_default = system_default_sect
+
+[system_default_sect]
+MinProtocol = TLSv1.0
+MaxProtocol = TLSv1.3
+CipherString = DEFAULT:@SECLEVEL=1
+EOF
+
+RUN cat /tmp/openssl.cnf >> /etc/ssl/openssl.cnf 2>/dev/null || true
 
 # Copy published application from build stage
 COPY --from=build /app/publish .

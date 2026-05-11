@@ -276,11 +276,11 @@ var mongoConnectionString = mongoConnectionStringRaw;
 // Log the connection attempt
 if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
 {
-    // Add MongoDB TLS parameters that are properly supported by the driver
+    // Add MongoDB TLS parameters for Railway container compatibility
     var separator = mongoConnectionString.Contains("?") ? "&" : "?";
-    mongoConnectionString = $"{mongoConnectionString}{separator}tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true";
+    mongoConnectionString = $"{mongoConnectionString}{separator}tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true&tlsDisableOcspEndpointCheck=true&retryWrites=false";
     
-    Console.WriteLine($"[STARTUP] MongoDB Atlas connection detected - TLS strict validation disabled at driver level");
+    Console.WriteLine($"[STARTUP] MongoDB Atlas connection detected - TLS strict validation disabled");
 }
 
 var mongoDatabaseNameRaw =
@@ -332,6 +332,13 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     {
         // MongoDB Atlas requires TLS - parameters are set in connection string
         settings.UseTls = true;
+        settings.AllowInsecureTls = true;  // Allow invalid certificates for Railway
+        
+        // Disable OCSP endpoint checking which fails in container environments
+        settings.SslSettings = new SslSettings
+        {
+            CheckCertificateRevocation = false
+        };
     }
     
     return new MongoClient(settings);
