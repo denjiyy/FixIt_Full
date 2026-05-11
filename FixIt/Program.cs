@@ -279,6 +279,10 @@ if (isProduction && mongoConnectionString.Contains("mongodb+srv://", StringCompa
     // Append tlsInsecure=true to disable certificate validation at the driver level
     var separator = mongoConnectionString.Contains("?") ? "&" : "?";
     mongoConnectionString = $"{mongoConnectionString}{separator}tlsInsecure=true";
+    
+    // Log the connection attempt (without exposing the password)
+    var connLog = mongoConnectionString.Replace(mongoConnectionString.Substring(mongoConnectionString.IndexOf("://") + 3, mongoConnectionString.IndexOf("@") - mongoConnectionString.IndexOf("://") - 3), "***REDACTED***");
+    Console.WriteLine($"[STARTUP] Connecting to MongoDB Atlas with tlsInsecure=true: {connLog}");
 }
 
 var mongoDatabaseNameRaw =
@@ -374,6 +378,24 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(PolicyNames.AdminOnly, policy => policy.RequireRole(RoleNames.Admin));
 });
+
+// ========== STARTUP DIAGNOSTICS ==========
+if (isProduction)
+{
+    Console.WriteLine("[STARTUP] === Production Configuration Diagnostics ===");
+    
+    // Check critical environment variables
+    var requiredVars = new[] { "MONGODB_URI", "MONGODB_DATABASE", "JWT_SECRET_KEY", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET" };
+    foreach (var varName in requiredVars)
+    {
+        var varValue = Environment.GetEnvironmentVariable(varName);
+        var isSet = !string.IsNullOrWhiteSpace(varValue);
+        var displayValue = isSet ? (varValue!.Length > 20 ? varValue.Substring(0, 20) + "..." : varValue) : "NOT SET";
+        Console.WriteLine($"[STARTUP] {varName}: {(isSet ? "✓" : "✗")} ({displayValue})");
+    }
+    
+    Console.WriteLine("[STARTUP] === End Diagnostics ===");
+}
 
 // Configure OAuth Authentication
 var authConfig = builder.Configuration.GetSection("Authentication");
