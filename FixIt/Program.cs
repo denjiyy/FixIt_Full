@@ -373,8 +373,8 @@ var authBuilder = builder.Services.AddAuthentication(options =>
 
 // Add Google OAuth
 var googleSection = authConfig.GetSection("Google");
-var googleClientId = googleSection["ClientId"] ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
-var googleClientSecret = googleSection["ClientSecret"] ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? googleSection["ClientId"];
+var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ?? googleSection["ClientSecret"];
 var hasGoogleClientId = !string.IsNullOrWhiteSpace(googleClientId);
 var hasGoogleClientSecret = !string.IsNullOrWhiteSpace(googleClientSecret);
 if (hasGoogleClientId && hasGoogleClientSecret)
@@ -394,7 +394,7 @@ else if (isProduction)
 // Add JWT Bearer authentication for mobile/API clients
 // This allows same endpoints to be used by both web (cookies) and mobile (JWT tokens) clients
 var jwtConfig = builder.Configuration.GetSection("Jwt");
-var jwtSecretKey = jwtConfig["SecretKey"] ?? Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? jwtConfig["SecretKey"];
 
 if (string.IsNullOrWhiteSpace(jwtSecretKey) || jwtSecretKey.Trim().Length < 32)
 {
