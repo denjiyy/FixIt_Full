@@ -31,33 +31,14 @@ RUN dotnet publish "FixIt/FixIt.csproj" -c Release -o /app/publish --no-build
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Install curl, ca-certificates, and OpenSSL - ensure fresh CA certs and TLS support
+# Install curl and CA certificates
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
-        ca-certificates \
-        libssl3 \
-        openssl && \
+        ca-certificates && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     update-ca-certificates
-
-# CRITICAL: Enforce TLS 1.2+ at OS level - MongoDB Atlas requires TLS 1.2 minimum
-# This prevents OpenSSL from negotiating weak protocols regardless of .NET settings
-RUN sed -i 's/^MinProtocol\s*=.*/MinProtocol = TLSv1.2/' /etc/ssl/openssl.cnf && \
-    sed -i 's/^CipherString\s*=.*/CipherString = DEFAULT:@SECLEVEL=2/' /etc/ssl/openssl.cnf && \
-    if ! grep -q "openssl_conf\s*=" /etc/ssl/openssl.cnf; then \
-        echo "" >> /etc/ssl/openssl.cnf && \
-        echo "[openssl_init]" >> /etc/ssl/openssl.cnf && \
-        echo "ssl_conf = ssl_sect" >> /etc/ssl/openssl.cnf && \
-        echo "" >> /etc/ssl/openssl.cnf && \
-        echo "[ssl_sect]" >> /etc/ssl/openssl.cnf && \
-        echo "system_default = system_default_sect" >> /etc/ssl/openssl.cnf && \
-        echo "" >> /etc/ssl/openssl.cnf && \
-        echo "[system_default_sect]" >> /etc/ssl/openssl.cnf && \
-        echo "MinProtocol = TLSv1.2" >> /etc/ssl/openssl.cnf && \
-        echo "CipherString = DEFAULT:@SECLEVEL=2" >> /etc/ssl/openssl.cnf; \
-    fi
 
 # Copy published application from build stage
 COPY --from=build /app/publish .
