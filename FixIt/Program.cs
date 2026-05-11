@@ -382,6 +382,16 @@ builder.Services.AddIdentityMongoDbProvider<ApplicationUser, MongoRole>(identity
 mongo =>
 {
     mongo.ConnectionString = mongoConnectionString;
+    
+    // CRITICAL: Configure TLS 1.2+ directly on the library's SslSettings
+    // The library builds its own IMongoClient internally and must have explicit
+    // TLS protocol restrictions to prevent downgrade to weak versions
+    mongo.SslSettings = new SslSettings
+    {
+        EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 |
+                              System.Security.Authentication.SslProtocols.Tls13,
+        CheckCertificateRevocation = false
+    };
 });
 
 // Register custom claims principal factory to include user role in claims
