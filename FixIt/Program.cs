@@ -331,10 +331,17 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     // Configure SSL/TLS based on connection string type
     if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
     {
-        // MongoDB Atlas requires TLS
-        // .NET 9 runtime has proper OpenSSL config, so we only need to allow invalid certs for Railway compatibility
+        // MongoDB Atlas requires TLS 1.2+
         settings.UseTls = true;
         settings.AllowInsecureTls = true;
+        
+        // Explicitly restrict to TLS 1.2 and 1.3 - MongoDB Atlas rejects older versions
+        settings.SslSettings = new SslSettings
+        {
+            EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 |
+                                  System.Security.Authentication.SslProtocols.Tls13,
+            CheckCertificateRevocation = false
+        };
     }
     
     return new MongoClient(settings);
