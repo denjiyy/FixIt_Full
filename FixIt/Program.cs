@@ -142,13 +142,6 @@ builder.Services.AddSession(options =>
 var securityConfig = builder.Configuration.GetSection("Security");
 var rateLimitingConfig = builder.Configuration.GetSection("Security:RateLimiting");
 var isRateLimitingEnabled = rateLimitingConfig.GetValue("Enabled", true);
-var configuredHttpsPort = securityConfig.GetValue<int?>("HttpsPort");
-var httpsPort = configuredHttpsPort.HasValue && configuredHttpsPort.Value > 0 ? configuredHttpsPort.Value : 443;
-builder.Services.AddHttpsRedirection(options =>
-{
-    options.HttpsPort = httpsPort;
-    options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-});
 
 // Configure rate limiting (DDoS protection) with per-client partitioning
 if (isRateLimitingEnabled)
@@ -1043,10 +1036,6 @@ if (app.Environment.IsDevelopment())
         c.DefaultModelsExpandDepth(-1); // Collapse models by default
     });
 }
-else
-{
-    app.UseHsts();
-}
 
 // Security headers
 app.Use(async (context, next) =>
@@ -1157,17 +1146,6 @@ app.Use(async (context, next) =>
     context.Response.ContentLength = responseBytes.Length;
     await originalBody.WriteAsync(responseBytes);
 });
-
-var requireHttps = app.Environment.IsProduction() || securityConfig.GetValue<bool>("RequireHttps");
-if (app.Environment.IsProduction() && !securityConfig.GetValue<bool>("RequireHttps"))
-{
-    app.Logger.LogWarning("Security:RequireHttps is false, but HTTPS redirection is enforced in production.");
-}
-
-if (requireHttps)
-{
-    app.UseHttpsRedirection();
-}
 
 app.UseStaticFiles();
 
