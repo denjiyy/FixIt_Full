@@ -9,3 +9,4 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       DetailedErrors: "true"
+      Jwt__SecretKey: ""

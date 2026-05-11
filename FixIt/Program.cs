@@ -309,7 +309,33 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     settings.ReadPreference = ReadPreference.PrimaryPreferred;
     settings.ConnectTimeout = TimeSpan.FromSeconds(10);
     settings.SocketTimeout = TimeSpan.FromSeconds(30);
-    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(10);
+    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(30); // Increased from 10 to 30 for Railway
+    
+    // Configure SSL/TLS based on connection string type
+    if (mongoConnectionString.Contains("mongodb+srv://", StringComparison.OrdinalIgnoreCase))
+    {
+        // MongoDB Atlas requires TLS
+        settings.UseTls = true;
+        settings.AllowInsecureTls = false;
+        
+        // For Railway/container environments: disable certificate revocation checking
+        // This is required because container environments often can't reach CRL servers
+        var sslSettings = new SslSettings 
+        { 
+            CheckCertificateRevocation = false
+        };
+        settings.SslSettings = sslSettings;
+    }
+    else
+    {
+        // Local/self-managed MongoDB: disable TLS (unless explicitly enabled in connection string)
+        if (!mongoConnectionString.Contains("tls=true", StringComparison.OrdinalIgnoreCase) &&
+            !mongoConnectionString.Contains("ssl=true", StringComparison.OrdinalIgnoreCase))
+        {
+            settings.UseTls = false;
+        }
+    }
+    
     return new MongoClient(settings);
 });
 

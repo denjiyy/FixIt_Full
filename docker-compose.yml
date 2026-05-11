@@ -3,8 +3,6 @@ services:
     image: mongo:7.0
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-change-me-local-db-password}
       MONGO_INITDB_DATABASE: ${MONGODB_DATABASE_NAME:-fixit}
     volumes:
       - mongodb_data:/data/db
@@ -27,7 +25,7 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
 
-      MONGODB_URI: ${MONGODB_URI:-mongodb://root:${MONGODB_ROOT_PASSWORD:-change-me-local-db-password}@mongodb:27017}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/?directConnection=true}
       MONGODB_DATABASE: ${MONGODB_DATABASE:-fixit}
 
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
