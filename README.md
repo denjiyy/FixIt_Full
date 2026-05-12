@@ -1,10 +1,14 @@
-# FixIt - Civic Engagement Platform
+# FixIt — Civic Engagement Platform
 
-A comprehensive civic engagement platform that enables citizens to report local infrastructure issues and safety hazards, while fostering community participation through gamification and AI-powered insights.
+FixIt is a full-stack civic engagement platform that lets citizens report local infrastructure issues and safety hazards, track resolution progress, and earn reputation through community participation. It ships as both a web application and a native mobile app for iOS and Android.
 
 ![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
-![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-black?logo=asp.net.core)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-black?logo=dotnet)
+![MAUI](https://img.shields.io/badge/.NET%20MAUI-iOS%20%7C%20Android-512BD4?logo=dotnet)
+![Railway](https://img.shields.io/badge/Deployed%20on-Railway-0B0D0E?logo=railway)
+
+---
 
 ## Table of Contents
 
@@ -12,7 +16,9 @@ A comprehensive civic engagement platform that enables citizens to report local 
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
+- [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
+- [Mobile App](#mobile-app)
 - [Configuration](#configuration)
 - [API Reference](#api-reference)
 - [Database Schema](#database-schema)
@@ -21,7 +27,6 @@ A comprehensive civic engagement platform that enables citizens to report local 
 - [Security](#security)
 - [Testing](#testing)
 - [Deployment](#deployment)
-- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -29,161 +34,181 @@ A comprehensive civic engagement platform that enables citizens to report local 
 
 ## Overview
 
-FixIt is a full-stack civic engagement platform built with ASP.NET Core 9.0 and MongoDB. It connects citizens with local government by providing a streamlined way to report infrastructure issues (potholes, broken streetlights, graffiti, etc.) and safety hazards (accidents, flooding, dangerous conditions).
+FixIt connects citizens with local government by giving them a straightforward way to report infrastructure problems — potholes, broken streetlights, graffiti, flooding — and track them through to resolution. The platform pairs traditional issue tracking with AI-powered analysis, a gamification layer that rewards civic participation, and real-time safety alerts for the community.
 
-The platform combines traditional issue tracking with modern features including:
-- **AI-powered analysis** for automatic categorization and prioritization
-- **Gamification** to encourage civic participation
-- **Real-time safety alerts** for community hazards
-- **Multi-language support** (English and Bulgarian)
-- **Anonymous reporting** options for privacy-conscious users
+The platform is live at **[fixit-production-202d.up.railway.app](https://fixit-production-202d.up.railway.app)**.
 
 ---
 
 ## Features
 
-### Core Functionality
+### Core
 
 | Feature | Description |
 |---------|-------------|
-| **Issue Reporting** | Report infrastructure problems with photos, location data, and detailed descriptions |
+| **Issue Reporting** | Report infrastructure problems with photos, location data, and descriptions |
 | **Safety Hazards** | Real-time hazard reporting with severity levels and community confirmation |
-| **Voting System** | Upvote/downvote issues to prioritize community concerns |
+| **Voting System** | Upvote/downvote issues to surface the most urgent community concerns |
 | **Comments & Discussion** | Threaded discussions on issues with media attachments |
-| **Official Responses** | Government entities can respond with status updates and resolution timelines |
+| **Official Responses** | Government entities can post status updates and resolution timelines |
 | **Anonymous Reporting** | User-controlled privacy setting for anonymous submissions |
 
-### Advanced Features
+### Advanced
 
 | Feature | Description |
 |---------|-------------|
-| **Gamification** | Reputation points, achievements/badges, trust levels, and leaderboards |
-| **AI Analysis** | OpenAI integration for automatic categorization, duplicate detection, and priority suggestions |
-| **Heatmaps** | Geospatial visualization of issue clusters and hotspots |
+| **Gamification** | Reputation points, achievements, trust levels, and leaderboards |
+| **AI Analysis** | Automatic categorisation, duplicate detection, and priority suggestions via OpenAI |
+| **Heatmaps** | Geospatial visualisation of issue clusters and hotspots |
 | **Health Reports** | City-level metrics including resolution rates and response times |
-| **Multi-language** | Localized UI in English (en-US) and Bulgarian (bg-BG) |
-| **OAuth Authentication** | Google, Microsoft, and Facebook login with JWT support for mobile clients |
+| **Multi-language** | Localised UI in English (en-US) and Bulgarian (bg-BG) |
+| **OAuth** | Google, Microsoft, and Facebook login; JWT support for mobile clients |
 | **Audit Logging** | Comprehensive security and compliance audit trail |
-| **Rate Limiting** | DDoS protection with configurable rate limits per endpoint |
+| **Rate Limiting** | DDoS protection with configurable limits per endpoint |
+
+### Mobile (FixIt.Mobile)
+
+| Feature | Description |
+|---------|-------------|
+| **Native iOS & Android** | Built with .NET MAUI, single codebase for both platforms |
+| **Camera Integration** | Tap the centre dock button to photograph an issue and go straight to the report form |
+| **Bottom Navigation** | Custom tab bar with elevated centre camera button; camera only shown when logged in |
+| **JWT Auth** | Email/password login with tokens stored in platform SecureStorage |
+| **Issue Feed** | Browse and filter community issues from the mobile app |
+| **Offline-friendly** | API calls fail gracefully with user-visible error states |
 
 ---
 
 ## Tech Stack
 
-### Backend
+### Web Backend
 
 | Component | Technology |
 |-----------|------------|
-| **Framework** | ASP.NET Core 9.0 |
-| **Language** | C# 13 |
-| **Database** | MongoDB (with GeoJSON support) |
-| **Identity** | ASP.NET Core Identity + MongoDB provider |
-| **Authentication** | Cookie-based + JWT Bearer tokens |
-| **OAuth** | Google, Microsoft, Facebook |
-| **AI** | OpenAI API (gpt-4o-mini) |
-| **Email** | SMTP (SendGrid, Gmail, etc.) |
+| Framework | ASP.NET Core 9.0 |
+| Language | C# 13 |
+| Database | MongoDB Atlas |
+| Identity | ASP.NET Core Identity + AspNetCore.Identity.Mongo 9.0.0 |
+| Authentication | Cookie-based + JWT Bearer |
+| OAuth | Google, Microsoft, Facebook |
+| AI | OpenAI API (gpt-4o-mini) |
+| Email | SMTP (SendGrid / Gmail) |
+| Driver | MongoDB.Driver 2.30.0 |
 
-### Frontend
-
-| Component | Technology |
-|-----------|------------|
-| **UI Framework** | Razor Pages + MVC |
-| **Maps** | Leaflet.js + OpenStreetMap |
-| **Styling** | Custom CSS with design tokens |
-| **JavaScript** | Vanilla ES6+ modules |
-| **Charts** | Custom SVG/CSS charts |
-
-### DevOps & Tooling
+### Web Frontend
 
 | Component | Technology |
 |-----------|------------|
-| **IDE** | Rider / VS Code |
-| **Version Control** | Git |
-| **API Docs** | Swagger/OpenAPI |
-| **Compression** | Brotli + Gzip |
-| **Caching** | MemoryCache + OutputCache |
+| UI | Razor Pages + MVC |
+| Maps | Leaflet.js + OpenStreetMap |
+| Styling | Custom CSS with design tokens + Bootstrap |
+| JavaScript | Vanilla ES6+ modules |
+| Charts | Custom SVG/CSS charts |
+
+### Mobile
+
+| Component | Technology |
+|-----------|------------|
+| Framework | .NET MAUI 9.0 |
+| Platforms | iOS 14+, Android 10+ |
+| Architecture | MVVM with CommunityToolkit.Mvvm |
+| UI Toolkit | CommunityToolkit.Maui |
+| HTTP | Microsoft.Extensions.Http |
+| Storage | SecureStorage (JWT tokens) |
+| Camera | MediaPicker.Default (built-in MAUI API) |
+
+### DevOps
+
+| Component | Technology |
+|-----------|------------|
+| Hosting | Railway |
+| Containerisation | Docker (multi-stage) |
+| Version Control | Git / GitHub |
+| API Docs | Swagger / OpenAPI |
+| Compression | Brotli + Gzip |
+| Caching | MemoryCache + OutputCache |
 
 ---
 
 ## Architecture
 
-FixIt follows a **layered architecture** with clear separation of concerns:
+FixIt follows a layered architecture with clear separation of concerns. The mobile app communicates with the same REST API used by the web frontend.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                        │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │ Razor Pages │  │ API Controllers │  │ Admin Area (UI) │   │
-│  └─────────────┘  └──────────────┘  └──────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    ViewModels Layer                          │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │ DTOs, API Responses, Request/Response Models          │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Services Layer                            │
-│  ┌─────────┐ ┌──────────┐ ┌────────┐ ┌──────────────────┐  │
-│  │ Issues  │ │ Media    │ │ AI     │ │ Gamification     │  │
-│  │ Safety  │ │ Auth     │ │ Email  │ │ Analytics        │  │
-│  └─────────┘ └──────────┘ └────────┘ └──────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Data Layer                                │
-│  ┌─────────────────┐  ┌──────────────────────────────────┐ │
-│  │ Repository<T>   │  │ MongoDB Context + Configuration  │ │
-│  └─────────────────┘  └──────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Domain Models                             │
-│  Issue, User, Hazard, Comment, Vote, Media, Tag, etc.       │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                      Clients                                  │
+│   ┌─────────────────────┐     ┌─────────────────────────┐   │
+│   │   Web Browser        │     │   FixIt.Mobile (MAUI)   │   │
+│   │ (Razor Pages / MVC)  │     │   iOS  |  Android        │   │
+│   └──────────┬──────────┘     └────────────┬────────────┘   │
+└──────────────┼──────────────────────────────┼────────────────┘
+               │  HTTP/Cookie                  │  HTTP/JWT
+┌──────────────▼──────────────────────────────▼────────────────┐
+│                  Presentation Layer                            │
+│   Razor Pages  |  API Controllers  |  Admin Area              │
+└─────────────────────────────┬────────────────────────────────┘
+                               │
+┌─────────────────────────────▼────────────────────────────────┐
+│                  Services Layer                                │
+│   Issues | Safety | AI | Gamification | Auth | Analytics      │
+└─────────────────────────────┬────────────────────────────────┘
+                               │
+┌─────────────────────────────▼────────────────────────────────┐
+│                  Data Layer                                    │
+│   Repository<T>  |  MongoDbContext  |  MigrationRunner        │
+└─────────────────────────────┬────────────────────────────────┘
+                               │
+┌─────────────────────────────▼────────────────────────────────┐
+│                  MongoDB Atlas                                  │
+│   Issues | Users | Hazards | Comments | Votes | Media | ...   │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-### Project Structure
+---
+
+## Project Structure
 
 ```
 FixIt/
-├── FixIt/                          # Main web application
-│   ├── Areas/                      # Admin & Identity areas
-│   ├── Controllers/                # API controllers
-│   ├── Pages/                      # Razor pages
-│   ├── Middleware/                 # Custom middleware
-│   ├── Resources/                  # Localization files
-│   ├── wwwroot/                    # Static assets
-│   ├── Program.cs                  # Application entry point
-│   └── appsettings.json            # Configuration
-├── FixIt.Models/                   # Domain models & enums
-│   ├── Issues/                     # Issue-related models
-│   ├── Users/                      # User & identity models
-│   ├── Engagement/                 # Comments, votes
-│   ├── Safety/                     # Hazard models
-│   ├── Media/                      # Media & uploads
-│   ├── Gamification/               # Reputation, achievements
-│   ├── AI/                         # AI analysis models
-│   ├── Moderation/                 # Content moderation
-│   ├── Locations/                  # Cities, neighborhoods
-│   └── Enums/                      # Enum definitions
-├── FixIt.Services/                 # Business logic layer
-│   ├── Contracts/                  # Service interfaces
-│   ├── AI/                         # AI services
-│   ├── Analytics/                  # Health reports, heatmaps
-│   ├── Authentication/             # Auth & JWT services
-│   ├── Background/                 # Hosted services
-│   ├── Gamification/               # Reputation system
-│   ├── Safety/                     # Hazard service
-│   └── Audit/                      # Audit logging
-├── FixIt.Data/                     # Data access layer
-│   ├── Configuration/              # MongoDB index config
-│   ├── Infrastructure/             # DbContext, settings
-│   └── Repository/                 # Generic repository
-├── FixIt.ViewModels/               # View models & mappers
-└── FixIt.Tests/                    # Unit & integration tests
+├── FixIt/                        # Web application
+│   ├── Areas/                    # Admin & Identity areas
+│   ├── Controllers/              # REST API controllers
+│   ├── Pages/                    # Razor pages
+│   ├── Middleware/               # Custom middleware
+│   ├── Resources/                # Localisation files (en-US, bg-BG)
+│   ├── wwwroot/                  # Static assets (CSS, JS, lib, uploads)
+│   ├── Program.cs                # Application entry point & DI setup
+│   └── appsettings.json
+│
+├── FixIt.Mobile/                 # .NET MAUI mobile app (iOS & Android)
+│   ├── Views/                    # XAML pages
+│   │   ├── HomePage.xaml
+│   │   ├── IssuesPage.xaml
+│   │   ├── ReportIssuePage.xaml  # Camera → report flow
+│   │   └── LoginPage.xaml
+│   ├── ViewModels/               # MVVM view models
+│   │   ├── HomeViewModel.cs
+│   │   ├── IssuesViewModel.cs
+│   │   ├── ReportIssueViewModel.cs
+│   │   └── LoginViewModel.cs
+│   ├── Services/
+│   │   ├── ApiService.cs         # HTTP client wrapper for Railway API
+│   │   └── AuthService.cs        # JWT login, SecureStorage
+│   ├── Models/
+│   │   └── Issue.cs              # Mobile DTO
+│   ├── Platforms/
+│   │   └── iOS/
+│   │       └── Info.plist        # Camera & photo permissions
+│   ├── AppShell.xaml             # Shell with custom bottom tab bar
+│   └── MauiProgram.cs            # DI, HttpClient, toolkit setup
+│
+├── FixIt.Models/                 # Domain models & enums (shared)
+├── FixIt.Services/               # Business logic (shared)
+├── FixIt.Data/                   # Data access — repositories, migrations
+├── FixIt.ViewModels/             # DTOs and view models (web)
+├── FixIt.Tests/                  # Unit & integration tests
+├── Dockerfile                    # Multi-stage Docker build
+└── FixIt.sln
 ```
 
 ---
@@ -193,61 +218,39 @@ FixIt/
 ### Prerequisites
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [MongoDB](https://www.mongodb.com/try/download/community) (v6.0+)
+- [MongoDB](https://www.mongodb.com/try/download/community) (v6.0+) or a MongoDB Atlas account
 - [Git](https://git-scm.com/)
+- macOS + Xcode (for iOS mobile development)
 
-### Installation
+### Web App
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/denjiyy/FixIt.git
-   cd FixIt
-   ```
+```bash
+# 1. Clone
+git clone https://github.com/denjiyy/FixIt.git
+cd FixIt
 
-2. **Start MongoDB**
-   ```bash
-   # macOS (Homebrew)
-   brew services start mongodb-community
-   
-   # Windows (if installed as service)
-   net start MongoDB
-   
-   # Or run manually
-   mongod --dbpath /data/db
-   ```
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your credentials (see Configuration section)
 
-3. **Configure environment variables**
-   ```bash
-   # Copy the example environment file
-   cp .env.example .env
-   
-   # Edit .env with your credentials
-   ```
+# 3. Restore & run
+dotnet restore
+cd FixIt
+dotnet run
 
-4. **Restore dependencies**
-   ```bash
-   dotnet restore
-   ```
+# 4. Open
+# Web:     http://localhost:5092
+# API:     http://localhost:5092/api
+# Swagger: http://localhost:5092/swagger
+```
 
-5. **Run the application**
-   ```bash
-   cd FixIt
-   dotnet run
-   ```
+### Development Admin Account
 
-6. **Access the application**
-   - Web UI: http://localhost:5092
-   - API: http://localhost:5092/api
-   - Swagger: http://localhost:5092/swagger
-
-### Development Admin User
-
-To create a development admin user, add to `appsettings.Development.json`:
+Add to `appsettings.Development.json`:
 
 ```json
 {
   "Database": {
-    "ResetOnStartup": false,
     "EnableDevelopmentAdminSeed": true,
     "DevelopmentAdmin": {
       "Email": "admin@fixit.local",
@@ -261,33 +264,66 @@ To create a development admin user, add to `appsettings.Development.json`:
 
 ---
 
+## Mobile App
+
+### Overview
+
+`FixIt.Mobile` is a .NET MAUI app targeting iOS and Android. It talks to the same Railway-hosted REST API as the web app using JWT Bearer tokens.
+
+### Key UX: Camera → Report Flow
+
+1. User opens the app and logs in.
+2. A prominent circular camera button appears in the centre of the bottom navigation dock.
+3. Tapping it immediately opens the device camera.
+4. After a photo is captured it is passed directly to the Report Issue page — the user never has to re-select it.
+5. The user fills in title, description, category, and location, then submits.
+
+If the user is not logged in, the centre button shows a lock icon and tapping it navigates to the login screen instead.
+
+### Running on iOS Simulator
+
+```bash
+# Build for iOS
+dotnet build FixIt.Mobile/FixIt.Mobile.csproj -f net9.0-ios -c Debug
+
+# Run on simulator (from Visual Studio for Mac or Rider)
+# Select an iOS simulator target and press Run
+```
+
+Xcode must be installed. A free Apple ID is sufficient for simulator builds — a paid Developer account is only required for device deployment.
+
+### Running on Android
+
+```bash
+dotnet build FixIt.Mobile/FixIt.Mobile.csproj -f net9.0-android -c Debug
+```
+
+### Authentication
+
+The mobile app authenticates against `/api/auth/login` and stores the returned JWT in `SecureStorage`. All subsequent API calls include the token as a Bearer header. Tokens expire after 30 minutes; a refresh endpoint is available at `/api/auth/refresh`.
+
+---
+
 ## Configuration
 
 ### Environment Variables
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `MONGODB_CONNECTION_STRING` | MongoDB connection string | `mongodb://root:<password>@mongodb:27017` |
-| `MONGODB_DATABASE_NAME` | Database name | `fixit` |
-| `MONGODB_ROOT_PASSWORD` | MongoDB root password used by compose Mongo service | `strong-db-password` |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456...apps.googleusercontent.com` |
+| `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
+| `MONGODB_DATABASE` | Database name | `fixit` |
+| `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-64-char-random-secret` |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth secret | `GOCSPX-...` |
 | `OPENAI_API_KEY` | OpenAI API key | `<openai-api-key>` |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins | `https://fixit.app,https://admin.fixit.app` |
-| `ALLOWED_HOSTS` | Allowed hostnames | `fixit.app;api.fixit.app` |
-| `SECURITY_TRUSTED_PROXY_IPS` | Reverse proxy IP allowlist | `10.0.0.10,10.0.0.11` |
-| `SECURITY_HTTPS_PORT` | HTTPS redirect destination port | `443` |
-| `SMTP_HOST` | SMTP server host | `smtp.gmail.com` |
-| `SMTP_PORT` | SMTP server port | `587` |
-| `SMTP_USERNAME` | SMTP username | `noreply@fixit.local` |
-| `SMTP_PASSWORD` | SMTP password (app password) | `...` |
-| `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-super-secret-key-here` |
-| `DATA_PROTECTION_KEY_RING_PATH` | Shared key storage path for cookie encryption keys | `/app/data-protection-keys` |
-| `DATA_PROTECTION_CERTIFICATE_PATH` | Optional PFX path for data-protection key encryption at rest | `/run/secrets/fixit-dp.pfx` |
-| `DATA_PROTECTION_CERTIFICATE_PASSWORD` | Optional PFX password | `...` |
-| `APP_HOST_PORT` | Host port mapped to container port 8080 in production compose | `8080` |
+| `AllowedHosts` | Accepted hostnames | `*` |
+| `SMTP_HOST` | SMTP server | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP port | `587` |
+| `SMTP_USERNAME` | SMTP username | `noreply@fixit.app` |
+| `SMTP_PASSWORD` | SMTP password | `...` |
+| `DATA_PROTECTION_KEY_RING_PATH` | Key storage path | `/app/data-protection-keys` |
 
-### appsettings.json Configuration
+### appsettings.json
 
 ```json
 {
@@ -295,35 +331,27 @@ To create a development admin user, add to `appsettings.Development.json`:
     "ConnectionString": "mongodb://localhost:27017",
     "DatabaseName": "fixit"
   },
-  "Media": {
-    "StoragePath": "wwwroot/uploads",
-    "MaxFileSizeBytes": 5242880,
-    "MaxVideoFileSizeBytes": 104857600,
-    "MaxFilesPerUpload": 10,
-    "AllowedExtensions": [".jpg", ".jpeg", ".png", ".mp4", ".webm"]
-  },
-  "Security": {
-    "RequireHttps": false,
-    "HttpsPort": 443,
-    "TrustedProxyIps": "",
-    "RateLimiting": {
-      "Enabled": true,
-      "RequestsPerMinute": 60,
-      "RequestsPerHour": 1000
-    },
-    "CorsAllowedOrigins": ["http://localhost:3000", "http://localhost:5092"]
-  },
   "Jwt": {
     "Issuer": "FixIt",
     "Audience": "FixItClients",
     "AccessTokenExpirationMinutes": 30,
     "RefreshTokenExpirationDays": 7
   },
+  "Media": {
+    "StoragePath": "wwwroot/uploads",
+    "MaxFileSizeBytes": 5242880,
+    "AllowedExtensions": [".jpg", ".jpeg", ".png", ".mp4", ".webm"]
+  },
   "OpenAI": {
-    "ApiKey": "",
     "Model": "gpt-4o-mini",
     "Enabled": true,
     "TimeoutSeconds": 30
+  },
+  "Security": {
+    "RateLimiting": {
+      "Enabled": true,
+      "RequestsPerMinute": 60
+    }
   }
 }
 ```
@@ -332,62 +360,51 @@ To create a development admin user, add to `appsettings.Development.json`:
 
 ## API Reference
 
-### Authentication Endpoints
+### Authentication
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `POST` | `/api/auth/login/{provider}` | Initiate OAuth login | No |
 | `GET` | `/api/auth/signin-callback` | OAuth callback | No |
 | `POST` | `/api/auth/logout` | Sign out | Yes |
-| `POST` | `/api/auth/refresh` | Refresh access token | No |
-| `GET` | `/api/auth/user` | Get current user | Yes |
+| `POST` | `/api/auth/refresh` | Refresh JWT | No |
+| `GET` | `/api/auth/user` | Current user info | Yes |
 
-### Issues Endpoints
+### Issues
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `POST` | `/api/issues` | Create issue | Yes |
-| `GET` | `/api/issues/{id}` | Get issue by ID | No |
-| `GET` | `/api/issues/city/{cityId}` | Get issues by city | No |
+| `GET` | `/api/issues/{id}` | Get issue | No |
+| `GET` | `/api/issues/city/{cityId}` | Issues by city | No |
 | `POST` | `/api/issues/city/{cityId}/search` | Search issues | No |
-| `GET` | `/api/issues/my-issues` | Get user's issues | Yes |
+| `GET` | `/api/issues/my-issues` | My issues | Yes |
 | `PUT` | `/api/issues/{id}/status` | Update status | Mod+ |
-| `PUT` | `/api/issues/{id}/priority` | Update priority | Mod+ |
-| `POST` | `/api/issues/{id}/vote` | Vote on issue | Yes |
+| `POST` | `/api/issues/{id}/vote` | Vote | Yes |
 | `DELETE` | `/api/issues/{id}/vote` | Remove vote | Yes |
-| `DELETE` | `/api/issues/{id}` | Delete issue | Owner/Admin |
+| `DELETE` | `/api/issues/{id}` | Delete | Owner/Admin |
 | `POST` | `/api/issues/{id}/comments` | Add comment | Yes |
 | `GET` | `/api/issues/{id}/comments` | Get comments | No |
 
-### Safety Endpoints
+### Safety
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/safety/nearby-hazards` | Get nearby hazards | No |
-| `GET` | `/api/safety/critical-hazards` | Get critical hazards | No |
+| `GET` | `/api/safety/nearby-hazards` | Nearby hazards | No |
+| `GET` | `/api/safety/critical-hazards` | Critical hazards | No |
 | `POST` | `/api/safety/report` | Report hazard | Yes |
 | `POST` | `/api/safety/{id}/confirm` | Confirm hazard | Yes |
 | `POST` | `/api/safety/{id}/resolve` | Resolve hazard | Admin |
-| `DELETE` | `/api/safety/{id}` | Delete hazard | Owner/Admin |
 
-### AI & Suggestions Endpoints
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/analysis/analyze/{issueId}` | Analyze issue | No |
-| `GET` | `/api/analysis/analyze/{issueId}` | Get analysis | No |
-| `POST` | `/api/analysis/issue-draft-suggestions` | Get draft suggestions | Yes |
-| `POST` | `/api/suggestions/pending` | Get pending suggestions | Admin+ |
-| `POST` | `/api/suggestions/{id}/act` | Mark as acted | Admin+ |
-
-### Admin Endpoints
+### AI
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/api/admin/audit-logs` | Get audit logs | Admin |
-| `GET` | `/api/admin/audit-logs/export/csv` | Export audit logs | Admin |
+| `POST` | `/api/analysis/analyze/{issueId}` | Analyse issue | No |
+| `POST` | `/api/analysis/issue-draft-suggestions` | Draft suggestions | Yes |
+| `POST` | `/api/suggestions/pending` | Pending suggestions | Admin |
 
-For complete API documentation, run the application and visit `/swagger`.
+Full interactive docs available at `/swagger` on any running instance.
 
 ---
 
@@ -395,44 +412,32 @@ For complete API documentation, run the application and visit `/swagger`.
 
 ### Collections
 
-| Collection | Description | Key Indexes |
-|------------|-------------|-------------|
-| `users` | ApplicationUser documents | Email (unique), UserName (unique) |
-| `issues` | Issue reports | Location (2dsphere), CityId+Status+CreatedAt |
-| `hazards` | Safety hazards | Location (2dsphere), CityId+Severity |
-| `comments` | User comments | IssueId+CreatedAt |
-| `votes` | Issue votes | IssueId+UserId (unique compound) |
-| `media` | Media file metadata | OwnerId+CreatedAt |
-| `media_references` | Media usage tracking | MediaId, ReferenceId |
-| `tags` | Issue tags | Name (unique), UsageCount |
-| `cities` | City configurations | Name |
-| `neighborhoods` | Neighborhood boundaries | CityId |
-| `user_reputations` | Reputation profiles | UserId (unique) |
-| `reputation_transactions` | Points history | UserId+CreatedAt |
-| `leaderboards` | Leaderboard entries | Period+Rank |
-| `issue_analyses` | AI analysis results | IssueId |
-| `admin_suggestions` | AI suggestions | TargetEntityId+GeneratedAt |
-| `content_reports` | User reports | TargetId+Status |
-| `audit_logs` | Admin action logs | Timestamp, ActorId, ResourceType |
-| `translations` | Translation history | ContentId+TargetLanguage |
+| Collection | Description |
+|------------|-------------|
+| `users` | ApplicationUser — email, roles, reputation |
+| `issues` | Issue reports with GeoJSON location |
+| `hazards` | Safety hazards with severity and confirmation count |
+| `comments` | Threaded comments on issues |
+| `votes` | Issue votes (unique compound index on IssueId + UserId) |
+| `media` | Uploaded file metadata |
+| `tags` | Issue tags with usage counts |
+| `cities` | City configurations with coordinates |
+| `user_reputations` | Reputation profiles |
+| `reputation_transactions` | Full points history |
+| `leaderboards` | Weekly/monthly leaderboard snapshots |
+| `issue_analyses` | AI analysis results |
+| `audit_logs` | Admin action audit trail |
 
-### Key Model Relationships
+### Key Relationships
 
 ```
-ApplicationUser (1) ──→ (M) Issue (reports)
-ApplicationUser (1) ──→ (M) Comment
-ApplicationUser (1) ──→ (M) Vote
-ApplicationUser (1) ──→ (M) Hazard (reports)
-ApplicationUser (1) ──→ (1) UserReputation
-
-Issue (1) ──→ (M) Comment
-Issue (1) ──→ (M) Vote
-Issue (1) ──→ (1) IssueAnalysis
-Issue (1) ──→ (M) Media (via MediaReference)
-
-City (1) ──→ (M) Issue
-City (1) ──→ (M) Neighborhood
-City (1) ──→ (M) Hazard
+ApplicationUser (1) → (M) Issue
+ApplicationUser (1) → (1) UserReputation
+Issue           (1) → (M) Comment
+Issue           (1) → (M) Vote
+Issue           (1) → (1) IssueAnalysis
+City            (1) → (M) Issue
+City            (1) → (M) Hazard
 ```
 
 ---
@@ -441,159 +446,118 @@ City (1) ──→ (M) Hazard
 
 ### Trust Levels
 
-| Level | Name | Points Required | Permissions |
-|-------|------|-----------------|-------------|
-| 0 | New | 0-10 | Basic reporting |
-| 1 | Active | 11-50 | Increased vote weight |
-| 2 | Trusted | 51-150 | Priority vote weight, badge on profile |
+| Level | Name | Points | Permissions |
+|-------|------|--------|-------------|
+| 0 | New | 0–10 | Basic reporting |
+| 1 | Active | 11–50 | Increased vote weight |
+| 2 | Trusted | 51–150 | Priority vote weight, profile badge |
 | 3 | Leader | 150+ | Maximum vote weight, leaderboard featured |
 
 ### Reputation Points
 
-| Action | Points | Description |
-|--------|--------|-------------|
-| `issue_reported` | +5 | Report a new issue |
-| `issue_confirmed` | +3 | Another user confirms your issue |
-| `comment_posted` | +2 | Post a helpful comment |
-| `received_upvote` | +1 | Receive an upvote (issue or comment) |
-| `issue_resolved` | +15 | Issue marked as fixed |
-| `hazard_confirmed` | +5 | Confirm a safety hazard |
+| Action | Points |
+|--------|--------|
+| Report a new issue | +5 |
+| Issue confirmed by community | +3 |
+| Post a comment | +2 |
+| Receive an upvote | +1 |
+| Issue marked resolved | +15 |
+| Confirm a safety hazard | +5 |
 
 ### Achievements
 
 | Achievement | Requirement | Points |
 |-------------|-------------|--------|
-| `FirstReporter` | Report first issue | 10 |
-| `HelpfulCommenter` | Post 10 comments | 15 |
-| `CommunityHelper` | Receive 50 upvotes | 25 |
-| `IssueSolver` | Have 5 issues resolved | 30 |
-| `CivicContributor` | Reach Trust Level 2 | 20 |
-| `CommunityChampion` | Reach Trust Level 3 | 50 |
-| `CivicLeader` | Top of weekly leaderboard | 40 |
-| `AccurateReporter` | 90%+ issues confirmed | 35 |
-| `VerifiedCitizen` | Verify email + phone | 15 |
+| FirstReporter | Report first issue | 10 |
+| HelpfulCommenter | Post 10 comments | 15 |
+| CommunityHelper | Receive 50 upvotes | 25 |
+| IssueSolver | 5 issues resolved | 30 |
+| CivicContributor | Reach Trust Level 2 | 20 |
+| CommunityChampion | Reach Trust Level 3 | 50 |
+| CivicLeader | Top of weekly leaderboard | 40 |
+| AccurateReporter | 90%+ issues confirmed | 35 |
+| VerifiedCitizen | Verify email + phone | 15 |
 
 ---
 
 ## AI Features
 
-### Issue Analysis
+The AI system runs automatically on new issue reports:
 
-The AI system automatically analyzes new issue reports to:
-- **Categorize** the issue (Infrastructure, Public Safety, Environmental, etc.)
-- **Suggest priority** (Low, Medium, High, Critical)
-- **Detect duplicates** by comparing with existing issues
-- **Extract keywords** for better searchability
-- **Suggest tags** from the tag database
+- **Categorisation** — Infrastructure, Public Safety, Environmental, etc.
+- **Priority suggestion** — Low / Medium / High / Critical
+- **Duplicate detection** — compares against existing open issues
+- **Keyword extraction** — improves searchability
+- **Tag suggestions** — drawn from the live tag database
 
-### Civic AI Service
+Additional AI capabilities:
 
 | Feature | Description |
 |---------|-------------|
-| `SuggestIssueDraft` | Get category/priority/department suggestions from title + description |
-| `SummarizeIssueThread` | Generate summary of issue + comments (with streaming support) |
-| `SummarizeReport` | Summarize content moderation reports |
-| `GenerateHazardInsight` | Analyze hazard clusters for patterns |
-| `TranslateIssueFilter` | Convert natural language queries to structured filters |
+| `SuggestIssueDraft` | Category, priority, and department from title + description |
+| `SummarizeIssueThread` | Summary of issue and all comments (streaming) |
+| `GenerateHazardInsight` | Pattern analysis across hazard clusters |
+| `TranslateIssueFilter` | Natural language → structured filter conversion |
 
-### Configuration
-
-```json
-{
-  "OpenAI": {
-    "ApiKey": "<openai-api-key>",
-    "Model": "gpt-4o-mini",
-    "Enabled": true,
-    "TimeoutSeconds": 30
-  }
-}
-```
-
-The system includes deterministic fallbacks when the API is unavailable.
+Deterministic fallbacks are used when the OpenAI API is unavailable.
 
 ---
 
 ## Security
 
-### Authentication
+### Authentication Flows
 
-- **Cookie-based** authentication for web clients
-- **JWT Bearer** tokens for mobile/API clients
-- **OAuth 2.0** integration (Google, Microsoft, Facebook)
-- **Refresh tokens** with configurable expiration (7 days default)
-
-### Authorization
-
-| Policy | Requirement |
-|--------|-------------|
-| `AdminOnly` | Admin role |
-| `ModeratorOrAdmin` | Moderator or Admin role |
-| `Authorize` | Any authenticated user |
+- **Web:** Cookie-based session with CSRF protection
+- **Mobile/API:** JWT Bearer with 30-minute expiry and 7-day refresh tokens
+- **OAuth:** Google, Microsoft, Facebook via standard OAuth 2.0 callbacks
 
 ### Rate Limiting
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| Auth endpoints | 5 requests | 15 minutes |
-| API endpoints | 60 requests | 1 minute |
-| Reporting/Analytics | 30 requests | 1 minute |
-| File uploads | 10 requests | 1 minute |
+| Endpoint group | Limit |
+|----------------|-------|
+| Auth endpoints | 5 req / 15 min |
+| General API | 60 req / min |
+| Reporting & analytics | 30 req / min |
+| File uploads | 10 req / min |
 
 ### Security Headers
 
-- `X-Frame-Options: SAMEORIGIN` (clickjacking protection)
-- `X-Content-Type-Options: nosniff` (MIME sniffing protection)
-- `X-XSS-Protection: 1; mode=block` (XSS filter)
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Content-Security-Policy` (configurable)
+All responses include `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, and a configurable `Content-Security-Policy`.
 
 ### Audit Logging
 
-All admin actions are logged with:
-- Event type and action
-- Resource and resource ID
-- Actor (user) information
-- IP address and user agent
-- Changes made (before/after)
-- Reason for action
+Every admin action is logged with event type, resource, actor, IP address, user agent, and before/after values.
 
 ---
 
 ## Testing
 
-### Run Tests
-
 ```bash
+# Run all tests
 dotnet test
+
+# Run a specific project
+dotnet test FixIt.Tests/FixIt.Tests.csproj
 ```
 
 ### Test Structure
 
 ```
 FixIt.Tests/
-├── Services/           # Unit tests for services
-│   ├── IssueServiceTests.cs
-│   ├── CivicAiServiceTests.cs
-│   ├── JwtTokenServiceTests.cs
-│   └── ...
-├── Controllers/        # Controller tests
-├── Data/              # Repository tests
-├── Middleware/        # Middleware tests
-└── Security/          # Security tests
+├── Services/       # Unit tests — IssueService, CivicAiService, JwtTokenService, ...
+├── Controllers/    # Controller tests
+├── Data/           # Repository tests
+├── Middleware/     # Middleware tests
+└── Security/       # Security tests
 ```
 
-### Test Requirements
-
-- MongoDB instance must be running
-- Test database is isolated from development data
+A running MongoDB instance is required. The test database is isolated from development data.
 
 ---
 
 ## Deployment
 
-### Quick Start
-
-**Using Docker (Recommended):**
+### Docker (Recommended)
 
 ```bash
 # Development
@@ -601,140 +565,75 @@ docker compose up -d
 
 # Production
 cp .env.production.example .env.production
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.production up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+  --env-file .env.production up -d
 ```
 
-### Production Deployment
+### Railway
 
-Complete production deployment documentation is available in:
-- **[DOCKER.md](./DOCKER.md)** - Container setup, deployment, and troubleshooting
-- **[PRODUCTION_READINESS.md](./PRODUCTION_READINESS.md)** - Implementation status and next steps
-- **[BETA_RELEASE_CHECKLIST.md](./BETA_RELEASE_CHECKLIST.md)** - Final go/no-go checklist for beta launch
+The production deployment runs on Railway with MongoDB Atlas.
 
-For secrets management:
-- **[SECRETS.md](./SECRETS.md)** - Comprehensive secrets management guide for all environments
+Key Railway environment variables to set:
 
-For CI/CD automation:
-- **[.github/CI-CD.md](./.github/CI-CD.md)** - GitHub Actions workflows and automation
+```
+MONGODB_URI          = mongodb+srv://...
+MONGODB_DATABASE     = fixit
+JWT_SECRET_KEY       = <64-char random secret>
+GOOGLE_CLIENT_ID     = ...
+GOOGLE_CLIENT_SECRET = ...
+AllowedHosts         = *
+ASPNETCORE_ENVIRONMENT = Production
+```
 
 ### Production Checklist
 
-- [ ] Set `ASPNETCORE_ENVIRONMENT=Production`
-- [ ] Configure HTTPS (`RequireHttps: true`)
-- [ ] Set secure JWT_SECRET_KEY (min 32 characters) via secrets manager
-- [ ] Configure production MongoDB connection (MongoDB Atlas recommended)
-- [ ] Set up OAuth credentials for production
-- [ ] Configure SMTP for production email
-- [ ] Set `CORS_ALLOWED_ORIGINS` to production domain
-- [ ] Enable rate limiting
-- [ ] Configure logging provider (Application Insights, Serilog, etc.)
-- [ ] Set up automated backups
-- [ ] Configure monitoring and alerts
+- [ ] `ASPNETCORE_ENVIRONMENT=Production`
+- [ ] JWT_SECRET_KEY is at least 64 random characters
+- [ ] MongoDB Atlas IP Access List includes `0.0.0.0/0` or Railway egress IPs
+- [ ] Google OAuth credentials set
+- [ ] `AllowedHosts=*` (or your specific domain)
+- [ ] SMTP configured for transactional email
+- [ ] Rate limiting enabled
+- [ ] Audit logging active
 
 ### Operational Scripts
 
 ```bash
-# Validate production env quality
+# Preflight validation
 scripts/ops/preflight.sh .env.production
 
-# Run all gates end-to-end (build, test, vulnerabilities, compose, smoke, load, backup)
+# Full release gate (build, test, smoke, load, backup)
 scripts/ops/release-gate.sh .env.production
 
-# If ALLOWED_HOSTS excludes localhost, set production host header for local gate execution
-FIXIT_RELEASE_REQUEST_HOST_HEADER=your-production-domain.com scripts/ops/release-gate.sh .env.production
-
 # Smoke test a running instance
-scripts/ops/smoke.sh http://localhost:8080
+scripts/ops/smoke.sh https://fixit-production-202d.up.railway.app
 
-# Light-load gate (10-20 users)
-CONCURRENCY=20 DURATION_SECONDS=90 scripts/ops/load-lite.sh http://localhost:8080
-
-# Backup/restore
+# Database backup
 FIXIT_ENV_FILE=.env.production scripts/ops/mongo-backup.sh ./backups
-FIXIT_ENV_FILE=.env.production scripts/ops/mongo-restore.sh ./backups/<file>.archive.gz --drop
 ```
 
----
+For full documentation see:
 
-## Documentation
-
-### Setup & Deployment
-- **[DOCKER.md](./DOCKER.md)** - Complete Docker and containerization guide
-  - Local development with docker-compose
-  - Production deployment strategies
-  - Health checks and monitoring
-  - Troubleshooting common issues
-
-### Production Readiness
-- **[PRODUCTION_READINESS.md](./PRODUCTION_READINESS.md)** - Implementation summary
-  - Critical items completed
-  - Next steps and recommendations
-  - Verification checklist
-
-### Database Management
-- **[FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md)** - Database migrations guide
-  - Creating new migrations
-  - Migration examples
-  - Rollback procedures
-  - Best practices
-
-### Security & Secrets
-- **[SECRETS.md](./SECRETS.md)** - Secrets management guide
-  - Development setup
-  - Staging environment configuration
-  - Production best practices
-  - Rotation and emergency procedures
-  - Security checklist
-
-### CI/CD Pipeline
-- **[.github/CI-CD.md](./.github/CI-CD.md)** - GitHub Actions documentation
-  - Build and test automation
-  - Security scanning
-  - Docker image publishing
-  - Release workflow
-
-### Code Contribution
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Contribution guidelines
-  - Development workflow
-  - Coding standards
-  - Testing requirements
-  - Pull request process
+- [`DOCKER.md`](./DOCKER.md) — container setup and troubleshooting
+- [`SECRETS.md`](./SECRETS.md) — secrets management for all environments
+- [`PRODUCTION_READINESS.md`](./PRODUCTION_READINESS.md) — implementation status
+- [`BETA_RELEASE_CHECKLIST.md`](./BETA_RELEASE_CHECKLIST.md) — go/no-go checklist
+- [`.github/CI-CD.md`](./.github/CI-CD.md) — GitHub Actions workflows
 
 ---
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -m 'Add my feature'`
+4. Push: `git push origin feature/my-feature`
 5. Open a Pull Request
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
-
-### Code Style
-
-- Follow C# naming conventions (PascalCase for public members, camelCase for private)
-- Use nullable reference types (`<Nullable>enable</Nullable>`)
-- Add XML documentation for public APIs
-- Keep methods small and focused
-- Write unit tests for new features
-- Database schema changes require migrations (see [MIGRATIONS.md](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md))
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for coding standards, testing requirements, and the PR process. Database schema changes require a migration — see [`MIGRATIONS.md`](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md).
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Support
-
-For issues, questions, or contributions, please:
-- Open an issue on [GitHub](https://github.com/denjiyy/FixIt/issues)
-- Contact the maintainers
-
----
-
-*Built with ❤️ for civic engagement and community improvement*
+MIT — see [`LICENSE`](./LICENSE) for details.
