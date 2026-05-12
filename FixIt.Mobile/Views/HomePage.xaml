@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="FixIt.Mobile.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+    x:DataType="viewModels:HomeViewModel"
+    Title="Home">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="24"
+            Spacing="12">
+            <Label
+                FontAttributes="Bold"
+                FontSize="28"
+                Text="{Binding Title}" />
+            <Label
+                FontSize="16"
+                Text="{Binding WelcomeMessage}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

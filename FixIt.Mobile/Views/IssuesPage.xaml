@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="FixIt.Mobile.Views.IssuesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:FixIt.Mobile.Models"
+    xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+    x:DataType="viewModels:IssuesViewModel"
+    Title="Issues">
+
+    <VerticalStackLayout
+        Padding="24"
+        Spacing="12">
+        <Button
+            Command="{Binding LoadIssuesCommand}"
+            Text="Load Issues" />
+        <CollectionView ItemsSource="{Binding Issues}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Issue">
+                    <VerticalStackLayout Padding="0,8">
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="16"
+                            Text="{Binding Title}" />
+                        <Label
+                            FontSize="13"
+                            Text="{Binding Description}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+
+</ContentPage>

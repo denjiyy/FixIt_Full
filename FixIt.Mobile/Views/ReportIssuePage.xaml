@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="FixIt.Mobile.Views.ReportIssuePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+    x:DataType="viewModels:ReportIssueViewModel"
+    Title="Report Issue">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="24"
+            Spacing="12">
+            <Entry
+                Placeholder="Issue title"
+                Text="{Binding Title}" />
+            <Editor
+                AutoSize="TextChanges"
+                HeightRequest="140"
+                Placeholder="Describe the issue"
+                Text="{Binding Description}" />
+            <Button
+                Command="{Binding TakePhotoCommand}"
+                Text="Take Photo" />
+            <Label
+                FontSize="13"
+                Text="{Binding PhotoFileName}" />
+            <Button
+                Command="{Binding SubmitCommand}"
+                Text="Submit Report" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

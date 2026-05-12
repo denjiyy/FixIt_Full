@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="FixIt.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="FixIt">
+
+    <TabBar>
+        <Tab Title="Home" Route="home-tab">
+            <ShellContent
+                x:Name="HomeContent"
+                Route="home" />
+        </Tab>
+
+        <Tab Title="Issues" Route="issues-tab">
+            <ShellContent
+                x:Name="IssuesContent"
+                Route="issues" />
+        </Tab>
+
+        <Tab
+            Title="Report Issue"
+            Icon="camera.svg"
+            Route="report-issue-tab">
+            <ShellContent
+                x:Name="ReportIssueContent"
+                Route="report-issue" />
+        </Tab>
+
+        <Tab Title="Sign In" Route="sign-in-tab">
+            <ShellContent
+                x:Name="LoginContent"
+                Route="sign-in" />
+        </Tab>
+    </TabBar>
+
+</Shell>
