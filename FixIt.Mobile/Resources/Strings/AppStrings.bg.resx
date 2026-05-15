@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Home_Title" xml:space="preserve"><value>FixIt</value></data>
+  <data name="Home_Subtitle" xml:space="preserve"><value>Съобщавайте и следете проблеми с градската среда заедно с общността си в реално време.</value></data>
+  <data name="Home_ReportCTA" xml:space="preserve"><value>Подай сигнал</value></data>
+  <data name="Home_LivePulse" xml:space="preserve"><value>Пулс на платформата</value></data>
+  <data name="Home_Recent" xml:space="preserve"><value>Последна активност</value></data>
+  <data name="Home_NoRecent" xml:space="preserve"><value>Все още няма активност</value></data>
+  <data name="Home_SeeAll" xml:space="preserve"><value>Виж всички</value></data>
+  <data name="Home_Platform" xml:space="preserve"><value>Гражданска платформа</value></data>
+  <data name="Home_TotalIssues" xml:space="preserve"><value>Всички сигнали</value></data>
+  <data name="Home_Resolved" xml:space="preserve"><value>Решени</value></data>
+  <data name="Home_InProgress" xml:space="preserve"><value>В процес</value></data>
+  <data name="Home_Critical" xml:space="preserve"><value>Критични</value></data>
+  <data name="Issues_Title" xml:space="preserve"><value>Сигнали</value></data>
+  <data name="Issues_SearchPlaceholder" xml:space="preserve"><value>Търси сигнали...</value></data>
+  <data name="Issues_Filter_All" xml:space="preserve"><value>Всички</value></data>
+  <data name="Issues_Filter_New" xml:space="preserve"><value>Нови</value></data>
+  <data name="Issues_Filter_InProgress" xml:space="preserve"><value>В процес</value></data>
+  <data name="Issues_Filter_Resolved" xml:space="preserve"><value>Решени</value></data>
+  <data name="Issues_Empty_Title" xml:space="preserve"><value>Няма намерени сигнали</value></data>
+  <data name="Issues_Empty_Subtitle" xml:space="preserve"><value>Опитайте друг филтър или дръпнете надолу за обновяване.</value></data>
+  <data name="Issues_PullToRefresh" xml:space="preserve"><value>Дръпнете надолу за обновяване</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>FixIt</value></data>
+  <data name="Login_Subtitle" xml:space="preserve"><value>Влезте, за да подавате и следите сигнали</value></data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve"><value>Имейл адрес</value></data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve"><value>Парола</value></data>
+  <data name="Login_SignIn" xml:space="preserve"><value>Вход</value></data>
+  <data name="Login_SignUp" xml:space="preserve"><value>Нямате профил? Започнете тук</value></data>
+  <data name="Login_Error_Empty" xml:space="preserve"><value>Моля, въведете имейл и парола.</value></data>
+  <data name="Login_Error_Invalid" xml:space="preserve"><value>Невалиден имейл или парола.</value></data>
+  <data name="Login_Error_EmailRequired" xml:space="preserve"><value>Имейлът е задължителен.</value></data>
+  <data name="Login_Error_EmailInvalid" xml:space="preserve"><value>Въведете валиден имейл адрес.</value></data>
+  <data name="Login_Error_PasswordRequired" xml:space="preserve"><value>Паролата е задължителна.</value></data>
+  <data name="Report_Title" xml:space="preserve"><value>Подай сигнал</value></data>
+  <data name="Report_PhotoPlaceholder" xml:space="preserve"><value>Необходима е снимка</value></data>
+  <data name="Report_PhotoTap" xml:space="preserve"><value>Докоснете, за да добавите снимка</value></data>
+  <data name="Report_Retake" xml:space="preserve"><value>Нова снимка</value></data>
+  <data name="Report_Details" xml:space="preserve"><value>Подробности</value></data>
+  <data name="Report_TitlePlaceholder" xml:space="preserve"><value>Какъв е проблемът?</value></data>
+  <data name="Report_DescPlaceholder" xml:space="preserve"><value>Опишете проблема подробно...</value></data>
+  <data name="Report_Location" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="Report_LocationPlaceholder" xml:space="preserve"><value>Адрес или ориентир</value></data>
+  <data name="Report_Submit" xml:space="preserve"><value>Изпрати сигнал</value></data>
+  <data name="Report_Success" xml:space="preserve"><value>Сигналът ви беше подаден.</value></data>
+  <data name="Report_Error" xml:space="preserve"><value>Сигналът не можа да бъде изпратен.</value></data>
+  <data name="Report_Error_TitleRequired" xml:space="preserve"><value>Заглавието е задължително.</value></data>
+  <data name="Report_Error_TitleLength" xml:space="preserve"><value>Заглавието трябва да е до 200 знака.</value></data>
+  <data name="Report_Error_DescriptionLength" xml:space="preserve"><value>Описанието трябва да е до 2000 знака.</value></data>
+  <data name="Report_Error_LocationLength" xml:space="preserve"><value>Местоположението трябва да е до 500 знака.</value></data>
+  <data name="Report_CameraUnavailable" xml:space="preserve"><value>Това устройство не поддържа заснемане.</value></data>
+  <data name="Profile_Title" xml:space="preserve"><value>Профил</value></data>
+  <data name="Profile_SignOut" xml:space="preserve"><value>Изход</value></data>
+  <data name="Profile_MyIssues" xml:space="preserve"><value>Моите сигнали</value></data>
+  <data name="Profile_ViewAll" xml:space="preserve"><value>Виж всички</value></data>
+  <data name="Profile_Reputation" xml:space="preserve"><value>Репутация</value></data>
+  <data name="Profile_Reported" xml:space="preserve"><value>Подадени</value></data>
+  <data name="Profile_Resolved" xml:space="preserve"><value>Решени</value></data>
+  <data name="Profile_CommunityMember" xml:space="preserve"><value>Член на общността</value></data>
+  <data name="Profile_NoIssues" xml:space="preserve"><value>Все още нямате подадени сигнали</value></data>
+  <data name="Profile_Language" xml:space="preserve"><value>Език</value></data>
+  <data name="Detail_Comments" xml:space="preserve"><value>Коментари</value></data>
+  <data name="Detail_AddComment" xml:space="preserve"><value>Добави коментар</value></data>
+  <data name="Detail_CommentPlaceholder" xml:space="preserve"><value>Напишете коментар...</value></data>
+  <data name="Detail_Vote" xml:space="preserve"><value>Гласувай</value></data>
+  <data name="Detail_NoComments" xml:space="preserve"><value>Все още няма коментари</value></data>
+  <data name="Detail_Send" xml:space="preserve"><value>Изпрати</value></data>
+  <data name="Detail_Error_CommentRequired" xml:space="preserve"><value>Коментарът не може да е празен.</value></data>
+  <data name="Detail_Error_CommentLength" xml:space="preserve"><value>Коментарът трябва да е до 1000 знака.</value></data>
+  <data name="MyIssues_Title" xml:space="preserve"><value>Моите сигнали</value></data>
+  <data name="MyIssues_Delete" xml:space="preserve"><value>Изтрий</value></data>
+  <data name="MyIssues_DeleteConfirmTitle" xml:space="preserve"><value>Да изтрием ли сигнала?</value></data>
+  <data name="MyIssues_DeleteConfirmMessage" xml:space="preserve"><value>Сигналът ще бъде премахнат от FixIt.</value></data>
+  <data name="MyIssues_Empty_Title" xml:space="preserve"><value>Все още няма сигнали</value></data>
+  <data name="MyIssues_Empty_Subtitle" xml:space="preserve"><value>Подадените от вас сигнали ще се показват тук.</value></data>
+  <data name="Alerts_Title" xml:space="preserve"><value>Известия</value></data>
+  <data name="Alerts_Empty_Title" xml:space="preserve"><value>Няма активни предупреждения във вашия район</value></data>
+  <data name="Alerts_Empty_Subtitle" xml:space="preserve"><value>Критичните рискове за безопасността ще се показват тук.</value></data>
+  <data name="Alerts_Confirm" xml:space="preserve"><value>Потвърди</value></data>
+  <data name="Alerts_Confirmed" xml:space="preserve"><value>Опасността е потвърдена.</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>Зареждане...</value></data>
+  <data name="Common_Error_Network" xml:space="preserve"><value>Проблем с мрежата. Проверете връзката си и опитайте отново.</value></data>
+  <data name="Common_Error_Generic" xml:space="preserve"><value>Нещо се обърка. Моля, опитайте отново.</value></data>
+  <data name="Common_OK" xml:space="preserve"><value>Добре</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Отказ</value></data>
+  <data name="Common_Retry" xml:space="preserve"><value>Опитай пак</value></data>
+  <data name="Common_Offline" xml:space="preserve"><value>Нямате интернет връзка</value></data>
+  <data name="Common_NoInternet" xml:space="preserve"><value>Няма интернет връзка</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Изтрий</value></data>
+  <data name="Tab_Home" xml:space="preserve"><value>Начало</value></data>
+  <data name="Tab_Issues" xml:space="preserve"><value>Сигнали</value></data>
+  <data name="Tab_Report" xml:space="preserve"><value>Подай сигнал</value></data>
+  <data name="Tab_ReportLocked" xml:space="preserve"><value>Подай сигнал</value></data>
+  <data name="Tab_Alerts" xml:space="preserve"><value>Известия</value></data>
+  <data name="Tab_SignIn" xml:space="preserve"><value>Вход</value></data>
+  <data name="Tab_Profile" xml:space="preserve"><value>Профил</value></data>
+  <data name="Status_New" xml:space="preserve"><value>Нов</value></data>
+  <data name="Status_InProgress" xml:space="preserve"><value>В процес</value></data>
+  <data name="Status_Resolved" xml:space="preserve"><value>Решен</value></data>
+  <data name="Status_Critical" xml:space="preserve"><value>Критичен</value></data>
+</root>

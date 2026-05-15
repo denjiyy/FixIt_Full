@@ -1,34 +1,140 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="FixIt.Mobile.Views.ReportIssuePage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
-    x:DataType="viewModels:ReportIssueViewModel"
-    Title="Report Issue">
+<ContentPage x:Class="FixIt.Mobile.Views.ReportIssuePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:ReportIssueViewModel"
+             BackgroundColor="{StaticResource Background}"
+             NavigationPage.HasNavigationBar="True"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Report_Title}">
 
     <ScrollView>
-        <VerticalStackLayout
-            Padding="24"
-            Spacing="12">
-            <Entry
-                Placeholder="Issue title"
-                Text="{Binding Title}" />
-            <Editor
-                AutoSize="TextChanges"
-                HeightRequest="140"
-                Placeholder="Describe the issue"
-                Text="{Binding Description}" />
-            <Button
-                Command="{Binding TakePhotoCommand}"
-                Text="Take Photo" />
-            <Label
-                FontSize="13"
-                Text="{Binding PhotoFileName}" />
-            <Button
-                Command="{Binding SubmitCommand}"
-                Text="Submit Report" />
+        <VerticalStackLayout x:Name="FormRoot"
+                             Opacity="0"
+                             TranslationY="25"
+                             Padding="24,24,24,34"
+                             Spacing="16">
+            <Border x:Name="PhotoBorder"
+                    HeightRequest="200"
+                    BackgroundColor="{StaticResource Surface}"
+                    Stroke="{StaticResource Surface2}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    SemanticProperties.Description="Take a photo of the issue">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding TakePhotoCommand}" />
+                </Border.GestureRecognizers>
+
+                <Grid>
+                    <VerticalStackLayout IsVisible="{Binding HasPhoto, Converter={StaticResource InverseBoolConverter}}"
+                                         Spacing="8"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center">
+                        <Label Text="📷" FontSize="40" HorizontalOptions="Center" />
+                        <Label Text="{local:Localize Key=Report_PhotoTap}"
+                               Style="{StaticResource BodyMedium}"
+                               TextColor="{StaticResource OnSurfaceMuted}"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+
+                    <Image x:Name="PhotoPreview"
+                           Aspect="AspectFill"
+                           IsVisible="{Binding HasPhoto}"
+                           Source="{Binding CapturedPhotoSource}"
+                           SemanticProperties.Description="Captured issue photo" />
+
+                    <Label Text="{local:Localize Key=Report_Retake}"
+                           FontSize="Caption"
+                           TextColor="{StaticResource Accent}"
+                           HorizontalOptions="End"
+                           VerticalOptions="Start"
+                           Margin="12"
+                           IsVisible="{Binding HasPhoto}" />
+                </Grid>
+            </Border>
+            <Label Text="{Binding PhotoError}"
+                   TextColor="{StaticResource Error}"
+                   FontSize="Caption"
+                   IsVisible="{Binding HasPhotoError}" />
+
+            <Label Text="{local:Localize Key=Report_Details}"
+                   Style="{StaticResource LabelSmall}"
+                   CharacterSpacing="2"
+                   TextTransform="Uppercase"
+                   SemanticProperties.HeadingLevel="Level2" />
+
+            <Border Style="{StaticResource EntryCard}">
+                <Entry Placeholder="{local:Localize Key=Report_TitlePlaceholder}"
+                       PlaceholderColor="{StaticResource OnSurfaceMuted}"
+                       TextColor="{StaticResource OnBackground}"
+                       Text="{Binding Title}"
+                       MaxLength="200"
+                       SemanticProperties.Hint="{local:Localize Key=Report_TitlePlaceholder}" />
+            </Border>
+            <Label Text="{Binding TitleError}"
+                   TextColor="{StaticResource Error}"
+                   FontSize="Caption"
+                   IsVisible="{Binding HasTitleError}" />
+
+            <Border Style="{StaticResource EditorCard}" HeightRequest="120">
+                <Editor Placeholder="{local:Localize Key=Report_DescPlaceholder}"
+                        PlaceholderColor="{StaticResource OnSurfaceMuted}"
+                        TextColor="{StaticResource OnBackground}"
+                        AutoSize="TextChanges"
+                        MaxLength="2000"
+                        Text="{Binding Description}"
+                        SemanticProperties.Hint="{local:Localize Key=Report_DescPlaceholder}" />
+            </Border>
+            <Label Text="{Binding DescriptionError}"
+                   TextColor="{StaticResource Error}"
+                   FontSize="Caption"
+                   IsVisible="{Binding HasDescriptionError}" />
+
+            <Label Text="{local:Localize Key=Report_Location}"
+                   Style="{StaticResource LabelSmall}"
+                   CharacterSpacing="2"
+                   TextTransform="Uppercase"
+                   SemanticProperties.HeadingLevel="Level2" />
+
+            <Border Style="{StaticResource EntryCard}">
+                <Entry Placeholder="{local:Localize Key=Report_LocationPlaceholder}"
+                       PlaceholderColor="{StaticResource OnSurfaceMuted}"
+                       TextColor="{StaticResource OnBackground}"
+                       MaxLength="500"
+                       Text="{Binding Location}"
+                       SemanticProperties.Hint="{local:Localize Key=Report_LocationPlaceholder}" />
+            </Border>
+            <Label Text="{Binding LocationError}"
+                   TextColor="{StaticResource Error}"
+                   FontSize="Caption"
+                   IsVisible="{Binding HasLocationError}" />
+
+            <Button Text="{local:Localize Key=Report_Submit}"
+                    Style="{StaticResource PrimaryButton}"
+                    Opacity="{Binding CanSubmit, Converter={StaticResource BoolToOpacityConverter}}"
+                    Command="{Binding SubmitCommand}"
+                    SemanticProperties.Description="Submit your issue report" />
+
+            <Label Text="{Binding SubmitError}"
+                   TextColor="{StaticResource Error}"
+                   FontSize="Caption"
+                   IsVisible="{Binding HasSubmitError}" />
+
+            <Label x:Name="SuccessCheckLabel"
+                   Text="✅"
+                   FontSize="48"
+                   Scale="0"
+                   Opacity="0"
+                   HorizontalOptions="Center"
+                   IsVisible="{Binding SubmissionSucceeded}"
+                   SemanticProperties.Description="{local:Localize Key=Report_Success}" />
+
+            <ActivityIndicator IsRunning="{Binding IsSubmitting}"
+                               IsVisible="{Binding IsSubmitting}"
+                               Color="{StaticResource Primary}" />
         </VerticalStackLayout>
     </ScrollView>
-
 </ContentPage>

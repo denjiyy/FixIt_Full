@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>FixIt.Mobile</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../FixIt.Mobile/Constants/AppConstants.cs" Link="Mobile/Constants/AppConstants.cs" />
+    <Compile Include="../FixIt.Mobile/Constants/MobileSettings.cs" Link="Mobile/Constants/MobileSettings.cs" />
+    <Compile Include="../FixIt.Mobile/Models/*.cs" Link="Mobile/Models/%(Filename)%(Extension)" />
+    <Compile Include="../FixIt.Mobile/Services/Contracts/*.cs" Link="Mobile/Services/Contracts/%(Filename)%(Extension)" />
+    <Compile Include="../FixIt.Mobile/Localization/LocalizationService.cs" Link="Mobile/Localization/LocalizationService.cs" />
+    <Compile Include="../FixIt.Mobile/Converters/DateTimeToRelativeConverter.cs" Link="Mobile/Converters/DateTimeToRelativeConverter.cs" />
+    <Compile Include="../FixIt.Mobile/ViewModels/HomeViewModel.cs" Link="Mobile/ViewModels/HomeViewModel.cs" />
+    <Compile Include="../FixIt.Mobile/ViewModels/IssuesViewModel.cs" Link="Mobile/ViewModels/IssuesViewModel.cs" />
+    <Compile Include="../FixIt.Mobile/ViewModels/LoginViewModel.cs" Link="Mobile/ViewModels/LoginViewModel.cs" />
+    <Compile Include="../FixIt.Mobile/ViewModels/ReportIssueViewModel.cs" Link="Mobile/ViewModels/ReportIssueViewModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../FixIt.Mobile/Resources/Strings/AppStrings.resx" Link="Resources/Strings/AppStrings.resx" />
+    <EmbeddedResource Include="../FixIt.Mobile/Resources/Strings/AppStrings.bg.resx" Link="Resources/Strings/AppStrings.bg.resx" />
+  </ItemGroup>
+
+</Project>

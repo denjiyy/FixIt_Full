@@ -13,13 +13,13 @@ COPY ["FixIt.Data/FixIt.Data.csproj", "FixIt.Data/"]
 COPY ["FixIt.Tests/FixIt.Tests.csproj", "FixIt.Tests/"]
 
 # Restore dependencies
-RUN dotnet restore "FixIt.sln"
+RUN dotnet restore "FixIt/FixIt.csproj"
 
 # Copy entire source code
 COPY . .
 
 # Build the solution
-RUN dotnet build "FixIt.sln" -c Release --no-restore
+RUN dotnet build "FixIt/FixIt.csproj" -c Release --no-restore
 
 # Run tests (fail fast on test failure)
 RUN dotnet test "FixIt.Tests/FixIt.Tests.csproj" -c Release --no-build --logger "console;verbosity=minimal"

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.MyIssuesPage"
+            
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:views="clr-namespace:FixIt.Mobile.Views"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:MyIssuesViewModel"
+             BackgroundColor="{StaticResource Background}"
+             NavigationPage.HasNavigationBar="True"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=MyIssues_Title}">
+
+    <Grid RowDefinitions="Auto,*" Padding="24,16,24,0">
+        <Label Grid.Row="0"
+               Text="{local:Localize Key=MyIssues_Title}"
+               Style="{StaticResource HeadlineMedium}"
+               SemanticProperties.HeadingLevel="Level1" />
+
+        <RefreshView Grid.Row="1"
+                     Command="{Binding LoadIssuesCommand}"
+                     IsRefreshing="{Binding IsLoading}"
+                     SemanticProperties.Description="Pull to refresh issues">
+            <CollectionView x:Name="MyIssuesCollection"
+                            ItemsSource="{Binding Issues}"
+                            SelectionMode="None"
+                            Margin="0,16,0,0"
+                            RemainingItemsThreshold="3"
+                            RemainingItemsThresholdReachedCommand="{Binding LoadMoreIssuesCommand}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="8">
+                        <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
+                            <views:SkeletonCardView />
+                            <views:SkeletonCardView />
+                            <views:SkeletonCardView />
+                            <views:SkeletonCardView />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout IsVisible="{Binding IsEmpty}" Padding="0,64" Spacing="8" HorizontalOptions="Center">
+                            <Label Text="📋" FontSize="48" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=MyIssues_Empty_Title}" Style="{StaticResource TitleMedium}" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=MyIssues_Empty_Subtitle}" Style="{StaticResource LabelSmall}" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.Footer>
+                    <ActivityIndicator IsRunning="{Binding IsLoadingMore}"
+                                       IsVisible="{Binding IsLoadingMore}"
+                                       Color="{StaticResource Primary}"
+                                       Margin="0,8,0,24" />
+                </CollectionView.Footer>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Issue">
+                        <SwipeView Margin="0,0,0,12">
+                            <SwipeView.RightItems>
+                                <SwipeItems Mode="Reveal">
+                                    <SwipeItem Text="{local:Localize Key=MyIssues_Delete}"
+                                               BackgroundColor="{StaticResource Error}"
+                                               CommandParameter="{Binding Id}"
+                                               Invoked="OnDeleteIssueInvoked" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Border Style="{StaticResource Card}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnIssueTapped" CommandParameter="{Binding Id}" />
+                                </Border.GestureRecognizers>
+                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                        <Label Grid.Column="0" Style="{StaticResource TitleMedium}" Text="{Binding Title}" />
+                                        <Border Grid.Column="1"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 8"
+                                                Padding="8,4"
+                                                BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                SemanticProperties.Description="{Binding StatusDescription}">
+                                            <Label Text="{Binding Status}" TextColor="{StaticResource White}" FontSize="Caption" FontAttributes="Bold" CharacterSpacing="2" />
+                                        </Border>
+                                    </Grid>
+                                    <Label Grid.Row="1" Style="{StaticResource BodyMedium}" Text="{Binding Description}" MaxLines="2" LineBreakMode="TailTruncation" />
+                                    <HorizontalStackLayout Grid.Row="2" Spacing="4">
+                                        <Label Text="📍" Style="{StaticResource LabelSmall}" />
+                                        <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" />
+                                        <Label Text=" • " Style="{StaticResource LabelSmall}" />
+                                        <Label Text="🕐" Style="{StaticResource LabelSmall}" />
+                                        <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}" Style="{StaticResource LabelSmall}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Border>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

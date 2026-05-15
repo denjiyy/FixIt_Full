@@ -1,30 +1,107 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="FixIt.Mobile.Views.LoginPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
-    x:DataType="viewModels:LoginViewModel"
-    Title="Sign In">
+<ContentPage x:Class="FixIt.Mobile.Views.LoginPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:LoginViewModel"
+             BackgroundColor="{StaticResource Background}"
+             NavigationPage.HasNavigationBar="False"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Login_SignIn}">
 
-    <VerticalStackLayout
-        Padding="24"
-        Spacing="12">
-        <Entry
-            Keyboard="Email"
-            Placeholder="Email"
-            Text="{Binding Email}" />
-        <Entry
-            IsPassword="True"
-            Placeholder="Password"
-            Text="{Binding Password}" />
-        <Button
-            Command="{Binding LoginCommand}"
-            Text="Sign In" />
-        <Label
-            FontAttributes="Bold"
-            IsVisible="{Binding IsAuthenticated}"
-            Text="Signed in successfully." />
-    </VerticalStackLayout>
+    <ScrollView>
+        <Grid Padding="0,56,0,34" MinimumHeightRequest="720">
+            <ContentView VerticalOptions="Center" HorizontalOptions="Fill">
+                <VerticalStackLayout Padding="32,0" Spacing="0">
+                    <VerticalStackLayout x:Name="LogoBlock"
+                                         Scale="0.8"
+                                         Opacity="0"
+                                         HorizontalOptions="Center"
+                                         Spacing="0">
+                        <Border WidthRequest="64"
+                                HeightRequest="64"
+                                BackgroundColor="{StaticResource Primary}"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 32"
+                                HorizontalOptions="Center"
+                                Margin="0,0,0,16">
+                            <Label Text="F"
+                                   FontSize="Header"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource White}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
 
+                        <Label Text="{local:Localize Key=Login_Title}"
+                               Style="{StaticResource HeadlineMedium}"
+                               HorizontalTextAlignment="Center"
+                               SemanticProperties.HeadingLevel="Level1" />
+
+                        <Label Text="{local:Localize Key=Login_Subtitle}"
+                               Style="{StaticResource BodyMedium}"
+                               HorizontalTextAlignment="Center"
+                               Margin="0,12,0,40"
+                               SemanticProperties.Description="{local:Localize Key=Login_Subtitle}" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout x:Name="FormBlock"
+                                         Opacity="0"
+                                         TranslationY="20"
+                                         Spacing="0">
+                        <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
+                            <Entry Keyboard="Email"
+                                   Placeholder="{local:Localize Key=Login_EmailPlaceholder}"
+                                   PlaceholderColor="{StaticResource OnSurfaceMuted}"
+                                   TextColor="{StaticResource OnBackground}"
+                                   Text="{Binding Email}"
+                                   SemanticProperties.Hint="{local:Localize Key=Login_EmailPlaceholder}" />
+                        </Border>
+                        <Label Text="{Binding EmailError}"
+                               TextColor="{StaticResource Error}"
+                               FontSize="Caption"
+                               IsVisible="{Binding HasEmailError}"
+                               Margin="0,0,0,8" />
+
+                        <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
+                            <Entry IsPassword="True"
+                                   Placeholder="{local:Localize Key=Login_PasswordPlaceholder}"
+                                   PlaceholderColor="{StaticResource OnSurfaceMuted}"
+                                   TextColor="{StaticResource OnBackground}"
+                                   Text="{Binding Password}"
+                                   SemanticProperties.Hint="{local:Localize Key=Login_PasswordPlaceholder}" />
+                        </Border>
+                        <Label Text="{Binding PasswordError}"
+                               TextColor="{StaticResource Error}"
+                               FontSize="Caption"
+                               IsVisible="{Binding HasPasswordError}"
+                               Margin="0,0,0,8" />
+
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="{StaticResource Error}"
+                               FontSize="Caption"
+                               IsVisible="{Binding HasError}"
+                               Margin="0,0,0,16" />
+
+                        <Button Text="{local:Localize Key=Login_SignIn}"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding LoginCommand}" />
+
+                        <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                           IsVisible="{Binding IsLoading}"
+                                           Color="{StaticResource Primary}"
+                                           Margin="0,16,0,0" />
+                    </VerticalStackLayout>
+
+                    <Label Text="{local:Localize Key=Login_SignUp}"
+                           TextColor="{StaticResource Accent}"
+                           FontSize="Caption"
+                           HorizontalOptions="Center"
+                           Margin="0,32,0,0" />
+                </VerticalStackLayout>
+            </ContentView>
+        </Grid>
+    </ScrollView>
 </ContentPage>

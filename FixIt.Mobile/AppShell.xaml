@@ -1,37 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="FixIt.Mobile.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="FixIt">
+<Shell x:Class="FixIt.Mobile.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+       xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+       BackgroundColor="{StaticResource Background}"
+       Style="{StaticResource AppShellStyle}"
+       x:DataType="viewModels:ShellViewModel"
+       Title="FixIt">
+
+    <Shell.TitleView>
+        <Border x:Name="OfflineBanner"
+                BackgroundColor="{StaticResource Error}"
+                Padding="12,8"
+                StrokeThickness="0"
+                Opacity="0"
+                IsVisible="{Binding IsOffline}">
+            <Label Text="{local:Localize Key=Common_NoInternet}"
+                   TextColor="{StaticResource White}"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center"
+                   SemanticProperties.Description="No internet connection" />
+        </Border>
+    </Shell.TitleView>
 
     <TabBar>
-        <Tab Title="Home" Route="home-tab">
-            <ShellContent
-                x:Name="HomeContent"
-                Route="home" />
+        <Tab x:Name="HomeTab" Title="Home" Route="home">
+            <ShellContent x:Name="HomeContent" Route="home-page" />
         </Tab>
 
-        <Tab Title="Issues" Route="issues-tab">
-            <ShellContent
-                x:Name="IssuesContent"
-                Route="issues" />
+        <Tab x:Name="IssuesTab" Title="Issues" Route="issues">
+            <ShellContent x:Name="IssuesContent" Route="issues-page" />
         </Tab>
 
-        <Tab
-            Title="Report Issue"
-            Icon="camera.svg"
-            Route="report-issue-tab">
-            <ShellContent
-                x:Name="ReportIssueContent"
-                Route="report-issue" />
+        <Tab x:Name="AlertsTab" Title="Alerts" Route="alerts">
+            <ShellContent x:Name="AlertsContent" Route="alerts-page" />
         </Tab>
 
-        <Tab Title="Sign In" Route="sign-in-tab">
-            <ShellContent
-                x:Name="LoginContent"
-                Route="sign-in" />
+        <Tab x:Name="ReportIssueTab" Title="Report Issue" Route="report-issue-tab">
+            <ShellContent x:Name="ReportIssueContent" Route="report-issue-page" />
+        </Tab>
+
+        <Tab x:Name="AccountTab" Title="Sign In" Route="sign-in-tab">
+            <ShellContent x:Name="AccountContent" Route="account-page" />
         </Tab>
     </TabBar>
-
 </Shell>

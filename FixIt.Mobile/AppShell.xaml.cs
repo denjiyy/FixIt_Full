@@ -1,20 +1,171 @@
+using System.ComponentModel;
+using FixIt.Mobile.Constants;
+using FixIt.Mobile.Localization;
+using FixIt.Mobile.Services.Contracts;
+using FixIt.Mobile.ViewModels;
 using FixIt.Mobile.Views;
 
 namespace FixIt.Mobile;
 
 public partial class AppShell : Shell
 {
+    private readonly IAuthService _auth;
+    private readonly LoginPage _loginPage;
+    private readonly ProfilePage _profilePage;
+    private readonly ShellViewModel _viewModel;
+    private bool _isRedirecting;
+
     public AppShell(
         HomePage homePage,
         IssuesPage issuesPage,
+        AlertsPage alertsPage,
         ReportIssuePage reportIssuePage,
-        LoginPage loginPage)
+        LoginPage loginPage,
+        ProfilePage profilePage,
+        ShellViewModel viewModel,
+        IAuthService auth)
     {
         InitializeComponent();
 
+        _auth = auth;
+        _loginPage = loginPage;
+        _profilePage = profilePage;
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
+
         HomeContent.Content = homePage;
         IssuesContent.Content = issuesPage;
+        AlertsContent.Content = alertsPage;
         ReportIssueContent.Content = reportIssuePage;
-        LoginContent.Content = loginPage;
+
+        Routing.RegisterRoute(AppConstants.RouteIssueDetail, typeof(IssueDetailPage));
+        Routing.RegisterRoute(AppConstants.RouteMyIssues, typeof(MyIssuesPage));
+
+        UpdateAuthVisualState(_auth.IsLoggedIn);
+        UpdateLocalizedTabs();
+        _auth.LoginStateChanged += OnLoginStateChanged;
+        LocalizationService.CultureChanged += OnCultureChanged;
+        _viewModel.PropertyChanged += OnShellViewModelPropertyChanged;
+
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
+
+    protected override void OnNavigating(ShellNavigatingEventArgs args)
+    {
+        base.OnNavigating(args);
+
+        if (_isRedirecting || _auth.IsLoggedIn)
+        {
+            return;
+        }
+
+        var targetRoute = args.Target.Location.OriginalString;
+        if (targetRoute.Contains("report-issue-tab", StringComparison.OrdinalIgnoreCase))
+        {
+            args.Cancel();
+            _ = RedirectToSignInAsync();
+        }
+    }
+
+    private async void OnLoaded(object? sender, EventArgs e)
+    {
+        Loaded -= OnLoaded;
+        await _auth.InitializeAsync();
+        UpdateAuthVisualState(_auth.IsLoggedIn);
+        await AnimateOfflineBannerAsync(_viewModel.IsOffline);
+
+        if (!_auth.IsLoggedIn)
+        {
+            await RedirectToSignInAsync();
+        }
+    }
+
+    private void OnUnloaded(object? sender, EventArgs e)
+    {
+        _auth.LoginStateChanged -= OnLoginStateChanged;
+        LocalizationService.CultureChanged -= OnCultureChanged;
+        _viewModel.PropertyChanged -= OnShellViewModelPropertyChanged;
+    }
+
+    private async Task RedirectToSignInAsync()
+    {
+        if (_isRedirecting)
+        {
+            return;
+        }
+
+        _isRedirecting = true;
+        try
+        {
+            await GoToAsync(AppConstants.RouteSignInTab);
+        }
+        finally
+        {
+            _isRedirecting = false;
+        }
+    }
+
+    private async void OnLoginStateChanged(object? sender, bool isLoggedIn)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            UpdateAuthVisualState(isLoggedIn);
+
+            if (isLoggedIn)
+            {
+                await GoToAsync(AppConstants.RouteHome);
+            }
+            else
+            {
+                await GoToAsync(AppConstants.RouteSignInTab);
+            }
+        });
+    }
+
+    private void UpdateAuthVisualState(bool isLoggedIn)
+    {
+        AccountContent.Content = isLoggedIn ? _profilePage : _loginPage;
+        UpdateLocalizedTabs();
+    }
+
+    private void UpdateLocalizedTabs()
+    {
+        HomeTab.Title = $"🏠 {LocalizationService.Get("Tab_Home")}";
+        IssuesTab.Title = $"📋 {LocalizationService.Get("Tab_Issues")}";
+        AlertsTab.Title = $"🔔 {LocalizationService.Get("Tab_Alerts")}";
+        ReportIssueTab.Title = _auth.IsLoggedIn
+            ? $"📷 {LocalizationService.Get("Tab_Report")}" 
+            : $"🔒 {LocalizationService.Get("Tab_ReportLocked")}";
+        AccountTab.Title = _auth.IsLoggedIn
+            ? $"{_auth.GetCurrentInitials()} {LocalizationService.Get("Tab_Profile")}" 
+            : $"👤 {LocalizationService.Get("Tab_SignIn")}";
+    }
+
+    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo e)
+    {
+        UpdateLocalizedTabs();
+    }
+
+    private async void OnShellViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ShellViewModel.IsOffline))
+        {
+            await AnimateOfflineBannerAsync(_viewModel.IsOffline);
+        }
+    }
+
+    private async Task AnimateOfflineBannerAsync(bool isOffline)
+    {
+        if (isOffline)
+        {
+            OfflineBanner.IsVisible = true;
+            await OfflineBanner.FadeTo(1, 250, Easing.CubicOut);
+        }
+        else
+        {
+            await OfflineBanner.FadeTo(0, 250, Easing.CubicOut);
+            OfflineBanner.IsVisible = false;
+        }
     }
 }

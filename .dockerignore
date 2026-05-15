@@ -27,3 +27,6 @@
 **/test-results
 **/coverage
 **/*.log
+FixIt.Mobile/
+
+FixIt.Mobile.Tests/

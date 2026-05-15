@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Home_Title" xml:space="preserve"><value>FixIt</value></data>
+  <data name="Home_Subtitle" xml:space="preserve"><value>Report and track infrastructure problems with your community in real time.</value></data>
+  <data name="Home_ReportCTA" xml:space="preserve"><value>Report an Issue</value></data>
+  <data name="Home_LivePulse" xml:space="preserve"><value>Live Platform Pulse</value></data>
+  <data name="Home_Recent" xml:space="preserve"><value>Recent Activity</value></data>
+  <data name="Home_NoRecent" xml:space="preserve"><value>No recent activity</value></data>
+  <data name="Home_SeeAll" xml:space="preserve"><value>See all</value></data>
+  <data name="Home_Platform" xml:space="preserve"><value>Community Platform</value></data>
+  <data name="Home_TotalIssues" xml:space="preserve"><value>Total Issues</value></data>
+  <data name="Home_Resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Home_InProgress" xml:space="preserve"><value>In Progress</value></data>
+  <data name="Home_Critical" xml:space="preserve"><value>Critical</value></data>
+  <data name="Issues_Title" xml:space="preserve"><value>Issues</value></data>
+  <data name="Issues_SearchPlaceholder" xml:space="preserve"><value>Search issues...</value></data>
+  <data name="Issues_Filter_All" xml:space="preserve"><value>All</value></data>
+  <data name="Issues_Filter_New" xml:space="preserve"><value>New</value></data>
+  <data name="Issues_Filter_InProgress" xml:space="preserve"><value>In Progress</value></data>
+  <data name="Issues_Filter_Resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Issues_Empty_Title" xml:space="preserve"><value>No issues found</value></data>
+  <data name="Issues_Empty_Subtitle" xml:space="preserve"><value>Try another filter or pull down to refresh.</value></data>
+  <data name="Issues_PullToRefresh" xml:space="preserve"><value>Pull down to refresh</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>FixIt</value></data>
+  <data name="Login_Subtitle" xml:space="preserve"><value>Sign in to report and track community issues</value></data>
+  <data name="Login_EmailPlaceholder" xml:space="preserve"><value>Email address</value></data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve"><value>Password</value></data>
+  <data name="Login_SignIn" xml:space="preserve"><value>Sign In</value></data>
+  <data name="Login_SignUp" xml:space="preserve"><value>Don't have an account? Get Started</value></data>
+  <data name="Login_Error_Empty" xml:space="preserve"><value>Please enter your email and password.</value></data>
+  <data name="Login_Error_Invalid" xml:space="preserve"><value>Invalid email or password.</value></data>
+  <data name="Login_Error_EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
+  <data name="Login_Error_EmailInvalid" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Login_Error_PasswordRequired" xml:space="preserve"><value>Password is required.</value></data>
+  <data name="Report_Title" xml:space="preserve"><value>Report Issue</value></data>
+  <data name="Report_PhotoPlaceholder" xml:space="preserve"><value>Photo required</value></data>
+  <data name="Report_PhotoTap" xml:space="preserve"><value>Tap to add a photo</value></data>
+  <data name="Report_Retake" xml:space="preserve"><value>Retake</value></data>
+  <data name="Report_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Report_TitlePlaceholder" xml:space="preserve"><value>What is the issue?</value></data>
+  <data name="Report_DescPlaceholder" xml:space="preserve"><value>Describe the problem in detail...</value></data>
+  <data name="Report_Location" xml:space="preserve"><value>Location</value></data>
+  <data name="Report_LocationPlaceholder" xml:space="preserve"><value>Address or landmark</value></data>
+  <data name="Report_Submit" xml:space="preserve"><value>Submit Report</value></data>
+  <data name="Report_Success" xml:space="preserve"><value>Your issue has been reported.</value></data>
+  <data name="Report_Error" xml:space="preserve"><value>Unable to submit issue.</value></data>
+  <data name="Report_Error_TitleRequired" xml:space="preserve"><value>Title is required.</value></data>
+  <data name="Report_Error_TitleLength" xml:space="preserve"><value>Title must be 200 characters or fewer.</value></data>
+  <data name="Report_Error_DescriptionLength" xml:space="preserve"><value>Description must be 2,000 characters or fewer.</value></data>
+  <data name="Report_Error_LocationLength" xml:space="preserve"><value>Location must be 500 characters or fewer.</value></data>
+  <data name="Report_CameraUnavailable" xml:space="preserve"><value>Photo capture is not supported on this device.</value></data>
+  <data name="Profile_Title" xml:space="preserve"><value>Profile</value></data>
+  <data name="Profile_SignOut" xml:space="preserve"><value>Sign Out</value></data>
+  <data name="Profile_MyIssues" xml:space="preserve"><value>My Issues</value></data>
+  <data name="Profile_ViewAll" xml:space="preserve"><value>View all</value></data>
+  <data name="Profile_Reputation" xml:space="preserve"><value>Reputation</value></data>
+  <data name="Profile_Reported" xml:space="preserve"><value>Reported</value></data>
+  <data name="Profile_Resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Profile_CommunityMember" xml:space="preserve"><value>Community Member</value></data>
+  <data name="Profile_NoIssues" xml:space="preserve"><value>No reported issues yet</value></data>
+  <data name="Profile_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Detail_Comments" xml:space="preserve"><value>Comments</value></data>
+  <data name="Detail_AddComment" xml:space="preserve"><value>Add comment</value></data>
+  <data name="Detail_CommentPlaceholder" xml:space="preserve"><value>Write a comment...</value></data>
+  <data name="Detail_Vote" xml:space="preserve"><value>Vote</value></data>
+  <data name="Detail_NoComments" xml:space="preserve"><value>No comments yet</value></data>
+  <data name="Detail_Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Detail_Error_CommentRequired" xml:space="preserve"><value>Comment cannot be empty.</value></data>
+  <data name="Detail_Error_CommentLength" xml:space="preserve"><value>Comment must be 1,000 characters or fewer.</value></data>
+  <data name="MyIssues_Title" xml:space="preserve"><value>My Reports</value></data>
+  <data name="MyIssues_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="MyIssues_DeleteConfirmTitle" xml:space="preserve"><value>Delete report?</value></data>
+  <data name="MyIssues_DeleteConfirmMessage" xml:space="preserve"><value>This will remove your report from FixIt.</value></data>
+  <data name="MyIssues_Empty_Title" xml:space="preserve"><value>No reports yet</value></data>
+  <data name="MyIssues_Empty_Subtitle" xml:space="preserve"><value>Your submitted reports will appear here.</value></data>
+  <data name="Alerts_Title" xml:space="preserve"><value>Alerts</value></data>
+  <data name="Alerts_Empty_Title" xml:space="preserve"><value>No active alerts in your area</value></data>
+  <data name="Alerts_Empty_Subtitle" xml:space="preserve"><value>Critical safety hazards will appear here.</value></data>
+  <data name="Alerts_Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="Alerts_Confirmed" xml:space="preserve"><value>Hazard confirmed.</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="Common_Error_Network" xml:space="preserve"><value>Network error. Please check your connection and try again.</value></data>
+  <data name="Common_Error_Generic" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="Common_OK" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Common_Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Common_Offline" xml:space="preserve"><value>You are offline</value></data>
+  <data name="Common_NoInternet" xml:space="preserve"><value>No internet connection</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Tab_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Tab_Issues" xml:space="preserve"><value>Issues</value></data>
+  <data name="Tab_Report" xml:space="preserve"><value>Report Issue</value></data>
+  <data name="Tab_ReportLocked" xml:space="preserve"><value>Report Issue</value></data>
+  <data name="Tab_Alerts" xml:space="preserve"><value>Alerts</value></data>
+  <data name="Tab_SignIn" xml:space="preserve"><value>Sign In</value></data>
+  <data name="Tab_Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Status_New" xml:space="preserve"><value>New</value></data>
+  <data name="Status_InProgress" xml:space="preserve"><value>In Progress</value></data>
+  <data name="Status_Resolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="Status_Critical" xml:space="preserve"><value>Critical</value></data>
+</root>

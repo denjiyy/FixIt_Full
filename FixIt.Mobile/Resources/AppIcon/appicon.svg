@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="456" height="456" fill="#512BD4" />
+<svg width="456" height="456" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+  <rect width="456" height="456" fill="#2563EB"/>
+  <circle cx="228" cy="228" r="184" fill="#2563EB"/>
+  <path d="M155 116h170v56H220v58h88v54h-88v96h-65V116z" fill="#FFFFFF"/>
 </svg>
