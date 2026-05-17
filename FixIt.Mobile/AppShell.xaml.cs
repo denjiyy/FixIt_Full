@@ -25,12 +25,13 @@ public partial class AppShell : Shell
         ShellViewModel viewModel,
         IAuthService auth)
     {
-        InitializeComponent();
-
         _auth = auth;
+        _viewModel = viewModel;
         _loginPage = loginPage;
         _profilePage = profilePage;
-        _viewModel = viewModel;
+
+        InitializeComponent();
+
         BindingContext = _viewModel;
 
         HomeContent.Content = homePage;
@@ -55,10 +56,11 @@ public partial class AppShell : Shell
     {
         base.OnNavigating(args);
 
-        if (_isRedirecting || _auth.IsLoggedIn)
-        {
+        if (_auth is null || _isRedirecting || _auth.IsLoggedIn)
             return;
-        }
+
+        if (args.Target?.Location is null)
+            return;
 
         var targetRoute = args.Target.Location.OriginalString;
         if (targetRoute.Contains("report-issue-tab", StringComparison.OrdinalIgnoreCase))
@@ -91,9 +93,7 @@ public partial class AppShell : Shell
     private async Task RedirectToSignInAsync()
     {
         if (_isRedirecting)
-        {
             return;
-        }
 
         _isRedirecting = true;
         try
@@ -113,13 +113,9 @@ public partial class AppShell : Shell
             UpdateAuthVisualState(isLoggedIn);
 
             if (isLoggedIn)
-            {
                 await GoToAsync(AppConstants.RouteHome);
-            }
             else
-            {
                 await GoToAsync(AppConstants.RouteSignInTab);
-            }
         });
     }
 
@@ -135,10 +131,10 @@ public partial class AppShell : Shell
         IssuesTab.Title = $"📋 {LocalizationService.Get("Tab_Issues")}";
         AlertsTab.Title = $"🔔 {LocalizationService.Get("Tab_Alerts")}";
         ReportIssueTab.Title = _auth.IsLoggedIn
-            ? $"📷 {LocalizationService.Get("Tab_Report")}" 
+            ? $"📷 {LocalizationService.Get("Tab_Report")}"
             : $"🔒 {LocalizationService.Get("Tab_ReportLocked")}";
         AccountTab.Title = _auth.IsLoggedIn
-            ? $"{_auth.GetCurrentInitials()} {LocalizationService.Get("Tab_Profile")}" 
+            ? $"{_auth.GetCurrentInitials()} {LocalizationService.Get("Tab_Profile")}"
             : $"👤 {LocalizationService.Get("Tab_SignIn")}";
     }
 
@@ -150,9 +146,7 @@ public partial class AppShell : Shell
     private async void OnShellViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ShellViewModel.IsOffline))
-        {
             await AnimateOfflineBannerAsync(_viewModel.IsOffline);
-        }
     }
 
     private async Task AnimateOfflineBannerAsync(bool isOffline)

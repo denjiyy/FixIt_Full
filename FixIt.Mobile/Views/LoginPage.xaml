@@ -12,45 +12,49 @@
              Title="{local:Localize Key=Login_SignIn}">
 
     <ScrollView>
-        <Grid Padding="0,56,0,34" MinimumHeightRequest="720">
-            <ContentView VerticalOptions="Center" HorizontalOptions="Fill">
-                <VerticalStackLayout Padding="32,0" Spacing="0">
+        <Grid Padding="0,0,0,40" MinimumHeightRequest="700">
+            <ContentView VerticalOptions="Center">
+                <VerticalStackLayout Padding="28,0" Spacing="0">
+
+                    <!-- Logo block -->
                     <VerticalStackLayout x:Name="LogoBlock"
-                                         Scale="0.8"
-                                         Opacity="0"
+                                         Scale="0.8" Opacity="0"
                                          HorizontalOptions="Center"
-                                         Spacing="0">
-                        <Border WidthRequest="64"
-                                HeightRequest="64"
+                                         Spacing="0"
+                                         Margin="0,0,0,40">
+                        <Border WidthRequest="72" HeightRequest="72"
                                 BackgroundColor="{StaticResource Primary}"
                                 StrokeThickness="0"
-                                StrokeShape="RoundRectangle 32"
+                                StrokeShape="RoundRectangle 36"
                                 HorizontalOptions="Center"
-                                Margin="0,0,0,16">
+                                Margin="0,0,0,20">
+                            <Border.Shadow>
+                                <Shadow Brush="{StaticResource Primary}"
+                                        Opacity="0.5"
+                                        Offset="0,6"
+                                        Radius="16" />
+                            </Border.Shadow>
                             <Label Text="F"
-                                   FontSize="Header"
+                                   FontSize="Title"
                                    FontAttributes="Bold"
                                    TextColor="{StaticResource White}"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center" />
                         </Border>
-
                         <Label Text="{local:Localize Key=Login_Title}"
                                Style="{StaticResource HeadlineMedium}"
                                HorizontalTextAlignment="Center"
                                SemanticProperties.HeadingLevel="Level1" />
-
                         <Label Text="{local:Localize Key=Login_Subtitle}"
                                Style="{StaticResource BodyMedium}"
+                               TextColor="{StaticResource OnSurfaceMuted}"
                                HorizontalTextAlignment="Center"
-                               Margin="0,12,0,40"
-                               SemanticProperties.Description="{local:Localize Key=Login_Subtitle}" />
+                               Margin="0,8,0,0" />
                     </VerticalStackLayout>
 
-                    <VerticalStackLayout x:Name="FormBlock"
-                                         Opacity="0"
-                                         TranslationY="20"
-                                         Spacing="0">
+                    <!-- Form block -->
+                    <VerticalStackLayout x:Name="FormBlock" Opacity="0" TranslationY="20" Spacing="0">
+
                         <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
                             <Entry Keyboard="Email"
                                    Placeholder="{local:Localize Key=Login_EmailPlaceholder}"
@@ -63,7 +67,7 @@
                                TextColor="{StaticResource Error}"
                                FontSize="Caption"
                                IsVisible="{Binding HasEmailError}"
-                               Margin="0,0,0,8" />
+                               Margin="4,0,0,10" />
 
                         <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
                             <Entry IsPassword="True"
@@ -77,29 +81,34 @@
                                TextColor="{StaticResource Error}"
                                FontSize="Caption"
                                IsVisible="{Binding HasPasswordError}"
-                               Margin="0,0,0,8" />
+                               Margin="4,0,0,10" />
 
                         <Label Text="{Binding ErrorMessage}"
                                TextColor="{StaticResource Error}"
                                FontSize="Caption"
                                IsVisible="{Binding HasError}"
-                               Margin="0,0,0,16" />
+                               HorizontalTextAlignment="Center"
+                               Margin="0,0,0,14" />
 
                         <Button Text="{local:Localize Key=Login_SignIn}"
                                 Style="{StaticResource PrimaryButton}"
-                                Command="{Binding LoginCommand}" />
+                                Command="{Binding LoginCommand}"
+                                Margin="0,8,0,0"
+                                SemanticProperties.Description="Sign in to your account" />
 
                         <ActivityIndicator IsRunning="{Binding IsLoading}"
                                            IsVisible="{Binding IsLoading}"
                                            Color="{StaticResource Primary}"
-                                           Margin="0,16,0,0" />
+                                           Margin="0,20,0,0" />
+
+                        <Label Text="{local:Localize Key=Login_SignUp}"
+                               TextColor="{StaticResource Accent}"
+                               FontSize="Caption"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               Margin="0,28,0,0" />
                     </VerticalStackLayout>
 
-                    <Label Text="{local:Localize Key=Login_SignUp}"
-                           TextColor="{StaticResource Accent}"
-                           FontSize="Caption"
-                           HorizontalOptions="Center"
-                           Margin="0,32,0,0" />
                 </VerticalStackLayout>
             </ContentView>
         </Grid>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage x:Class="FixIt.Mobile.Views.HomePage"
-            
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
@@ -15,115 +14,133 @@
              Title="{local:Localize Key=Home_Title}">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="0" Padding="0,0,0,34">
-            <VerticalStackLayout x:Name="HeroBanner"
-                                 Opacity="0"
-                                 TranslationY="30"
-                                 Padding="24,56,24,36"
-                                 Spacing="16">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout Grid.Column="0" Spacing="4">
-                        <Label Style="{StaticResource LabelSmall}"
-                               CharacterSpacing="2"
-                               Text="{local:Localize Key=Home_Platform}"
-                               TextTransform="Uppercase"
-                               SemanticProperties.Description="{local:Localize Key=Home_Platform}" />
-                        <Label Style="{StaticResource HeadlineLarge}"
-                               Text="{Binding Title}"
-                               SemanticProperties.HeadingLevel="Level1"
-                               SemanticProperties.Description="{Binding Title}" />
+        <VerticalStackLayout Spacing="0" Padding="0,0,0,40">
+
+            <!-- Hero Card -->
+            <VerticalStackLayout x:Name="HeroBanner" Opacity="0" TranslationY="30">
+                <Border Margin="20,28,20,0"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24"
+                        Padding="24,28,24,24">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#2563EB" Offset="0" />
+                            <GradientStop Color="#1E3A8A" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <VerticalStackLayout Spacing="0">
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                            <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                <Label Text="{local:Localize Key=Home_Platform}"
+                                       TextTransform="Uppercase"
+                                       CharacterSpacing="1.5"
+                                       FontSize="Caption"
+                                       TextColor="#93C5FD" />
+                                <Label Text="{Binding Title}"
+                                       FontSize="Title"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource White}"
+                                       CharacterSpacing="-0.5"
+                                       SemanticProperties.HeadingLevel="Level1" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1"
+                                    WidthRequest="48" HeightRequest="48"
+                                    BackgroundColor="#FFFFFF28"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 24"
+                                    VerticalOptions="Start">
+                                <Label Text="F"
+                                       FontSize="Header"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource White}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+                        </Grid>
+
+                        <Label Text="{Binding WelcomeMessage}"
+                               FontSize="Body"
+                               TextColor="#BFDBFE"
+                               LineHeight="1.45"
+                               Margin="0,0,0,20"
+                               SemanticProperties.Description="{Binding WelcomeMessage}" />
+
+                        <Button Text="{local:Localize Key=Home_ReportCTA}"
+                                BackgroundColor="{StaticResource White}"
+                                TextColor="{StaticResource Primary}"
+                                FontAttributes="Bold"
+                                FontSize="Body"
+                                HeightRequest="52"
+                                CornerRadius="14"
+                                Command="{Binding ReportIssueCommand}"
+                                SemanticProperties.Description="Report a new community issue" />
                     </VerticalStackLayout>
-
-                    <Border Grid.Column="1"
-                            WidthRequest="46"
-                            HeightRequest="46"
-                            BackgroundColor="{StaticResource Primary}"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 23"
-                            HorizontalOptions="End"
-                            VerticalOptions="Start">
-                        <Label Text="F"
-                               FontSize="Header"
-                               FontAttributes="Bold"
-                               TextColor="{StaticResource White}"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center" />
-                    </Border>
-                </Grid>
-
-                <Label Style="{StaticResource BodyMedium}"
-                       Text="{Binding WelcomeMessage}"
-                       Margin="0,0,0,28"
-                       SemanticProperties.Description="{Binding WelcomeMessage}" />
-
-                <Button Text="{local:Localize Key=Home_ReportCTA}"
-                        Style="{StaticResource PrimaryButton}"
-                        Command="{Binding ReportIssueCommand}"
-                        SemanticProperties.Description="Take a photo of the issue" />
+                </Border>
             </VerticalStackLayout>
 
-            <BoxView HeightRequest="1"
-                     BackgroundColor="{StaticResource DividerColor}"
-                     Margin="24,0" />
-
-            <VerticalStackLayout x:Name="StatsSection"
-                                 Opacity="0"
-                                 TranslationY="30"
-                                 Padding="24,28,24,8"
-                                 Spacing="16">
+            <!-- Stats Section -->
+            <VerticalStackLayout x:Name="StatsSection" Opacity="0" TranslationY="30"
+                                 Padding="20,28,20,0" Spacing="14">
                 <Label Style="{StaticResource TitleMedium}"
                        Text="{local:Localize Key=Home_LivePulse}"
-                       SemanticProperties.HeadingLevel="Level2"
-                       SemanticProperties.Description="{local:Localize Key=Home_LivePulse}" />
+                       SemanticProperties.HeadingLevel="Level2" />
 
-                <Grid ColumnDefinitions="*,*"
-                      RowDefinitions="Auto,Auto"
-                      ColumnSpacing="12"
-                      RowSpacing="12">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                      ColumnSpacing="12" RowSpacing="12">
                     <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource StatCard}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Style="{StaticResource LabelSmall}" Text="{local:Localize Key=Home_TotalIssues}" />
-                            <Label Style="{StaticResource HeadlineMedium}" Text="{Binding TotalIssues}" />
+                            <Label Style="{StaticResource LabelSmall}"
+                                   Text="{local:Localize Key=Home_TotalIssues}" />
+                            <Label FontSize="Title" FontAttributes="Bold"
+                                   TextColor="{StaticResource Accent}"
+                                   Text="{Binding TotalIssues}" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource StatCard}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Style="{StaticResource LabelSmall}" Text="{local:Localize Key=Home_Resolved}" />
-                            <Label Style="{StaticResource HeadlineMedium}" Text="{Binding ResolvedIssues}" TextColor="{StaticResource Success}" />
+                            <Label Style="{StaticResource LabelSmall}"
+                                   Text="{local:Localize Key=Home_Resolved}" />
+                            <Label FontSize="Title" FontAttributes="Bold"
+                                   TextColor="{StaticResource Success}"
+                                   Text="{Binding ResolvedIssues}" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource StatCard}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Style="{StaticResource LabelSmall}" Text="{local:Localize Key=Home_InProgress}" />
-                            <Label Style="{StaticResource HeadlineMedium}" Text="{Binding InProgressIssues}" TextColor="{StaticResource Warning}" />
+                            <Label Style="{StaticResource LabelSmall}"
+                                   Text="{local:Localize Key=Home_InProgress}" />
+                            <Label FontSize="Title" FontAttributes="Bold"
+                                   TextColor="{StaticResource Warning}"
+                                   Text="{Binding InProgressIssues}" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource StatCard}">
                         <VerticalStackLayout Spacing="6">
-                            <Label Style="{StaticResource LabelSmall}" Text="{local:Localize Key=Home_Critical}" />
-                            <Label Style="{StaticResource HeadlineMedium}" Text="{Binding CriticalIssues}" TextColor="{StaticResource Error}" />
+                            <Label Style="{StaticResource LabelSmall}"
+                                   Text="{local:Localize Key=Home_Critical}" />
+                            <Label FontSize="Title" FontAttributes="Bold"
+                                   TextColor="{StaticResource Error}"
+                                   Text="{Binding CriticalIssues}" />
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
             </VerticalStackLayout>
 
-            <VerticalStackLayout x:Name="RecentSection"
-                                 Opacity="0"
-                                 TranslationY="30"
-                                 Padding="24,20,24,32"
-                                 Spacing="16">
+            <!-- Recent Activity Section -->
+            <VerticalStackLayout x:Name="RecentSection" Opacity="0" TranslationY="30"
+                                 Padding="20,28,20,0" Spacing="14">
                 <Grid ColumnDefinitions="*,Auto">
                     <Label Grid.Column="0"
                            Style="{StaticResource TitleMedium}"
                            Text="{local:Localize Key=Home_Recent}"
-                           SemanticProperties.HeadingLevel="Level2"
-                           SemanticProperties.Description="{local:Localize Key=Home_Recent}" />
+                           SemanticProperties.HeadingLevel="Level2" />
                     <Label Grid.Column="1"
                            Text="{local:Localize Key=Home_SeeAll}"
                            FontSize="Caption"
+                           FontAttributes="Bold"
                            TextColor="{StaticResource Accent}"
                            VerticalOptions="Center">
                         <Label.GestureRecognizers>
@@ -132,18 +149,18 @@
                     </Label>
                 </Grid>
 
-                <CollectionView ItemsSource="{Binding RecentIssues}"
-                                SelectionMode="None">
+                <CollectionView ItemsSource="{Binding RecentIssues}" SelectionMode="None">
                     <CollectionView.EmptyView>
-                        <VerticalStackLayout Spacing="8">
+                        <VerticalStackLayout Spacing="0">
                             <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
                                 <views:SkeletonCardView />
                                 <views:SkeletonCardView />
                                 <views:SkeletonCardView />
-                                <views:SkeletonCardView />
                             </VerticalStackLayout>
-                            <VerticalStackLayout IsVisible="{Binding IsEmpty}" Padding="0,32" Spacing="8">
-                                <Label Text="📋" FontSize="48" HorizontalOptions="Center" />
+                            <VerticalStackLayout IsVisible="{Binding IsEmpty}"
+                                                 Padding="0,40" Spacing="10"
+                                                 HorizontalOptions="Center">
+                                <Label Text="📋" FontSize="44" HorizontalOptions="Center" />
                                 <Label Text="{local:Localize Key=Home_NoRecent}"
                                        Style="{StaticResource BodyMedium}"
                                        HorizontalOptions="Center" />
@@ -157,38 +174,42 @@
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnIssueTapped" CommandParameter="{Binding Id}" />
                                 </Border.GestureRecognizers>
-                                <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
-                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <Label Grid.Column="0"
                                                Style="{StaticResource TitleMedium}"
                                                Text="{Binding Title}"
+                                               MaxLines="1"
+                                               LineBreakMode="TailTruncation"
                                                SemanticProperties.Description="{Binding Title}" />
                                         <Border Grid.Column="1"
                                                 BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
                                                 StrokeThickness="0"
                                                 Padding="8,4"
                                                 StrokeShape="RoundRectangle 8"
-                                                SemanticProperties.Description="{Binding StatusDescription}">
+                                                VerticalOptions="Center">
                                             <Label Text="{Binding Status}"
                                                    FontSize="Caption"
                                                    FontAttributes="Bold"
-                                                   CharacterSpacing="2"
                                                    TextColor="{StaticResource White}" />
                                         </Border>
                                     </Grid>
-
                                     <Label Grid.Row="1"
                                            Style="{StaticResource BodyMedium}"
                                            Text="{Binding Description}"
                                            MaxLines="2"
-                                           LineBreakMode="TailTruncation"
-                                           SemanticProperties.Description="{Binding Description}" />
+                                           LineBreakMode="TailTruncation" />
+                                    <HorizontalStackLayout Grid.Row="2" Spacing="4">
+                                        <Label Text="📍" FontSize="Caption" />
+                                        <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" />
+                                    </HorizontalStackLayout>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </VerticalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

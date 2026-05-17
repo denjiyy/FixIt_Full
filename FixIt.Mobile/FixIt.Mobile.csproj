@@ -31,6 +31,9 @@
 
     <MauiFont Include="Resources\Fonts\*" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <MauiXaml Update="Resources\Styles\Colors.xaml" />
+    <MauiXaml Update="Resources\Styles\Styles.xaml" />
   </ItemGroup>
 
   <ItemGroup>

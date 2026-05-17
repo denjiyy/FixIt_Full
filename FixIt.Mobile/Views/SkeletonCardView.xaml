@@ -3,22 +3,25 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
     <Border x:Name="SkeletonRoot"
-            BackgroundColor="{StaticResource Surface2}"
+            BackgroundColor="{StaticResource Surface}"
             StrokeThickness="0"
             StrokeShape="RoundRectangle 16"
             Padding="20"
             Margin="0,0,0,12">
         <VerticalStackLayout Spacing="12">
-            <BoxView HeightRequest="18"
-                     WidthRequest="160"
+            <BoxView HeightRequest="16"
+                     WidthRequest="140"
                      HorizontalOptions="Start"
-                     Color="{StaticResource Surface3}" />
+                     CornerRadius="4"
+                     Color="{StaticResource Surface2}" />
             <BoxView HeightRequest="12"
-                     Color="{StaticResource Surface3}" />
+                     CornerRadius="4"
+                     Color="{StaticResource Surface2}" />
             <BoxView HeightRequest="12"
-                     WidthRequest="220"
+                     WidthRequest="200"
                      HorizontalOptions="Start"
-                     Color="{StaticResource Surface3}" />
+                     CornerRadius="4"
+                     Color="{StaticResource Surface2}" />
         </VerticalStackLayout>
     </Border>
 </ContentView>

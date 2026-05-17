@@ -15,20 +15,23 @@
 
     <ScrollView>
         <VerticalStackLayout x:Name="ProfileRoot"
-                             Padding="24,56,24,34"
-                             Spacing="24"
+                             Padding="20,28,20,40"
+                             Spacing="16"
                              Opacity="0"
                              TranslationY="25">
+
+            <!-- Identity Card -->
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="12"
-                                     HorizontalOptions="Center"
-                                     VerticalOptions="Center">
-                    <Border WidthRequest="96"
-                            HeightRequest="96"
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Border WidthRequest="88" HeightRequest="88"
                             BackgroundColor="{StaticResource Primary}"
                             StrokeThickness="0"
-                            StrokeShape="RoundRectangle 48"
+                            StrokeShape="RoundRectangle 44"
                             HorizontalOptions="Center">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource Primary}"
+                                    Opacity="0.4" Offset="0,4" Radius="14" />
+                        </Border.Shadow>
                         <Label Text="{Binding Initials}"
                                TextColor="{StaticResource White}"
                                FontSize="Title"
@@ -37,31 +40,31 @@
                                VerticalOptions="Center" />
                     </Border>
 
-                    <Label Text="{Binding DisplayName}"
-                           Style="{StaticResource HeadlineMedium}"
-                           HorizontalTextAlignment="Center"
-                           SemanticProperties.HeadingLevel="Level1" />
-
-                    <Label Text="{Binding Email}"
-                           Style="{StaticResource BodyMedium}"
-                           TextColor="{StaticResource OnSurfaceMuted}"
-                           HorizontalTextAlignment="Center" />
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Label Text="{Binding DisplayName}"
+                               Style="{StaticResource HeadlineMedium}"
+                               HorizontalTextAlignment="Center"
+                               SemanticProperties.HeadingLevel="Level1" />
+                        <Label Text="{Binding Email}"
+                               Style="{StaticResource LabelSmall}"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
 
                     <Border BackgroundColor="{StaticResource StatusNew}"
                             StrokeThickness="0"
-                            Padding="10,4"
-                            StrokeShape="RoundRectangle 8"
-                            HorizontalOptions="Center"
-                            SemanticProperties.Description="{Binding TrustLevel, StringFormat='Trust level: {0}'}">
-                        <Label Text="{Binding TrustLevel, StringFormat='TRUST: {0}'}"
+                            Padding="12,5"
+                            StrokeShape="RoundRectangle 10"
+                            HorizontalOptions="Center">
+                        <Label Text="{Binding TrustLevel, StringFormat='TRUST · {0}'}"
                                FontSize="Caption"
                                FontAttributes="Bold"
-                               CharacterSpacing="2"
+                               CharacterSpacing="1"
                                TextColor="{StaticResource White}" />
                     </Border>
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Language Switcher -->
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0"
@@ -69,68 +72,78 @@
                            Style="{StaticResource TitleMedium}"
                            VerticalOptions="Center"
                            SemanticProperties.HeadingLevel="Level2" />
-                    <Button Grid.Column="1"
-                            Text="EN"
+                    <Button Grid.Column="1" Text="EN"
                             Command="{Binding SwitchLanguageCommand}"
                             CommandParameter="en-US"
                             Style="{StaticResource SecondaryButton}"
-                            HeightRequest="44">
+                            HeightRequest="42" WidthRequest="56">
                         <Button.Triggers>
                             <DataTrigger TargetType="Button" Binding="{Binding IsEnglish}" Value="True">
                                 <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
                                 <Setter Property="TextColor" Value="{StaticResource White}" />
+                                <Setter Property="BorderColor" Value="{StaticResource Primary}" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
-                    <Button Grid.Column="2"
-                            Text="BG"
+                    <Button Grid.Column="2" Text="BG"
                             Command="{Binding SwitchLanguageCommand}"
                             CommandParameter="bg-BG"
                             Style="{StaticResource SecondaryButton}"
-                            HeightRequest="44">
+                            HeightRequest="42" WidthRequest="56">
                         <Button.Triggers>
                             <DataTrigger TargetType="Button" Binding="{Binding IsBulgarian}" Value="True">
                                 <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
                                 <Setter Property="TextColor" Value="{StaticResource White}" />
+                                <Setter Property="BorderColor" Value="{StaticResource Primary}" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
                 </Grid>
             </Border>
 
+            <!-- Stats Row -->
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
                 <Border Grid.Column="0" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="{local:Localize Key=Profile_Reputation}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding ReputationPoints}" Style="{StaticResource HeadlineMedium}" TextColor="{StaticResource Primary}" />
+                        <Label Style="{StaticResource LabelSmall}"
+                               Text="{local:Localize Key=Profile_Reputation}" />
+                        <Label FontSize="Title" FontAttributes="Bold"
+                               TextColor="{StaticResource Accent}"
+                               Text="{Binding ReputationPoints}" />
                     </VerticalStackLayout>
                 </Border>
-
                 <Border Grid.Column="1" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="{local:Localize Key=Profile_Reported}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding IssuesReported}" Style="{StaticResource HeadlineMedium}" />
+                        <Label Style="{StaticResource LabelSmall}"
+                               Text="{local:Localize Key=Profile_Reported}" />
+                        <Label FontSize="Title" FontAttributes="Bold"
+                               TextColor="{StaticResource OnBackground}"
+                               Text="{Binding IssuesReported}" />
                     </VerticalStackLayout>
                 </Border>
-
                 <Border Grid.Column="2" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="{local:Localize Key=Profile_Resolved}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding IssuesResolved}" Style="{StaticResource HeadlineMedium}" TextColor="{StaticResource Success}" />
+                        <Label Style="{StaticResource LabelSmall}"
+                               Text="{local:Localize Key=Profile_Resolved}" />
+                        <Label FontSize="Title" FontAttributes="Bold"
+                               TextColor="{StaticResource Success}"
+                               Text="{Binding IssuesResolved}" />
                     </VerticalStackLayout>
                 </Border>
             </Grid>
 
-            <VerticalStackLayout Spacing="12">
+            <!-- My Issues -->
+            <VerticalStackLayout Spacing="14">
                 <Grid ColumnDefinitions="*,Auto">
                     <Label Grid.Column="0"
-                           Text="{local:Localize Key=Profile_MyIssues}"
                            Style="{StaticResource TitleMedium}"
+                           Text="{local:Localize Key=Profile_MyIssues}"
                            SemanticProperties.HeadingLevel="Level2" />
                     <Label Grid.Column="1"
                            Text="{local:Localize Key=Profile_ViewAll}"
                            TextColor="{StaticResource Accent}"
                            FontSize="Caption"
+                           FontAttributes="Bold"
                            VerticalOptions="Center">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ViewAllIssuesCommand}" />
@@ -142,9 +155,8 @@
                                 SelectionMode="None"
                                 VerticalOptions="Start">
                     <CollectionView.EmptyView>
-                        <VerticalStackLayout Spacing="8">
+                        <VerticalStackLayout Spacing="0">
                             <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
-                                <views:SkeletonCardView />
                                 <views:SkeletonCardView />
                                 <views:SkeletonCardView />
                                 <views:SkeletonCardView />
@@ -152,34 +164,39 @@
                             <Label Text="{local:Localize Key=Profile_NoIssues}"
                                    IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
                                    Style="{StaticResource BodyMedium}"
-                                   HorizontalTextAlignment="Center" />
+                                   HorizontalTextAlignment="Center"
+                                   Padding="0,24" />
                         </VerticalStackLayout>
                     </CollectionView.EmptyView>
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Issue">
                             <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                                <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
                                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                        <Label Grid.Column="0" Style="{StaticResource TitleMedium}" Text="{Binding Title}" />
+                                        <Label Grid.Column="0"
+                                               Style="{StaticResource TitleMedium}"
+                                               Text="{Binding Title}"
+                                               MaxLines="1"
+                                               LineBreakMode="TailTruncation" />
                                         <Border Grid.Column="1"
                                                 StrokeThickness="0"
                                                 StrokeShape="RoundRectangle 8"
                                                 Padding="8,4"
-                                                BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
-                                                SemanticProperties.Description="{Binding StatusDescription}">
-                                            <Label Text="{Binding Status}" TextColor="{StaticResource White}" FontSize="Caption" FontAttributes="Bold" CharacterSpacing="2" />
+                                                VerticalOptions="Center"
+                                                BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
+                                            <Label Text="{Binding Status}"
+                                                   TextColor="{StaticResource White}"
+                                                   FontSize="Caption"
+                                                   FontAttributes="Bold" />
                                         </Border>
                                     </Grid>
-
-                                    <Label Grid.Row="1" Style="{StaticResource BodyMedium}" Text="{Binding Description}" MaxLines="2" LineBreakMode="TailTruncation" />
-
-                                    <HorizontalStackLayout Grid.Row="2" Spacing="4">
-                                        <Label Text="📍" Style="{StaticResource LabelSmall}" />
+                                    <HorizontalStackLayout Grid.Row="1" Spacing="4">
+                                        <Label Text="📍" FontSize="Caption" />
                                         <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" />
-                                        <Label Text=" • " Style="{StaticResource LabelSmall}" />
-                                        <Label Text="🕐" Style="{StaticResource LabelSmall}" />
-                                        <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}" Style="{StaticResource LabelSmall}" />
+                                        <Label Text="·" Style="{StaticResource LabelSmall}" />
+                                        <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
+                                               Style="{StaticResource LabelSmall}" />
                                     </HorizontalStackLayout>
                                 </Grid>
                             </Border>
@@ -188,11 +205,13 @@
                 </CollectionView>
             </VerticalStackLayout>
 
+            <!-- Sign Out -->
             <Button Text="{local:Localize Key=Profile_SignOut}"
                     Style="{StaticResource SecondaryButton}"
                     TextColor="{StaticResource Error}"
                     BorderColor="{StaticResource Error}"
                     Command="{Binding LogoutCommand}"
+                    Margin="0,8,0,0"
                     SemanticProperties.Description="Sign out of your account" />
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"

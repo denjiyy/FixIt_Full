@@ -6,12 +6,12 @@ namespace FixIt.Mobile;
 public partial class App : Application
 {
     private readonly IAnalyticsService _analytics;
-    private readonly AppShell _appShell;
+    private readonly IServiceProvider _serviceProvider;
 
-    public App(AppShell appShell, IAnalyticsService analytics)
+    public App(IServiceProvider serviceProvider, IAnalyticsService analytics)
     {
         InitializeComponent();
-        _appShell = appShell;
+        _serviceProvider = serviceProvider;
         _analytics = analytics;
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -20,7 +20,7 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(_appShell);
+        return new Window(_serviceProvider.GetRequiredService<AppShell>());
     }
 
     private async void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

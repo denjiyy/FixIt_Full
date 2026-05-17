@@ -13,30 +13,32 @@
 
     <ScrollView>
         <VerticalStackLayout x:Name="FormRoot"
-                             Opacity="0"
-                             TranslationY="25"
-                             Padding="24,24,24,34"
+                             Opacity="0" TranslationY="25"
+                             Padding="20,20,20,40"
                              Spacing="16">
+
+            <!-- Photo Area -->
             <Border x:Name="PhotoBorder"
-                    HeightRequest="200"
+                    HeightRequest="220"
                     BackgroundColor="{StaticResource Surface}"
                     Stroke="{StaticResource Surface2}"
                     StrokeThickness="1"
-                    StrokeShape="RoundRectangle 16"
-                    SemanticProperties.Description="Take a photo of the issue">
+                    StrokeShape="RoundRectangle 20"
+                    SemanticProperties.Description="Tap to take a photo of the issue">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding TakePhotoCommand}" />
                 </Border.GestureRecognizers>
-
                 <Grid>
                     <VerticalStackLayout IsVisible="{Binding HasPhoto, Converter={StaticResource InverseBoolConverter}}"
-                                         Spacing="8"
+                                         Spacing="10"
                                          HorizontalOptions="Center"
                                          VerticalOptions="Center">
-                        <Label Text="📷" FontSize="40" HorizontalOptions="Center" />
+                        <Label Text="📷" FontSize="44" HorizontalOptions="Center" />
+                        <Label Text="{local:Localize Key=Report_PhotoPlaceholder}"
+                               Style="{StaticResource TitleMedium}"
+                               HorizontalOptions="Center" />
                         <Label Text="{local:Localize Key=Report_PhotoTap}"
-                               Style="{StaticResource BodyMedium}"
-                               TextColor="{StaticResource OnSurfaceMuted}"
+                               Style="{StaticResource LabelSmall}"
                                HorizontalOptions="Center" />
                     </VerticalStackLayout>
 
@@ -46,24 +48,33 @@
                            Source="{Binding CapturedPhotoSource}"
                            SemanticProperties.Description="Captured issue photo" />
 
-                    <Label Text="{local:Localize Key=Report_Retake}"
-                           FontSize="Caption"
-                           TextColor="{StaticResource Accent}"
-                           HorizontalOptions="End"
-                           VerticalOptions="Start"
-                           Margin="12"
-                           IsVisible="{Binding HasPhoto}" />
+                    <Border IsVisible="{Binding HasPhoto}"
+                            BackgroundColor="#000000AA"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 10"
+                            Padding="10,5"
+                            HorizontalOptions="End"
+                            VerticalOptions="Start"
+                            Margin="12">
+                        <Label Text="{local:Localize Key=Report_Retake}"
+                               FontSize="Caption"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource White}" />
+                    </Border>
                 </Grid>
             </Border>
             <Label Text="{Binding PhotoError}"
                    TextColor="{StaticResource Error}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasPhotoError}" />
+                   IsVisible="{Binding HasPhotoError}"
+                   Margin="4,0,0,0" />
 
+            <!-- Details Section -->
             <Label Text="{local:Localize Key=Report_Details}"
                    Style="{StaticResource LabelSmall}"
-                   CharacterSpacing="2"
+                   CharacterSpacing="1.5"
                    TextTransform="Uppercase"
+                   Margin="0,8,0,0"
                    SemanticProperties.HeadingLevel="Level2" />
 
             <Border Style="{StaticResource EntryCard}">
@@ -77,9 +88,10 @@
             <Label Text="{Binding TitleError}"
                    TextColor="{StaticResource Error}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasTitleError}" />
+                   IsVisible="{Binding HasTitleError}"
+                   Margin="4,0,0,0" />
 
-            <Border Style="{StaticResource EditorCard}" HeightRequest="120">
+            <Border Style="{StaticResource EditorCard}" MinimumHeightRequest="110">
                 <Editor Placeholder="{local:Localize Key=Report_DescPlaceholder}"
                         PlaceholderColor="{StaticResource OnSurfaceMuted}"
                         TextColor="{StaticResource OnBackground}"
@@ -91,12 +103,15 @@
             <Label Text="{Binding DescriptionError}"
                    TextColor="{StaticResource Error}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasDescriptionError}" />
+                   IsVisible="{Binding HasDescriptionError}"
+                   Margin="4,0,0,0" />
 
+            <!-- Location Section -->
             <Label Text="{local:Localize Key=Report_Location}"
                    Style="{StaticResource LabelSmall}"
-                   CharacterSpacing="2"
+                   CharacterSpacing="1.5"
                    TextTransform="Uppercase"
+                   Margin="0,8,0,0"
                    SemanticProperties.HeadingLevel="Level2" />
 
             <Border Style="{StaticResource EntryCard}">
@@ -110,24 +125,27 @@
             <Label Text="{Binding LocationError}"
                    TextColor="{StaticResource Error}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasLocationError}" />
+                   IsVisible="{Binding HasLocationError}"
+                   Margin="4,0,0,0" />
 
+            <!-- Submit -->
             <Button Text="{local:Localize Key=Report_Submit}"
                     Style="{StaticResource PrimaryButton}"
                     Opacity="{Binding CanSubmit, Converter={StaticResource BoolToOpacityConverter}}"
                     Command="{Binding SubmitCommand}"
+                    Margin="0,8,0,0"
                     SemanticProperties.Description="Submit your issue report" />
 
             <Label Text="{Binding SubmitError}"
                    TextColor="{StaticResource Error}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasSubmitError}" />
+                   IsVisible="{Binding HasSubmitError}"
+                   HorizontalTextAlignment="Center" />
 
             <Label x:Name="SuccessCheckLabel"
                    Text="✅"
                    FontSize="48"
-                   Scale="0"
-                   Opacity="0"
+                   Scale="0" Opacity="0"
                    HorizontalOptions="Center"
                    IsVisible="{Binding SubmissionSucceeded}"
                    SemanticProperties.Description="{local:Localize Key=Report_Success}" />
