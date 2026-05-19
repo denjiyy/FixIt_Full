@@ -12,8 +12,9 @@ COPY ["FixIt.ViewModels/FixIt.ViewModels.csproj", "FixIt.ViewModels/"]
 COPY ["FixIt.Data/FixIt.Data.csproj", "FixIt.Data/"]
 COPY ["FixIt.Tests/FixIt.Tests.csproj", "FixIt.Tests/"]
 
-# Restore dependencies
+# Restore dependencies for the backend projects (not the mobile app)
 RUN dotnet restore "FixIt/FixIt.csproj"
+RUN dotnet restore "FixIt.Tests/FixIt.Tests.csproj"
 
 # Copy entire source code
 COPY . .
