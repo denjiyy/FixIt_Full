@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using FixIt.Mobile.Constants;
 using FixIt.Mobile.Localization;
 using FixIt.Mobile.Models;
+using FixIt.Mobile.Services;
 using FixIt.Mobile.Services.Contracts;
 
 namespace FixIt.Mobile.ViewModels;
@@ -130,7 +131,15 @@ public partial class ProfileViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ViewAllIssuesAsync(CancellationToken ct)
     {
+        HapticService.Click();
         await Shell.Current.GoToAsync(AppConstants.RouteMyIssues);
+    }
+
+    [RelayCommand]
+    private async Task ViewHealthReportAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHealthReport);
     }
 
     [RelayCommand]
@@ -142,14 +151,16 @@ public partial class ProfileViewModel : ObservableObject, IDisposable
         }
 
         LocalizationService.SetCulture(cultureName);
+        HapticService.Click();
         await Task.CompletedTask;
     }
 
     [RelayCommand]
     private async Task LogoutAsync(CancellationToken ct)
     {
+        HapticService.Click();
         await _auth.LogoutAsync(ct);
-        await Shell.Current.GoToAsync(AppConstants.RouteSignInTab);
+        await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
     }
 
     private void OnCultureChanged(object? sender, System.Globalization.CultureInfo e)

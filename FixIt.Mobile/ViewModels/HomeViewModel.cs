@@ -31,6 +31,7 @@ public partial class HomeViewModel : ObservableObject, IDisposable
         Title = LocalizationService.Get("Home_Title");
         WelcomeMessage = LocalizationService.Get("Home_Subtitle");
         LocalizationService.CultureChanged += OnCultureChanged;
+        App.Resumed += OnAppResumed;
     }
 
     [ObservableProperty]
@@ -91,13 +92,21 @@ public partial class HomeViewModel : ObservableObject, IDisposable
             return;
         }
 
-        await Shell.Current.GoToAsync(AppConstants.RouteSignInTab);
+        await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
     }
 
     [RelayCommand]
     private async Task GoToIssuesAsync(CancellationToken ct)
     {
+        HapticService.Click();
         await Shell.Current.GoToAsync(AppConstants.RouteIssues);
+    }
+
+    [RelayCommand]
+    private async Task GoToHealthReportAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHealthReport);
     }
 
     [RelayCommand]
@@ -108,6 +117,7 @@ public partial class HomeViewModel : ObservableObject, IDisposable
             return;
         }
 
+        HapticService.Click();
         await Shell.Current.GoToAsync($"{AppConstants.RouteIssueDetail}?IssueId={Uri.EscapeDataString(issueId)}");
     }
 
@@ -171,6 +181,12 @@ public partial class HomeViewModel : ObservableObject, IDisposable
         WelcomeMessage = LocalizationService.Get("Home_Subtitle");
     }
 
+    private void OnAppResumed(object? sender, EventArgs e)
+    {
+        // FIX B-06: invalidate dashboard cache after app suspension so the next appearance refreshes data.
+        _lastLoaded = DateTime.MinValue;
+    }
+
     private void SubscribeAuth()
     {
         if (_subscribed)
@@ -210,6 +226,7 @@ public partial class HomeViewModel : ObservableObject, IDisposable
         _disposed = true;
         UnsubscribeAuth();
         LocalizationService.CultureChanged -= OnCultureChanged;
+        App.Resumed -= OnAppResumed;
         _cts.Cancel();
         _cts.Dispose();
     }

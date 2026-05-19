@@ -309,21 +309,24 @@ public class ApiService : IApiService
                 voteType = upvote ? "upvote" : "downvote"
             }, _jsonOptions, ct);
 
-            if (!response.IsSuccessStatusCode)
+            var voteSucceeded = response.IsSuccessStatusCode;
+            if (!voteSucceeded)
             {
                 using var numericResponse = await _httpClient.PostAsJsonAsync($"{AppConstants.ApiIssues}/{Uri.EscapeDataString(issueId)}/vote", new
                 {
                     voteType = upvote ? 1 : -1
                 }, _jsonOptions, ct);
 
-                if (!numericResponse.IsSuccessStatusCode)
+                voteSucceeded = numericResponse.IsSuccessStatusCode;
+                if (!voteSucceeded)
                 {
                     var numericError = await ExtractApiErrorAsync(numericResponse, Localization.LocalizationService.Get("Common_Error_Generic"), ct);
                     return new ApiResult(false, numericError);
                 }
             }
 
-            if (_issueCache.TryGetValue(issueId, out var issue))
+            // FIX B-10: mutate cached vote state only after one of the accepted API payloads succeeds.
+            if (voteSucceeded && _issueCache.TryGetValue(issueId, out var issue))
             {
                 issue.UserHasUpvoted = upvote;
                 issue.UserHasDownvoted = !upvote;
@@ -555,6 +558,204 @@ public class ApiService : IApiService
         }
     }
 
+    public async Task<LeaderboardResult> GetLeaderboardAsync(string period, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline)
+        {
+            return new LeaderboardResult();
+        }
+
+        try
+        {
+            var normalizedPeriod = period switch
+            {
+                "weekly" => "weekly",
+                "monthly" => "monthly",
+                "alltime" => "alltime",
+                _ => "weekly"
+            };
+
+            using var response = await _httpClient.GetAsync($"api/leaderboards?period={normalizedPeriod}", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] Leaderboard endpoint unavailable. Status: {(int)response.StatusCode}");
+                return new LeaderboardResult();
+            }
+
+            var entries = await DeserializeFlexibleAsync<List<LeaderboardEntryDto>>(response, ct, "entries", "items", "leaderboard");
+            return new LeaderboardResult
+            {
+                Entries = (entries ?? []).Select(MapLeaderboardEntry).OrderBy(e => e.Rank).ToList()
+            };
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[API] Network error: {ex.Message}");
+            return new LeaderboardResult();
+        }
+        catch (TaskCanceledException)
+        {
+            return new LeaderboardResult();
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            return new LeaderboardResult();
+        }
+    }
+
+    public async Task<CityHealthReport> GetHealthReportAsync(string cityId, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline)
+        {
+            return new CityHealthReport();
+        }
+
+        try
+        {
+            using var response = await _httpClient.GetAsync($"api/health-reports/{Uri.EscapeDataString(cityId)}", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] Health report endpoint unavailable. Status: {(int)response.StatusCode}");
+                return new CityHealthReport();
+            }
+
+            return await DeserializeFlexibleAsync<CityHealthReport>(response, ct, "report", "healthReport")
+                ?? new CityHealthReport();
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[API] Network error: {ex.Message}");
+            return new CityHealthReport();
+        }
+        catch (TaskCanceledException)
+        {
+            return new CityHealthReport();
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            return new CityHealthReport();
+        }
+    }
+
+    public async Task<IssueAnalysis?> GetAnalysisAsync(string issueId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(issueId) || !_connectivity.IsOnline)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var response = await _httpClient.GetAsync($"api/analysis/analyze/{Uri.EscapeDataString(issueId)}", ct);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] Analysis endpoint unavailable. Status: {(int)response.StatusCode}");
+                return null;
+            }
+
+            var dto = await DeserializeFlexibleAsync<IssueAnalysisDto>(response, ct, "analysis");
+            return dto == null ? null : MapIssueAnalysis(dto);
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[API] Network error: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<IssueFilterResult?> TranslateNaturalLanguageFilterAsync(string query, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(query) || !_connectivity.IsOnline)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync("api/analysis/issue-search/translate", new
+            {
+                query = query.Trim()
+            }, _jsonOptions, ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] AI filter endpoint unavailable. Status: {(int)response.StatusCode}");
+                return null;
+            }
+
+            return await DeserializeFlexibleAsync<IssueFilterResult>(response, ct, "filter", "result");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[API] Network error: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<PublicUserProfile?> GetPublicProfileAsync(string userId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || !_connectivity.IsOnline)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var response = await _httpClient.GetAsync($"api/users/{Uri.EscapeDataString(userId)}/profile", ct);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] Public profile endpoint unavailable. Status: {(int)response.StatusCode}");
+                return null;
+            }
+
+            return await DeserializeFlexibleAsync<PublicUserProfile>(response, ct, "profile", "user");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[API] Network error: {ex.Message}");
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            return null;
+        }
+    }
+
     private async Task<List<Issue>> SearchIssuesAsync(int? status, string search, int page, int pageSize, CancellationToken ct)
     {
         using var response = await _httpClient.PostAsJsonAsync(
@@ -660,8 +861,11 @@ public class ApiService : IApiService
             CityName = cityName,
             Address = dto.Address ?? string.Empty,
             PhotoUrl = dto.PhotoUrl ?? dto.ImageUrl ?? dto.MediaUrl,
+            Latitude = NormalizeCoordinate(dto.Latitude),
+            Longitude = NormalizeCoordinate(dto.Longitude),
             CreatedAt = dto.CreatedAt,
             VoteCount = dto.VoteScore ?? (dto.Upvotes - dto.Downvotes),
+            AuthorUserId = dto.Reporter?.Id,
             AuthorName = dto.Reporter?.DisplayName ?? "Anonymous",
             UserHasUpvoted = dto.UserVote > 0,
             UserHasDownvoted = dto.UserVote < 0
@@ -698,9 +902,37 @@ public class ApiService : IApiService
             Title = dto.Title ?? string.Empty,
             Description = dto.Description ?? string.Empty,
             Address = dto.Address ?? string.Empty,
+            Latitude = NormalizeCoordinate(dto.Latitude),
+            Longitude = NormalizeCoordinate(dto.Longitude),
             Confirmations = dto.Confirmations,
             IsResolved = dto.IsResolved,
             CreatedAt = dto.CreatedAt
+        };
+    }
+
+    private static LeaderboardEntry MapLeaderboardEntry(LeaderboardEntryDto dto)
+    {
+        return new LeaderboardEntry
+        {
+            Rank = dto.Rank,
+            UserId = dto.UserId ?? string.Empty,
+            UserDisplayName = dto.UserDisplayName ?? string.Empty,
+            Points = dto.Points,
+            TrustLevel = dto.TrustLevel
+        };
+    }
+
+    private static IssueAnalysis MapIssueAnalysis(IssueAnalysisDto dto)
+    {
+        return new IssueAnalysis
+        {
+            Category = ResolveCategoryName(dto.Category),
+            ConfidenceScore = dto.ConfidenceScore,
+            EstimatedSeverity = dto.EstimatedSeverity,
+            Keywords = dto.Keywords ?? [],
+            SuggestedTags = dto.SuggestedTags ?? [],
+            Reasoning = dto.Reasoning ?? string.Empty,
+            AnalyzedAt = dto.AnalyzedAt
         };
     }
 
@@ -735,10 +967,90 @@ public class ApiService : IApiService
         return segments.Length == 0 ? "Community City" : segments[^1];
     }
 
+    private static double? NormalizeCoordinate(double? coordinate)
+    {
+        return coordinate is null or 0 ? null : coordinate;
+    }
+
+    private static string ResolveCategoryName(JsonElement? category)
+    {
+        if (category == null)
+        {
+            return string.Empty;
+        }
+
+        return category.Value.ValueKind switch
+        {
+            JsonValueKind.String => category.Value.GetString() ?? string.Empty,
+            JsonValueKind.Number => category.Value.GetInt32().ToString(),
+            _ => string.Empty
+        };
+    }
+
     private async Task<ApiEnvelope<T>?> DeserializeEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken ct)
     {
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         return await JsonSerializer.DeserializeAsync<ApiEnvelope<T>>(stream, _jsonOptions, ct);
+    }
+
+    private async Task<T?> DeserializeFlexibleAsync<T>(HttpResponseMessage response, CancellationToken ct, params string[] payloadNames)
+    {
+        await using var stream = await response.Content.ReadAsStreamAsync(ct);
+        using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+        var root = document.RootElement;
+
+        if (root.TryGetProperty("data", out var data))
+        {
+            foreach (var payloadName in payloadNames)
+            {
+                if (data.TryGetProperty(payloadName, out var nested) && TryDeserializeElement(nested, out T? nestedValue))
+                {
+                    return nestedValue;
+                }
+            }
+
+            if (TryDeserializeElement(data, out T? dataValue))
+            {
+                return dataValue;
+            }
+        }
+
+        foreach (var payloadName in payloadNames)
+        {
+            if (root.TryGetProperty(payloadName, out var nested) && TryDeserializeElement(nested, out T? nestedValue))
+            {
+                return nestedValue;
+            }
+        }
+
+        if (TryDeserializeElement(root, out T? direct))
+        {
+            return direct;
+        }
+
+        return default;
+    }
+
+    private bool TryDeserializeElement<T>(JsonElement element, out T? value)
+    {
+        value = default;
+        if (element.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return false;
+        }
+
+        if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>) && element.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        if (!typeof(T).IsGenericType && element.ValueKind == JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        value = JsonSerializer.Deserialize<T>(element.GetRawText(), _jsonOptions);
+        return value != null;
     }
 
     private async Task<string> ExtractApiErrorAsync(HttpResponseMessage response, string fallbackMessage, CancellationToken ct)
@@ -766,6 +1078,8 @@ public class ApiService : IApiService
         public string? Description { get; set; }
         public string? CityId { get; set; }
         public string? Address { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public int Status { get; set; }
         public int Priority { get; set; }
         public string? Category { get; set; }
@@ -786,6 +1100,7 @@ public class ApiService : IApiService
 
     private sealed class ReporterDto
     {
+        public string? Id { get; set; }
         public string? DisplayName { get; set; }
     }
 
@@ -815,8 +1130,30 @@ public class ApiService : IApiService
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? Address { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public int Confirmations { get; set; }
         public bool IsResolved { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    private sealed class LeaderboardEntryDto
+    {
+        public int Rank { get; set; }
+        public string? UserId { get; set; }
+        public string? UserDisplayName { get; set; }
+        public int Points { get; set; }
+        public int TrustLevel { get; set; }
+    }
+
+    private sealed class IssueAnalysisDto
+    {
+        public JsonElement? Category { get; set; }
+        public int ConfidenceScore { get; set; }
+        public int EstimatedSeverity { get; set; }
+        public List<string>? Keywords { get; set; }
+        public List<string>? SuggestedTags { get; set; }
+        public string? Reasoning { get; set; }
+        public DateTime AnalyzedAt { get; set; }
     }
 }

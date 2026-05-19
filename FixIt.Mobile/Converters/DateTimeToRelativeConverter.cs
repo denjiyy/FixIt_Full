@@ -8,11 +8,16 @@ public class DateTimeToRelativeConverter : IValueConverter
     {
         if (value is not DateTime dateTime)
         {
-            return "just now";
+            return string.Empty;
         }
 
         var utcDate = dateTime.Kind == DateTimeKind.Utc ? dateTime : dateTime.ToUniversalTime();
         var delta = DateTime.UtcNow - utcDate;
+        if (dateTime == DateTime.MinValue || delta.TotalDays > 365 * 20)
+        {
+            // FIX B-09: hide uninitialized or clearly stale API dates instead of showing multi-decade ages.
+            return string.Empty;
+        }
 
         if (delta.TotalMinutes < 1)
         {

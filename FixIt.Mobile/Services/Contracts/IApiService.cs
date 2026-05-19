@@ -15,4 +15,9 @@ public interface IApiService
     Task<Comment?> AddCommentAsync(string issueId, string text, CancellationToken ct = default);
     Task<List<SafetyHazard>> GetCriticalHazardsAsync(CancellationToken ct = default);
     Task<ApiResult> ConfirmHazardAsync(string hazardId, CancellationToken ct = default);
+    Task<LeaderboardResult> GetLeaderboardAsync(string period, CancellationToken ct = default);
+    Task<CityHealthReport> GetHealthReportAsync(string cityId, CancellationToken ct = default);
+    Task<IssueAnalysis?> GetAnalysisAsync(string issueId, CancellationToken ct = default);
+    Task<IssueFilterResult?> TranslateNaturalLanguageFilterAsync(string query, CancellationToken ct = default);
+    Task<PublicUserProfile?> GetPublicProfileAsync(string userId, CancellationToken ct = default);
 }

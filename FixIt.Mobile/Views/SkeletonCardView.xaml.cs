@@ -17,6 +17,14 @@ public partial class SkeletonCardView : ContentView
 
     private void OnUnloaded(object? sender, EventArgs e)
     {
-        this.AbortAnimation("Shimmer");
+        try
+        {
+            // FIX B-05: stop recycled shimmer animations before iOS detaches the native view.
+            this.AbortAnimation("Shimmer");
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Console.WriteLine($"[SkeletonCard] Animation abort skipped: {ex.Message}");
+        }
     }
 }

@@ -20,7 +20,7 @@
                    TextColor="{StaticResource White}"
                    FontAttributes="Bold"
                    HorizontalTextAlignment="Center"
-                   SemanticProperties.Description="No internet connection" />
+                   SemanticProperties.Description="{local:Localize Key=Common_NoInternet}" />
         </Border>
     </Shell.TitleView>
 
@@ -35,6 +35,10 @@
 
         <Tab x:Name="AlertsTab" Title="Alerts" Route="alerts">
             <ShellContent x:Name="AlertsContent" Route="alerts-page" />
+        </Tab>
+
+        <Tab x:Name="LeaderboardTab" Title="Leaderboard" Route="leaderboard">
+            <ShellContent x:Name="LeaderboardContent" Route="leaderboard-page" />
         </Tab>
 
         <Tab x:Name="ReportIssueTab" Title="Report Issue" Route="report-issue-tab">

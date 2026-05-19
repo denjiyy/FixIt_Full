@@ -24,7 +24,7 @@
                     Stroke="{StaticResource Surface2}"
                     StrokeThickness="1"
                     StrokeShape="RoundRectangle 20"
-                    SemanticProperties.Description="Tap to take a photo of the issue">
+                    SemanticProperties.Description="{local:Localize Key=Report_PhotoTap}">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding TakePhotoCommand}" />
                 </Border.GestureRecognizers>
@@ -46,7 +46,7 @@
                            Aspect="AspectFill"
                            IsVisible="{Binding HasPhoto}"
                            Source="{Binding CapturedPhotoSource}"
-                           SemanticProperties.Description="Captured issue photo" />
+                           SemanticProperties.Description="{local:Localize Key=Detail_IssuePhoto}" />
 
                     <Border IsVisible="{Binding HasPhoto}"
                             BackgroundColor="#000000AA"
@@ -134,7 +134,7 @@
                     Opacity="{Binding CanSubmit, Converter={StaticResource BoolToOpacityConverter}}"
                     Command="{Binding SubmitCommand}"
                     Margin="0,8,0,0"
-                    SemanticProperties.Description="Submit your issue report" />
+                    SemanticProperties.Description="{local:Localize Key=Report_Submit}" />
 
             <Label Text="{Binding SubmitError}"
                    TextColor="{StaticResource Error}"

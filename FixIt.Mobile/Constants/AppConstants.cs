@@ -19,9 +19,14 @@ public static class AppConstants
     public const string RouteIssues = "//issues";
     public const string RouteReportIssueTab = "//report-issue-tab";
     public const string RouteAlerts = "//alerts";
-    public const string RouteSignInTab = "//sign-in-tab";
+    public const string RouteSignInTab = "sign-in-tab";
+    public const string RouteSignInTabAbsolute = $"//{RouteSignInTab}";
     public const string RouteIssueDetail = "issue-detail";
     public const string RouteMyIssues = "my-issues";
+    public const string RouteHazardMap = "hazard-map";
+    public const string RouteLeaderboard = "leaderboard";
+    public const string RouteHealthReport = "health-report";
+    public const string RoutePublicProfile = "public-profile";
 
     public const string FilterAll = "All";
     public const string FilterNew = "New";

@@ -14,7 +14,7 @@
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Issues_Title}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
 
         <!-- Header -->
         <Label Grid.Row="0"
@@ -36,8 +36,27 @@
                    SemanticProperties.Hint="{local:Localize Key=Issues_SearchPlaceholder}" />
         </Border>
 
+        <!-- AI Filter -->
+        <Grid Grid.Row="2"
+              Margin="20,12,20,0"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="10">
+            <Border Style="{StaticResource EntryCard}">
+                <Entry Placeholder="{local:Localize Key=Issues_AIFilter_Placeholder}"
+                       PlaceholderColor="{StaticResource OnSurfaceMuted}"
+                       TextColor="{StaticResource OnBackground}"
+                       Text="{Binding NaturalLanguageQuery}"
+                       ReturnType="Search"
+                       SemanticProperties.Hint="{local:Localize Key=Issues_AIFilter_Placeholder}" />
+            </Border>
+            <Button Grid.Column="1"
+                    Text="{local:Localize Key=Issues_AIFilter_Button}"
+                    Style="{StaticResource CompactPrimaryButton}"
+                    Command="{Binding ApplyNaturalLanguageFilterCommand}" />
+        </Grid>
+
         <!-- Filter Chips -->
-        <ScrollView Grid.Row="2"
+        <ScrollView Grid.Row="3"
                     Orientation="Horizontal"
                     Margin="0,14,0,0"
                     HorizontalScrollBarVisibility="Never">
@@ -146,7 +165,7 @@
         </ScrollView>
 
         <!-- Issues List -->
-        <RefreshView Grid.Row="3"
+        <RefreshView Grid.Row="4"
                      Command="{Binding RefreshIssuesCommand}"
                      IsRefreshing="{Binding IsLoading}"
                      Margin="0,14,0,0">

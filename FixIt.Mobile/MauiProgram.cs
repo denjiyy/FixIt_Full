@@ -73,6 +73,10 @@ public static class MauiProgram
         builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<IssueDetailViewModel>();
         builder.Services.AddTransient<MyIssuesViewModel>();
+        builder.Services.AddTransient<HazardMapViewModel>();
+        builder.Services.AddTransient<LeaderboardViewModel>();
+        builder.Services.AddTransient<HealthReportViewModel>();
+        builder.Services.AddTransient<PublicProfileViewModel>();
 
         builder.Services.AddTransient<HomePage>();
         builder.Services.AddTransient<IssuesPage>();
@@ -82,6 +86,10 @@ public static class MauiProgram
         builder.Services.AddTransient<ProfilePage>();
         builder.Services.AddTransient<IssueDetailPage>();
         builder.Services.AddTransient<MyIssuesPage>();
+        builder.Services.AddTransient<HazardMapPage>();
+        builder.Services.AddTransient<LeaderboardPage>();
+        builder.Services.AddTransient<HealthReportPage>();
+        builder.Services.AddTransient<PublicProfilePage>();
         builder.Services.AddTransient<AppShell>();
 
 #if DEBUG

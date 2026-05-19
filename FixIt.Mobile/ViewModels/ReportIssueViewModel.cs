@@ -174,7 +174,7 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         HapticService.Click();
         if (!_auth.IsLoggedIn)
         {
-            await Shell.Current.GoToAsync(AppConstants.RouteSignInTab);
+            await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
             return;
         }
 
@@ -189,16 +189,25 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
             SubmitError = string.Empty;
 
             using (_performance.StartTrace("ReportIssue"))
-            await using (var stream = new MemoryStream(_photoBytes ?? []))
             {
-                var result = await _api.ReportIssueAsync(new ReportIssueRequest
+                // FIX B-03: dispose the upload stream only after the awaited HttpClient call has completed.
+                var stream = new MemoryStream(_photoBytes ?? []);
+                ApiResult result;
+                try
                 {
-                    Title = Title.Trim(),
-                    Description = Description.Trim(),
-                    Location = Location.Trim(),
-                    PhotoStream = stream,
-                    PhotoFileName = _photoFileName
-                }, ct);
+                    result = await _api.ReportIssueAsync(new ReportIssueRequest
+                    {
+                        Title = Title.Trim(),
+                        Description = Description.Trim(),
+                        Location = Location.Trim(),
+                        PhotoStream = stream,
+                        PhotoFileName = _photoFileName
+                    }, ct);
+                }
+                finally
+                {
+                    stream.Dispose();
+                }
 
                 ct.ThrowIfCancellationRequested();
 

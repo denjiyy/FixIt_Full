@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FixIt.Mobile.Constants;
 using FixIt.Mobile.Localization;
 using FixIt.Mobile.Models;
 using FixIt.Mobile.Services;
@@ -9,7 +8,7 @@ using FixIt.Mobile.Services.Contracts;
 
 namespace FixIt.Mobile.ViewModels;
 
-public partial class AlertsViewModel : ObservableObject, IDisposable
+public partial class HazardMapViewModel : ObservableObject, IDisposable
 {
     private readonly IAnalyticsService _analytics;
     private readonly IApiService _api;
@@ -19,7 +18,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     private bool _disposed;
     private bool _subscribed;
 
-    public AlertsViewModel(IApiService api, IAuthService auth, IAnalyticsService analytics, IPerformanceService performance)
+    public HazardMapViewModel(IApiService api, IAuthService auth, IAnalyticsService analytics, IPerformanceService performance)
     {
         _api = api;
         _auth = auth;
@@ -29,7 +28,10 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         SubscribeAuth();
     }
 
-    public ObservableCollection<SafetyHazard> Alerts { get; } = [];
+    public ObservableCollection<SafetyHazard> Hazards { get; } = [];
+
+    [ObservableProperty]
+    private HtmlWebViewSource? _mapSource;
 
     [ObservableProperty]
     private bool _isLoading;
@@ -48,10 +50,10 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     public async Task OnAppearingAsync()
     {
         SubscribeAuth();
-        await _analytics.TrackScreen("Alerts");
-        if (Alerts.Count == 0)
+        await _analytics.TrackScreen("HazardMap");
+        if (Hazards.Count == 0)
         {
-            await LoadAlertsAsync(_cts.Token);
+            await LoadHazardsAsync(_cts.Token);
         }
     }
 
@@ -67,28 +69,29 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task LoadAlertsAsync(CancellationToken ct)
+    private async Task LoadHazardsAsync(CancellationToken ct)
     {
         try
         {
             IsLoading = true;
             ErrorMessage = string.Empty;
-            using (_performance.StartTrace("LoadAlerts"))
+            using (_performance.StartTrace("LoadHazardMap"))
             {
-                var alerts = await _api.GetCriticalHazardsAsync(ct);
-                Alerts.Clear();
-                foreach (var alert in alerts)
+                var hazards = await _api.GetCriticalHazardsAsync(ct);
+                Hazards.Clear();
+                foreach (var hazard in hazards)
                 {
-                    alert.CanConfirm = IsLoggedIn;
-                    Alerts.Add(alert);
+                    hazard.CanConfirm = IsLoggedIn;
+                    Hazards.Add(hazard);
                 }
 
-                IsEmpty = Alerts.Count == 0;
+                MapSource = MapHtmlBuilder.BuildHazardMap(Hazards);
+                IsEmpty = Hazards.Count == 0;
             }
         }
         catch (OperationCanceledException ex)
         {
-            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "alerts_cancelled" });
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "hazard_map_cancelled" });
         }
         catch (Exception ex)
         {
@@ -112,26 +115,25 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         HapticService.Click();
         try
         {
-            using (_performance.StartTrace("ConfirmHazard"))
+            var result = await _api.ConfirmHazardAsync(hazardId, ct);
+            if (result.Success)
             {
-                var result = await _api.ConfirmHazardAsync(hazardId, ct);
-                if (result.Success)
+                var hazard = Hazards.FirstOrDefault(h => h.Id == hazardId);
+                if (hazard != null)
                 {
-                    var alert = Alerts.FirstOrDefault(a => a.Id == hazardId);
-                    if (alert != null)
-                    {
-                        alert.Confirmations += 1;
-                    }
+                    hazard.Confirmations += 1;
                 }
-                else
-                {
-                    ErrorMessage = result.Error ?? LocalizationService.Get("Common_Error_Generic");
-                }
+
+                MapSource = MapHtmlBuilder.BuildHazardMap(Hazards);
+            }
+            else
+            {
+                ErrorMessage = result.Error ?? LocalizationService.Get("Common_Error_Generic");
             }
         }
         catch (OperationCanceledException ex)
         {
-            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "confirm_cancelled" });
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "hazard_map_confirm_cancelled" });
         }
         catch (Exception ex)
         {
@@ -140,19 +142,12 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
-    private async Task NavigateToMapAsync(CancellationToken ct)
-    {
-        HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
-    }
-
     private void OnLoginStateChanged(object? sender, bool isLoggedIn)
     {
         IsLoggedIn = isLoggedIn;
-        foreach (var alert in Alerts)
+        foreach (var hazard in Hazards)
         {
-            alert.CanConfirm = isLoggedIn;
+            hazard.CanConfirm = isLoggedIn;
         }
     }
 

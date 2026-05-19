@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.HealthReportPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:HealthReportViewModel"
+             BackgroundColor="{StaticResource Background}"
+             NavigationPage.HasNavigationBar="True"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Health_Title}">
+
+    <ScrollView>
+        <VerticalStackLayout x:Name="HealthRoot"
+                             Padding="20,28,20,40"
+                             Spacing="16"
+                             Opacity="0"
+                             TranslationY="24">
+            <Label Text="{local:Localize Key=Health_Title}"
+                   Style="{StaticResource HeadlineLarge}"
+                   SemanticProperties.HeadingLevel="Level1" />
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="{Binding HealthScoreDisplay, StringFormat='{0}/100'}"
+                           FontSize="48"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource Accent}"
+                           HorizontalTextAlignment="Center" />
+                    <ProgressBar Progress="{Binding HealthScoreProgress}"
+                                 ProgressColor="{StaticResource Success}"
+                                 BackgroundColor="{StaticResource Surface2}"
+                                 WidthRequest="220" />
+                    <Label Text="{local:Localize Key=Health_Score}"
+                           Style="{StaticResource TitleMedium}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=Health_TotalIssues}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Report.TotalIssues}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=Health_Resolved}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Report.ResolvedIssues}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Success}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=Health_Open}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Report.OpenIssues}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Warning}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=Health_Engagement}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Engagement}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource OnBackground}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{local:Localize Key=Health_Title}"
+                           Style="{StaticResource TitleMedium}"
+                           SemanticProperties.HeadingLevel="Level2" />
+                    <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                        <VerticalStackLayout>
+                            <Label Text="{local:Localize Key=Health_Critical}" Style="{StaticResource LabelSmall}" />
+                            <Label Text="{Binding Report.CriticalIssues}" FontAttributes="Bold" TextColor="{StaticResource Error}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="{local:Localize Key=Health_High}" Style="{StaticResource LabelSmall}" />
+                            <Label Text="{Binding Report.HighIssues}" FontAttributes="Bold" TextColor="{StaticResource Warning}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2">
+                            <Label Text="{local:Localize Key=Health_Medium}" Style="{StaticResource LabelSmall}" />
+                            <Label Text="{Binding Report.MediumIssues}" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="3">
+                            <Label Text="{local:Localize Key=Health_Low}" Style="{StaticResource LabelSmall}" />
+                            <Label Text="{Binding Report.LowIssues}" FontAttributes="Bold" TextColor="{StaticResource Success}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="{StaticResource Primary}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

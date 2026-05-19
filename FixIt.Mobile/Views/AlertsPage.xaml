@@ -13,15 +13,22 @@
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Alerts_Title}">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
-        <Label Grid.Row="0"
-               Text="{local:Localize Key=Alerts_Title}"
-               Style="{StaticResource HeadlineLarge}"
-               Margin="24,28,24,16"
-               SemanticProperties.HeadingLevel="Level1" />
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              Margin="24,28,20,16"
+              ColumnSpacing="12">
+            <Label Text="{local:Localize Key=Alerts_Title}"
+                   Style="{StaticResource HeadlineLarge}"
+                   SemanticProperties.HeadingLevel="Level1" />
+            <Button Grid.Column="1"
+                    Text="{local:Localize Key=HazardMap_Title}"
+                    Style="{StaticResource CompactPrimaryButton}"
+                    Command="{Binding NavigateToMapCommand}" />
+        </Grid>
 
-        <RefreshView Grid.Row="1"
+        <RefreshView Grid.Row="2"
                      Command="{Binding LoadAlertsCommand}"
                      IsRefreshing="{Binding IsLoading}">
             <CollectionView x:Name="AlertsCollection"

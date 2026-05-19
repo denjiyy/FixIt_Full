@@ -55,11 +55,18 @@
                             Padding="12,5"
                             StrokeShape="RoundRectangle 10"
                             HorizontalOptions="Center">
-                        <Label Text="{Binding TrustLevel, StringFormat='TRUST · {0}'}"
-                               FontSize="Caption"
-                               FontAttributes="Bold"
-                               CharacterSpacing="1"
-                               TextColor="{StaticResource White}" />
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="{local:Localize Key=Common_Trust}"
+                                   FontSize="Caption"
+                                   FontAttributes="Bold"
+                                   CharacterSpacing="1"
+                                   TextColor="{StaticResource White}" />
+                            <Label Text="{Binding TrustLevel}"
+                                   FontSize="Caption"
+                                   FontAttributes="Bold"
+                                   CharacterSpacing="1"
+                                   TextColor="{StaticResource White}" />
+                        </HorizontalStackLayout>
                     </Border>
                 </VerticalStackLayout>
             </Border>
@@ -131,6 +138,10 @@
                     </VerticalStackLayout>
                 </Border>
             </Grid>
+
+            <Button Text="{local:Localize Key=Health_Title}"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding ViewHealthReportCommand}" />
 
             <!-- My Issues -->
             <VerticalStackLayout Spacing="14">
@@ -212,7 +223,7 @@
                     BorderColor="{StaticResource Error}"
                     Command="{Binding LogoutCommand}"
                     Margin="0,8,0,0"
-                    SemanticProperties.Description="Sign out of your account" />
+                    SemanticProperties.Description="{local:Localize Key=Profile_SignOut}" />
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"

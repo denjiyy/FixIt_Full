@@ -7,6 +7,9 @@ public partial class App : Application
 {
     private readonly IAnalyticsService _analytics;
     private readonly IServiceProvider _serviceProvider;
+    private bool _connectivityDisposed;
+
+    public static event EventHandler? Resumed;
 
     public App(IServiceProvider serviceProvider, IAnalyticsService analytics)
     {
@@ -20,7 +23,30 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(_serviceProvider.GetRequiredService<AppShell>());
+        var window = new Window(_serviceProvider.GetRequiredService<AppShell>());
+        window.Destroying += OnWindowDestroying;
+        return window;
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+        Resumed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnWindowDestroying(object? sender, EventArgs e)
+    {
+        if (_connectivityDisposed)
+        {
+            return;
+        }
+
+        _connectivityDisposed = true;
+        // FIX B-08: dispose the singleton connectivity subscription when the app window is destroyed.
+        if (_serviceProvider.GetService<IConnectivityService>() is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     private async void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

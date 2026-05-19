@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.PublicProfilePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:views="clr-namespace:FixIt.Mobile.Views"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:PublicProfileViewModel"
+             BackgroundColor="{StaticResource Background}"
+             NavigationPage.HasNavigationBar="True"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=PublicProfile_Title}">
+
+    <ScrollView>
+        <VerticalStackLayout x:Name="PublicProfileRoot"
+                             Padding="20,28,20,40"
+                             Spacing="16"
+                             Opacity="0"
+                             TranslationY="24">
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Border WidthRequest="88" HeightRequest="88"
+                            BackgroundColor="{StaticResource Primary}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 44">
+                        <Label Text="{Binding Initials}"
+                               TextColor="{StaticResource White}"
+                               FontSize="Title"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="{Binding DisplayName}"
+                           Style="{StaticResource HeadlineMedium}"
+                           HorizontalTextAlignment="Center"
+                           SemanticProperties.HeadingLevel="Level1" />
+                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Label Text="{local:Localize Key=Common_Trust}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Profile.TrustLevel}" Style="{StaticResource LabelSmall}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                <Border Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=PublicProfile_Reputation}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Profile.ReputationPoints}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=PublicProfile_Reported}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Profile.IssuesReported}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource OnBackground}" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource StatCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{local:Localize Key=PublicProfile_Resolved}" Style="{StaticResource LabelSmall}" />
+                        <Label Text="{Binding Profile.IssuesResolved}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Success}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <VerticalStackLayout Spacing="14">
+                <Label Text="{local:Localize Key=PublicProfile_NoIssues}"
+                       Style="{StaticResource TitleMedium}"
+                       SemanticProperties.HeadingLevel="Level2" />
+                <CollectionView ItemsSource="{Binding Issues}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout Spacing="0">
+                            <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
+                                <views:SkeletonCardView />
+                                <views:SkeletonCardView />
+                            </VerticalStackLayout>
+                            <Label Text="{local:Localize Key=PublicProfile_NoIssues}"
+                                   IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                                   Style="{StaticResource BodyMedium}"
+                                   Padding="0,24"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Issue">
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                <Label Text="{Binding Title}" Style="{StaticResource TitleMedium}" />
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

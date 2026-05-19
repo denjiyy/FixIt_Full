@@ -97,7 +97,7 @@ public class AuthHeaderHandler : DelegatingHandler
         {
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Shell.Current.GoToAsync(AppConstants.RouteSignInTab);
+                await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
             });
         }
     }
@@ -125,19 +125,27 @@ public class AuthHeaderHandler : DelegatingHandler
 
         if (request.Content != null)
         {
+            // FIX B-02: buffer once and give the original request and retry clone independent seekable streams.
             var memory = new MemoryStream();
             await request.Content.CopyToAsync(memory, ct);
-            memory.Position = 0;
+            var buffer = memory.ToArray();
 
-            var streamContent = new StreamContent(memory);
-            foreach (var header in request.Content.Headers)
-            {
-                streamContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-
-            clone.Content = streamContent;
+            var sourceHeaders = request.Content.Headers;
+            request.Content = CreateBufferedContent(buffer, sourceHeaders);
+            clone.Content = CreateBufferedContent(buffer, sourceHeaders);
         }
 
         return clone;
+    }
+
+    private static StreamContent CreateBufferedContent(byte[] buffer, HttpContentHeaders sourceHeaders)
+    {
+        var streamContent = new StreamContent(new MemoryStream(buffer));
+        foreach (var header in sourceHeaders)
+        {
+            streamContent.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        return streamContent;
     }
 }

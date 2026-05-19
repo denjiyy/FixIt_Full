@@ -92,5 +92,13 @@ public sealed class LocalizationService : INotifyPropertyChanged
         CultureInfo.CurrentUICulture = culture;
         Thread.CurrentThread.CurrentCulture = culture;
         Thread.CurrentThread.CurrentUICulture = culture;
+        // FIX B-07: MAUI renders on the UI thread, so mirror culture changes there too.
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
+        });
     }
 }

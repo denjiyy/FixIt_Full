@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FixIt.Mobile.Constants;
+using FixIt.Mobile.Localization;
 using FixIt.Mobile.Models;
 using FixIt.Mobile.Services;
 using FixIt.Mobile.Services.Contracts;
@@ -33,6 +34,9 @@ public partial class IssuesViewModel : ObservableObject, IDisposable
     private string _searchText = string.Empty;
 
     [ObservableProperty]
+    private string _naturalLanguageQuery = string.Empty;
+
+    [ObservableProperty]
     private string _activeFilter = AppConstants.FilterAll;
 
     [ObservableProperty]
@@ -40,6 +44,9 @@ public partial class IssuesViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool _isLoadingMore;
+
+    [ObservableProperty]
+    private bool _isApplyingNaturalLanguageFilter;
 
     [ObservableProperty]
     private bool _isEmpty;
@@ -150,6 +157,38 @@ public partial class IssuesViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task ApplyNaturalLanguageFilterAsync(CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(NaturalLanguageQuery))
+        {
+            return;
+        }
+
+        HapticService.Click();
+        try
+        {
+            IsApplyingNaturalLanguageFilter = true;
+            var result = await _api.TranslateNaturalLanguageFilterAsync(NaturalLanguageQuery, ct);
+            SearchText = result?.SearchQuery ?? NaturalLanguageQuery;
+            ActiveFilter = MapStatusToFilter(result?.Status);
+            await LoadIssuesInternalAsync(true, ct);
+        }
+        catch (OperationCanceledException ex)
+        {
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "ai_filter_cancelled" });
+        }
+        catch (Exception ex)
+        {
+            SearchText = NaturalLanguageQuery;
+            await _analytics.TrackError(ex);
+        }
+        finally
+        {
+            IsApplyingNaturalLanguageFilter = false;
+        }
+    }
+
+    [RelayCommand]
     private async Task NavigateToIssueAsync(string? issueId, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(issueId))
@@ -232,6 +271,17 @@ public partial class IssuesViewModel : ObservableObject, IDisposable
                 await _analytics.TrackError(ex);
             }
         }, cts.Token);
+    }
+
+    private static string MapStatusToFilter(int? status)
+    {
+        return status switch
+        {
+            AppConstants.StatusNewValue => AppConstants.FilterNew,
+            AppConstants.StatusInProgressValue => AppConstants.FilterInProgress,
+            AppConstants.StatusFixedValue => AppConstants.FilterResolved,
+            _ => AppConstants.FilterAll
+        };
     }
 
     private void CancelAndRenew()

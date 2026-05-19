@@ -10,13 +10,17 @@ public class Issue
     public string CityName { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
     public string? PhotoUrl { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public DateTime CreatedAt { get; set; }
     public int VoteCount { get; set; }
+    public string? AuthorUserId { get; set; }
     public string AuthorName { get; set; } = string.Empty;
     public string AuthorInitials => BuildInitials(AuthorName);
     public bool UserHasUpvoted { get; set; }
     public bool UserHasDownvoted { get; set; }
     public string StatusDescription => $"Status: {Status}";
+    public bool HasCoordinates => Latitude is not null and not 0 && Longitude is not null and not 0;
 
     private static string BuildInitials(string name)
     {

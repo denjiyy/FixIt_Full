@@ -73,7 +73,11 @@
                                 HeightRequest="52"
                                 CornerRadius="14"
                                 Command="{Binding ReportIssueCommand}"
-                                SemanticProperties.Description="Report a new community issue" />
+                                SemanticProperties.Description="{local:Localize Key=Home_ReportCTA}" />
+                        <Button Text="{local:Localize Key=Health_Title}"
+                                Style="{StaticResource SecondaryButton}"
+                                Margin="0,10,0,0"
+                                Command="{Binding GoToHealthReportCommand}" />
                     </VerticalStackLayout>
                 </Border>
             </VerticalStackLayout>

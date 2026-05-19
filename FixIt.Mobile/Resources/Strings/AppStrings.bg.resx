@@ -91,6 +91,7 @@
   <data name="Common_Offline" xml:space="preserve"><value>Нямате интернет връзка</value></data>
   <data name="Common_NoInternet" xml:space="preserve"><value>Няма интернет връзка</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Изтрий</value></data>
+  <data name="Common_Trust" xml:space="preserve"><value>Доверие</value></data>
   <data name="Tab_Home" xml:space="preserve"><value>Начало</value></data>
   <data name="Tab_Issues" xml:space="preserve"><value>Сигнали</value></data>
   <data name="Tab_Report" xml:space="preserve"><value>Подай сигнал</value></data>
@@ -102,4 +103,49 @@
   <data name="Status_InProgress" xml:space="preserve"><value>В процес</value></data>
   <data name="Status_Resolved" xml:space="preserve"><value>Решен</value></data>
   <data name="Status_Critical" xml:space="preserve"><value>Критичен</value></data>
+  <data name="Detail_LocationSection" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="Detail_IssuePhoto" xml:space="preserve"><value>Снимка към сигнала</value></data>
+  <data name="Detail_Upvote" xml:space="preserve"><value>Подкрепи</value></data>
+  <data name="Detail_Downvote" xml:space="preserve"><value>Не подкрепям</value></data>
+  <data name="HazardMap_Title" xml:space="preserve"><value>Карта</value></data>
+  <data name="HazardMap_Empty" xml:space="preserve"><value>В момента няма опасности с местоположение.</value></data>
+  <data name="HazardMap_Confirm" xml:space="preserve"><value>Потвърди</value></data>
+  <data name="HazardMap_Confirmations" xml:space="preserve"><value>Потвърждения</value></data>
+  <data name="Leaderboard_Title" xml:space="preserve"><value>Класация</value></data>
+  <data name="Leaderboard_Weekly" xml:space="preserve"><value>Седмична</value></data>
+  <data name="Leaderboard_Monthly" xml:space="preserve"><value>Месечна</value></data>
+  <data name="Leaderboard_AllTime" xml:space="preserve"><value>Обща</value></data>
+  <data name="Leaderboard_Points" xml:space="preserve"><value>Точки</value></data>
+  <data name="Leaderboard_Empty" xml:space="preserve"><value>Все още няма участници в класацията.</value></data>
+  <data name="Health_Title" xml:space="preserve"><value>Здравен отчет</value></data>
+  <data name="Health_Score" xml:space="preserve"><value>Здравен индекс</value></data>
+  <data name="Health_TotalIssues" xml:space="preserve"><value>Всички сигнали</value></data>
+  <data name="Health_Resolved" xml:space="preserve"><value>Решени</value></data>
+  <data name="Health_Open" xml:space="preserve"><value>Отворени</value></data>
+  <data name="Health_Engagement" xml:space="preserve"><value>Активност</value></data>
+  <data name="Health_Critical" xml:space="preserve"><value>Критични</value></data>
+  <data name="Health_High" xml:space="preserve"><value>Високи</value></data>
+  <data name="Health_Medium" xml:space="preserve"><value>Средни</value></data>
+  <data name="Health_Low" xml:space="preserve"><value>Ниски</value></data>
+  <data name="Analysis_Title" xml:space="preserve"><value>AI анализ</value></data>
+  <data name="Analysis_Category" xml:space="preserve"><value>Категория</value></data>
+  <data name="Analysis_Severity" xml:space="preserve"><value>Сериозност</value></data>
+  <data name="Analysis_Confidence" xml:space="preserve"><value>Увереност</value></data>
+  <data name="Analysis_Keywords" xml:space="preserve"><value>Ключови думи</value></data>
+  <data name="Analysis_Notes" xml:space="preserve"><value>Бележки</value></data>
+  <data name="Analysis_AnalyzedAt" xml:space="preserve"><value>Анализиран</value></data>
+  <data name="Analysis_Generating" xml:space="preserve"><value>Генерира се анализ...</value></data>
+  <data name="Analysis_Unavailable" xml:space="preserve"><value>Анализът не е наличен.</value></data>
+  <data name="Analysis_Retry" xml:space="preserve"><value>Опитай отново</value></data>
+  <data name="Issues_AIFilter_Placeholder" xml:space="preserve"><value>Опишете какво търсите...</value></data>
+  <data name="Issues_AIFilter_Button" xml:space="preserve"><value>AI филтър</value></data>
+  <data name="Issues_AIFilter_Applying" xml:space="preserve"><value>Прилага се AI филтър...</value></data>
+  <data name="Issues_AIFilter_Applied" xml:space="preserve"><value>AI филтърът е приложен.</value></data>
+  <data name="Issues_AIFilter_Failed" xml:space="preserve"><value>Текстът ще се използва като обикновено търсене.</value></data>
+  <data name="PublicProfile_Title" xml:space="preserve"><value>Публичен профил</value></data>
+  <data name="PublicProfile_Reputation" xml:space="preserve"><value>Репутация</value></data>
+  <data name="PublicProfile_Reported" xml:space="preserve"><value>Подадени</value></data>
+  <data name="PublicProfile_Resolved" xml:space="preserve"><value>Решени</value></data>
+  <data name="PublicProfile_Comments" xml:space="preserve"><value>Коментари</value></data>
+  <data name="PublicProfile_NoIssues" xml:space="preserve"><value>Неговите сигнали</value></data>
 </root>

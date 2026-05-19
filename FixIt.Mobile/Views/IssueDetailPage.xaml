@@ -5,6 +5,7 @@
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:IssueDetailViewModel"
              BackgroundColor="{StaticResource Background}"
@@ -37,7 +38,7 @@
                     </Border>
                     <Image Aspect="AspectFill"
                            IsVisible="{Binding HasIssuePhoto}"
-                           SemanticProperties.Description="Issue photo">
+                           SemanticProperties.Description="{local:Localize Key=Detail_IssuePhoto}">
                         <Image.Source>
                             <UriImageSource Uri="{Binding Issue.PhotoUrl}"
                                             CacheValidity="1.00:00:00"
@@ -90,7 +91,11 @@
                                    VerticalOptions="Center" />
                         </Border>
                         <HorizontalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
-                            <Label Text="{Binding Issue.AuthorName}" Style="{StaticResource LabelSmall}" />
+                            <Label Text="{Binding Issue.AuthorName}" Style="{StaticResource LabelSmall}">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding NavigateToAuthorProfileCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
                             <Label Text="·" Style="{StaticResource LabelSmall}" />
                             <Label Text="{Binding Issue.CityName}" Style="{StaticResource LabelSmall}" />
                             <Label Text="·" Style="{StaticResource LabelSmall}" />
@@ -107,17 +112,17 @@
                     <!-- Vote Buttons -->
                     <HorizontalStackLayout Spacing="10">
                         <Button x:Name="UpvoteButton"
-                                Text="▲  Upvote"
+                                Text="{local:Localize Key=Detail_Upvote}"
                                 Style="{StaticResource SecondaryButton}"
                                 HeightRequest="44"
                                 Clicked="OnUpvoteClicked"
-                                SemanticProperties.Description="Upvote this issue" />
+                                SemanticProperties.Description="{local:Localize Key=Detail_Upvote}" />
                         <Button x:Name="DownvoteButton"
-                                Text="▼  Downvote"
+                                Text="{local:Localize Key=Detail_Downvote}"
                                 Style="{StaticResource SecondaryButton}"
                                 HeightRequest="44"
                                 Clicked="OnDownvoteClicked"
-                                SemanticProperties.Description="Downvote this issue" />
+                                SemanticProperties.Description="{local:Localize Key=Detail_Downvote}" />
                     </HorizontalStackLayout>
 
                     <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
@@ -126,6 +131,110 @@
                     <Label Text="{Binding Issue.Description}"
                            Style="{StaticResource BodyMedium}"
                            SemanticProperties.Description="{Binding Issue.Description}" />
+
+                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
+
+                    <!-- Location Map -->
+                    <VerticalStackLayout IsVisible="{Binding HasIssueLocation}" Spacing="10">
+                        <Label Text="{local:Localize Key=Detail_LocationSection}"
+                               Style="{StaticResource TitleMedium}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Card}" Padding="0" HeightRequest="220">
+                            <WebView Source="{Binding IssueMapSource}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <BoxView IsVisible="{Binding HasIssueLocation}" HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
+
+                    <!-- AI Analysis -->
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="{local:Localize Key=Analysis_Title}"
+                               Style="{StaticResource TitleMedium}"
+                               SemanticProperties.HeadingLevel="Level2" />
+
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding IsAnalysisPending}">
+                            <VerticalStackLayout Spacing="10">
+                                <views:SkeletonCardView />
+                                <Label Text="{local:Localize Key=Analysis_Generating}"
+                                       Style="{StaticResource BodyMedium}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding HasAnalysis}">
+                            <VerticalStackLayout Spacing="12">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label Text="{local:Localize Key=Analysis_Category}"
+                                               Style="{StaticResource LabelSmall}" />
+                                        <Label Text="{Binding Analysis.Category}"
+                                               Style="{StaticResource TitleMedium}" />
+                                    </VerticalStackLayout>
+                                    <Border Grid.Column="1"
+                                            BackgroundColor="{StaticResource Surface2}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="10,6"
+                                            VerticalOptions="Center">
+                                        <Label Text="{Binding Analysis.ConfidenceScore, StringFormat='{0}%'}"
+                                               TextColor="{StaticResource Accent}"
+                                               FontAttributes="Bold"
+                                               FontSize="Caption" />
+                                    </Border>
+                                </Grid>
+
+                                <VerticalStackLayout Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Text="{local:Localize Key=Analysis_Severity}"
+                                               Style="{StaticResource LabelSmall}" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Analysis.EstimatedSeverity, StringFormat='{0}/10'}"
+                                               Style="{StaticResource LabelSmall}" />
+                                    </Grid>
+                                    <ProgressBar Progress="{Binding AnalysisSeverityProgress}"
+                                                 ProgressColor="{StaticResource Warning}"
+                                                 BackgroundColor="{StaticResource Surface2}" />
+                                </VerticalStackLayout>
+
+                                <Label Text="{local:Localize Key=Analysis_Keywords}"
+                                       Style="{StaticResource LabelSmall}" />
+                                <FlexLayout BindableLayout.ItemsSource="{Binding AnalysisKeywords}"
+                                            Wrap="Wrap"
+                                            Direction="Row"
+                                            AlignItems="Start">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Border BackgroundColor="{StaticResource Surface2}"
+                                                    StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 10"
+                                                    Padding="10,5"
+                                                    Margin="0,0,6,6">
+                                                <Label Text="{Binding .}"
+                                                       FontSize="Caption"
+                                                       TextColor="{StaticResource OnSurface}" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
+
+                                <Label Text="{local:Localize Key=Analysis_Notes}"
+                                       Style="{StaticResource LabelSmall}" />
+                                <Label Text="{Binding Analysis.Reasoning}"
+                                       Style="{StaticResource BodyMedium}" />
+                                <Label Text="{Binding Analysis.AnalyzedAt, Converter={StaticResource DateTimeToRelativeConverter}, StringFormat='{}{0}'}"
+                                       Style="{StaticResource LabelSmall}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding IsAnalysisUnavailable}">
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="{local:Localize Key=Analysis_Unavailable}"
+                                       Style="{StaticResource BodyMedium}" />
+                                <Button Text="{local:Localize Key=Analysis_Retry}"
+                                        Style="{StaticResource CompactPrimaryButton}"
+                                        Command="{Binding RetryAnalysisCommand}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
 
                     <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
 
@@ -144,6 +253,8 @@
                     <!-- Comments List -->
                     <CollectionView ItemsSource="{Binding Comments}"
                                     SelectionMode="None"
+                                    RemainingItemsThreshold="3"
+                                    RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommentsCommand}"
                                     Margin="0,0,0,20">
                         <CollectionView.EmptyView>
                             <VerticalStackLayout IsVisible="{Binding HasNoComments}"
@@ -155,6 +266,12 @@
                                        HorizontalOptions="Center" />
                             </VerticalStackLayout>
                         </CollectionView.EmptyView>
+                        <CollectionView.Footer>
+                            <ActivityIndicator IsRunning="{Binding IsLoadingMoreComments}"
+                                               IsVisible="{Binding IsLoadingMoreComments}"
+                                               Color="{StaticResource Primary}"
+                                               Margin="0,8,0,20" />
+                        </CollectionView.Footer>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:Comment">
                                 <Grid ColumnDefinitions="36,*" ColumnSpacing="12"
@@ -216,7 +333,7 @@
                         Text="{local:Localize Key=Detail_Send}"
                         Style="{StaticResource CompactPrimaryButton}"
                         Command="{Binding AddCommentCommand}"
-                        SemanticProperties.Description="Send comment" />
+                        SemanticProperties.Description="{local:Localize Key=Detail_Send}" />
             </Grid>
         </Border>
     </Grid>

@@ -94,7 +94,7 @@
                                 Style="{StaticResource PrimaryButton}"
                                 Command="{Binding LoginCommand}"
                                 Margin="0,8,0,0"
-                                SemanticProperties.Description="Sign in to your account" />
+                                SemanticProperties.Description="{local:Localize Key=Login_SignIn}" />
 
                         <ActivityIndicator IsRunning="{Binding IsLoading}"
                                            IsVisible="{Binding IsLoading}"
