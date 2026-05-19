@@ -1,4 +1,48 @@
+using System.Text.Json.Serialization;
+
 namespace FixIt.ViewModels.Auth;
+
+/// <summary>
+/// Request for email/password login
+/// </summary>
+public class LoginRequest
+{
+    /// <summary>
+    /// User's email address
+    /// </summary>
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = null!;
+
+    /// <summary>
+    /// User's password
+    /// </summary>
+    [JsonPropertyName("password")]
+    public string Password { get; set; } = null!;
+}
+
+/// <summary>
+/// Request for email/password registration
+/// </summary>
+public class RegisterRequest
+{
+    /// <summary>
+    /// User's full name (display name)
+    /// </summary>
+    [JsonPropertyName("fullName")]
+    public string FullName { get; set; } = null!;
+
+    /// <summary>
+    /// User's email address
+    /// </summary>
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = null!;
+
+    /// <summary>
+    /// User's password
+    /// </summary>
+    [JsonPropertyName("password")]
+    public string Password { get; set; } = null!;
+}
 
 /// <summary>
 /// Response containing JWT tokens for authentication

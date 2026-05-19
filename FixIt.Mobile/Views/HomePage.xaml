@@ -131,9 +131,9 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Button Grid.Row="2"
+                    <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                             Text="Leaderboard"
-                            Margin="20,0"
+                            Margin="0"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding GoToLeaderboardCommand}" />
                 </Grid>

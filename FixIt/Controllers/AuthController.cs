@@ -49,6 +49,168 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Email/password login for mobile clients
+    /// Returns JWT tokens on success
+    /// </summary>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<TokenResponse>>> Login([FromBody] LoginRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.Password))
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Email and password are required"));
+        }
+
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+        {
+            _logger.LogWarning("Login attempt for non-existent email: {Email}", request.Email);
+            return Unauthorized(ApiResponse<object>.CreateError("Invalid email or password"));
+        }
+
+        if (user.IsDeleted)
+        {
+            _logger.LogWarning("Login attempt for deleted user: {UserId}", user.Id);
+            return Unauthorized(ApiResponse<object>.CreateError("User account is not active"));
+        }
+
+        if (user.IsBanned)
+        {
+            return Unauthorized(ApiResponse<object>.CreateError("User account is banned"));
+        }
+
+        if (user.IsRestricted && user.RestrictedUntil > DateTime.UtcNow)
+        {
+            return Unauthorized(ApiResponse<object>.CreateError("User account is restricted"));
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+        if (!result.Succeeded)
+        {
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning("User {UserId} is locked out", user.Id);
+                return Unauthorized(ApiResponse<object>.CreateError("Account is locked. Please try again later."));
+            }
+            _logger.LogWarning("Failed password login for user: {UserId}", user.Id);
+            return Unauthorized(ApiResponse<object>.CreateError("Invalid email or password"));
+        }
+
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        user.LastRefreshTokenIssuedAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var accessToken = _tokenService.GenerateAccessToken(user, userRoles);
+        var refreshToken = _tokenService.GenerateRefreshToken(user);
+
+        _logger.LogInformation("User {UserId} logged in via password", user.Id);
+
+        var tokenResponse = new TokenResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            TokenType = "Bearer",
+            ExpiresIn = _tokenService.AccessTokenExpirationMinutes * 60,
+            User = new UserTokenInfo
+            {
+                Id = user.Id.ToString(),
+                Email = user.Email ?? "",
+                DisplayName = user.DisplayName,
+                Roles = userRoles,
+                ReputationScore = user.ReputationScore,
+                TrustLevel = user.TrustLevel,
+                IsVerifiedOfficial = user.IsVerifiedOfficial,
+                OfficialTitle = user.OfficialTitle,
+                OfficialDepartment = user.OfficialDepartment
+            }
+        };
+
+        return Ok(ApiResponse<TokenResponse>.CreateSuccess(tokenResponse, "Login successful"));
+    }
+
+    /// <summary>
+    /// Email/password registration for mobile clients
+    /// Creates a new user and returns JWT tokens on success
+    /// </summary>
+    [HttpPost("register")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<TokenResponse>>> Register([FromBody] RegisterRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.Password))
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Email and password are required"));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Full name is required"));
+        }
+
+        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+        if (existingUser != null)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("An account with this email already exists"));
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            DisplayName = request.FullName,
+            HasPasswordAuth = true,
+            EmailConfirmed = false
+        };
+
+        var createResult = await _userManager.CreateAsync(user, request.Password);
+        if (!createResult.Succeeded)
+        {
+            var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
+            _logger.LogWarning("Failed to create user {Email}: {Errors}", request.Email, errors);
+            return BadRequest(ApiResponse<object>.CreateError(errors));
+        }
+
+        // Add default User role
+        await _userManager.AddToRoleAsync(user, RoleNames.User);
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        user.LastRefreshTokenIssuedAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        var accessToken = _tokenService.GenerateAccessToken(user, userRoles);
+        var refreshToken = _tokenService.GenerateRefreshToken(user);
+
+        _logger.LogInformation("New user {UserId} registered via password", user.Id);
+
+        var tokenResponse = new TokenResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            TokenType = "Bearer",
+            ExpiresIn = _tokenService.AccessTokenExpirationMinutes * 60,
+            User = new UserTokenInfo
+            {
+                Id = user.Id.ToString(),
+                Email = user.Email ?? "",
+                DisplayName = user.DisplayName,
+                Roles = userRoles,
+                ReputationScore = user.ReputationScore,
+                TrustLevel = user.TrustLevel,
+                IsVerifiedOfficial = user.IsVerifiedOfficial,
+                OfficialTitle = user.OfficialTitle,
+                OfficialDepartment = user.OfficialDepartment
+            }
+        };
+
+        return Ok(ApiResponse<TokenResponse>.CreateSuccess(tokenResponse, "Registration successful"));
+    }
+
+    /// <summary>
     /// Initiates OAuth login with specified provider
     /// </summary>
     [HttpPost("login/{provider}")]
