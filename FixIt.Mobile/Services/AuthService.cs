@@ -335,23 +335,16 @@ public class AuthService : IAuthService
         try
         {
             var content = await response.Content.ReadAsStringAsync(ct);
-            Console.WriteLine($"[v0] API error response status: {(int)response.StatusCode} {response.StatusCode}");
-            Console.WriteLine($"[v0] API error response body: {content}");
-            
             if (string.IsNullOrWhiteSpace(content))
             {
-                Console.WriteLine("[v0] Response body is empty, using fallback message");
                 return fallbackMessage;
             }
 
             var envelope = JsonSerializer.Deserialize<ApiEnvelope<object>>(content, _jsonOptions);
             if (!string.IsNullOrWhiteSpace(envelope?.Message))
             {
-                Console.WriteLine($"[v0] Extracted error message from envelope: {envelope.Message}");
                 return envelope.Message;
             }
-            
-            Console.WriteLine("[v0] Envelope.Message was null or empty, using fallback message");
         }
         catch (JsonException ex)
         {
