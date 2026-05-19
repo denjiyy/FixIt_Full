@@ -119,4 +119,12 @@
         <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource TabBarUnselected}" />
     </Style>
 
+    <Style TargetType="Entry" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
+    <Style TargetType="Editor" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
 </ResourceDictionary>

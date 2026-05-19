@@ -101,12 +101,23 @@
                                            Color="{StaticResource Primary}"
                                            Margin="0,20,0,0" />
 
-                        <Label Text="{local:Localize Key=Login_SignUp}"
-                               TextColor="{StaticResource Accent}"
-                               FontSize="Caption"
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center"
-                               Margin="0,28,0,0" />
+                        <Label HorizontalOptions="Center" Margin="0,28,0,0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{local:Localize Key=Login_NoAccount}"
+                                          TextColor="{StaticResource OnSurface}"
+                                          FontSize="Caption" />
+                                    <Span Text=" " />
+                                    <Span Text="{local:Localize Key=Login_SignUp}"
+                                          TextColor="{StaticResource Accent}"
+                                          FontAttributes="Bold"
+                                          FontSize="Caption" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToRegisterCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
                     </VerticalStackLayout>
 
                 </VerticalStackLayout>

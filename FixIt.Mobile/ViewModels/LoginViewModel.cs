@@ -160,6 +160,12 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         return string.IsNullOrWhiteSpace(EmailError) && string.IsNullOrWhiteSpace(PasswordError);
     }
 
+    [RelayCommand]
+    private async Task GoToRegisterAsync()
+    {
+        await Shell.Current.GoToAsync("register");
+    }
+
     private void CancelAndRenew()
     {
         _cts.Cancel();

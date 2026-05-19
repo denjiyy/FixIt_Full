@@ -89,7 +89,7 @@
                        Text="{local:Localize Key=Home_LivePulse}"
                        SemanticProperties.HeadingLevel="Level2" />
 
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
                       ColumnSpacing="12" RowSpacing="12">
                     <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource StatCard}">
                         <VerticalStackLayout Spacing="6">
@@ -130,6 +130,12 @@
                                    Text="{Binding CriticalIssues}" />
                         </VerticalStackLayout>
                     </Border>
+
+                    <Button Grid.Row="2"
+                            Text="Leaderboard"
+                            Margin="20,0"
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding GoToLeaderboardCommand}" />
                 </Grid>
             </VerticalStackLayout>
 

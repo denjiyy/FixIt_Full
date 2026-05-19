@@ -1057,7 +1057,13 @@ public class ApiService : IApiService
     {
         try
         {
-            var envelope = await DeserializeEnvelopeAsync<object>(response, ct);
+            var content = await response.Content.ReadAsStringAsync(ct);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return fallbackMessage;
+            }
+
+            var envelope = JsonSerializer.Deserialize<ApiEnvelope<object>>(content, _jsonOptions);
             if (!string.IsNullOrWhiteSpace(envelope?.Message))
             {
                 return envelope.Message;
@@ -1065,7 +1071,7 @@ public class ApiService : IApiService
         }
         catch (JsonException ex)
         {
-            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            Console.WriteLine($"[AUTH] Parse error: {ex.Message}");
         }
 
         return fallbackMessage;

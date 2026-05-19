@@ -11,6 +11,7 @@ public interface IAuthService
 
     Task InitializeAsync(CancellationToken ct = default);
     Task<AuthResult> LoginAsync(string email, string password, CancellationToken ct = default);
+    Task<AuthResult> RegisterAsync(string fullName, string email, string password, CancellationToken ct = default);
     Task LogoutAsync(CancellationToken ct = default);
     Task<string?> GetTokenAsync();
     Task<bool> TryRefreshAsync(CancellationToken ct = default);

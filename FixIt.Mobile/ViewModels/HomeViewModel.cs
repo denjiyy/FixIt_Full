@@ -121,6 +121,13 @@ public partial class HomeViewModel : ObservableObject, IDisposable
         await Shell.Current.GoToAsync($"{AppConstants.RouteIssueDetail}?IssueId={Uri.EscapeDataString(issueId)}");
     }
 
+    [RelayCommand]
+    private async Task GoToLeaderboardAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteLeaderboard);
+    }
+
     private async Task LoadDashboardAsync(bool forceRefresh, CancellationToken ct)
     {
         if (IsLoading)

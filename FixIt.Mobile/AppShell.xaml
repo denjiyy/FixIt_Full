@@ -37,10 +37,6 @@
             <ShellContent x:Name="AlertsContent" Route="alerts-page" />
         </Tab>
 
-        <Tab x:Name="LeaderboardTab" Title="Leaderboard" Route="leaderboard">
-            <ShellContent x:Name="LeaderboardContent" Route="leaderboard-page" />
-        </Tab>
-
         <Tab x:Name="ReportIssueTab" Title="Report Issue" Route="report-issue-tab">
             <ShellContent x:Name="ReportIssueContent" Route="report-issue-page" />
         </Tab>

@@ -30,7 +30,8 @@
   <data name="Login_EmailPlaceholder" xml:space="preserve"><value>Имейл адрес</value></data>
   <data name="Login_PasswordPlaceholder" xml:space="preserve"><value>Парола</value></data>
   <data name="Login_SignIn" xml:space="preserve"><value>Вход</value></data>
-  <data name="Login_SignUp" xml:space="preserve"><value>Нямате профил? Започнете тук</value></data>
+  <data name="Login_SignUp" xml:space="preserve"><value>Започнете тук</value></data>
+  <data name="Login_NoAccount" xml:space="preserve"><value>Нямате профил?</value></data>
   <data name="Login_Error_Empty" xml:space="preserve"><value>Моля, въведете имейл и парола.</value></data>
   <data name="Login_Error_Invalid" xml:space="preserve"><value>Невалиден имейл или парола.</value></data>
   <data name="Login_Error_EmailRequired" xml:space="preserve"><value>Имейлът е задължителен.</value></data>
@@ -148,4 +149,23 @@
   <data name="PublicProfile_Resolved" xml:space="preserve"><value>Решени</value></data>
   <data name="PublicProfile_Comments" xml:space="preserve"><value>Коментари</value></data>
   <data name="PublicProfile_NoIssues" xml:space="preserve"><value>Неговите сигнали</value></data>
+  <data name="Register_SignUp" xml:space="preserve"><value>Създай профил</value></data>
+  <data name="Register_Title" xml:space="preserve"><value>Присъединете се към FixIt</value></data>
+  <data name="Register_Subtitle" xml:space="preserve"><value>Регистрирайте се, за да подавате и помагате при решаване на проблеми</value></data>
+  <data name="Register_FullNamePlaceholder" xml:space="preserve"><value>Пълно име</value></data>
+  <data name="Register_EmailPlaceholder" xml:space="preserve"><value>Имейл адрес</value></data>
+  <data name="Register_PasswordPlaceholder" xml:space="preserve"><value>Парола</value></data>
+  <data name="Register_ConfirmPasswordPlaceholder" xml:space="preserve"><value>Потвърдете паролата</value></data>
+  <data name="Register_CreateAccount" xml:space="preserve"><value>Създай профил</value></data>
+  <data name="Register_AlreadyHaveAccount" xml:space="preserve"><value>Вече имате профил?</value></data>
+  <data name="Register_SignIn" xml:space="preserve"><value>Вход</value></data>
+  <data name="Register_Error_FullNameRequired" xml:space="preserve"><value>Пълното име е задължително.</value></data>
+  <data name="Register_Error_EmailRequired" xml:space="preserve"><value>Имейлът е задължителен.</value></data>
+  <data name="Register_Error_EmailInvalid" xml:space="preserve"><value>Въведете валиден имейл адрес.</value></data>
+  <data name="Register_Error_PasswordRequired" xml:space="preserve"><value>Паролата е задължителна.</value></data>
+  <data name="Register_Error_PasswordTooShort" xml:space="preserve"><value>Паролата трябва да бъде най-малко 8 символа.</value></data>
+  <data name="Register_Error_ConfirmPasswordRequired" xml:space="preserve"><value>Моля, потвърдете паролата.</value></data>
+  <data name="Register_Error_PasswordsMismatch" xml:space="preserve"><value>Паролите не съвпадат.</value></data>
+  <data name="Register_Error_FormInvalid" xml:space="preserve"><value>Моля, попълнете всички полета правилно.</value></data>
+  <data name="Register_Error_RegistrationFailed" xml:space="preserve"><value>Регистрацията не се удаде. Опитайте отново.</value></data>
 </root>

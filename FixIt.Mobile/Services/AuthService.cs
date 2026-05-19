@@ -85,6 +85,56 @@ public class AuthService : IAuthService
         }
     }
 
+    public async Task<AuthResult> RegisterAsync(string fullName, string email, string password, CancellationToken ct = default)
+    {
+        try
+        {
+            Console.WriteLine($"[Auth] Registration attempt for user: {RedactEmail(email)}");
+            using var response = await _authClient.PostAsJsonAsync($"{AppConstants.ApiAuth}/register", new
+            {
+                fullName,
+                email,
+                password
+            }, _jsonOptions, ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await ExtractApiErrorAsync(response, Localization.LocalizationService.Get("Register_Error_RegistrationFailed"), ct);
+                return new AuthResult(false, error);
+            }
+
+            var envelope = await DeserializeEnvelopeAsync<TokenPayload>(response, ct);
+            var accessToken = envelope?.Data?.AccessToken;
+            var refreshToken = envelope?.Data?.RefreshToken;
+
+            if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return new AuthResult(false, Localization.LocalizationService.Get("Common_Error_Generic"));
+            }
+
+            await SecureSetAsync(TokenKey, accessToken);
+            await SecureSetAsync(RefreshTokenKey, refreshToken);
+
+            CurrentDisplayName = envelope?.Data?.User?.DisplayName ?? ExtractDisplayNameFromJwt(accessToken);
+            SetLoginState(true);
+            return new AuthResult(true);
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[AUTH] Network error: {ex.Message}");
+            return new AuthResult(false, Localization.LocalizationService.Get("Common_Error_Network"));
+        }
+        catch (TaskCanceledException)
+        {
+            return new AuthResult(false, Localization.LocalizationService.Get("Common_Error_Generic"));
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[AUTH] Parse error: {ex.Message}");
+            return new AuthResult(false, Localization.LocalizationService.Get("Common_Error_Generic"));
+        }
+    }
+
     public async Task LogoutAsync(CancellationToken ct = default)
     {
         try
@@ -284,7 +334,13 @@ public class AuthService : IAuthService
     {
         try
         {
-            var envelope = await DeserializeEnvelopeAsync<object>(response, ct);
+            var content = await response.Content.ReadAsStringAsync(ct);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return fallbackMessage;
+            }
+
+            var envelope = JsonSerializer.Deserialize<ApiEnvelope<object>>(content, _jsonOptions);
             if (!string.IsNullOrWhiteSpace(envelope?.Message))
             {
                 return envelope.Message;

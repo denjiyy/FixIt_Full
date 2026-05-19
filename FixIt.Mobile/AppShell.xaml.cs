@@ -19,7 +19,6 @@ public partial class AppShell : Shell
         HomePage homePage,
         IssuesPage issuesPage,
         AlertsPage alertsPage,
-        LeaderboardPage leaderboardPage,
         ReportIssuePage reportIssuePage,
         LoginPage loginPage,
         ProfilePage profilePage,
@@ -38,16 +37,17 @@ public partial class AppShell : Shell
         HomeContent.Content = homePage;
         IssuesContent.Content = issuesPage;
         AlertsContent.Content = alertsPage;
-        LeaderboardContent.Content = leaderboardPage;
         ReportIssueContent.Content = reportIssuePage;
 
         Routing.RegisterRoute(AppConstants.RouteIssueDetail, typeof(IssueDetailPage));
         Routing.RegisterRoute(AppConstants.RouteMyIssues, typeof(MyIssuesPage));
         Routing.RegisterRoute(AppConstants.RouteHazardMap, typeof(HazardMapPage));
+        Routing.RegisterRoute(AppConstants.RouteLeaderboard, typeof(LeaderboardPage));
         Routing.RegisterRoute(AppConstants.RouteHealthReport, typeof(HealthReportPage));
         Routing.RegisterRoute(AppConstants.RoutePublicProfile, typeof(PublicProfilePage));
         // FIX B-01: keep the raw sign-in tab route registered and use the absolute route only for Shell tab selection.
         Routing.RegisterRoute(AppConstants.RouteSignInTab, typeof(LoginPage));
+        Routing.RegisterRoute("register", typeof(RegisterPage));
 
         UpdateAuthVisualState(_auth.IsLoggedIn);
         UpdateLocalizedTabs();
@@ -137,7 +137,6 @@ public partial class AppShell : Shell
         HomeTab.Title = $"🏠 {LocalizationService.Get("Tab_Home")}";
         IssuesTab.Title = $"📋 {LocalizationService.Get("Tab_Issues")}";
         AlertsTab.Title = $"🔔 {LocalizationService.Get("Tab_Alerts")}";
-        LeaderboardTab.Title = $"🏆 {LocalizationService.Get("Leaderboard_Title")}";
         ReportIssueTab.Title = _auth.IsLoggedIn
             ? $"📷 {LocalizationService.Get("Tab_Report")}"
             : $"🔒 {LocalizationService.Get("Tab_ReportLocked")}";
