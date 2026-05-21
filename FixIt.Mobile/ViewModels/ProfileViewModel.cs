@@ -143,6 +143,13 @@ public partial class ProfileViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task ViewHazardMapAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+    }
+
+    [RelayCommand]
     private async Task SwitchLanguageAsync(string? cultureName, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(cultureName))

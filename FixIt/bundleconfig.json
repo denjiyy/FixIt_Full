@@ -1,0 +1,24 @@
+[
+  {
+    "outputFileName": "wwwroot/css/bundle.min.css",
+    "inputFiles": [
+      "wwwroot/css/design-tokens.css",
+      "wwwroot/css/design-system.css",
+      "wwwroot/css/site.css"
+    ],
+    "minify": {
+      "enabled": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/css/admin.bundle.min.css",
+    "inputFiles": [
+      "wwwroot/css/design-tokens.css",
+      "wwwroot/css/design-system.css",
+      "wwwroot/css/admin.css"
+    ],
+    "minify": {
+      "enabled": true
+    }
+  }
+]

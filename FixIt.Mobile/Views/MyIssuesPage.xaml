@@ -23,7 +23,8 @@
 
         <RefreshView Grid.Row="1"
                      Command="{Binding LoadIssuesCommand}"
-                     IsRefreshing="{Binding IsLoading}">
+                     IsRefreshing="{Binding IsLoading}"
+                     RefreshColor="{StaticResource Primary}">
             <CollectionView x:Name="MyIssuesCollection"
                             ItemsSource="{Binding Issues}"
                             SelectionMode="None"

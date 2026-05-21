@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace FixIt.Areas.Admin.Pages.Issues;
 
-[Authorize(Policy = PolicyNames.AdminOnly)]
+[Authorize(Policy = PolicyNames.AdminArea)]
 public class IndexModel : PageModel
 {
     private readonly IIssueService _issueService;

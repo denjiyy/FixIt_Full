@@ -30,7 +30,8 @@
 
         <RefreshView Grid.Row="2"
                      Command="{Binding LoadAlertsCommand}"
-                     IsRefreshing="{Binding IsLoading}">
+                     IsRefreshing="{Binding IsLoading}"
+                     RefreshColor="{StaticResource Primary}">
             <CollectionView x:Name="AlertsCollection"
                             ItemsSource="{Binding Alerts}"
                             SelectionMode="None"

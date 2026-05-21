@@ -65,13 +65,13 @@ public static class MauiProgram
         builder.Services.AddSingleton<IApiService>(sp => sp.GetRequiredService<ApiService>());
         builder.Services.AddSingleton<ShellViewModel>();
 
-        builder.Services.AddTransient<HomeViewModel>();
-        builder.Services.AddTransient<IssuesViewModel>();
-        builder.Services.AddTransient<AlertsViewModel>();
-        builder.Services.AddTransient<ReportIssueViewModel>();
-        builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddSingleton<HomeViewModel>();
+        builder.Services.AddSingleton<IssuesViewModel>();
+        builder.Services.AddSingleton<AlertsViewModel>();
+        builder.Services.AddSingleton<ReportIssueViewModel>();
+        builder.Services.AddSingleton<LoginViewModel>();
         builder.Services.AddTransient<RegisterViewModel>();
-        builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddSingleton<ProfileViewModel>();
         builder.Services.AddTransient<IssueDetailViewModel>();
         builder.Services.AddTransient<MyIssuesViewModel>();
         builder.Services.AddTransient<HazardMapViewModel>();
@@ -79,20 +79,20 @@ public static class MauiProgram
         builder.Services.AddTransient<HealthReportViewModel>();
         builder.Services.AddTransient<PublicProfileViewModel>();
 
-        builder.Services.AddTransient<HomePage>();
-        builder.Services.AddTransient<IssuesPage>();
-        builder.Services.AddTransient<AlertsPage>();
-        builder.Services.AddTransient<ReportIssuePage>();
-        builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddSingleton<HomePage>();
+        builder.Services.AddSingleton<IssuesPage>();
+        builder.Services.AddSingleton<AlertsPage>();
+        builder.Services.AddSingleton<ReportIssuePage>();
+        builder.Services.AddSingleton<LoginPage>();
         builder.Services.AddTransient<RegisterPage>();
-        builder.Services.AddTransient<ProfilePage>();
+        builder.Services.AddSingleton<ProfilePage>();
         builder.Services.AddTransient<IssueDetailPage>();
         builder.Services.AddTransient<MyIssuesPage>();
         builder.Services.AddTransient<HazardMapPage>();
         builder.Services.AddTransient<LeaderboardPage>();
         builder.Services.AddTransient<HealthReportPage>();
         builder.Services.AddTransient<PublicProfilePage>();
-        builder.Services.AddTransient<AppShell>();
+        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();

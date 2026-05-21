@@ -21,7 +21,7 @@
                 <Border Margin="20,28,20,0"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 24"
-                        Padding="24,28,24,24">
+                        Padding="24,28,24,28">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="#2563EB" Offset="0" />
@@ -45,6 +45,7 @@
                             </VerticalStackLayout>
                             <Border Grid.Column="1"
                                     WidthRequest="48" HeightRequest="48"
+                                    MaximumWidthRequest="80"
                                     BackgroundColor="#FFFFFF28"
                                     StrokeThickness="0"
                                     StrokeShape="RoundRectangle 24"
@@ -76,7 +77,7 @@
                                 SemanticProperties.Description="{local:Localize Key=Home_ReportCTA}" />
                         <Button Text="{local:Localize Key=Health_Title}"
                                 Style="{StaticResource SecondaryButton}"
-                                Margin="0,10,0,0"
+                                Margin="0,12,0,0"
                                 Command="{Binding GoToHealthReportCommand}" />
                     </VerticalStackLayout>
                 </Border>
@@ -136,6 +137,61 @@
                             Margin="0"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding GoToLeaderboardCommand}" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Quick Actions Section -->
+            <VerticalStackLayout x:Name="QuickActionsSection" Opacity="0" TranslationY="30"
+                                 Padding="20,28,20,0" Spacing="14">
+                <Label Style="{StaticResource TitleMedium}"
+                       Text="{local:Localize Key=QuickActions}"
+                       SemanticProperties.HeadingLevel="Level2" />
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Padding="14">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToHazardMapCommand}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="🗺" FontSize="28" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=HazardMap_Title}"
+                                   FontSize="Caption"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource OnBackground}"
+                                   HorizontalTextAlignment="Center"
+                                   MaxLines="2" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Padding="14">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToHealthReportCommand}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="📊" FontSize="28" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=Health_Title}"
+                                   FontSize="Caption"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource OnBackground}"
+                                   HorizontalTextAlignment="Center"
+                                   MaxLines="2" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Column="2" Style="{StaticResource Card}" Padding="14">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToLeaderboardCommand}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                            <Label Text="🏆" FontSize="28" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=Leaderboard_Title}"
+                                   FontSize="Caption"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource OnBackground}"
+                                   HorizontalTextAlignment="Center"
+                                   MaxLines="2" />
+                        </VerticalStackLayout>
+                    </Border>
                 </Grid>
             </VerticalStackLayout>
 

@@ -24,42 +24,69 @@
                SemanticProperties.HeadingLevel="Level1" />
 
         <HorizontalStackLayout Grid.Row="1" Spacing="8">
-            <Border StrokeShape="RoundRectangle 18" Padding="14,8" BackgroundColor="{StaticResource Surface}" Stroke="{StaticResource Surface2}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="weekly" />
-                </Border.GestureRecognizers>
-                <Border.Triggers>
-                    <DataTrigger TargetType="Border" Binding="{Binding IsWeekly}" Value="True">
+            <Button Text="{local:Localize Key=Leaderboard_Weekly}"
+                    Command="{Binding SelectPeriodCommand}"
+                    CommandParameter="weekly"
+                    BackgroundColor="{StaticResource Surface}"
+                    BorderColor="{StaticResource Surface2}"
+                    BorderWidth="1"
+                    TextColor="{StaticResource OnSurface}"
+                    FontSize="Caption"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    MinimumHeightRequest="44"
+                    Padding="14,0"
+                    SemanticProperties.Description="Select weekly leaderboard">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsWeekly}" Value="True">
                         <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-                        <Setter Property="Stroke" Value="{StaticResource Primary}" />
+                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                        <Setter Property="TextColor" Value="{StaticResource White}" />
                     </DataTrigger>
-                </Border.Triggers>
-                <Label Text="{local:Localize Key=Leaderboard_Weekly}" FontSize="Caption" FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
-            </Border>
-            <Border StrokeShape="RoundRectangle 18" Padding="14,8" BackgroundColor="{StaticResource Surface}" Stroke="{StaticResource Surface2}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="monthly" />
-                </Border.GestureRecognizers>
-                <Border.Triggers>
-                    <DataTrigger TargetType="Border" Binding="{Binding IsMonthly}" Value="True">
+                </Button.Triggers>
+            </Button>
+            <Button Text="{local:Localize Key=Leaderboard_Monthly}"
+                    Command="{Binding SelectPeriodCommand}"
+                    CommandParameter="monthly"
+                    BackgroundColor="{StaticResource Surface}"
+                    BorderColor="{StaticResource Surface2}"
+                    BorderWidth="1"
+                    TextColor="{StaticResource OnSurface}"
+                    FontSize="Caption"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    MinimumHeightRequest="44"
+                    Padding="14,0"
+                    SemanticProperties.Description="Select monthly leaderboard">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsMonthly}" Value="True">
                         <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-                        <Setter Property="Stroke" Value="{StaticResource Primary}" />
+                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                        <Setter Property="TextColor" Value="{StaticResource White}" />
                     </DataTrigger>
-                </Border.Triggers>
-                <Label Text="{local:Localize Key=Leaderboard_Monthly}" FontSize="Caption" FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
-            </Border>
-            <Border StrokeShape="RoundRectangle 18" Padding="14,8" BackgroundColor="{StaticResource Surface}" Stroke="{StaticResource Surface2}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SelectPeriodCommand}" CommandParameter="alltime" />
-                </Border.GestureRecognizers>
-                <Border.Triggers>
-                    <DataTrigger TargetType="Border" Binding="{Binding IsAllTime}" Value="True">
+                </Button.Triggers>
+            </Button>
+            <Button Text="{local:Localize Key=Leaderboard_AllTime}"
+                    Command="{Binding SelectPeriodCommand}"
+                    CommandParameter="alltime"
+                    BackgroundColor="{StaticResource Surface}"
+                    BorderColor="{StaticResource Surface2}"
+                    BorderWidth="1"
+                    TextColor="{StaticResource OnSurface}"
+                    FontSize="Caption"
+                    FontAttributes="Bold"
+                    CornerRadius="18"
+                    MinimumHeightRequest="44"
+                    Padding="14,0"
+                    SemanticProperties.Description="Select all-time leaderboard">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding IsAllTime}" Value="True">
                         <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-                        <Setter Property="Stroke" Value="{StaticResource Primary}" />
+                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                        <Setter Property="TextColor" Value="{StaticResource White}" />
                     </DataTrigger>
-                </Border.Triggers>
-                <Label Text="{local:Localize Key=Leaderboard_AllTime}" FontSize="Caption" FontAttributes="Bold" TextColor="{StaticResource OnSurface}" />
-            </Border>
+                </Button.Triggers>
+            </Button>
         </HorizontalStackLayout>
 
         <CollectionView Grid.Row="2"

@@ -21,11 +21,14 @@ public partial class HomePage : ContentPage
 
         ResetSection(HeroBanner);
         ResetSection(StatsSection);
+        ResetSection(QuickActionsSection);
         ResetSection(RecentSection);
 
         await AnimateSectionAsync(HeroBanner);
         await Task.Delay(150);
         await AnimateSectionAsync(StatsSection);
+        await Task.Delay(150);
+        await AnimateSectionAsync(QuickActionsSection);
         await Task.Delay(150);
         await AnimateSectionAsync(RecentSection);
     }

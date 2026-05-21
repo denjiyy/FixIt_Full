@@ -59,10 +59,10 @@ public class LoginModel : PageModel
                 return Page();
             }
 
-            // Admin area access is restricted to admins only.
-            if (user.Role != UserRole.Admin)
+            // Admin area access is restricted to administrators and moderators.
+            if (user.Role != UserRole.Admin && user.Role != UserRole.Moderator)
             {
-                _logger.LogWarning($"Non-admin login attempt: {Input.Username} (Role: {user.Role})");
+                _logger.LogWarning($"Unauthorized admin area login attempt: {Input.Username} (Role: {user.Role})");
                 ModelState.AddModelError(string.Empty, "You don't have permission to access the admin panel");
                 return Page();
             }
@@ -73,7 +73,8 @@ public class LoginModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogInformation($"Admin {user.Email} ({user.Role}) signed in");
-                return LocalRedirect(returnUrl);
+                var destination = user.Role == UserRole.Moderator ? "/admin/issues" : returnUrl;
+                return LocalRedirect(destination);
             }
 
             if (result.IsLockedOut)

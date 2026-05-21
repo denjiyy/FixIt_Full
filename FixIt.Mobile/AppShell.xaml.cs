@@ -130,19 +130,56 @@ public partial class AppShell : Shell
     {
         AccountContent.Content = isLoggedIn ? _profilePage : _loginPage;
         UpdateLocalizedTabs();
+        UpdateTabIcons();
     }
 
     private void UpdateLocalizedTabs()
     {
-        HomeTab.Title = $"🏠 {LocalizationService.Get("Tab_Home")}";
-        IssuesTab.Title = $"📋 {LocalizationService.Get("Tab_Issues")}";
-        AlertsTab.Title = $"🔔 {LocalizationService.Get("Tab_Alerts")}";
+        HomeTab.Title = LocalizationService.Get("Tab_Home");
+        IssuesTab.Title = LocalizationService.Get("Tab_Issues");
+        AlertsTab.Title = LocalizationService.Get("Tab_Alerts");
         ReportIssueTab.Title = _auth.IsLoggedIn
-            ? $"📷 {LocalizationService.Get("Tab_Report")}"
-            : $"🔒 {LocalizationService.Get("Tab_ReportLocked")}";
+            ? LocalizationService.Get("Tab_Report")
+            : LocalizationService.Get("Tab_ReportLocked");
         AccountTab.Title = _auth.IsLoggedIn
-            ? $"{_auth.GetCurrentInitials()} {LocalizationService.Get("Tab_Profile")}"
-            : $"👤 {LocalizationService.Get("Tab_SignIn")}";
+            ? LocalizationService.Get("Tab_Profile")
+            : LocalizationService.Get("Tab_SignIn");
+    }
+
+    protected override void OnNavigated(ShellNavigatedEventArgs args)
+    {
+        base.OnNavigated(args);
+        UpdateTabIcons();
+    }
+
+    private void UpdateTabIcons()
+    {
+        SetTabIcon(HomeTab, HomeContent, TabIconFile("home", HomeContent));
+        SetTabIcon(IssuesTab, IssuesContent, TabIconFile("issues", IssuesContent));
+        SetTabIcon(AlertsTab, AlertsContent, TabIconFile("alerts", AlertsContent));
+        SetTabIcon(
+            ReportIssueTab,
+            ReportIssueContent,
+            _auth.IsLoggedIn ? TabIconFile("report", ReportIssueContent) : "report_locked.svg");
+        SetTabIcon(AccountTab, AccountContent, TabIconFile("profile", AccountContent));
+    }
+
+    private static void SetTabIcon(ShellSection tab, ShellContent content, string iconFile)
+    {
+        var icon = ImageSource.FromFile(iconFile);
+        tab.Icon = icon;
+        content.Icon = icon;
+    }
+
+    private string TabIconFile(string name, ShellContent content)
+    {
+        var suffix = IsCurrentContent(content) ? "_selected" : string.Empty;
+        return $"{name}{suffix}.svg";
+    }
+
+    private bool IsCurrentContent(ShellContent content)
+    {
+        return CurrentItem?.CurrentItem?.CurrentItem == content;
     }
 
     private void OnCultureChanged(object? sender, System.Globalization.CultureInfo e)

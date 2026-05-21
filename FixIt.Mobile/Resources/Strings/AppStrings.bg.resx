@@ -16,6 +16,7 @@
   <data name="Home_Resolved" xml:space="preserve"><value>Решени</value></data>
   <data name="Home_InProgress" xml:space="preserve"><value>В процес</value></data>
   <data name="Home_Critical" xml:space="preserve"><value>Критични</value></data>
+  <data name="QuickActions" xml:space="preserve"><value>Бързи действия</value></data>
   <data name="Issues_Title" xml:space="preserve"><value>Сигнали</value></data>
   <data name="Issues_SearchPlaceholder" xml:space="preserve"><value>Търси сигнали...</value></data>
   <data name="Issues_Filter_All" xml:space="preserve"><value>Всички</value></data>
@@ -108,7 +109,7 @@
   <data name="Detail_IssuePhoto" xml:space="preserve"><value>Снимка към сигнала</value></data>
   <data name="Detail_Upvote" xml:space="preserve"><value>Подкрепи</value></data>
   <data name="Detail_Downvote" xml:space="preserve"><value>Не подкрепям</value></data>
-  <data name="HazardMap_Title" xml:space="preserve"><value>Карта</value></data>
+  <data name="HazardMap_Title" xml:space="preserve"><value>Карта на опасностите</value></data>
   <data name="HazardMap_Empty" xml:space="preserve"><value>В момента няма опасности с местоположение.</value></data>
   <data name="HazardMap_Confirm" xml:space="preserve"><value>Потвърди</value></data>
   <data name="HazardMap_Confirmations" xml:space="preserve"><value>Потвърждения</value></data>

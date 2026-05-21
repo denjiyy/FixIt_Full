@@ -11,6 +11,7 @@ public partial class SkeletonCardView : ContentView
 
     private void OnLoaded(object? sender, EventArgs e)
     {
+        this.AbortAnimation("Shimmer");
         var animation = new Animation(v => SkeletonRoot.Opacity = v, 0.4, 0.9);
         animation.Commit(this, "Shimmer", 16, 800, Easing.SinInOut, repeat: () => true);
     }

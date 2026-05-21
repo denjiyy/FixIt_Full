@@ -168,6 +168,7 @@
         <RefreshView Grid.Row="4"
                      Command="{Binding RefreshIssuesCommand}"
                      IsRefreshing="{Binding IsLoading}"
+                     RefreshColor="{StaticResource Primary}"
                      Margin="0,14,0,0">
             <CollectionView x:Name="IssuesCollection"
                             ItemsSource="{Binding Issues}"

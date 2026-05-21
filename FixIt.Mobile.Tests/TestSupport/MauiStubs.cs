@@ -1,5 +1,25 @@
 using System.Globalization;
 
+namespace FixIt.Mobile
+{
+    public static class App
+    {
+        public static event EventHandler? Resumed
+        {
+            add { }
+            remove { }
+        }
+    }
+
+    public static class MainThread
+    {
+        public static void BeginInvokeOnMainThread(Action action)
+        {
+            action();
+        }
+    }
+}
+
 namespace FixIt.Mobile.Converters
 {
     public interface IValueConverter

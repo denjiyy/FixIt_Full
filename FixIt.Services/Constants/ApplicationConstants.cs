@@ -11,6 +11,7 @@ public static class RoleNames
 
 public static class PolicyNames
 {
+    public const string AdminArea = "AdminArea";
     public const string AdminOnly = "AdminOnly";
 }
 

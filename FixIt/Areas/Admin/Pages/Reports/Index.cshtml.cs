@@ -8,7 +8,7 @@ using FixIt.Services.Constants;
 
 namespace FixIt.Areas.Admin.Pages.Reports;
 
-[Authorize(Policy = PolicyNames.AdminOnly)]
+[Authorize(Policy = PolicyNames.AdminArea)]
 public class IndexModel : PageModel
 {
     private readonly IRepository<ContentReport> _reportRepository;

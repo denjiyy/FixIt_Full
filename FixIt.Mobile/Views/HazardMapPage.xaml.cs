@@ -14,16 +14,18 @@ public partial class HazardMapPage : ContentPage
     {
         base.OnAppearing();
 
+        HazardMapRoot.Opacity = 0;
+        HazardMapRoot.TranslationY = 24;
+        var animationTask = Task.WhenAll(
+            HazardMapRoot.FadeTo(1, 350, Easing.CubicOut),
+            HazardMapRoot.TranslateTo(0, 0, 350, Easing.CubicOut));
+
         if (BindingContext is HazardMapViewModel viewModel)
         {
             await viewModel.OnAppearingAsync();
         }
 
-        HazardMapRoot.Opacity = 0;
-        HazardMapRoot.TranslationY = 24;
-        await Task.WhenAll(
-            HazardMapRoot.FadeTo(1, 350, Easing.CubicOut),
-            HazardMapRoot.TranslateTo(0, 0, 350, Easing.CubicOut));
+        await animationTask;
     }
 
     protected override void OnDisappearing()

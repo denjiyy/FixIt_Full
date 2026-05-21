@@ -25,24 +25,24 @@
     </Shell.TitleView>
 
     <TabBar>
-        <Tab x:Name="HomeTab" Title="Home" Route="home">
-            <ShellContent x:Name="HomeContent" Route="home-page" />
+        <Tab x:Name="HomeTab" Title="Home" Route="home" Icon="home.svg">
+            <ShellContent x:Name="HomeContent" Route="home-page" Icon="home.svg" />
         </Tab>
 
-        <Tab x:Name="IssuesTab" Title="Issues" Route="issues">
-            <ShellContent x:Name="IssuesContent" Route="issues-page" />
+        <Tab x:Name="IssuesTab" Title="Issues" Route="issues" Icon="issues.svg">
+            <ShellContent x:Name="IssuesContent" Route="issues-page" Icon="issues.svg" />
         </Tab>
 
-        <Tab x:Name="AlertsTab" Title="Alerts" Route="alerts">
-            <ShellContent x:Name="AlertsContent" Route="alerts-page" />
+        <Tab x:Name="AlertsTab" Title="Alerts" Route="alerts" Icon="alerts.svg">
+            <ShellContent x:Name="AlertsContent" Route="alerts-page" Icon="alerts.svg" />
         </Tab>
 
-        <Tab x:Name="ReportIssueTab" Title="Report Issue" Route="report-issue-tab">
-            <ShellContent x:Name="ReportIssueContent" Route="report-issue-page" />
+        <Tab x:Name="ReportIssueTab" Title="Report Issue" Route="report-issue-tab" Icon="report_locked.svg">
+            <ShellContent x:Name="ReportIssueContent" Route="report-issue-page" Icon="report_locked.svg" />
         </Tab>
 
-        <Tab x:Name="AccountTab" Title="Sign In" Route="sign-in-tab">
-            <ShellContent x:Name="AccountContent" Route="account-page" />
+        <Tab x:Name="AccountTab" Title="Sign In" Route="sign-in-tab" Icon="profile.svg">
+            <ShellContent x:Name="AccountContent" Route="account-page" Icon="profile.svg" />
         </Tab>
     </TabBar>
 </Shell>

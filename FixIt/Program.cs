@@ -114,7 +114,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 // Add services to the container.
 builder.Services.AddRazorPages(options =>
     {
-        options.Conventions.AuthorizeAreaFolder("Admin", "/", PolicyNames.AdminOnly);
+        options.Conventions.AuthorizeAreaFolder("Admin", "/", PolicyNames.AdminArea);
         options.Conventions.AllowAnonymousToAreaPage("Admin", "/Login");
     })
     .AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix)
@@ -326,6 +326,7 @@ mongo =>
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy(PolicyNames.AdminArea, policy => policy.RequireRole(RoleNames.Admin, RoleNames.Moderator));
     options.AddPolicy(PolicyNames.AdminOnly, policy => policy.RequireRole(RoleNames.Admin));
 });
 
@@ -627,7 +628,7 @@ else
     }
     else
     {
-        builder.Services.AddScoped<CloudinaryService?>(sp => null);  // Allow null in development
+        builder.Services.AddScoped<CloudinaryService>(_ => null!);  // Allow null in development
     }
 }
 

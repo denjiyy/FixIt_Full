@@ -99,6 +99,7 @@ public class AuthService : IAuthService
 
             if (!response.IsSuccessStatusCode)
             {
+                Console.WriteLine($"[AUTH] Register failed. Status: {(int)response.StatusCode}");
                 var error = await ExtractApiErrorAsync(response, Localization.LocalizationService.Get("Register_Error_RegistrationFailed"), ct);
                 return new AuthResult(false, error);
             }
@@ -335,15 +336,28 @@ public class AuthService : IAuthService
         try
         {
             var content = await response.Content.ReadAsStringAsync(ct);
+            Console.WriteLine($"[AUTH] Error response {(int)response.StatusCode}: {content}");
             if (string.IsNullOrWhiteSpace(content))
             {
                 return fallbackMessage;
             }
 
-            var envelope = JsonSerializer.Deserialize<ApiEnvelope<object>>(content, _jsonOptions);
-            if (!string.IsNullOrWhiteSpace(envelope?.Message))
+            using var document = JsonDocument.Parse(content);
+            var root = document.RootElement;
+
+            var errors = ExtractErrors(root);
+            if (!string.IsNullOrWhiteSpace(errors))
             {
-                return envelope.Message;
+                return errors;
+            }
+
+            var message = ExtractStringProperty(root, "message")
+                ?? ExtractStringProperty(root, "detail")
+                ?? ExtractStringProperty(root, "title");
+
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                return message;
             }
         }
         catch (JsonException ex)
@@ -352,6 +366,117 @@ public class AuthService : IAuthService
         }
 
         return fallbackMessage;
+    }
+
+    private static string? ExtractErrors(JsonElement root)
+    {
+        if (!TryGetPropertyIgnoreCase(root, "errors", out var errors) || errors.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return null;
+        }
+
+        return errors.ValueKind switch
+        {
+            JsonValueKind.String => NormalizeApiError(errors.GetString()),
+            JsonValueKind.Array => ExtractFirstArrayError(errors),
+            JsonValueKind.Object => ExtractFirstObjectError(errors),
+            _ => null
+        };
+    }
+
+    private static string? ExtractFirstArrayError(JsonElement errors)
+    {
+        foreach (var item in errors.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String)
+            {
+                var value = NormalizeApiError(item.GetString());
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+            }
+
+            if (item.ValueKind == JsonValueKind.Object)
+            {
+                var value = ExtractStringProperty(item, "description")
+                    ?? ExtractStringProperty(item, "message")
+                    ?? ExtractStringProperty(item, "error");
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ExtractFirstObjectError(JsonElement errors)
+    {
+        foreach (var property in errors.EnumerateObject())
+        {
+            var value = property.Value;
+            if (value.ValueKind == JsonValueKind.String)
+            {
+                var error = NormalizeApiError(value.GetString());
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    return error;
+                }
+            }
+
+            if (value.ValueKind == JsonValueKind.Array)
+            {
+                var error = ExtractFirstArrayError(value);
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    return error;
+                }
+            }
+
+            if (value.ValueKind == JsonValueKind.Object)
+            {
+                var error = ExtractFirstObjectError(value);
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    return error;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ExtractStringProperty(JsonElement root, string propertyName)
+    {
+        return TryGetPropertyIgnoreCase(root, propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? NormalizeApiError(property.GetString())
+            : null;
+    }
+
+    private static bool TryGetPropertyIgnoreCase(JsonElement root, string propertyName, out JsonElement property)
+    {
+        if (root.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var candidate in root.EnumerateObject())
+            {
+                if (string.Equals(candidate.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    property = candidate.Value;
+                    return true;
+                }
+            }
+        }
+
+        property = default;
+        return false;
+    }
+
+    private static string? NormalizeApiError(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
     private static string ExtractDisplayNameFromJwt(string? credential)

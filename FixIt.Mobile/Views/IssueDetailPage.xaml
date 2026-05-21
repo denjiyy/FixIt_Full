@@ -313,7 +313,7 @@
                 Stroke="{StaticResource DividerColor}"
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 0"
-                Padding="16,12,16,24">
+                Padding="{OnPlatform iOS='16,12,16,34', Android='16,12,16,24'}">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                 <VerticalStackLayout Grid.Column="0" Spacing="4">
                     <Border Style="{StaticResource EntryCard}">

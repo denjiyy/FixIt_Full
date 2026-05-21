@@ -110,6 +110,13 @@ public partial class HomeViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task GoToHazardMapAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+    }
+
+    [RelayCommand]
     private async Task NavigateToIssueAsync(string? issueId, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(issueId))
