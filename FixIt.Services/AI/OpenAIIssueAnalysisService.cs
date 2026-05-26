@@ -47,11 +47,10 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
     /// </summary>
     public async Task<IssueAnalysis> AnalyzeIssueAsync(string issueId)
     {
-        // Check if analysis already exists
         var existing = await GetAnalysisAsync(issueId);
         if (existing != null)
         {
-            _logger.LogInformation($"Using cached analysis for issue {issueId}");
+            _logger.LogInformation("Using cached analysis for issue {IssueId}", issueId);
             return existing;
         }
 
@@ -61,8 +60,8 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
 
         var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
         var isApiEnabled = _configuration.GetValue("OpenAI:Enabled", true);
-        var isApiConfigured = !string.IsNullOrEmpty(apiKey) 
-            && !apiKey.StartsWith("sk-YOUR") 
+        var isApiConfigured = !string.IsNullOrEmpty(apiKey)
+            && !apiKey.StartsWith("sk-YOUR")
             && !apiKey.StartsWith("${")
             && isApiEnabled;
 
@@ -72,32 +71,32 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         {
             try
             {
-                _logger.LogInformation($"Using OpenAI API to analyze issue {issueId}");
+                _logger.LogInformation("Using OpenAI API to analyze issue {IssueId}", issueId);
                 analysis = await CallOpenAIAsync(issue);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning($"OpenAI API failed for issue {issueId}, using heuristic analysis: {ex.Message}");
+                _logger.LogWarning(ex, "OpenAI API failed for issue {IssueId}; falling back to heuristic analysis", issueId);
                 analysis = GenerateHeuristicAnalysis(issue);
             }
         }
         else
         {
-            _logger.LogInformation($"OpenAI not configured (Enabled={isApiEnabled}, KeySet={!string.IsNullOrEmpty(apiKey)}), using heuristic analysis for issue {issueId}");
+            _logger.LogInformation("OpenAI not configured (Enabled={Enabled}, KeySet={KeySet}); using heuristic analysis for issue {IssueId}",
+                isApiEnabled, !string.IsNullOrEmpty(apiKey), issueId);
             analysis = GenerateHeuristicAnalysis(issue);
         }
 
         analysis.IssueId = issueId;
-        
-        // Save analysis regardless of source
+
         try
         {
             await _analysisRepository.InsertAsync(analysis);
-            _logger.LogInformation($"Analysis saved for issue {issueId}");
+            _logger.LogInformation("Analysis saved for issue {IssueId}", issueId);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to save analysis for {issueId}: {ex.Message}");
+            _logger.LogError(ex, "Failed to save analysis for issue {IssueId}", issueId);
         }
 
         return analysis;
@@ -130,7 +129,8 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
 
         if (!apiKey.StartsWith("sk-"))
         {
-            _logger.LogWarning($"API key does not start with 'sk-' prefix. Key starts with: {apiKey.Substring(0, Math.Min(10, apiKey.Length))}...");
+            var preview = apiKey.Substring(0, Math.Min(10, apiKey.Length));
+            _logger.LogWarning("OpenAI API key does not start with 'sk-' prefix (preview: {Preview}...)", preview);
         }
 
         var request = new
@@ -183,7 +183,7 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
                 }
             }
             
-            _logger.LogError($"OpenAI API Error: {errorMessage}");
+            _logger.LogError("OpenAI API error: {ErrorMessage}", errorMessage);
             throw new HttpRequestException($"{errorMessage}. Check your API key validity, account status, and rate limits.");
         }
 
@@ -199,9 +199,6 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         return ParseAnalysisResponse(content);
     }
 
-    /// <summary>
-    /// Parses OpenAI response into structured analysis
-    /// </summary>
     private IssueAnalysis ParseAnalysisResponse(string response)
     {
         var analysis = new IssueAnalysis
@@ -215,51 +212,134 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
             PotentialDuplicates = new()
         };
 
-        // Parse category
-        var categoryMatch = ExtractJsonField(response, "category");
-        if (!string.IsNullOrEmpty(categoryMatch) && Enum.TryParse<IssueCategory>(categoryMatch, out var category))
+        // Prefer real JSON parsing; fall back to the regex extractor only when the
+        // model returned something that doesn't parse (e.g. prose with embedded JSON).
+        if (TryParseAsJson(response, analysis))
         {
-            analysis.Category = category;
+            return analysis;
         }
 
-        // Parse confidence
-        if (int.TryParse(ExtractJsonField(response, "confidence"), out var confidence))
+        ApplyField(ExtractJsonField(response, "category"), value =>
         {
-            analysis.ConfidenceScore = Math.Min(100, Math.Max(0, confidence));
-        }
-
-        // Parse severity
-        if (int.TryParse(ExtractJsonField(response, "severity"), out var severity))
+            if (Enum.TryParse<IssueCategory>(value, out var c)) { analysis.Category = c; }
+        });
+        ApplyField(ExtractJsonField(response, "confidence"), value =>
         {
-            analysis.EstimatedSeverity = Math.Min(10, Math.Max(1, severity));
-        }
-
-        // Extract keywords
-        var keywordsStr = ExtractJsonField(response, "keywords");
-        if (!string.IsNullOrEmpty(keywordsStr))
+            if (int.TryParse(value, out var n)) { analysis.ConfidenceScore = Math.Clamp(n, 0, 100); }
+        });
+        ApplyField(ExtractJsonField(response, "severity"), value =>
         {
-            analysis.Keywords = keywordsStr.Split(',')
-                .Select(k => k.Trim())
-                .Where(k => !string.IsNullOrEmpty(k))
-                .ToList();
-        }
-
-        // Extract tags
-        var tagsStr = ExtractJsonField(response, "tags");
-        if (!string.IsNullOrEmpty(tagsStr))
-        {
-            analysis.SuggestedTags = tagsStr.Split(',')
-                .Select(t => t.Trim())
-                .Where(t => !string.IsNullOrEmpty(t))
-                .ToList();
-        }
+            if (int.TryParse(value, out var n)) { analysis.EstimatedSeverity = Math.Clamp(n, 1, 10); }
+        });
+        ApplyField(ExtractJsonField(response, "keywords"), value =>
+            analysis.Keywords = SplitCsv(value));
+        ApplyField(ExtractJsonField(response, "tags"), value =>
+            analysis.SuggestedTags = SplitCsv(value));
 
         return analysis;
     }
 
-    /// <summary>
-    /// Extracts a field value from JSON-formatted response
-    /// </summary>
+    private bool TryParseAsJson(string response, IssueAnalysis analysis)
+    {
+        var trimmed = response?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return false;
+        }
+
+        // Strip Markdown code fences if the model wrapped the JSON in ```json ... ```.
+        if (trimmed.StartsWith("```"))
+        {
+            var firstNewline = trimmed.IndexOf('\n');
+            var lastFence = trimmed.LastIndexOf("```", StringComparison.Ordinal);
+            if (firstNewline > 0 && lastFence > firstNewline)
+            {
+                trimmed = trimmed.Substring(firstNewline + 1, lastFence - firstNewline - 1).Trim();
+            }
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(trimmed);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            if (TryGetString(root, "category", out var categoryStr)
+                && Enum.TryParse<IssueCategory>(categoryStr, out var category))
+            {
+                analysis.Category = category;
+            }
+            if (TryGetInt(root, "confidence", out var confidence))
+            {
+                analysis.ConfidenceScore = Math.Clamp(confidence, 0, 100);
+            }
+            if (TryGetInt(root, "severity", out var severity))
+            {
+                analysis.EstimatedSeverity = Math.Clamp(severity, 1, 10);
+            }
+            if (TryGetString(root, "reasoning", out var reasoning) && !string.IsNullOrWhiteSpace(reasoning))
+            {
+                analysis.Reasoning = reasoning;
+            }
+            analysis.Keywords = ReadStringList(root, "keywords");
+            analysis.SuggestedTags = ReadStringList(root, "tags");
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryGetString(JsonElement root, string name, out string value)
+    {
+        value = string.Empty;
+        if (!root.TryGetProperty(name, out var prop)) { return false; }
+        if (prop.ValueKind == JsonValueKind.String) { value = prop.GetString() ?? string.Empty; return true; }
+        return false;
+    }
+
+    private static bool TryGetInt(JsonElement root, string name, out int value)
+    {
+        value = 0;
+        if (!root.TryGetProperty(name, out var prop)) { return false; }
+        if (prop.ValueKind == JsonValueKind.Number && prop.TryGetInt32(out value)) { return true; }
+        if (prop.ValueKind == JsonValueKind.String && int.TryParse(prop.GetString(), out value)) { return true; }
+        return false;
+    }
+
+    private static List<string> ReadStringList(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out var prop)) { return new List<string>(); }
+        if (prop.ValueKind == JsonValueKind.Array)
+        {
+            return prop.EnumerateArray()
+                .Select(e => e.ValueKind == JsonValueKind.String ? e.GetString() : e.ToString())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => s!.Trim())
+                .ToList();
+        }
+        if (prop.ValueKind == JsonValueKind.String)
+        {
+            return SplitCsv(prop.GetString() ?? string.Empty);
+        }
+        return new List<string>();
+    }
+
+    private static List<string> SplitCsv(string value) =>
+        (value ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+
+    private static void ApplyField(string? value, Action<string> apply)
+    {
+        if (!string.IsNullOrEmpty(value)) { apply(value); }
+    }
+
     private string? ExtractJsonField(string json, string fieldName)
     {
         try
@@ -311,8 +391,8 @@ Provide response as JSON format with these exact field names.";
         };
 
         // Categorize based on keywords
-        var lowerTitle = issue.Title.ToLower();
-        var lowerDesc = issue.Description?.ToLower() ?? "";
+        var lowerTitle = issue.Title.ToLowerInvariant();
+        var lowerDesc = issue.Description?.ToLowerInvariant() ?? "";
         var combined = $"{lowerTitle} {lowerDesc}";
 
         if (combined.Contains("road") || combined.Contains("pothole") || combined.Contains("street") || combined.Contains("pavement") || combined.Contains("asphalt"))
@@ -362,8 +442,8 @@ Provide response as JSON format with these exact field names.";
     private List<string> ExtractKeywords(Issue issue)
     {
         var keywords = new HashSet<string>();
-        var text = $"{issue.Title} {issue.Description}".ToLower();
-        
+        var text = $"{issue.Title} {issue.Description}".ToLowerInvariant();
+
         // Common keywords
         var commonKeywords = new[] 
         { 
@@ -389,7 +469,7 @@ Provide response as JSON format with these exact field names.";
     private List<string> SuggestTags(Issue issue)
     {
         var tags = new HashSet<string>();
-        var text = $"{issue.Title} {issue.Description}".ToLower();
+        var text = $"{issue.Title} {issue.Description}".ToLowerInvariant();
 
         if (text.Contains("urgent") || text.Contains("critical") || text.Contains("emergency"))
             tags.Add("urgent");

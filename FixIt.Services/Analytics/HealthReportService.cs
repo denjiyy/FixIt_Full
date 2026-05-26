@@ -216,16 +216,12 @@ public class HealthReportService : IHealthReportService
 
     private static double CalculateHealthScore(HealthReport report)
     {
-        // If there are no open issues, the city is in perfect health
-        if (report.OpenIssues == 0)
-        {
-            return 100.0;
-        }
-
-        // Otherwise, deduct 5 points per open issue
-        double score = 100.0 - (report.OpenIssues * 5.0);
-
-        // Ensure score never goes below 0
-        return Math.Max(0, score);
+        // Score by resolution rate: open-to-total ratio scales 100 -> 0.
+        // The previous formula deducted 5 points per open issue, which floored any
+        // real city to zero after ~20 open reports regardless of total volume.
+        var total = Math.Max(1, report.TotalIssues);
+        var open = Math.Max(0, report.OpenIssues);
+        var score = 100.0 - ((double)open / total) * 100.0;
+        return Math.Max(0, Math.Round(score, 1));
     }
 }

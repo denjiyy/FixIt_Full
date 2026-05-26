@@ -19,4 +19,6 @@ public interface ITagService
     Task DecrementUsageCountAsync(string tagId);
     
     Task<IEnumerable<Tag>> GetAllTagsAsync(int page = 1, int pageSize = 50);
+
+    Task<long> CountAllTagsAsync();
 }

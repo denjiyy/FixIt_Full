@@ -75,7 +75,7 @@ public class HealthReportServiceTests
         Assert.Equal("Test City", result.CityName);
         Assert.Equal(2, result.TotalIssues);
         Assert.Equal(0, result.ResolvedIssues);
-        Assert.Equal(90, result.HealthScore); // 100 - (2 * 5)
+        Assert.Equal(0, result.HealthScore); // 100 - (open/total)*100 == 100 - (2/2)*100
     }
 
     [Fact]

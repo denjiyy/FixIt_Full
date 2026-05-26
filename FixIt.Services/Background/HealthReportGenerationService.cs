@@ -42,7 +42,7 @@ public class HealthReportGenerationService : BackgroundService
             nextReport = nextReport.AddDays(7);
 
         var weeklyDelay = nextReport - now;
-        _logger.LogInformation($"Next health report generation scheduled for: {nextReport:O}");
+        _logger.LogInformation("Next health report generation scheduled for: {NextRun:O}", nextReport);
 
         _weeklyTimer = new Timer(
             callback: async _ => await GenerateAndSendHealthReportsAsync(),
@@ -68,7 +68,7 @@ public class HealthReportGenerationService : BackgroundService
 
                 // Get all users who have email notifications enabled
                 var users = userManager.Users.Where(u => u.EmailNotificationsEnabled).ToList();
-                _logger.LogInformation($"Sending health reports to {users.Count} users with notifications enabled.");
+                _logger.LogInformation("Sending health reports to {Count} users with notifications enabled.", users.Count);
 
                 foreach (var user in users)
                 {
@@ -103,11 +103,11 @@ public class HealthReportGenerationService : BackgroundService
                             cityName,
                             reportHtml);
 
-                        _logger.LogInformation($"Health report email sent to {user.Email}");
+                        _logger.LogInformation("Health report email sent to {Email}", user.Email);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Failed to send health report to user {user.Email}");
+                        _logger.LogError(ex, "Failed to send health report to user {Email}", user.Email);
                     }
                 }
 

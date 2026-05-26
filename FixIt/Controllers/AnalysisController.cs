@@ -43,7 +43,7 @@ public class AnalysisController : ControllerBase
 
         try
         {
-            _logger.LogInformation($"Requesting AI analysis for issue {issueId}");
+            _logger.LogInformation("Requesting AI analysis for issue {IssueId}", issueId);
             
             var analysis = await _analysisService.AnalyzeIssueAsync(issueId);
             

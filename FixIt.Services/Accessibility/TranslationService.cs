@@ -71,7 +71,7 @@ public class TranslationService : ITranslationService
 
         if (existing != null)
         {
-            _logger.LogInformation($"Using cached translation for content {contentId}");
+            _logger.LogInformation("Using cached translation for content {ContentId}", contentId);
             return existing.TranslatedText;
         }
 
@@ -93,7 +93,7 @@ public class TranslationService : ITranslationService
         };
 
         await _translationRepo.InsertAsync(record);
-        _logger.LogInformation($"Translated content {contentId} from {sourceLanguage} to {targetLanguage}");
+        _logger.LogInformation("Translated content {ContentId} from {SourceLanguage} to {TargetLanguage}", contentId, sourceLanguage, targetLanguage);
 
         return translatedText;
     }
@@ -109,7 +109,7 @@ public class TranslationService : ITranslationService
     {
         language.CreatedAt = DateTime.UtcNow;
         var created = await _languageRepo.InsertAsync(language);
-        _logger.LogInformation($"Added supported language: {language.DisplayName}");
+        _logger.LogInformation("Added supported language: {Language}", language.DisplayName);
         return created;
     }
 
@@ -153,7 +153,7 @@ public class TranslationService : ITranslationService
 
             // In production, call actual Google Translate API
             // For now, return placeholder
-            _logger.LogInformation($"Would translate using Google API: {sourceLanguage} -> {targetLanguage}");
+            _logger.LogInformation("Would translate using Google API: {SourceLanguage} -> {TargetLanguage}", sourceLanguage, targetLanguage);
             return await Task.FromResult(text); // Placeholder
         }
         catch (Exception ex)

@@ -59,7 +59,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error retrieving pending suggestions: {ex.Message}");
+            _logger.LogError(ex, "Error retrieving pending suggestions");
             return StatusCode(500, new { error = "Failed to retrieve suggestions" });
         }
     }
@@ -86,7 +86,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error retrieving suggestions for entity {entityId}: {ex.Message}");
+            _logger.LogError(ex, "Error retrieving suggestions for entity {EntityId}", entityId);
             return StatusCode(500, new { error = "Failed to retrieve suggestions" });
         }
     }
@@ -110,7 +110,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error generating report suggestion: {ex.Message}");
+            _logger.LogError(ex, "Error generating report suggestion");
             return StatusCode(500, new { error = "Failed to generate suggestion" });
         }
     }
@@ -132,7 +132,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error generating issue suggestions: {ex.Message}");
+            _logger.LogError(ex, "Error generating issue suggestions");
             return StatusCode(500, new { error = "Failed to generate suggestions" });
         }
     }
@@ -156,7 +156,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error generating user moderation suggestion: {ex.Message}");
+            _logger.LogError(ex, "Error generating user moderation suggestion");
             return StatusCode(500, new { error = "Failed to generate suggestion" });
         }
     }
@@ -183,7 +183,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error marking suggestion as acted: {ex.Message}");
+            _logger.LogError(ex, "Error marking suggestion as acted");
             return StatusCode(500, new { error = "Failed to mark suggestion as acted" });
         }
     }
@@ -208,7 +208,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error invalidating suggestion: {ex.Message}");
+            _logger.LogError(ex, "Error invalidating suggestion");
             return StatusCode(500, new { error = "Failed to invalidate suggestion" });
         }
     }
@@ -232,7 +232,7 @@ public class SuggestionsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error retrieving suggestion: {ex.Message}");
+            _logger.LogError(ex, "Error retrieving suggestion");
             return StatusCode(500, new { error = "Failed to retrieve suggestion" });
         }
     }

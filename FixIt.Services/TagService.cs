@@ -121,7 +121,9 @@ public class TagService : ITagService
 
         var skip = (page - 1) * pageSize;
         var result = await _tagRepo.QueryAsync(t => t.IsApproved, skip, pageSize);
-        
+
         return result.Items.OrderByDescending(t => t.CreatedAt);
     }
+
+    public Task<long> CountAllTagsAsync() => _tagRepo.CountAsync(t => t.IsApproved);
 }

@@ -87,7 +87,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         var report = await _reportRepository.GetByIdAsync(reportId);
         if (report == null)
         {
-            _logger.LogWarning($"Report {reportId} not found for suggestion generation");
+            _logger.LogWarning("Report {ReportId} not found for suggestion generation", reportId);
             return null;
         }
 
@@ -101,7 +101,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
 
         if (existing.Any())
         {
-            _logger.LogInformation($"Recent suggestion already exists for report {reportId}");
+            _logger.LogInformation("Recent suggestion already exists for report {ReportId}", reportId);
             return existing.First();
         }
 
@@ -139,11 +139,11 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         try
         {
             await _suggestionRepository.InsertAsync(suggestion);
-            _logger.LogInformation($"Generated report action suggestion for report {reportId} with confidence {confidence}");
+            _logger.LogInformation("Generated report action suggestion for report {ReportId} with confidence {Confidence}", reportId, confidence);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to save report suggestion: {ex.Message}");
+            _logger.LogError(ex, "Failed to save report suggestion");
             return null;
         }
 
@@ -160,7 +160,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
 
         if (issue == null)
         {
-            _logger.LogWarning($"Issue {issueId} not found for suggestion generation");
+            _logger.LogWarning("Issue {IssueId} not found for suggestion generation", issueId);
             return suggestions;
         }
 
@@ -233,11 +233,11 @@ public class AdminSuggestionsService : IAdminSuggestionsService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to save issue suggestion: {ex.Message}");
+                _logger.LogError(ex, "Failed to save issue suggestion");
             }
         }
 
-        _logger.LogInformation($"Generated {suggestions.Count} suggestions for issue {issueId}");
+        _logger.LogInformation("Generated {Count} suggestions for issue {IssueId}", suggestions.Count, issueId);
         return suggestions;
     }
 
@@ -249,14 +249,14 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         var user = await _userRepository.GetByIdAsync(userId);
         if (user == null)
         {
-            _logger.LogWarning($"User {userId} not found for moderation suggestion");
+            _logger.LogWarning("User {UserId} not found for moderation suggestion", userId);
             return null;
         }
 
         // Check if user is already banned or restricted
         if (user.IsBanned)
         {
-            _logger.LogInformation($"User {userId} is already banned, no suggestion needed");
+            _logger.LogInformation("User {UserId} is already banned, no suggestion needed", userId);
             return null;
         }
 
@@ -288,11 +288,11 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         try
         {
             await _suggestionRepository.InsertAsync(suggestion);
-            _logger.LogInformation($"Generated user moderation suggestion for {userId} with confidence {suspiciousPattern.confidence}");
+            _logger.LogInformation("Generated user moderation suggestion for {UserId} with confidence {Confidence}", userId, suspiciousPattern.confidence);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to save user moderation suggestion: {ex.Message}");
+            _logger.LogError(ex, "Failed to save user moderation suggestion");
             return null;
         }
 
@@ -338,7 +338,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         var suggestion = await _suggestionRepository.GetByIdAsync(suggestionId);
         if (suggestion == null)
         {
-            _logger.LogWarning($"Suggestion {suggestionId} not found");
+            _logger.LogWarning("Suggestion {SuggestionId} not found", suggestionId);
             return;
         }
 
@@ -348,7 +348,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         suggestion.ActedAt = DateTime.UtcNow;
 
         await _suggestionRepository.ReplaceAsync(suggestionId, suggestion);
-        _logger.LogInformation($"Marked suggestion {suggestionId} as acted: {actionTaken}");
+        _logger.LogInformation("Marked suggestion {SuggestionId} as acted: {ActionTaken}", suggestionId, actionTaken);
     }
 
     /// <summary>
@@ -359,7 +359,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         var suggestion = await _suggestionRepository.GetByIdAsync(suggestionId);
         if (suggestion == null)
         {
-            _logger.LogWarning($"Suggestion {suggestionId} not found");
+            _logger.LogWarning("Suggestion {SuggestionId} not found", suggestionId);
             return;
         }
 
@@ -368,7 +368,7 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         suggestion.InvalidatedAt = DateTime.UtcNow;
 
         await _suggestionRepository.ReplaceAsync(suggestionId, suggestion);
-        _logger.LogInformation($"Invalidated suggestion {suggestionId}");
+        _logger.LogInformation("Invalidated suggestion {SuggestionId}", suggestionId);
     }
 
     /// <summary>
@@ -384,8 +384,8 @@ public class AdminSuggestionsService : IAdminSuggestionsService
     private (int confidence, string action, string reasoning) AnalyzeReportContent(ContentReport report)
     {
         // Pattern analysis for report recommendation
-        var details = report.Details?.ToLower() ?? string.Empty;
-        var reason = report.Reason.ToString().ToLower();
+        var details = report.Details?.ToLowerInvariant() ?? string.Empty;
+        var reason = report.Reason.ToString().ToLowerInvariant();
 
         // High confidence patterns
         if (reason.Contains("spam") || details.Contains("advertisement") || details.Contains("promotional"))
@@ -410,10 +410,13 @@ public class AdminSuggestionsService : IAdminSuggestionsService
 
     private (int confidence, string title, string description, string recommendedAction, string reasoning, List<string> supportingData) AnalyzeUserBehavior(ApplicationUser user)
     {
+        // Confidence floors out below 50 by design: with only account-age and
+        // email-verification signals we never reach the suggestion threshold on
+        // those alone. Callers already short-circuit before this method when the
+        // user is banned, so no IsBanned branch is needed here.
         var supportingData = new List<string>();
         var baseConfidence = 0;
 
-        // Check account creation date
         var accountAge = DateTime.UtcNow - user.CreatedAt;
         if (accountAge.TotalDays < 1)
         {
@@ -421,25 +424,18 @@ public class AdminSuggestionsService : IAdminSuggestionsService
             supportingData.Add("Very new account (< 1 day old)");
         }
 
-        // Check email verification
         if (!user.EmailConfirmed)
         {
             baseConfidence += 10;
             supportingData.Add("Email not verified");
         }
 
-        // Check if user has multiple reports
-        if (!string.IsNullOrEmpty(user.BannedReason) && user.IsBanned)
-        {
-            baseConfidence = 0; // Already banned
-        }
-
         if (baseConfidence > 50)
         {
-            return (baseConfidence, "Suspicious User Activity", 
-                "User account shows potential spam or abuse patterns", 
-                "Review and Consider Restriction", 
-                "Account patterns match common spam/abuse indicators", 
+            return (baseConfidence, "Suspicious User Activity",
+                "User account shows potential spam or abuse patterns",
+                "Review and Consider Restriction",
+                "Account patterns match common spam/abuse indicators",
                 supportingData);
         }
 

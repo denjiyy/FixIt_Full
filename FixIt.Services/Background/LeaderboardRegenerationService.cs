@@ -36,7 +36,7 @@ public class LeaderboardRegenerationService : BackgroundService
             nextMonday = nextMonday.AddDays(7);
 
         var weeklyDelay = nextMonday - now;
-        _logger.LogInformation($"Next weekly leaderboard regeneration scheduled for: {nextMonday:O}");
+        _logger.LogInformation("Next weekly leaderboard regeneration scheduled for: {NextRun:O}", nextMonday);
 
         _weeklyTimer = new Timer(
             callback: async _ => await RegenerateWeeklyLeaderboardAsync(),
@@ -53,7 +53,7 @@ public class LeaderboardRegenerationService : BackgroundService
             nextMonth = nextMonth.AddMonths(1);
 
         var monthlyDelay = nextMonth - now;
-        _logger.LogInformation($"Next monthly leaderboard regeneration scheduled for: {nextMonth:O}");
+        _logger.LogInformation("Next monthly leaderboard regeneration scheduled for: {NextRun:O}", nextMonth);
 
         _monthlyTimer = new Timer(
             callback: async _ => await RegenerateMonthlyLeaderboardAsync(),
@@ -67,7 +67,7 @@ public class LeaderboardRegenerationService : BackgroundService
             nextAllTime = nextAllTime.AddDays(1);
 
         var allTimeDelay = nextAllTime - now;
-        _logger.LogInformation($"Next all-time leaderboard regeneration scheduled for: {nextAllTime:O}");
+        _logger.LogInformation("Next all-time leaderboard regeneration scheduled for: {NextRun:O}", nextAllTime);
 
         _allTimeTimer = new Timer(
             callback: async _ => await RegenerateAllTimeLeaderboardAsync(),

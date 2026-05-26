@@ -157,18 +157,17 @@ public class TagsController : ControllerBase
     {
         try
         {
-            var tags = await _tagService.GetAllTagsAsync(page, pageSize);
-            
-            // Note: GetAllTagsAsync returns only a portion of items for the page
-            var allTags = await _tagService.GetAllTagsAsync(1, 1); // Get first item to calculate total
-            var totalCount = CountAllTags(); // Get total count
+            var tagsTask = _tagService.GetAllTagsAsync(page, pageSize);
+            var totalTask = _tagService.CountAllTagsAsync();
+            await Task.WhenAll(tagsTask, totalTask);
 
+            var tags = await tagsTask;
             var response = new TagPageResponse
             {
                 Items = tags.Select(t => t.ToResponse()),
                 Page = page,
                 PageSize = pageSize,
-                Total = tags.Count() // In production, calculate actual total
+                Total = (int)await totalTask
             };
 
             return Ok(ApiResponse<TagPageResponse>.CreateSuccess(response));
@@ -236,10 +235,4 @@ public class TagsController : ControllerBase
         ));
     }
 
-    private long CountAllTags()
-    {
-        // This is a placeholder - in production you'd implement proper counting
-        // For now, just return 0 to indicate implementation needed
-        return 0;
-    }
 }

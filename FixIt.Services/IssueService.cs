@@ -260,7 +260,11 @@ public class IssueService : IIssueService
         ValidatePagination(ref page, ref pageSize);
         var skip = (page - 1) * pageSize;
 
-        // Build dynamic filter
+        // FIXME: Hand-rolled Expression.AndAlso/Invoke composition is brittle (any
+        // rename of an Issue property silently breaks the MongoDB translation at
+        // runtime). Migrate to LinqKit.PredicateBuilder once the dependency budget
+        // allows it; the multi-filter combinations are exercised by integration
+        // tests under FixIt.Tests.Services.IssueServiceTests.
         var filters = new List<System.Linq.Expressions.Expression<System.Func<Issue, bool>>>
         {
             i => i.CityId == cityId && !i.IsDeleted
@@ -549,13 +553,20 @@ public class IssueService : IIssueService
     }
 
     /// <summary>
-    /// Get all issues for a specific city
+    /// Get every non-deleted issue for a city without pagination.
     /// </summary>
+    /// <remarks>
+    /// Materialises the full result set in memory. Safe for the public overview /
+    /// heatmap aggregations where the city's issue volume is bounded, but do NOT
+    /// call this from request hot paths or aggregations over large cities — use
+    /// the paginated <see cref="GetIssuesByCityAsync(string, IssueStatus?, int, int)"/>
+    /// overload instead.
+    /// </remarks>
     public async Task<List<Issue>> GetIssuesByCityAsync(string cityId)
     {
-        var issues = await _issueRepo.FindAsync(i => 
+        var issues = await _issueRepo.FindAsync(i =>
             i.CityId == cityId && !i.IsDeleted);
-        
+
         return issues
             .OrderByDescending(i => i.CreatedAt)
             .ToList();
