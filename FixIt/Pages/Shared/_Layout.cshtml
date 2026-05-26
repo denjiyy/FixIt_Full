@@ -19,6 +19,25 @@
         displayText = currentUser?.DisplayName ?? User?.Identity?.Name ?? "User";
         avatarChar = displayText.Length > 0 ? displayText[0].ToString().ToUpperInvariant() : "?";
     }
+
+    var normalizedPath = currentPath.TrimEnd('/').ToLowerInvariant();
+    if (string.IsNullOrEmpty(normalizedPath)) { normalizedPath = "/"; }
+    Func<string, bool> isActive = href =>
+    {
+        if (string.IsNullOrEmpty(href)) { return false; }
+        var h = href.TrimEnd('/').ToLowerInvariant();
+        if (string.IsNullOrEmpty(h)) { h = "/"; }
+        if (h == "/") { return normalizedPath == "/"; }
+        return normalizedPath == h || normalizedPath.StartsWith(h + "/");
+    };
+    Func<string[], bool> anyActive = hrefs => hrefs.Any(h => isActive(h));
+
+    var navHomeActive = isActive("/");
+    var navIssuesActive = isActive("/issues");
+    var navCitiesActive = isActive("/cities");
+    var navLeaderboardActive = isActive("/leaderboards");
+    var navSafetyActive = anyActive(new[] { "/safety", "/settings/privacy" });
+    var navAnalyticsActive = anyActive(new[] { "/healthreports", "/heatmaps" });
 }
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.Name">
@@ -88,31 +107,31 @@
                 <div class="collapse navbar-collapse app-navbar__collapse" id="navMain">
                     <ul class="navbar-nav app-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link app-nav-link" asp-area="" asp-page="/Index">
+                            <a class="nav-link app-nav-link @(navHomeActive ? "is-active" : "")" asp-area="" asp-page="/Index" aria-current="@(navHomeActive ? "page" : null)">
                                 <i class="bi bi-house-door"></i>
                                 <span>@Localizer["Home"]</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link app-nav-link" asp-area="" asp-page="/Issues/Index">
+                            <a class="nav-link app-nav-link @(navIssuesActive ? "is-active" : "")" asp-area="" asp-page="/Issues/Index" aria-current="@(navIssuesActive ? "page" : null)">
                                 <i class="bi bi-list-check"></i>
                                 <span>@Localizer["Issues"]</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link app-nav-link" asp-area="" asp-page="/Cities">
+                            <a class="nav-link app-nav-link @(navCitiesActive ? "is-active" : "")" asp-area="" asp-page="/Cities" aria-current="@(navCitiesActive ? "page" : null)">
                                 <i class="bi bi-geo-alt"></i>
                                 <span>@Localizer["Cities"]</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link app-nav-link" asp-area="" asp-page="/Leaderboards/Index">
+                            <a class="nav-link app-nav-link @(navLeaderboardActive ? "is-active" : "")" asp-area="" asp-page="/Leaderboards/Index" aria-current="@(navLeaderboardActive ? "page" : null)">
                                 <i class="bi bi-trophy"></i>
                                 <span>@Localizer["Leaderboards"]</span>
                             </a>
                         </li>
                         <li class="nav-item dropdown">
-                            <button class="nav-link app-nav-link app-nav-link--button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="nav-link app-nav-link app-nav-link--button dropdown-toggle @(navSafetyActive ? "is-active" : "")" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="@(navSafetyActive ? "page" : null)">
                                 <i class="bi bi-shield-check"></i>
                                 <span>@Localizer["Safety"]</span>
                             </button>
@@ -140,7 +159,7 @@
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <button class="nav-link app-nav-link app-nav-link--button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="nav-link app-nav-link app-nav-link--button dropdown-toggle @(navAnalyticsActive ? "is-active" : "")" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-current="@(navAnalyticsActive ? "page" : null)">
                                 <i class="bi bi-graph-up-arrow"></i>
                                 <span>@Localizer["AnalyticsDropdown"]</span>
                             </button>
@@ -228,10 +247,6 @@
                             <a class="nav-report-btn nav-report-btn--secondary" asp-area="Identity" asp-page="/Account/Register">
                                 <i class="bi bi-person-plus-fill"></i>
                                 <span>@Localizer["GetStarted"]</span>
-                            </a>
-                            <a class="app-link-btn app-link-btn--quiet" href="/admin/login" title="@Localizer["AdminLoginTooltip"]">
-                                <i class="bi bi-shield-lock"></i>
-                                <span>@Localizer["Admin"]</span>
                             </a>
                         }
                     </div>
