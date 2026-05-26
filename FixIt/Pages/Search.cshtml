@@ -1,0 +1,105 @@
+@page "/Search"
+@model SearchModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
+@{
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Query)
+        ? Localizer["Search"].Value
+        : $"{Localizer["Search"].Value}: {Model.Query}";
+    ViewData["BodyClass"] = "page-search";
+    var hasQuery = !string.IsNullOrWhiteSpace(Model.Query);
+}
+
+@section PageCss {
+    <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
+}
+
+<div class="issue-page issue-page--compact search-page">
+    <section class="issue-surface issue-surface--glass">
+        <div class="issue-page-header">
+            <div class="issue-page-header__content">
+                <span class="issue-page-header__eyebrow">
+                    <i class="bi bi-search"></i>
+                    @Localizer["Search"]
+                </span>
+                <h1 class="issue-page-header__title">
+                    @if (hasQuery)
+                    {
+                        @Localizer["SearchResultsForLabel"]
+                        <span>"@Model.Query"</span>
+                    }
+                    else
+                    {
+                        @Localizer["SearchIssues"]
+                    }
+                </h1>
+                <p class="issue-page-header__copy">
+                    @if (hasQuery)
+                    {
+                        @($"{Model.TotalCount} {(Model.TotalCount == 1 ? Localizer["ResultMatch"].Value : Localizer["ResultMatches"].Value)}")
+                    }
+                    else
+                    {
+                        @Localizer["SearchPrompt"]
+                    }
+                </p>
+            </div>
+        </div>
+
+        <form method="get" action="/Search" class="search-form" role="search">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+                <input
+                    type="search"
+                    name="q"
+                    class="form-control"
+                    value="@Model.Query"
+                    placeholder="@Localizer["SearchPlaceholder"]"
+                    aria-label="@Localizer["SearchPlaceholder"]"
+                    autofocus />
+                <button type="submit" class="btn btn-primary">@Localizer["Search"]</button>
+            </div>
+        </form>
+    </section>
+
+    @if (hasQuery)
+    {
+        if (Model.Issues.Count == 0)
+        {
+            <section class="issue-empty-state">
+                <div class="issue-empty-state__icon">
+                    <i class="bi bi-search-heart"></i>
+                </div>
+                <h2 class="issue-empty-state__title">@Localizer["NoResultsTitle"]</h2>
+                <p class="issue-empty-state__copy">@Localizer["NoResultsCopy"]</p>
+                <a class="btn btn-outline-primary" asp-page="/Issues/Index">@Localizer["BrowseAllIssues"]</a>
+            </section>
+        }
+        else
+        {
+            <section>
+                <div class="issue-section-heading">
+                    <h2 class="issue-section-heading__title">@Localizer["MatchingIssues"]</h2>
+                </div>
+                <div class="issue-card-grid">
+                    @foreach (var issue in Model.Issues)
+                    {
+                        <partial name="_IssueCard" model="issue" />
+                    }
+                </div>
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="search-pagination" aria-label="@Localizer["Pagination"]">
+                        <ul class="pagination justify-content-center">
+                            @for (var i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="/Search?q=@Uri.EscapeDataString(Model.Query)&page=@i">@i</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            </section>
+        }
+    }
+</div>

@@ -19,14 +19,16 @@ public class IssueDetailModel : PageModel
     private readonly IMediaService _mediaService;
     private readonly IIssueAnalysisService _analysisService;
     private readonly IIssueAnalysisQueue _issueAnalysisQueue;
+    private readonly ITagService _tagService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<IssueDetailModel> _logger;
 
     public IssueDetailModel(
-        IIssueService issueService, 
+        IIssueService issueService,
         IMediaService mediaService,
         IIssueAnalysisService analysisService,
         IIssueAnalysisQueue issueAnalysisQueue,
+        ITagService tagService,
         UserManager<ApplicationUser> userManager,
         ILogger<IssueDetailModel> logger)
     {
@@ -34,6 +36,7 @@ public class IssueDetailModel : PageModel
         _mediaService = mediaService;
         _analysisService = analysisService;
         _issueAnalysisQueue = issueAnalysisQueue;
+        _tagService = tagService;
         _userManager = userManager;
         _logger = logger;
     }
@@ -44,6 +47,7 @@ public class IssueDetailModel : PageModel
     public List<Comment> Comments { get; set; } = new();
     public int? IssueCount { get; set; }
     public bool CanManageIssue { get; set; }
+    public HashSet<string> ValidSuggestedTagSet { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     
     public List<IssueStatusHistory> SortedStatusHistory
     {
@@ -98,7 +102,7 @@ public class IssueDetailModel : PageModel
 
             // Load AI analysis if available, otherwise trigger it
             Analysis = await _analysisService.GetAnalysisAsync(Id);
-            
+
             // If no analysis exists, trigger it in the background
             if (Analysis == null)
             {
@@ -109,6 +113,23 @@ public class IssueDetailModel : PageModel
                 catch (Exception enqueueEx)
                 {
                     _logger.LogWarning(enqueueEx, "Failed to queue analysis for issue {IssueId}", Id);
+                }
+            }
+
+            // Validate AI-suggested tag names against the tag store so we only emit
+            // links to /tags/{tag} for tags that actually have a backing record.
+            var suggestedTags = Analysis?.SuggestedTags?.Take(5).ToList();
+            if (suggestedTags is { Count: > 0 })
+            {
+                var lookups = await Task.WhenAll(suggestedTags
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Select(async t => (Name: t, Tag: await _tagService.GetTagByNameAsync(t))));
+                foreach (var (name, tag) in lookups)
+                {
+                    if (tag != null)
+                    {
+                        ValidSuggestedTagSet.Add(name);
+                    }
                 }
             }
             

@@ -297,7 +297,14 @@
                                     <div class="detail-chip-list">
                                         @foreach (var tag in Model.Analysis.SuggestedTags.Take(5))
                                         {
-                                            <a href="/tags/@tag" class="detail-chip detail-chip--link">#@tag</a>
+                                            @if (Model.ValidSuggestedTagSet.Contains(tag))
+                                            {
+                                                <a href="/tags/@tag" class="detail-chip detail-chip--link">#@tag</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="detail-chip">#@tag</span>
+                                            }
                                         }
                                     </div>
                                 </div>
