@@ -1077,6 +1077,176 @@ public class ApiService : IApiService
         return fallbackMessage;
     }
 
+    // ---- Extended endpoints added 2026-05-26 for mobile/web parity ----
+
+    public async Task<ApiResult> LikeCommentAsync(string issueId, string commentId, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return ApiResult.Fail("Offline"); }
+        try
+        {
+            using var response = await _httpClient.PostAsync($"{AppConstants.ApiIssues}/{issueId}/comments/{commentId}/like", null, ct);
+            return response.IsSuccessStatusCode ? ApiResult.Ok() : ApiResult.Fail(await ExtractApiErrorAsync(response, "Failed to like comment", ct));
+        }
+        catch (HttpRequestException ex) { return ApiResult.Fail(ex.Message); }
+        catch (TaskCanceledException) { return ApiResult.Fail("Request timed out. Try again."); }
+    }
+
+    public async Task<ApiResult> DislikeCommentAsync(string issueId, string commentId, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return ApiResult.Fail("Offline"); }
+        try
+        {
+            using var response = await _httpClient.PostAsync($"{AppConstants.ApiIssues}/{issueId}/comments/{commentId}/dislike", null, ct);
+            return response.IsSuccessStatusCode ? ApiResult.Ok() : ApiResult.Fail(await ExtractApiErrorAsync(response, "Failed to dislike comment", ct));
+        }
+        catch (HttpRequestException ex) { return ApiResult.Fail(ex.Message); }
+        catch (TaskCanceledException) { return ApiResult.Fail("Request timed out. Try again."); }
+    }
+
+    public async Task<DraftSuggestion?> GetDraftSuggestionsAsync(string title, string description, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return null; }
+        try
+        {
+            var body = new { title, description };
+            using var response = await _httpClient.PostAsJsonAsync("/api/analysis/issue-draft-suggestions", body, _jsonOptions, ct);
+            if (!response.IsSuccessStatusCode) { return null; }
+            return await DeserializeFlexibleAsync<DraftSuggestion>(response, ct, "data", "suggestion");
+        }
+        catch { return null; }
+    }
+
+    public async Task<HazardClusterInsight?> GetHazardClusterInsightAsync(IEnumerable<string> hazardIds, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return null; }
+        try
+        {
+            var body = new { hazardIds = hazardIds.ToList() };
+            using var response = await _httpClient.PostAsJsonAsync("/api/safety/insights/cluster", body, _jsonOptions, ct);
+            if (!response.IsSuccessStatusCode) { return null; }
+            return await DeserializeFlexibleAsync<HazardClusterInsight>(response, ct, "data", "insight");
+        }
+        catch { return null; }
+    }
+
+    public async IAsyncEnumerable<string> StreamIssueSummaryAsync(
+        string issueId,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { yield break; }
+        var url = $"/api/suggestions/issues/{Uri.EscapeDataString(issueId)}/summary/stream";
+
+        HttpResponseMessage? response = null;
+        Stream? stream = null;
+        StreamReader? reader = null;
+        try
+        {
+            response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!response.IsSuccessStatusCode) { yield break; }
+            stream = await response.Content.ReadAsStreamAsync(ct);
+            reader = new StreamReader(stream);
+        }
+        catch
+        {
+            response?.Dispose();
+            yield break;
+        }
+
+        using (response)
+        using (stream)
+        using (reader)
+        {
+            while (!reader.EndOfStream && !ct.IsCancellationRequested)
+            {
+                string? line;
+                try { line = await reader.ReadLineAsync(ct); }
+                catch { yield break; }
+                if (string.IsNullOrWhiteSpace(line)) { continue; }
+                yield return line;
+            }
+        }
+    }
+
+    public async Task<ApiResult> ToggleAnonymousReportingAsync(bool enabled, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return ApiResult.Fail("Offline"); }
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync("/api/safety/anonymous-reporting/toggle", new { enabled }, _jsonOptions, ct);
+            return response.IsSuccessStatusCode ? ApiResult.Ok() : ApiResult.Fail(await ExtractApiErrorAsync(response, "Failed to toggle anonymous reporting", ct));
+        }
+        catch (HttpRequestException ex) { return ApiResult.Fail(ex.Message); }
+        catch (TaskCanceledException) { return ApiResult.Fail("Request timed out. Try again."); }
+    }
+
+    public async Task<AlertPreferences?> GetAlertPreferencesAsync(CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return null; }
+        try
+        {
+            using var response = await _httpClient.GetAsync("/api/safety/alert-preferences", ct);
+            if (!response.IsSuccessStatusCode) { return null; }
+            return await DeserializeFlexibleAsync<AlertPreferences>(response, ct, "data", "preferences");
+        }
+        catch { return null; }
+    }
+
+    public async Task<ApiResult> SaveAlertPreferencesAsync(AlertPreferences preferences, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return ApiResult.Fail("Offline"); }
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync("/api/safety/alert-preferences", preferences, _jsonOptions, ct);
+            return response.IsSuccessStatusCode ? ApiResult.Ok() : ApiResult.Fail(await ExtractApiErrorAsync(response, "Failed to save alert preferences", ct));
+        }
+        catch (HttpRequestException ex) { return ApiResult.Fail(ex.Message); }
+        catch (TaskCanceledException) { return ApiResult.Fail("Request timed out. Try again."); }
+    }
+
+    public async Task<ApiResult> SetProfileVisibilityAsync(string visibility, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return ApiResult.Fail("Offline"); }
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync("/api/users/profile-visibility", new { visibility }, _jsonOptions, ct);
+            return response.IsSuccessStatusCode ? ApiResult.Ok() : ApiResult.Fail(await ExtractApiErrorAsync(response, "Failed to update profile visibility", ct));
+        }
+        catch (HttpRequestException ex) { return ApiResult.Fail(ex.Message); }
+        catch (TaskCanceledException) { return ApiResult.Fail("Request timed out. Try again."); }
+    }
+
+    public async Task<ReverseGeocodeResult?> ReverseGeocodeAsync(double latitude, double longitude, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return null; }
+        try
+        {
+            using var response = await _httpClient.GetAsync($"/api/geocoding/reverse?latitude={latitude}&longitude={longitude}", ct);
+            if (!response.IsSuccessStatusCode) { return null; }
+            return await DeserializeFlexibleAsync<ReverseGeocodeResult>(response, ct, "data");
+        }
+        catch { return null; }
+    }
+
+    public async Task<List<Tag>> GetPopularTagsAsync(int limit = 20, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline) { return []; }
+        try
+        {
+            using var response = await _httpClient.GetAsync($"/api/tags/popular?limit={limit}", ct);
+            if (!response.IsSuccessStatusCode) { return []; }
+            var tags = await DeserializeFlexibleAsync<List<Tag>>(response, ct, "data", "tags", "items");
+            return tags ?? [];
+        }
+        catch { return []; }
+    }
+
+    public Task<List<Issue>> GetIssuesByTagAsync(string tagName, int page = 1, int pageSize = 20, CancellationToken ct = default)
+    {
+        // Reuse the search endpoint so the tag filter benefits from the same
+        // city scoping and result mapping as text search.
+        return GetIssuesAsync(filter: null, search: $"#{tagName}", page: page, pageSize: pageSize, ct: ct);
+    }
+
     private class IssueSummaryDto
     {
         public string? Id { get; set; }

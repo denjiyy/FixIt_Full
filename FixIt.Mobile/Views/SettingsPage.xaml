@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:SettingsViewModel"
+             BackgroundColor="{StaticResource Background}"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Settings_Privacy_Title}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20,24" Spacing="18">
+
+            <!-- Privacy -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{local:Localize Key=Settings_Privacy_Title}"
+                           Style="{StaticResource HeadlineMedium}" />
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Text="{local:Localize Key=Settings_Privacy_AnonymousReporting}"
+                               Style="{StaticResource BodyMedium}" />
+                        <Label Grid.Row="1" Grid.Column="0"
+                               Text="{local:Localize Key=Settings_Privacy_AnonymousReportingHint}"
+                               Style="{StaticResource LabelSmall}" />
+                        <Switch Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                                IsToggled="{Binding AnonymousReporting}"
+                                OnColor="{StaticResource Primary}"
+                                ThumbColor="{StaticResource White}"
+                                Toggled="OnAnonymousToggled"
+                                VerticalOptions="Center" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Alerts -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="{local:Localize Key=Settings_Alerts_Title}"
+                           Style="{StaticResource HeadlineMedium}" />
+
+                    <Grid ColumnDefinitions="*,Auto" RowSpacing="6">
+                        <Label Text="{local:Localize Key=Settings_Alerts_Crime}" Style="{StaticResource BodyMedium}" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding CrimeAlerts}" OnColor="{StaticResource Primary}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" RowSpacing="6">
+                        <Label Text="{local:Localize Key=Settings_Alerts_Accident}" Style="{StaticResource BodyMedium}" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding AccidentAlerts}" OnColor="{StaticResource Primary}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" RowSpacing="6">
+                        <Label Text="{local:Localize Key=Settings_Alerts_Infrastructure}" Style="{StaticResource BodyMedium}" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding InfrastructureAlerts}" OnColor="{StaticResource Primary}" />
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" RowSpacing="6">
+                        <Label Text="{local:Localize Key=Settings_Alerts_Radius}" Style="{StaticResource BodyMedium}" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding RadiusLabel}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                    </Grid>
+                    <Slider Minimum="1" Maximum="20" Value="{Binding RadiusKm}" MinimumTrackColor="{StaticResource Primary}" ThumbColor="{StaticResource Primary}" />
+
+                    <Label Text="{local:Localize Key=Settings_Alerts_Severity}" Style="{StaticResource BodyMedium}" />
+                    <Picker ItemsSource="{Binding SeverityOptions}" SelectedItem="{Binding SeverityThreshold}" TextColor="{StaticResource OnBackground}" />
+
+                    <Button Text="{local:Localize Key=Settings_Alerts_Save}"
+                            Command="{Binding SaveAlertsCommand}"
+                            Style="{StaticResource PrimaryButton}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Profile visibility -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{local:Localize Key=Settings_ProfileVisibility_Title}"
+                           Style="{StaticResource HeadlineMedium}" />
+                    <Picker ItemsSource="{Binding VisibilityOptions}" SelectedItem="{Binding ProfileVisibility}" TextColor="{StaticResource OnBackground}" />
+                    <Button Text="{local:Localize Key=Settings_ProfileVisibility_Save}"
+                            Command="{Binding SaveVisibilityCommand}"
+                            Style="{StaticResource PrimaryButton}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource Primary}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

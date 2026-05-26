@@ -27,6 +27,7 @@ public static class AppConstants
     public const string RouteLeaderboard = "leaderboard";
     public const string RouteHealthReport = "health-report";
     public const string RoutePublicProfile = "public-profile";
+    public const string RouteSettings = "settings";
 
     public const string FilterAll = "All";
     public const string FilterNew = "New";

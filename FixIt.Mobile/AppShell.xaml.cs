@@ -45,6 +45,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(AppConstants.RouteLeaderboard, typeof(LeaderboardPage));
         Routing.RegisterRoute(AppConstants.RouteHealthReport, typeof(HealthReportPage));
         Routing.RegisterRoute(AppConstants.RoutePublicProfile, typeof(PublicProfilePage));
+        Routing.RegisterRoute(AppConstants.RouteSettings, typeof(SettingsPage));
         // FIX B-01: keep the raw sign-in tab route registered and use the absolute route only for Shell tab selection.
         Routing.RegisterRoute(AppConstants.RouteSignInTab, typeof(LoginPage));
         Routing.RegisterRoute("register", typeof(RegisterPage));

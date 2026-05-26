@@ -21,6 +21,10 @@ public class Issue
     public bool UserHasDownvoted { get; set; }
     public string StatusDescription => $"Status: {Status}";
     public bool HasCoordinates => Latitude is not null and not 0 && Longitude is not null and not 0;
+    public string Priority { get; set; } = string.Empty;
+    public List<string> MediaUrls { get; set; } = [];
+    public List<string> Tags { get; set; } = [];
+    public List<IssueStatusEvent> StatusHistory { get; set; } = [];
 
     private static string BuildInitials(string name)
     {

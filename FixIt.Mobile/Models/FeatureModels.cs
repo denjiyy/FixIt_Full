@@ -97,3 +97,53 @@ public sealed class PublicUserProfile
         }
     }
 }
+
+public sealed class DraftSuggestion
+{
+    public string Category { get; set; } = string.Empty;
+    public string Priority { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public int ConfidenceScore { get; set; }
+    public string Reasoning { get; set; } = string.Empty;
+}
+
+public sealed class HazardClusterInsight
+{
+    public string Summary { get; set; } = string.Empty;
+    public string Recommendation { get; set; } = string.Empty;
+    public int Severity { get; set; }
+}
+
+public sealed class AlertPreferences
+{
+    public bool CrimeAlertsEnabled { get; set; } = true;
+    public bool AccidentAlertsEnabled { get; set; } = true;
+    public bool InfrastructureAlertsEnabled { get; set; } = true;
+    public double RadiusKm { get; set; } = 5;
+    public string SeverityThreshold { get; set; } = "Medium";
+}
+
+public sealed class ReverseGeocodeResult
+{
+    public string Address { get; set; } = string.Empty;
+    public string? CityName { get; set; }
+    public string? CityId { get; set; }
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+}
+
+public sealed class Tag
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public int UsageCount { get; set; }
+}
+
+public sealed class IssueStatusEvent
+{
+    public string From { get; set; } = string.Empty;
+    public string To { get; set; } = string.Empty;
+    public DateTime ChangedAt { get; set; }
+    public string? Comment { get; set; }
+    public string? ChangedByUserId { get; set; }
+}
