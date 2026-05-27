@@ -206,8 +206,7 @@
                         <span class="security-status security-status--success mb-3"><i class="bi bi-check-circle"></i> Enabled</span>
                         <p class="text-muted">You can sign in with your email and password in addition to linked providers.</p>
                         <div class="settings-inline-actions">
-                            @* TODO: Scaffold Identity ChangePassword page; routing back to settings hub for now. *@
-                            <a href="/Settings/Index" class="btn btn-primary">Change password</a>
+                            <a asp-area="Identity" asp-page="/Account/ChangePassword" class="btn btn-primary">@Localizer["ChangePassword"]</a>
                             <a href="/Account/Manage" class="btn btn-outline-secondary">Open account management</a>
                         </div>
                     }
@@ -216,7 +215,7 @@
                         <span class="security-status security-status--muted mb-3"><i class="bi bi-dash-circle"></i> Not configured</span>
                         <p class="text-muted">Your account currently depends on linked providers. Add a password to strengthen recovery and reduce lockout risk.</p>
                         <div class="settings-inline-actions">
-                            <a href="/Account/Register" class="btn btn-primary">Set up password</a>
+                            <a asp-area="Identity" asp-page="/Account/ChangePassword" class="btn btn-primary">@Localizer["SetPassword"]</a>
                             <a href="/Account/Manage" class="btn btn-outline-secondary">Review account settings</a>
                         </div>
                     }

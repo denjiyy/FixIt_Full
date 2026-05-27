@@ -636,4 +636,90 @@
   <data name="VoteFailed" xml:space="preserve"><value>Не успяхме да запазим гласа ви.</value></data>
   <data name="VoteRecorded" xml:space="preserve"><value>Гласът е отчетен</value></data>
   <data name="VotesTotalLabel" xml:space="preserve"><value>гласа общо</value></data>
+  <data name="Cities_Eyebrow" xml:space="preserve"><value>Изследовател на инфраструктурата</value></data>
+  <data name="Cities_HeroTitle" xml:space="preserve"><value>Открийте градовете чрез актуални граждански сигнали</value></data>
+  <data name="Cities_HeroSubtitle" xml:space="preserve"><value>Преминете от регионален обхват към улично ниво. Разгледайте поддържаните градове, отворете техните топлинни карти и прегледайте последните доклади, без да губите контекст.</value></data>
+  <data name="Cities_BrowseAllIssues" xml:space="preserve"><value>Преглед на всички сигнали</value></data>
+  <data name="Cities_ReportNewIssue" xml:space="preserve"><value>Подаване на нов сигнал</value></data>
+  <data name="Cities_Stat_SelectedCountry" xml:space="preserve"><value>Избрана държава</value></data>
+  <data name="Cities_Stat_SelectedCountryDesc" xml:space="preserve"><value>Текущ регионален фокус</value></data>
+  <data name="Cities_Stat_AvailableCities" xml:space="preserve"><value>Налични градове</value></data>
+  <data name="Cities_Stat_VisibleOnPage" xml:space="preserve"><value>{0} видими на тази страница</value></data>
+  <data name="Cities_Stat_ExplorerCoverage" xml:space="preserve"><value>Покритие на изследователя</value></data>
+  <data name="Cities_Stat_CountriesSupported" xml:space="preserve"><value>Поддържани държави в момента</value></data>
+  <data name="Cities_Stat_PageProgress" xml:space="preserve"><value>Прогрес на страницата</value></data>
+  <data name="Cities_Stat_PaginationCopy" xml:space="preserve"><value>Страниране в избраната държава</value></data>
+  <data name="Cities_FilterByCountry" xml:space="preserve"><value>Филтриране по държава</value></data>
+  <data name="Cities_CountryCoverage" xml:space="preserve"><value>Покритие на {0}</value></data>
+  <data name="Cities_ToolbarCopy" xml:space="preserve"><value>Превключвайте между държавите, за да прегледате обхвата на покритието, или се фокусирайте върху конкретен град, за да видите последните доклади.</value></data>
+  <data name="Cities_FocusedCityLabel" xml:space="preserve"><value>Фокусиран град</value></data>
+  <data name="Cities_ClearCityFocus" xml:space="preserve"><value>Премахни фокуса</value></data>
+  <data name="Cities_DirectoryEyebrow" xml:space="preserve"><value>Указател на градовете</value></data>
+  <data name="Cities_DirectoryCopy" xml:space="preserve"><value>Прегледайте градовете, отворете картови и здравни изгледи, или фокусирайте страницата върху един град, за да видите последните му доклади.</value></data>
+  <data name="Cities_TotalCities" xml:space="preserve"><value>{0} града общо</value></data>
+  <data name="Cities_ShownOnPage" xml:space="preserve"><value>{0} показани на тази страница</value></data>
+  <data name="Cities_BadgeFocused" xml:space="preserve"><value>Фокусиран град</value></data>
+  <data name="Cities_BadgeExplore" xml:space="preserve"><value>Разгледай</value></data>
+  <data name="Cities_ActionViewing" xml:space="preserve"><value>Преглеждане на сигнали</value></data>
+  <data name="Cities_ActionViewRecent" xml:space="preserve"><value>Преглед на последни сигнали</value></data>
+  <data name="Cities_ActionHeatmap" xml:space="preserve"><value>Топлинна карта</value></data>
+  <data name="Cities_ActionHealthReport" xml:space="preserve"><value>Отчет за здравето</value></data>
+  <data name="Cities_PaginationPrev" xml:space="preserve"><value>Предишна</value></data>
+  <data name="Cities_PaginationNext" xml:space="preserve"><value>Следваща</value></data>
+  <data name="Cities_EmptyTitle" xml:space="preserve"><value>В този регион все още няма градове</value></data>
+  <data name="Cities_EmptyCopy" xml:space="preserve"><value>В момента няма покритие за {0}. Опитайте друга държава или се върнете, когато мрежата се разшири.</value></data>
+  <data name="Cities_BackToBulgaria" xml:space="preserve"><value>Обратно към България</value></data>
+  <data name="Cities_FocusEyebrow" xml:space="preserve"><value>Фокусирани сигнали</value></data>
+  <data name="Cities_FocusReportHere" xml:space="preserve"><value>Подаване на сигнал тук</value></data>
+  <data name="Cities_FocusOpenHeatmap" xml:space="preserve"><value>Отвори топлинната карта</value></data>
+  <data name="Cities_FocusActiveCopy" xml:space="preserve"><value>Показване на най-новите доклади, свързани с {0}.</value></data>
+  <data name="Cities_FocusEmptyCopy" xml:space="preserve"><value>В момента няма доклади, свързани с {0}.</value></data>
+  <data name="Cities_FocusFooter" xml:space="preserve"><value>Показване на последните {0} доклада от общо {1} за {2}.</value></data>
+  <data name="Cities_AllClearTitle" xml:space="preserve"><value>Всичко е спокойно в {0}</value></data>
+  <data name="Cities_AllClearCopy" xml:space="preserve"><value>Сигналите за този град са спокойни в момента. Ако забележите нещо, което изисква внимание, създайте сигнал и общността ще се организира.</value></data>
+  <data name="Account_Register_Subtitle" xml:space="preserve"><value>Създайте профил във FixIt, за да подавате сигнали, да следите прогреса и да допринасяте за общността си.</value></data>
+  <data name="Account_Register_PasswordHelp" xml:space="preserve"><value>Използвайте поне 8 символа, със смесица от главни букви и цифри.</value></data>
+  <data name="Account_EmailAddressLabel" xml:space="preserve"><value>Имейл адрес</value></data>
+  <data name="ChangePassword" xml:space="preserve"><value>Смяна на парола</value></data>
+  <data name="UpdateYourPassword" xml:space="preserve"><value>Актуализирайте паролата си</value></data>
+  <data name="SetAPassword" xml:space="preserve"><value>Задайте парола</value></data>
+  <data name="ChangePasswordDescription" xml:space="preserve"><value>Въведете текущата си парола и изберете нова. Използвайте силна парола, която не ползвате другаде.</value></data>
+  <data name="SetPasswordDescription" xml:space="preserve"><value>Регистрирахте се с външен доставчик. Добавете парола, за да можете да влизате и с имейл и парола.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Текуща парола</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>Нова парола</value></data>
+  <data name="ConfirmNewPassword" xml:space="preserve"><value>Потвърдете новата парола</value></data>
+  <data name="UpdatePassword" xml:space="preserve"><value>Актуализирай парола</value></data>
+  <data name="SetPassword" xml:space="preserve"><value>Задай парола</value></data>
+  <data name="BackToAccount" xml:space="preserve"><value>Обратно към акаунта</value></data>
+  <data name="ForgotPasswordTitle" xml:space="preserve"><value>Нулиране на парола</value></data>
+  <data name="ForgotPasswordDescription" xml:space="preserve"><value>Въведете имейл адреса, свързан с акаунта ви, и ще ви изпратим линк за нулиране на паролата.</value></data>
+  <data name="SendResetLink" xml:space="preserve"><value>Изпрати линк за нулиране</value></data>
+  <data name="ForgotPasswordConfirmation" xml:space="preserve"><value>Проверете имейла си</value></data>
+  <data name="ForgotPasswordConfirmationDescription" xml:space="preserve"><value>Ако съществува акаунт с този имейл, изпратихме линк за нулиране на паролата. Проверете входящата си поща и папката за спам.</value></data>
+  <data name="BackToSignIn" xml:space="preserve"><value>Обратно към вход</value></data>
+  <data name="ResetPassword" xml:space="preserve"><value>Нулиране на парола</value></data>
+  <data name="ResetPasswordDescription" xml:space="preserve"><value>Въведете новата си парола по-долу.</value></data>
+  <data name="PasswordHasBeenReset" xml:space="preserve"><value>Паролата ви беше нулирана. Вече можете да влезете с новата си парола.</value></data>
+  <data name="SearchIssues" xml:space="preserve"><value>Търсене на сигнали</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Търсене по заглавие, описание или етикет...</value></data>
+  <data name="SearchPrompt" xml:space="preserve"><value>Въведете ключова дума, за да търсите сред всички подадени сигнали.</value></data>
+  <data name="SearchResultsForLabel" xml:space="preserve"><value>Резултати от търсенето за</value></data>
+  <data name="MatchingIssues" xml:space="preserve"><value>Съвпадащи сигнали</value></data>
+  <data name="ResultMatch" xml:space="preserve"><value>резултат</value></data>
+  <data name="ResultMatches" xml:space="preserve"><value>резултати</value></data>
+  <data name="NoResultsTitle" xml:space="preserve"><value>Няма намерени резултати</value></data>
+  <data name="NoResultsCopy" xml:space="preserve"><value>Опитайте да промените думите за търсене или разгледайте всички сигнали.</value></data>
+  <data name="BrowseAllIssues" xml:space="preserve"><value>Разгледай всички сигнали</value></data>
+  <data name="Pagination" xml:space="preserve"><value>Навигация по страници</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="UntitledHazard" xml:space="preserve"><value>Неозаглавена опасност</value></data>
+  <data name="UntitledIssue" xml:space="preserve"><value>Неозаглавен сигнал</value></data>
+  <data name="AccountLockedOut" xml:space="preserve"><value>Акаунтът е заключен</value></data>
+  <data name="AccountLockedOutDescription" xml:space="preserve"><value>Акаунтът ви беше заключен заради твърде много неуспешни опити за вход. Моля, опитайте отново по-късно или се свържете с поддръжката.</value></data>
+  <data name="TwoFactorAuthentication" xml:space="preserve"><value>Двуфакторно удостоверяване</value></data>
+  <data name="TwoFactorAuthDescription" xml:space="preserve"><value>Въведете 6-цифрения код от приложението си за удостоверяване, за да завършите входа.</value></data>
+  <data name="AuthenticatorCode" xml:space="preserve"><value>Код за удостоверяване</value></data>
+  <data name="RememberThisMachine" xml:space="preserve"><value>Запомни това устройство</value></data>
+  <data name="RegisterConfirmation" xml:space="preserve"><value>Регистрацията е потвърдена</value></data>
+  <data name="RegisterConfirmationDescription" xml:space="preserve"><value>Акаунтът ви беше създаден. Вече можете да влезете и да започнете да подавате сигнали за проблеми в общността си.</value></data>
 </root>

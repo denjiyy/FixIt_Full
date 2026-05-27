@@ -166,6 +166,55 @@ public class CloudinaryService
         }
     }
 
+    public async Task<bool> DeleteByUrlAsync(string cloudinaryUrl)
+    {
+        var publicId = ExtractPublicId(cloudinaryUrl);
+        if (string.IsNullOrEmpty(publicId))
+        {
+            _logger.LogWarning("Could not extract Cloudinary public ID from URL: {Url}", cloudinaryUrl);
+            return false;
+        }
+
+        try
+        {
+            var resourceType = cloudinaryUrl.Contains("/video/") ? ResourceType.Video : ResourceType.Image;
+            var result = await _cloudinary.DestroyAsync(new DeletionParams(publicId) { ResourceType = resourceType });
+
+            if (result.Result == "ok")
+            {
+                _logger.LogInformation("Deleted Cloudinary resource {PublicId}", publicId);
+                return true;
+            }
+
+            _logger.LogWarning("Cloudinary deletion returned '{Result}' for {PublicId}", result.Result, publicId);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete Cloudinary resource {PublicId}", publicId);
+            return false;
+        }
+    }
+
+    private static string? ExtractPublicId(string url)
+    {
+        // Cloudinary URLs follow the pattern: .../image/upload/v1234567890/fixit/images/filename.ext
+        // The public ID is everything after /upload/vNNN/ without the extension.
+        var uploadIndex = url.IndexOf("/upload/", StringComparison.OrdinalIgnoreCase);
+        if (uploadIndex < 0) return null;
+
+        var afterUpload = url[(uploadIndex + "/upload/".Length)..];
+        // Skip the version segment (v1234567890/)
+        if (afterUpload.StartsWith('v') && afterUpload.Contains('/'))
+        {
+            afterUpload = afterUpload[(afterUpload.IndexOf('/') + 1)..];
+        }
+
+        // Remove file extension
+        var dotIndex = afterUpload.LastIndexOf('.');
+        return dotIndex > 0 ? afterUpload[..dotIndex] : afterUpload;
+    }
+
     private static bool IsImage(IFormFile file)
     {
         var allowedImageMimeTypes = new[] { "image/jpeg", "image/png", "image/jpg" };

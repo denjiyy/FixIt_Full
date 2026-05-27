@@ -636,4 +636,90 @@
   <data name="VoteFailed" xml:space="preserve"><value>We couldn't save your vote.</value></data>
   <data name="VoteRecorded" xml:space="preserve"><value>Vote recorded</value></data>
   <data name="VotesTotalLabel" xml:space="preserve"><value>total votes</value></data>
+  <data name="Cities_Eyebrow" xml:space="preserve"><value>Infrastructure explorer</value></data>
+  <data name="Cities_HeroTitle" xml:space="preserve"><value>Discover cities through live civic reporting</value></data>
+  <data name="Cities_HeroSubtitle" xml:space="preserve"><value>Jump from regional coverage to street-level context. Explore supported cities, open their heatmaps, and review recent community reports without losing your place.</value></data>
+  <data name="Cities_BrowseAllIssues" xml:space="preserve"><value>Browse all issues</value></data>
+  <data name="Cities_ReportNewIssue" xml:space="preserve"><value>Report a new issue</value></data>
+  <data name="Cities_Stat_SelectedCountry" xml:space="preserve"><value>Selected country</value></data>
+  <data name="Cities_Stat_SelectedCountryDesc" xml:space="preserve"><value>Current region in focus</value></data>
+  <data name="Cities_Stat_AvailableCities" xml:space="preserve"><value>Available cities</value></data>
+  <data name="Cities_Stat_VisibleOnPage" xml:space="preserve"><value>{0} visible on this page</value></data>
+  <data name="Cities_Stat_ExplorerCoverage" xml:space="preserve"><value>Explorer coverage</value></data>
+  <data name="Cities_Stat_CountriesSupported" xml:space="preserve"><value>Countries currently supported</value></data>
+  <data name="Cities_Stat_PageProgress" xml:space="preserve"><value>Page progress</value></data>
+  <data name="Cities_Stat_PaginationCopy" xml:space="preserve"><value>Pagination across the selected country</value></data>
+  <data name="Cities_FilterByCountry" xml:space="preserve"><value>Filter by country</value></data>
+  <data name="Cities_CountryCoverage" xml:space="preserve"><value>{0} coverage</value></data>
+  <data name="Cities_ToolbarCopy" xml:space="preserve"><value>Switch countries to review coverage breadth, or drill into a specific city to surface the latest reported issues.</value></data>
+  <data name="Cities_FocusedCityLabel" xml:space="preserve"><value>Focused city</value></data>
+  <data name="Cities_ClearCityFocus" xml:space="preserve"><value>Clear city focus</value></data>
+  <data name="Cities_DirectoryEyebrow" xml:space="preserve"><value>City directory</value></data>
+  <data name="Cities_DirectoryCopy" xml:space="preserve"><value>Review cities, open mapping and health views, or focus the page on a single city to see its latest reports.</value></data>
+  <data name="Cities_TotalCities" xml:space="preserve"><value>{0} total cities</value></data>
+  <data name="Cities_ShownOnPage" xml:space="preserve"><value>{0} shown on this page</value></data>
+  <data name="Cities_BadgeFocused" xml:space="preserve"><value>Focused city</value></data>
+  <data name="Cities_BadgeExplore" xml:space="preserve"><value>Explore city</value></data>
+  <data name="Cities_ActionViewing" xml:space="preserve"><value>Viewing issues</value></data>
+  <data name="Cities_ActionViewRecent" xml:space="preserve"><value>View recent issues</value></data>
+  <data name="Cities_ActionHeatmap" xml:space="preserve"><value>Heatmap</value></data>
+  <data name="Cities_ActionHealthReport" xml:space="preserve"><value>Health report</value></data>
+  <data name="Cities_PaginationPrev" xml:space="preserve"><value>Previous</value></data>
+  <data name="Cities_PaginationNext" xml:space="preserve"><value>Next</value></data>
+  <data name="Cities_EmptyTitle" xml:space="preserve"><value>No cities available in this region yet</value></data>
+  <data name="Cities_EmptyCopy" xml:space="preserve"><value>There is no city coverage for {0} right now. Try another country or come back once the network expands.</value></data>
+  <data name="Cities_BackToBulgaria" xml:space="preserve"><value>Back to Bulgaria</value></data>
+  <data name="Cities_FocusEyebrow" xml:space="preserve"><value>Focused issue feed</value></data>
+  <data name="Cities_FocusReportHere" xml:space="preserve"><value>Report an issue here</value></data>
+  <data name="Cities_FocusOpenHeatmap" xml:space="preserve"><value>Open heatmap</value></data>
+  <data name="Cities_FocusActiveCopy" xml:space="preserve"><value>Showing the most recent community reports currently tied to {0}.</value></data>
+  <data name="Cities_FocusEmptyCopy" xml:space="preserve"><value>No community issues are currently attached to {0}.</value></data>
+  <data name="Cities_FocusFooter" xml:space="preserve"><value>Showing the latest {0} reports from a total of {1} for {2}.</value></data>
+  <data name="Cities_AllClearTitle" xml:space="preserve"><value>All clear in {0}</value></data>
+  <data name="Cities_AllClearCopy" xml:space="preserve"><value>The city feed is quiet right now. If you spot something that needs attention, create a report and the community can rally around it.</value></data>
+  <data name="Account_Register_Subtitle" xml:space="preserve"><value>Create your FixIt profile so you can report issues, follow progress, and contribute to your community.</value></data>
+  <data name="Account_Register_PasswordHelp" xml:space="preserve"><value>Use at least 8 characters with a mix of upper-case letters and numbers.</value></data>
+  <data name="Account_EmailAddressLabel" xml:space="preserve"><value>Email address</value></data>
+  <data name="ChangePassword" xml:space="preserve"><value>Change password</value></data>
+  <data name="UpdateYourPassword" xml:space="preserve"><value>Update your password</value></data>
+  <data name="SetAPassword" xml:space="preserve"><value>Set a password</value></data>
+  <data name="ChangePasswordDescription" xml:space="preserve"><value>Enter your current password and choose a new one. Use a strong, unique password you don't use elsewhere.</value></data>
+  <data name="SetPasswordDescription" xml:space="preserve"><value>You signed up with an external provider. Add a password so you can also sign in with email and password.</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Current password</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>New password</value></data>
+  <data name="ConfirmNewPassword" xml:space="preserve"><value>Confirm new password</value></data>
+  <data name="UpdatePassword" xml:space="preserve"><value>Update password</value></data>
+  <data name="SetPassword" xml:space="preserve"><value>Set password</value></data>
+  <data name="BackToAccount" xml:space="preserve"><value>Back to account</value></data>
+  <data name="ForgotPasswordTitle" xml:space="preserve"><value>Reset your password</value></data>
+  <data name="ForgotPasswordDescription" xml:space="preserve"><value>Enter the email address associated with your account and we'll send you a link to reset your password.</value></data>
+  <data name="SendResetLink" xml:space="preserve"><value>Send reset link</value></data>
+  <data name="ForgotPasswordConfirmation" xml:space="preserve"><value>Check your email</value></data>
+  <data name="ForgotPasswordConfirmationDescription" xml:space="preserve"><value>If an account exists for that email, we've sent a password reset link. Please check your inbox and spam folder.</value></data>
+  <data name="BackToSignIn" xml:space="preserve"><value>Back to sign in</value></data>
+  <data name="ResetPassword" xml:space="preserve"><value>Reset password</value></data>
+  <data name="ResetPasswordDescription" xml:space="preserve"><value>Enter your new password below.</value></data>
+  <data name="PasswordHasBeenReset" xml:space="preserve"><value>Your password has been reset. You can now sign in with your new password.</value></data>
+  <data name="SearchIssues" xml:space="preserve"><value>Search issues</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Search by title, description, or tag...</value></data>
+  <data name="SearchPrompt" xml:space="preserve"><value>Enter a keyword to search across all reported issues.</value></data>
+  <data name="SearchResultsForLabel" xml:space="preserve"><value>Search results for</value></data>
+  <data name="MatchingIssues" xml:space="preserve"><value>Matching issues</value></data>
+  <data name="ResultMatch" xml:space="preserve"><value>result</value></data>
+  <data name="ResultMatches" xml:space="preserve"><value>results</value></data>
+  <data name="NoResultsTitle" xml:space="preserve"><value>No results found</value></data>
+  <data name="NoResultsCopy" xml:space="preserve"><value>Try adjusting your search terms or browse all issues instead.</value></data>
+  <data name="BrowseAllIssues" xml:space="preserve"><value>Browse all issues</value></data>
+  <data name="Pagination" xml:space="preserve"><value>Pagination</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="UntitledHazard" xml:space="preserve"><value>Untitled hazard</value></data>
+  <data name="UntitledIssue" xml:space="preserve"><value>Untitled issue</value></data>
+  <data name="AccountLockedOut" xml:space="preserve"><value>Account locked</value></data>
+  <data name="AccountLockedOutDescription" xml:space="preserve"><value>Your account has been locked due to too many failed sign-in attempts. Please try again later or contact support if you need help.</value></data>
+  <data name="TwoFactorAuthentication" xml:space="preserve"><value>Two-factor authentication</value></data>
+  <data name="TwoFactorAuthDescription" xml:space="preserve"><value>Enter the 6-digit code from your authenticator app to complete sign-in.</value></data>
+  <data name="AuthenticatorCode" xml:space="preserve"><value>Authenticator code</value></data>
+  <data name="RememberThisMachine" xml:space="preserve"><value>Remember this machine</value></data>
+  <data name="RegisterConfirmation" xml:space="preserve"><value>Registration confirmed</value></data>
+  <data name="RegisterConfirmationDescription" xml:space="preserve"><value>Your account has been created. You can now sign in and start reporting issues in your community.</value></data>
 </root>

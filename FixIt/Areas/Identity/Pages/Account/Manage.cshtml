@@ -131,9 +131,8 @@
                                 <h6>@Localizer["PasswordLabel"]</h6>
                                 <p>Change your password regularly to keep your FixIt account secure.</p>
                             </div>
-                            @* TODO: Scaffold Identity ChangePassword page; until then route users back to settings hub. *@
-                            <a href="/Settings/Index" class="btn btn-outline-danger btn-sm">
-                                <i class="bi bi-key me-2"></i>Change password
+                            <a asp-area="Identity" asp-page="/Account/ChangePassword" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-key me-2"></i>@Localizer["ChangePassword"]
                             </a>
                         </div>
 
@@ -142,8 +141,7 @@
                                 <h6>Two-factor authentication</h6>
                                 <p>Add an extra verification step so stolen passwords are not enough to enter your account.</p>
                             </div>
-                            @* TODO: Scaffold Identity TwoFactorAuthentication page; until then route users back to settings hub. *@
-                            <a href="/Settings/Index" class="btn btn-outline-primary btn-sm">
+                            <a href="/Settings/Index" class="btn btn-outline-primary btn-sm" title="Two-factor authentication setup coming soon">
                                 <i class="bi bi-shield-check me-2"></i>Set up 2FA
                             </a>
                         </div>

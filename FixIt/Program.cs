@@ -313,10 +313,13 @@ catch (Exception ex)
 // Inline per operational-clarity rule: middleware ordering is the single most
 // brittle piece of ASP.NET configuration and must read top-to-bottom.
 app.UseMiddleware<FixIt.Middleware.GlobalExceptionHandlingMiddleware>();
-app.UseForwardedHeaders(new ForwardedHeadersOptions
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 if (app.Environment.IsDevelopment())
 {

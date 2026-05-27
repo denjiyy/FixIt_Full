@@ -31,8 +31,6 @@ public static class ServicesExtensions
         services.AddScoped<IHealthReportService, HealthReportService>();
         services.AddScoped<IHazardService, HazardService>();
 
-        services.AddScoped<FixIt.Services.Accessibility.ITranslationService, FixIt.Services.Accessibility.TranslationService>();
-
         // Typed HTTP clients for the AI services.
         services.AddHttpClient<IIssueAnalysisService, OpenAIIssueAnalysisService>();
         services.AddHttpClient<ICivicAiService, OpenAiCivicAiService>();

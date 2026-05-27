@@ -90,9 +90,6 @@ public static class MongoDbExtensions
         services.AddScoped<IRepository<FixIt.Models.Transparency.IssueResolutionEvidence>>(sp =>
             new Repository<FixIt.Models.Transparency.IssueResolutionEvidence>(sp.GetRequiredService<IMongoDatabase>(), MongoCollectionNames.IssueResolutionEvidence));
 
-        services.AddScoped<IRepository<FixIt.Models.Accessibility.TranslationRecord>>(sp =>
-            new Repository<FixIt.Models.Accessibility.TranslationRecord>(sp.GetRequiredService<IMongoDatabase>(), MongoCollectionNames.Translations));
-
         services.AddScoped<IRepository<FixIt.Models.Accessibility.SupportedLanguage>>(sp =>
             new Repository<FixIt.Models.Accessibility.SupportedLanguage>(sp.GetRequiredService<IMongoDatabase>(), MongoCollectionNames.SupportedLanguages));
     }

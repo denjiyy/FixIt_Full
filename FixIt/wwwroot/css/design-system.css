@@ -68,6 +68,7 @@ button,
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
+    padding: 0.55rem 1.15rem;
     border-radius: var(--radius-full);
     font-weight: var(--font-semibold);
     letter-spacing: 0.01em;
@@ -308,9 +309,18 @@ input[type="radio"]:focus {
 .tag-results-shell,
 .city-card,
 .leaderboards-section-shell {
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     border: 1px solid var(--gray-200);
     background: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Opt-in glass treatment. Reserve for inset hero panels — do not apply globally. */
+.glass-surface {
+    background: var(--raw-rgba-255-255-255-0-86);
+    border: 1px solid var(--raw-rgba-219-229-240-0-88);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(12px);
     box-shadow: var(--shadow-sm);
 }
 
@@ -403,8 +413,8 @@ input[type="radio"]:focus {
 
 .modal-content {
     border: 1px solid var(--gray-200);
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
 }
 
 .modal-header,
@@ -460,8 +470,8 @@ input[type="radio"]:focus {
 .cities-empty,
 .hazard-list-placeholder {
     border: 1px dashed var(--primary-200);
-    border-radius: var(--radius-2xl);
-    background: linear-gradient(180deg, var(--raw-rgba-255-255-255-0-98), var(--primary-50));
+    border-radius: var(--radius-xl);
+    background: var(--surface-muted);
 }
 
 .skeleton,

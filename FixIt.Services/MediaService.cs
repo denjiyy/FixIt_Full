@@ -6,6 +6,8 @@ using FixIt.Services.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace FixIt.Services;
 
@@ -242,11 +244,9 @@ public class MediaService : IMediaService
                     await _fileStorage.DeleteFileAsync(media.ThumbnailPath);
                 }
             }
-            else if (!string.IsNullOrEmpty(media.CloudinaryUrl))
+            else if (!string.IsNullOrEmpty(media.CloudinaryUrl) && _cloudinaryService != null)
             {
-                // Note: We don't delete from Cloudinary to avoid accidental deletion
-                // and because the URL might be used elsewhere. Rely on Cloudinary's retention policy.
-                _logger.LogInformation("Media {MediaId} is stored in Cloudinary. Manual deletion from Cloudinary not implemented.", mediaId);
+                await _cloudinaryService.DeleteByUrlAsync(media.CloudinaryUrl);
             }
         }
         catch (Exception ex)
@@ -348,12 +348,25 @@ public class MediaService : IMediaService
     {
         try
         {
-            // For now, just return null - thumbnail generation requires image processing library
-            // In production, you'd use ImageSharp, SkiaSharp, or similar
-            // Example: resize to 300x300, save to thumbnails/ folder
-            
-            _logger.LogInformation("Thumbnail generation not implemented yet for {Path}", originalPath);
-            return await Task.FromResult((string?)null);
+            var dir = Path.GetDirectoryName(originalPath) ?? "";
+            var name = Path.GetFileNameWithoutExtension(originalPath);
+            var thumbnailPath = $"{dir}/thumb_{name}.jpg";
+
+            using var inputStream = file.OpenReadStream();
+            using var image = await Image.LoadAsync(inputStream);
+
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(300, 300),
+                Mode = ResizeMode.Max
+            }));
+
+            using var outputStream = new MemoryStream();
+            await image.SaveAsJpegAsync(outputStream);
+            outputStream.Position = 0;
+
+            await _fileStorage.SaveFileAsync(thumbnailPath, outputStream);
+            return thumbnailPath;
         }
         catch (Exception ex)
         {
