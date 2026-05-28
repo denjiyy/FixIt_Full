@@ -7,7 +7,7 @@ namespace FixIt.Data.Configuration;
 
 public class MediaConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
         var media = db.GetCollection<Media>(MongoCollectionNames.Media);
 

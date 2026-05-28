@@ -6,7 +6,7 @@ namespace FixIt.Data.Configuration;
 
 public class CommentConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
         var comments = db.GetCollection<Comment>("comments");
 

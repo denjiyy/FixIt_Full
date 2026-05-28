@@ -7,7 +7,7 @@ namespace FixIt.Data.Configuration;
 
 public class UserConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
         var users = db.GetCollection<ApplicationUser>(MongoCollectionNames.Users);
 

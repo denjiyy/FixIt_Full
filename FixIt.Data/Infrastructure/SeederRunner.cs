@@ -7,7 +7,10 @@ namespace FixIt.Data.Infrastructure;
 
 public class SeederRunner
 {
-    public static async Task RunAllConfiguratorsAsync(IMongoDatabase db, IServiceProvider provider = null!)
+    public static async Task RunAllConfiguratorsAsync(
+        IMongoDatabase db,
+        IServiceProvider provider = null!,
+        bool seedDemoData = true)
     {
         var configs = Assembly.GetExecutingAssembly()
             .GetTypes()
@@ -17,7 +20,7 @@ public class SeederRunner
 
         foreach (var c in configs)
         {
-            await c.ConfigureAsync(db);
+            await c.ConfigureAsync(db, seedDemoData);
         }
     }
 }

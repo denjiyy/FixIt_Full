@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using FixIt.Data.Infrastructure;
 using FixIt.Data.Infrastructure.Migrations;
 using FixIt.Extensions;
-using FixIt.Models.Enums;
 using FixIt.Models.Infrastructure;
 using FixIt.Models.Users;
 using FixIt.Services.Constants;
@@ -139,6 +138,18 @@ localizationOptions.RequestCultureProviders.Insert(1, new Microsoft.AspNetCore.L
 
 var app = builder.Build();
 
+// ========== CLI: ADMIN BOOTSTRAP ==========
+// Short-circuit before any web/server setup when invoked with --bootstrap-admin.
+// This is the supported path for creating the initial admin in production (and
+// any env without an existing admin), since the development seeder below is
+// gated to IsDevelopment().
+if (AdminBootstrapExtensions.IsBootstrapRequested(args))
+{
+    var bootstrapExit = await app.RunAdminBootstrapAsync(args);
+    await app.DisposeAsync();
+    Environment.Exit(bootstrapExit);
+}
+
 if (!authResult.GoogleConfigured)
 {
     if (isProduction)
@@ -215,8 +226,14 @@ try
 
             if (existingUsers == 0 || shouldResetDb)
             {
-                logger.LogInformation("Database is empty or reset requested. Running seeders...");
-                await SeederRunner.RunAllConfiguratorsAsync(mongoContext.Database, scope.ServiceProvider);
+                // Demo content (sample issues with a fake "Civic Reporter" author)
+                // is only seeded outside production. Indexes and reference data
+                // (cities, tags) run everywhere — the report-issue flow needs them.
+                var seedDemoData = !isProduction;
+                logger.LogInformation(
+                    "Database is empty or reset requested. Running seeders (seedDemoData={SeedDemoData})...",
+                    seedDemoData);
+                await SeederRunner.RunAllConfiguratorsAsync(mongoContext.Database, scope.ServiceProvider, seedDemoData);
                 logger.LogInformation("Seeder configurations completed.");
 
                 var shouldSeedDevelopmentAdmin = app.Environment.IsDevelopment()
@@ -235,42 +252,28 @@ try
                     }
                     else
                     {
-                        logger.LogInformation("Attempting to create development admin user...");
+                        logger.LogInformation("Attempting to create development admin user with email: {AdminEmail}", adminEmail);
 
-                        var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
-                        if (existingAdmin != null)
-                        {
-                            logger.LogInformation("Found existing admin user. Deleting it to recreate...");
-                            var deleteResult = await userManager.DeleteAsync(existingAdmin);
-                            if (!deleteResult.Succeeded)
-                            {
-                                logger.LogWarning("Failed to delete existing admin user. Errors: {Errors}",
-                                    string.Join("; ", deleteResult.Errors.Select(e => $"{e.Code}: {e.Description}")));
-                            }
-                        }
+                        var seedResult = await AdminBootstrapExtensions.EnsureAdminAsync(
+                            scope.ServiceProvider,
+                            email: adminEmail,
+                            userName: adminUserName,
+                            displayName: adminDisplayName,
+                            password: adminPassword,
+                            force: true,
+                            logger: logger);
 
-                        var newAdmin = new ApplicationUser
-                        {
-                            UserName = adminUserName,
-                            Email = adminEmail,
-                            EmailConfirmed = true,
-                            DisplayName = adminDisplayName,
-                            Role = UserRole.Admin,
-                            TwoFactorEnabled = false
-                        };
-
-                        logger.LogInformation("Creating development admin user with email: {AdminEmail}", adminEmail);
-                        var result = await userManager.CreateAsync(newAdmin, adminPassword);
-
-                        if (result.Succeeded)
+                        if (seedResult.Ok)
                         {
                             logger.LogInformation("Development admin user created successfully.");
                             logger.LogWarning("Development admin seed is enabled. Disable Database:EnableDevelopmentAdminSeed for non-bootstrap runs.");
                         }
                         else
                         {
-                            var errors = string.Join("; ", result.Errors.Select(e => $"{e.Code}: {e.Description}"));
-                            logger.LogError("Failed to create development admin user. Errors: {Errors}", errors);
+                            logger.LogError(
+                                "Failed to create development admin user: {Message} Errors: {Errors}",
+                                seedResult.Message,
+                                string.Join("; ", seedResult.Errors));
                         }
                     }
                 }

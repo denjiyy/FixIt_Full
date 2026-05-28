@@ -6,9 +6,11 @@ namespace FixIt.Data.Configuration;
 
 public class CityConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
-        // Check if cities already exist and have coordinates - if not, drop and reseed
+        // Cities are reference data: the issue-reporting flow requires at least
+        // one city to exist, so we seed everywhere (including prod) — not gated
+        // by seedDemoData.
         var existingCount = await db.GetCollection<City>("cities").CountDocumentsAsync(FilterDefinition<City>.Empty);
         
         if (existingCount > 0)

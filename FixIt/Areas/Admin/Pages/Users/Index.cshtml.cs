@@ -1,3 +1,4 @@
+using AspNetCore.Identity.Mongo.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace FixIt.Areas.Admin.Pages.Users;
 public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly RoleManager<MongoRole> _roleManager;
     private readonly ILogger<IndexModel> _logger;
 
     public List<ApplicationUser> Users { get; set; } = new();
@@ -24,7 +25,7 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? SearchTerm { get; set; }
 
-    public IndexModel(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<IndexModel> logger)
+    public IndexModel(UserManager<ApplicationUser> userManager, RoleManager<MongoRole> roleManager, ILogger<IndexModel> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
@@ -217,7 +218,7 @@ public class IndexModel : PageModel
                 // Ensure role exists in Identity role store
                 if (!await _roleManager.RoleExistsAsync(newRole))
                 {
-                    await _roleManager.CreateAsync(new IdentityRole(newRole));
+                    await _roleManager.CreateAsync(new MongoRole(newRole));
                 }
 
                 var addResult = await _userManager.AddToRoleAsync(user, newRole);

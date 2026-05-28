@@ -5,8 +5,11 @@ namespace FixIt.Data.Configuration;
 
 public class TagConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
+        // Tags are reference data: the report-issue picker depends on this
+        // taxonomy, so we seed everywhere (including prod) — not gated by
+        // seedDemoData.
         var tags = db.GetCollection<FixIt.Models.Issues.Tag>("tags");
 
         // Create indexes

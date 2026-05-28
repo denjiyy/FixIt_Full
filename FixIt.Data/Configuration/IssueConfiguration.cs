@@ -11,14 +11,22 @@ namespace FixIt.Data.Configuration;
 
 public class IssueConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
         var issues = db.GetCollection<Issue>("issues");
         var citiesCollection = db.GetCollection<City>("cities");
         var tagsCollection = db.GetCollection<FixIt.Models.Issues.Tag>("tags");
 
-        // Create indexes first
+        // Create indexes first — these must exist in every environment.
         await CreateIndexesAsync(issues);
+
+        // Sample issues are demo content (fake "Civic Reporter" author) — never
+        // seed them in production.
+        if (!seedDemoData)
+        {
+            Console.WriteLine("[IssueConfiguration] seedDemoData=false. Skipping sample issue seed (indexes still created).");
+            return;
+        }
 
         // Only seed if no issues exist yet
         var existingCount = await issues.CountDocumentsAsync(FilterDefinition<Issue>.Empty);

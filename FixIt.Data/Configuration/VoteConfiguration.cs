@@ -6,7 +6,7 @@ namespace FixIt.Data.Configuration;
 
 public class VoteConfiguration : ICollectionConfigurator
 {
-    public async Task ConfigureAsync(IMongoDatabase db)
+    public async Task ConfigureAsync(IMongoDatabase db, bool seedDemoData)
     {
         var votes = db.GetCollection<Vote>("votes");
 
