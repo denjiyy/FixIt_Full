@@ -18,7 +18,10 @@ public class SecurityAttributeTests
         var authorize = method?.GetCustomAttribute<AuthorizeAttribute>();
 
         Assert.NotNull(authorize);
-        Assert.Equal(RoleNames.Admin, authorize!.Roles);
+        // Migrated from inline [Authorize(Roles=...)] to a named policy so the
+        // policy can specify both Bearer and Cookie schemes (otherwise mobile
+        // clients with JWTs get silently 302'd to /Identity/Account/Login).
+        Assert.Equal(PolicyNames.AdminOnly, authorize!.Policy);
     }
 
     [Fact]

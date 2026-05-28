@@ -18,7 +18,7 @@ namespace FixIt.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = RoleNames.AdminOrModerator)]
+[Authorize(Policy = PolicyNames.AdminArea)]
 [EnableRateLimiting(RateLimitPolicyNames.Reporting)]
 public class SuggestionsController : ControllerBase
 {

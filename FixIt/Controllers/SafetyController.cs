@@ -284,7 +284,7 @@ public class SafetyController : ControllerBase
     /// <param name="request">Resolution details</param>
     /// <returns>Resolved hazard information</returns>
     [HttpPost("{hazardId}/resolve")]
-    [Authorize(Roles = RoleNames.Admin)]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ResolveHazard(
@@ -689,7 +689,7 @@ public class SafetyController : ControllerBase
     /// Restore a soft-deleted hazard (admin only)
     /// </summary>
     [HttpPost("{id}/restore")]
-    [Authorize(Roles = RoleNames.Admin)]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
     public async Task<ActionResult<ApiResponse<object>>> RestoreHazard(string id)
     {
         try

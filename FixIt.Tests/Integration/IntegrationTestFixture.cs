@@ -80,13 +80,17 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
                 builder.ConfigureAppConfiguration((_, config) =>
                 {
+                    // Do NOT override Jwt:Issuer / Jwt:Audience. AuthExtensions
+                    // reads them at service-registration time (defaults: "FixIt"
+                    // / "FixItClients"), but JwtTokenService reads them lazily
+                    // at token-issue time. If we set them here via in-memory
+                    // config — which doesn't apply until Build() — issuer would
+                    // mismatch and Bearer validation would silently fail.
                     config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
                         ["MongoDB:ConnectionString"] = connectionString,
                         ["MongoDB:DatabaseName"] = DatabaseName,
                         ["Jwt:SecretKey"] = "integration-test-jwt-secret-must-be-at-least-32-bytes-long-and-random-enough",
-                        ["Jwt:Issuer"] = "FixIt.Tests",
-                        ["Jwt:Audience"] = "FixIt.Tests",
                         ["Security:RateLimiting:Enabled"] = "false",
                         ["Database:EnableDevelopmentAdminSeed"] = "false",
                         ["Database:ResetOnStartup"] = "false",

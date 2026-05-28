@@ -13,10 +13,10 @@ namespace FixIt.Tests.Integration;
 /// This test exercises the chain that broke previously:
 ///   bootstrap admin → /api/auth/login → JWT includes the Admin role claim.
 ///
-/// We assert the JWT contents directly rather than hitting an authorized endpoint
-/// because the API controllers currently use the default (Cookie) auth scheme,
-/// which silently ignores Bearer tokens for authorization decisions. That auth-
-/// scheme mismatch is a separate bug tracked for Phase 2; the regression we
+/// We assert the JWT contents directly rather than hitting an authorized
+/// endpoint because the API controllers currently use the default (Cookie) auth
+/// scheme, which silently ignores Bearer tokens for authorization decisions.
+/// Wiring proper Bearer auth for /api/* is a Phase 3 item; the regression we
 /// care about here is upstream of it.
 /// </summary>
 public class AdminLoginIntegrationTests : IClassFixture<IntegrationTestFixture>

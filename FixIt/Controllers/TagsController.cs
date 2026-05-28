@@ -185,7 +185,7 @@ public class TagsController : ControllerBase
     /// <param name="request">Tag creation request</param>
     /// <returns>The created tag</returns>
     [HttpPost]
-    [Authorize(Roles = RoleNames.ModeratorOrAdmin)]
+    [Authorize(Policy = PolicyNames.AdminArea)]
     [ProducesResponseType(typeof(ApiResponse<TagResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

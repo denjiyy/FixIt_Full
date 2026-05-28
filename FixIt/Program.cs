@@ -331,6 +331,21 @@ try
                 logger.LogWarning(ex, "Admin-existence guard failed to query the Admin role.");
             }
         }
+
+        // ========== ROLE-DRIFT AUDIT ==========
+        // The codebase carries two role representations (ApplicationUser.Role
+        // enum + Identity role claims). UserRoleSync.SetUserRoleAsync keeps
+        // them in sync going forward; this audit catches any users where they
+        // already disagree (legacy data, partial writes, manual DB edits).
+        // Warning only — not an error. Fix via the admin Users page.
+        try
+        {
+            await UserRoleSync.AuditRoleDriftAsync(scope.ServiceProvider, logger);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Role-drift audit failed; skipping.");
+        }
     }
 }
 catch (Exception ex)

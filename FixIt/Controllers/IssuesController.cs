@@ -356,7 +356,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Status update request</param>
     /// <returns>Updated issue</returns>
     [HttpPut("{id}/status")]
-    [Authorize(Roles = RoleNames.ModeratorOrAdmin)]
+    [Authorize(Policy = PolicyNames.AdminArea)]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -407,7 +407,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Priority update request</param>
     /// <returns>Updated issue</returns>
     [HttpPut("{id}/priority")]
-    [Authorize(Roles = RoleNames.ModeratorOrAdmin)]
+    [Authorize(Policy = PolicyNames.AdminArea)]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

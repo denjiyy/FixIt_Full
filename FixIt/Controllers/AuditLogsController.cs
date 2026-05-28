@@ -13,7 +13,7 @@ namespace FixIt.Controllers
     /// Admin-only API for viewing audit logs and compliance records.
     /// All endpoints require Admin role.
     /// </summary>
-    [Authorize(Roles = RoleNames.Admin)]
+    [Authorize(Policy = PolicyNames.AdminOnly)]
     [Route("api/admin/audit-logs")]
     [ApiController]
     [Produces("application/json")]

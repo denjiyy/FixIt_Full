@@ -37,8 +37,18 @@ public static class IdentityExtensions
 
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(PolicyNames.AdminArea, policy => policy.RequireRole(RoleNames.Admin, RoleNames.Moderator));
-            options.AddPolicy(PolicyNames.AdminOnly, policy => policy.RequireRole(RoleNames.Admin));
+            // Policies intentionally do not specify AuthenticationSchemes.
+            // PolicyEvaluator.HandleForbiddenAsync iterates ALL listed schemes
+            // and the last response wins — if Cookies is listed, its 302
+            // redirect clobbers Bearer's 403 even for API requests. Instead,
+            // scheme selection happens up the stack via the MultiScheme
+            // PolicyScheme registered in AuthExtensions: API paths forward to
+            // Bearer, everything else forwards to Cookies. The role check
+            // below then runs on whichever identity was attached.
+            options.AddPolicy(PolicyNames.AdminArea, policy =>
+                policy.RequireRole(RoleNames.Admin, RoleNames.Moderator));
+            options.AddPolicy(PolicyNames.AdminOnly, policy =>
+                policy.RequireRole(RoleNames.Admin));
         });
 
         return services;

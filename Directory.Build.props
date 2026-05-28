@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    Shared MSBuild properties for backend projects. The condition excludes the
+    Mobile projects (FixIt.Mobile, FixIt.Mobile.Tests) because MAUI brings its
+    own analyzers and target-framework matrix that would clash with these
+    settings. Mobile keeps its current per-project configuration.
+  -->
+  <PropertyGroup Condition="!$(MSBuildProjectName.Contains('Mobile'))">
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <!--
+      Suppress warnings that are noisy on this codebase but not load-bearing:
+        CS1591 — missing XML doc comments (project has selective doc coverage)
+        SYSLIB1045 — GeneratedRegex suggestions (not always desirable)
+    -->
+    <NoWarn>$(NoWarn);CS1591;SYSLIB1045</NoWarn>
+  </PropertyGroup>
+
+</Project>

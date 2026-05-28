@@ -194,55 +194,22 @@ public class IndexModel : PageModel
             if (user == null)
                 return NotFound();
 
-            // Remove all existing roles
-            var existingRoles = await _userManager.GetRolesAsync(user);
-            if (existingRoles.Count > 0)
-            {
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, existingRoles);
-                if (!removeResult.Succeeded)
-                {
-                    _logger.LogWarning("Failed to remove existing roles from user {UserId}", user.Id);
-                }
-            }
+            // Route through the single helper so enum + role-claim stay in sync.
+            // Direct UserManager calls bypass this invariant — see UserRoleSync
+            // for the rationale (Phase 1 admin-login bug was a drift case).
+            var result = await FixIt.Extensions.UserRoleSync.SetUserRoleAsync(
+                HttpContext.RequestServices, user, role, _logger);
 
-            // Add new role based on UserRole enum
-            string? newRole = role switch
+            if (result.Ok)
             {
-                UserRole.Admin => RoleNames.Admin,
-                UserRole.Moderator => RoleNames.Moderator,
-                _ => null // User role doesn't need Identity role entry
-            };
-
-            if (newRole != null)
-            {
-                // Ensure role exists in Identity role store
-                if (!await _roleManager.RoleExistsAsync(newRole))
-                {
-                    await _roleManager.CreateAsync(new MongoRole(newRole));
-                }
-
-                var addResult = await _userManager.AddToRoleAsync(user, newRole);
-                if (!addResult.Succeeded)
-                {
-                    _logger.LogWarning("Failed to add role {Role} to user {UserId}", newRole, user.Id);
-                    TempData["ErrorMessage"] = "Failed to update user role";
-                    return RedirectToPage(new { pageNumber = PageNumber });
-                }
-            }
-
-            // Also update the user.Role property for backward compatibility
-            user.Role = role;
-            var updateResult = await _userManager.UpdateAsync(user);
-            
-            if (updateResult.Succeeded)
-            {
-                _logger.LogInformation($"User {user.UserName} role changed to {role}");
                 TempData["SuccessMessage"] = $"{user.UserName} role has been changed to {role}.";
             }
             else
             {
-                _logger.LogWarning("Failed to update user role property for user {UserId}", user.Id);
-                TempData["ErrorMessage"] = "Role added but failed to update user profile";
+                _logger.LogWarning(
+                    "Role change failed for user {UserId}: {Message}. Errors: {Errors}",
+                    user.Id, result.Message, string.Join("; ", result.Errors));
+                TempData["ErrorMessage"] = result.Message;
             }
 
             return RedirectToPage(new { pageNumber = PageNumber });
