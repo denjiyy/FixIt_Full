@@ -9,6 +9,7 @@ using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
 using FixIt.Services.Background;
+using MongoDB.Bson;
 using MongoDB.Driver.GeoJsonObjectModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -826,31 +827,55 @@ public class IssueService : IIssueService
             .OrderByDescending(c => c.CreatedAt)
             .ToList();
 
-        // Populate author information for each comment
+        // Batch-load authors in a single query to avoid an N+1 over comments.
+        var missingAuthorIds = sortedComments
+            .Where(c => !string.IsNullOrEmpty(c.AuthorId) && c.Author == null)
+            .Select(c => c.AuthorId!)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var authorById = new Dictionary<string, ApplicationUser>(StringComparer.Ordinal);
+        if (missingAuthorIds.Count > 0)
+        {
+            var objectIds = missingAuthorIds
+                .Where(id => ObjectId.TryParse(id, out _))
+                .Select(ObjectId.Parse)
+                .ToList();
+
+            if (objectIds.Count > 0)
+            {
+                var loaded = _userManager.Users
+                    .Where(u => objectIds.Contains(u.Id))
+                    .ToList();
+                foreach (var u in loaded)
+                {
+                    authorById[u.Id.ToString()] = u;
+                }
+            }
+        }
+
         foreach (var comment in sortedComments)
         {
-            if (!string.IsNullOrEmpty(comment.AuthorId) && comment.Author == null)
+            if (string.IsNullOrEmpty(comment.AuthorId) || comment.Author != null)
+                continue;
+
+            if (authorById.TryGetValue(comment.AuthorId, out var user))
             {
-                var user = await _userManager.FindByIdAsync(comment.AuthorId);
-                if (user != null)
+                comment.Author = new UserSummary
                 {
-                    comment.Author = new UserSummary
-                    {
-                        Id = user.Id.ToString(),
-                        DisplayName = user.DisplayName ?? user.UserName ?? "Anonymous",
-                        AvatarUrl = null // Avatar URL can be retrieved from media if needed
-                    };
-                }
-                else
+                    Id = user.Id.ToString(),
+                    DisplayName = user.DisplayName ?? user.UserName ?? "Anonymous",
+                    AvatarUrl = null
+                };
+            }
+            else
+            {
+                comment.Author = new UserSummary
                 {
-                    // Fallback if user not found
-                    comment.Author = new UserSummary
-                    {
-                        Id = comment.AuthorId,
-                        DisplayName = "Deleted User",
-                        AvatarUrl = null
-                    };
-                }
+                    Id = comment.AuthorId,
+                    DisplayName = "Deleted User",
+                    AvatarUrl = null
+                };
             }
         }
 

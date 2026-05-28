@@ -2,6 +2,7 @@ using FixIt.Models;
 using FixIt.Models.Infrastructure;
 using FixIt.Services.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -21,11 +22,13 @@ namespace FixIt.Services
     {
         private readonly IMongoCollection<AuditLog> _auditLogsCollection;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger<MongoDbAuditService> _logger;
 
         public MongoDbAuditService(
             IMongoClient mongoClient,
             IHttpContextAccessor httpContextAccessor,
-            IOptions<MongoDbSettings> mongoSettingsOptions
+            IOptions<MongoDbSettings> mongoSettingsOptions,
+            ILogger<MongoDbAuditService> logger
         )
         {
             var mongoSettings = mongoSettingsOptions.Value;
@@ -37,6 +40,7 @@ namespace FixIt.Services
             var database = mongoClient.GetDatabase(mongoSettings.DatabaseName);
             _auditLogsCollection = database.GetCollection<AuditLog>("audit-logs");
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
             
             // Ensure indices exist
             EnsureIndices();
@@ -159,8 +163,9 @@ namespace FixIt.Services
             }
             catch (Exception ex)
             {
-                // Log to console but don't throw - audit failure shouldn't break the app
-                Console.WriteLine($"[ERROR] Audit logging failed: {ex.Message}");
+                // Audit failure must surface in observability but must not break the
+                // request — callers depend on the action they were auditing.
+                _logger.LogError(ex, "Audit logging failed for event {EventType} on {Resource}", eventType, resource);
             }
         }
 

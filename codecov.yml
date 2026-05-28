@@ -1,0 +1,41 @@
+coverage:
+  status:
+    # Project-level: don't allow overall coverage to drop on a PR. Auto-target
+    # compares against the merge-base; threshold allows small float fluctuation
+    # so minor refactors don't break CI.
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: error
+
+    # Patch-level: code added or changed in the PR itself must hit a meaningful
+    # coverage bar. This is what actually keeps untested-code drift out.
+    patch:
+      default:
+        target: 70%
+        threshold: 5%
+        if_no_uploads: success
+        if_not_found: success
+        if_ci_failed: error
+
+  precision: 2
+  round: down
+  range: "50...90"
+
+# Files Codecov should not weigh in coverage decisions.
+ignore:
+  - "**/bin/**"
+  - "**/obj/**"
+  - "FixIt.Tests/**"
+  - "FixIt.Mobile/**"
+  - "FixIt.Mobile.Tests/**"
+  - "scripts/**"
+  - "**/*.cshtml"
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false

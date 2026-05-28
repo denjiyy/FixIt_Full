@@ -304,6 +304,33 @@ try
         {
             logger.LogError(ex, "Error during database seeding and admin user creation");
         }
+
+        // ========== ADMIN-EXISTENCE GUARD ==========
+        // In production, surface a CRITICAL warning if no admin users exist.
+        // We don't crash — that creates a chicken-and-egg with the bootstrap CLI.
+        // But silent operation in this state is exactly how the prod admin gap
+        // shipped previously. Failing loud beats failing silent.
+        if (isProduction)
+        {
+            try
+            {
+                var adminCheckUserManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                var admins = await adminCheckUserManager.GetUsersInRoleAsync(RoleNames.Admin);
+                if (admins.Count == 0)
+                {
+                    logger.LogCritical(
+                        "No users with the Admin role exist in production. The admin surface (/admin/*) is unreachable until an admin is provisioned. Run: dotnet run -- --bootstrap-admin --email <e> --password <p>");
+                }
+                else
+                {
+                    logger.LogInformation("Admin role population check: {AdminCount} admin user(s) present.", admins.Count);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Admin-existence guard failed to query the Admin role.");
+            }
+        }
     }
 }
 catch (Exception ex)
@@ -495,3 +522,6 @@ app.Urls.Add(urls);
 app.Logger.LogInformation("Application configured to listen on {URLs}", urls);
 
 app.Run();
+
+// Exposed for WebApplicationFactory<Program> in integration tests.
+public partial class Program;
