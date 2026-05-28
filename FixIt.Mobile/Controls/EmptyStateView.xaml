@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FixIt.Mobile.Controls.EmptyStateView">
+    <VerticalStackLayout Spacing="12"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center"
+                         Padding="24,32">
+        <Image x:Name="IconImage"
+               WidthRequest="56"
+               HeightRequest="56"
+               Aspect="AspectFit"
+               Opacity="0.6"
+               HorizontalOptions="Center" />
+        <Label x:Name="TitleLabel"
+               Style="{StaticResource TitleMedium}"
+               HorizontalTextAlignment="Center" />
+        <Label x:Name="SubtitleLabel"
+               Style="{StaticResource BodyMedium}"
+               HorizontalTextAlignment="Center"
+               IsVisible="False" />
+    </VerticalStackLayout>
+</ContentView>

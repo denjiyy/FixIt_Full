@@ -145,53 +145,43 @@ public class ApiService : IApiService
 
         try
         {
-            using var multipartContent = new MultipartFormDataContent();
-            multipartContent.Add(new StringContent(request.Title), "title");
-            multipartContent.Add(new StringContent(request.Description), "description");
-            multipartContent.Add(new StringContent(request.Location), "location");
-
-            if (request.PhotoStream != Stream.Null)
-            {
-                if (request.PhotoStream.CanSeek)
-                {
-                    request.PhotoStream.Position = 0;
-                }
-
-                var streamContent = new StreamContent(request.PhotoStream);
-                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-                multipartContent.Add(streamContent, "photo", request.PhotoFileName);
-            }
-
-            using var multipartResponse = await _httpClient.PostAsync(AppConstants.ApiIssues, multipartContent, ct);
-            if (multipartResponse.IsSuccessStatusCode)
-            {
-                return new ApiResult(true);
-            }
-
-            if (request.PhotoStream.CanSeek)
-            {
-                request.PhotoStream.Position = 0;
-            }
-
             using var jsonResponse = await _httpClient.PostAsJsonAsync(AppConstants.ApiIssues, new
             {
                 title = request.Title,
                 description = request.Description,
-                longitude = 0,
-                latitude = 0,
-                cityId = AppConstants.DefaultCityId,
-                address = request.Location,
+                longitude = request.Longitude,
+                latitude = request.Latitude,
+                cityId = string.IsNullOrWhiteSpace(request.CityId) ? AppConstants.DefaultCityId : request.CityId,
+                address = request.Address,
                 tagsJson = string.Empty,
                 isAnonymous = false
             }, _jsonOptions, ct);
 
-            if (jsonResponse.IsSuccessStatusCode)
+            if (!jsonResponse.IsSuccessStatusCode)
             {
-                return new ApiResult(true);
+                var error = await ExtractApiErrorAsync(jsonResponse, Localization.LocalizationService.Get("Report_Error"), ct);
+                return new ApiResult(false, error, (int)jsonResponse.StatusCode);
             }
 
-            var error = await ExtractApiErrorAsync(jsonResponse, Localization.LocalizationService.Get("Report_Error"), ct);
-            return new ApiResult(false, error);
+            var createdIssueId = await ExtractCreatedIssueIdAsync(jsonResponse, ct);
+            if (string.IsNullOrEmpty(createdIssueId) || request.Photos.Count == 0)
+            {
+                return ApiResult.Ok();
+            }
+
+            var failedUploads = 0;
+            foreach (var photo in request.Photos)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (!await UploadIssueMediaAsync(createdIssueId, photo, ct))
+                {
+                    failedUploads++;
+                }
+            }
+
+            return failedUploads == 0
+                ? ApiResult.Ok()
+                : new ApiResult(true, Localization.LocalizationService.Get("Report_PartialUploadWarning"));
         }
         catch (HttpRequestException ex)
         {
@@ -207,6 +197,62 @@ public class ApiService : IApiService
             Console.WriteLine($"[API] Parse error: {ex.Message}");
             return new ApiResult(false, Localization.LocalizationService.Get("Common_Error_Generic"));
         }
+    }
+
+    private async Task<bool> UploadIssueMediaAsync(string issueId, PhotoAttachment photo, CancellationToken ct)
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var bytesContent = new ByteArrayContent(photo.Bytes);
+            bytesContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(photo.ContentType);
+            content.Add(bytesContent, "file", photo.FileName);
+
+            using var response = await _httpClient.PostAsync($"{AppConstants.ApiIssues}/{issueId}/media", content, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] Media upload failed for issue {issueId}: {(int)response.StatusCode}");
+                return false;
+            }
+            return true;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            Console.WriteLine($"[API] Media upload error for issue {issueId}: {ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task<string?> ExtractCreatedIssueIdAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            await using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+            var root = document.RootElement;
+
+            if (root.ValueKind == JsonValueKind.Object &&
+                root.TryGetProperty("data", out var data) &&
+                data.ValueKind == JsonValueKind.Object &&
+                data.TryGetProperty("id", out var idElement) &&
+                idElement.ValueKind == JsonValueKind.String)
+            {
+                return idElement.GetString();
+            }
+
+            if (root.ValueKind == JsonValueKind.Object &&
+                root.TryGetProperty("id", out var topLevelId) &&
+                topLevelId.ValueKind == JsonValueKind.String)
+            {
+                return topLevelId.GetString();
+            }
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Failed to parse created issue id: {ex.Message}");
+        }
+
+        return null;
     }
 
     public async Task<List<Issue>> GetMyIssuesAsync(
@@ -972,6 +1018,19 @@ public class ApiService : IApiService
         return coordinate is null or 0 ? null : coordinate;
     }
 
+    private static readonly string[] CategoryDisplayNames =
+    {
+        "Infrastructure",
+        "Public Safety",
+        "Environmental Health",
+        "Parks",
+        "Transportation",
+        "Utilities",
+        "Sanitation",
+        "Public Health",
+        "Other"
+    };
+
     private static string ResolveCategoryName(JsonElement? category)
     {
         if (category == null)
@@ -981,10 +1040,52 @@ public class ApiService : IApiService
 
         return category.Value.ValueKind switch
         {
-            JsonValueKind.String => category.Value.GetString() ?? string.Empty,
-            JsonValueKind.Number => category.Value.GetInt32().ToString(),
+            JsonValueKind.String => SpaceCategoryName(category.Value.GetString() ?? string.Empty),
+            JsonValueKind.Number => CategoryFromIndex(category.Value.GetInt32()),
             _ => string.Empty
         };
+    }
+
+    private static string CategoryFromIndex(int index)
+    {
+        return index >= 0 && index < CategoryDisplayNames.Length
+            ? CategoryDisplayNames[index]
+            : string.Empty;
+    }
+
+    private static string SpaceCategoryName(string pascal)
+    {
+        if (string.IsNullOrEmpty(pascal))
+        {
+            return string.Empty;
+        }
+
+        var builder = new System.Text.StringBuilder(pascal.Length + 4);
+        for (var i = 0; i < pascal.Length; i++)
+        {
+            if (i > 0 && char.IsUpper(pascal[i]) && !char.IsUpper(pascal[i - 1]))
+            {
+                builder.Append(' ');
+            }
+            builder.Append(pascal[i]);
+        }
+        return builder.ToString();
+    }
+
+    private async Task<string> ExtractErrorAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            var content = await response.Content.ReadAsStringAsync(ct);
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                using var doc = JsonDocument.Parse(content);
+                if (doc.RootElement.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String)
+                    return msg.GetString() ?? Localization.LocalizationService.Get("Common_Error_Generic");
+            }
+        }
+        catch { /* ignore parse errors */ }
+        return Localization.LocalizationService.Get("Common_Error_Generic");
     }
 
     private async Task<ApiEnvelope<T>?> DeserializeEnvelopeAsync<T>(HttpResponseMessage response, CancellationToken ct)
@@ -1242,9 +1343,127 @@ public class ApiService : IApiService
 
     public Task<List<Issue>> GetIssuesByTagAsync(string tagName, int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
-        // Reuse the search endpoint so the tag filter benefits from the same
-        // city scoping and result mapping as text search.
         return GetIssuesAsync(filter: null, search: $"#{tagName}", page: page, pageSize: pageSize, ct: ct);
+    }
+
+    public async Task<ApiResult> UpdateIssueAsync(string issueId, string title, string description, string address, CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.PutAsJsonAsync(
+                $"{AppConstants.ApiIssues}/{Uri.EscapeDataString(issueId)}",
+                new { title, description, address }, _jsonOptions, ct);
+            return response.IsSuccessStatusCode
+                ? new ApiResult(true)
+                : new ApiResult(false, await ExtractErrorAsync(response, ct));
+        }
+        catch (Exception ex) { Console.WriteLine($"[API] Update error: {ex.Message}"); return new ApiResult(false, ex.Message); }
+    }
+
+    public async Task<ApiResult> ForgotPasswordAsync(string email, CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+                $"{AppConstants.ApiAuth}/forgot-password", new { email }, _jsonOptions, ct);
+            return new ApiResult(true);
+        }
+        catch (Exception ex) { Console.WriteLine($"[API] ForgotPassword error: {ex.Message}"); return new ApiResult(false, ex.Message); }
+    }
+
+    public async Task<List<CityInfo>> GetCitiesAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.GetAsync("api/cities", ct);
+            if (!response.IsSuccessStatusCode) return [];
+            var envelope = await DeserializeEnvelopeAsync<List<CityInfoDto>>(response, ct);
+            return envelope?.Data?.Select(d => new CityInfo
+            {
+                Id = d.Id ?? string.Empty,
+                Name = d.Name ?? string.Empty,
+                Country = d.Country ?? string.Empty,
+                Description = d.Description,
+                ImageUrl = d.ImageUrl,
+                IssueCount = d.IssueCount
+            }).ToList() ?? [];
+        }
+        catch { return []; }
+    }
+
+    public async Task<ApiResult> ReportHazardAsync(string type, string severity, string title, string description, double latitude, double longitude, CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+                $"{AppConstants.ApiSafety}/hazards",
+                new { type, severity, title, description, latitude, longitude }, _jsonOptions, ct);
+            return response.IsSuccessStatusCode
+                ? new ApiResult(true)
+                : new ApiResult(false, await ExtractErrorAsync(response, ct));
+        }
+        catch (Exception ex) { return new ApiResult(false, ex.Message); }
+    }
+
+    public async Task<EmailPreferences?> GetEmailPreferencesAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.GetAsync("api/users/email-preferences", ct);
+            if (!response.IsSuccessStatusCode) return new EmailPreferences();
+            var envelope = await DeserializeEnvelopeAsync<EmailPreferences>(response, ct);
+            return envelope?.Data ?? new EmailPreferences();
+        }
+        catch { return new EmailPreferences(); }
+    }
+
+    public async Task<ApiResult> SaveEmailPreferencesAsync(EmailPreferences preferences, CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+                "api/users/email-preferences", preferences, _jsonOptions, ct);
+            return response.IsSuccessStatusCode ? new ApiResult(true) : new ApiResult(false);
+        }
+        catch (Exception ex) { return new ApiResult(false, ex.Message); }
+    }
+
+    public async Task<string?> GetCityPreferenceAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.GetAsync("api/users/city-preference", ct);
+            if (!response.IsSuccessStatusCode) return null;
+            var envelope = await DeserializeEnvelopeAsync<CityPreferenceDto>(response, ct);
+            return envelope?.Data?.CityId;
+        }
+        catch { return null; }
+    }
+
+    public async Task<ApiResult> SaveCityPreferenceAsync(string cityId, CancellationToken ct = default)
+    {
+        try
+        {
+            using var response = await _httpClient.PostAsJsonAsync(
+                "api/users/city-preference", new { cityId }, _jsonOptions, ct);
+            return response.IsSuccessStatusCode ? new ApiResult(true) : new ApiResult(false);
+        }
+        catch (Exception ex) { return new ApiResult(false, ex.Message); }
+    }
+
+    private sealed class CityInfoDto
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Country { get; set; }
+        public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
+        public int IssueCount { get; set; }
+    }
+
+    private sealed class CityPreferenceDto
+    {
+        public string? CityId { get; set; }
     }
 
     private class IssueSummaryDto

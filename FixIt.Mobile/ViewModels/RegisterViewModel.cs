@@ -181,7 +181,7 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task GoToLoginAsync()
     {
-        await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
+        await Shell.Current.GoToAsync(AppConstants.RouteAccountTabAbsolute);
     }
 
     private bool Validate()

@@ -22,6 +22,17 @@
     <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
   </PropertyGroup>
 
+  <!--
+    iOS device builds use Entitlements.plist so SecureStorage gets a keychain-access-group.
+    Simulator builds skip it to avoid the "no provisioning profile" error: SecureStorage on
+    the simulator falls back to the default keychain. AuthService now fails login on
+    SecureStorage write failures, so the user sees a clear error instead of a phantom
+    logged-in state.
+  -->
+  <PropertyGroup Condition="$(TargetFramework.StartsWith('net9.0-ios')) AND '$(RuntimeIdentifier)' != '' AND !$(RuntimeIdentifier.StartsWith('iossimulator-'))">
+    <CodesignEntitlements>Platforms/iOS/Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2563EB" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0F172A" BaseSize="256,256" />

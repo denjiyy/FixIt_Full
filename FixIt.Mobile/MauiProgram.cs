@@ -35,6 +35,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IConnectivityService, ConnectivityService>();
         builder.Services.AddSingleton<IAnalyticsService, ConsoleAnalyticsService>();
         builder.Services.AddSingleton<IPerformanceService, ConsolePerformanceService>();
+        builder.Services.AddSingleton<IThemePreferenceService, ThemePreferenceService>();
 
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<IAuthService>(sp => sp.GetRequiredService<AuthService>());
@@ -79,6 +80,12 @@ public static class MauiProgram
         builder.Services.AddTransient<HealthReportViewModel>();
         builder.Services.AddTransient<PublicProfileViewModel>();
         builder.Services.AddTransient<SettingsViewModel>();
+        builder.Services.AddTransient<EditIssueViewModel>();
+        builder.Services.AddTransient<ForgotPasswordViewModel>();
+        builder.Services.AddTransient<CitiesViewModel>();
+        builder.Services.AddTransient<HeatmapViewModel>();
+        builder.Services.AddTransient<TagDetailViewModel>();
+        builder.Services.AddTransient<HazardModeViewModel>();
 
         builder.Services.AddSingleton<HomePage>();
         builder.Services.AddSingleton<IssuesPage>();
@@ -94,6 +101,13 @@ public static class MauiProgram
         builder.Services.AddTransient<HealthReportPage>();
         builder.Services.AddTransient<PublicProfilePage>();
         builder.Services.AddTransient<SettingsPage>();
+        builder.Services.AddTransient<EditIssuePage>();
+        builder.Services.AddTransient<ForgotPasswordPage>();
+        builder.Services.AddTransient<CitiesPage>();
+        builder.Services.AddTransient<HeatmapPage>();
+        builder.Services.AddTransient<TagDetailPage>();
+        builder.Services.AddTransient<HazardModePage>();
+        builder.Services.AddTransient<ConnectedAccountsPage>();
         builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG

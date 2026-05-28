@@ -33,8 +33,6 @@
     <string>LaunchScreen</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
-    <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleLightContent</string>
     <key>NSCameraUsageDescription</key>
     <string>FixIt needs camera access to photograph community issues.</string>
     <key>NSPhotoLibraryUsageDescription</key>

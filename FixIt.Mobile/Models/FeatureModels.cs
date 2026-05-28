@@ -147,3 +147,24 @@ public sealed class IssueStatusEvent
     public string? Comment { get; set; }
     public string? ChangedByUserId { get; set; }
 }
+
+public sealed class CityInfo
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
+    public int IssueCount { get; set; }
+
+    public string Initials => string.IsNullOrWhiteSpace(Name) ? "C" : Name[0].ToString().ToUpperInvariant();
+}
+
+public sealed class EmailPreferences
+{
+    public bool Enabled { get; set; } = true;
+    public bool WeeklyReports { get; set; } = true;
+    public bool SafetyAlerts { get; set; } = true;
+    public bool Reminders { get; set; } = true;
+    public string? CityScope { get; set; }
+}

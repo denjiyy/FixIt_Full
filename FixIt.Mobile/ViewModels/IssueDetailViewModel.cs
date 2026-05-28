@@ -77,13 +77,57 @@ public partial class IssueDetailViewModel : ObservableObject, IQueryAttributable
 
     public ObservableCollection<Comment> Comments { get; } = [];
 
+    public string[] CommentSortOptions { get; } = ["Newest", "Oldest", "Most Liked"];
+
+    [ObservableProperty]
+    private string _selectedCommentSort = "Newest";
+
+    partial void OnSelectedCommentSortChanged(string value)
+    {
+        SortAndReplaceComments();
+    }
+
+    private void SortAndReplaceComments()
+    {
+        var sorted = SelectedCommentSort switch
+        {
+            "Oldest" => _allComments.OrderBy(c => c.CreatedAt).ToList(),
+            "Most Liked" => _allComments.OrderByDescending(c => c.LikeCount).ToList(),
+            _ => _allComments.OrderByDescending(c => c.CreatedAt).ToList()
+        };
+        _allComments.Clear();
+        _allComments.AddRange(sorted);
+        _commentsPage = 1;
+        ReplaceVisibleComments();
+    }
+
     public ObservableCollection<string> AnalysisKeywords { get; } = [];
 
     public ObservableCollection<string> SuggestedTags { get; } = [];
 
-    public bool HasIssuePhoto => !string.IsNullOrWhiteSpace(Issue?.PhotoUrl);
+    public bool HasIssuePhoto => !string.IsNullOrWhiteSpace(Issue?.PhotoUrl) || (Issue?.MediaUrls.Count > 0);
 
     public bool HasIssueLocation => Issue?.HasCoordinates == true;
+
+    public ObservableCollection<string> AllMediaUrls { get; } = [];
+
+    public bool HasMediaGallery => AllMediaUrls.Count > 0;
+
+    public bool HasStatusHistory => Issue?.StatusHistory.Count > 0;
+
+    public bool IsIssueOwner => _auth.IsLoggedIn && !string.IsNullOrWhiteSpace(Issue?.AuthorUserId);
+
+    public string LocationText
+    {
+        get
+        {
+            if (Issue is not { HasCoordinates: true })
+                return string.Empty;
+
+            var coords = $"{Issue.Latitude:F6}, {Issue.Longitude:F6}";
+            return string.IsNullOrWhiteSpace(Issue.Address) ? coords : $"{Issue.Address} ({coords})";
+        }
+    }
 
     public bool HasAuthorProfile => !string.IsNullOrWhiteSpace(Issue?.AuthorUserId);
 
@@ -102,9 +146,26 @@ public partial class IssueDetailViewModel : ObservableObject, IQueryAttributable
     partial void OnIssueChanged(Issue? value)
     {
         IssueMapSource = value?.HasCoordinates == true ? MapHtmlBuilder.BuildIssueMap(value) : null;
+
+        AllMediaUrls.Clear();
+        if (value != null)
+        {
+            if (!string.IsNullOrWhiteSpace(value.PhotoUrl))
+                AllMediaUrls.Add(value.PhotoUrl);
+            foreach (var url in value.MediaUrls)
+            {
+                if (!string.IsNullOrWhiteSpace(url) && !AllMediaUrls.Contains(url))
+                    AllMediaUrls.Add(url);
+            }
+        }
+
         OnPropertyChanged(nameof(HasIssuePhoto));
         OnPropertyChanged(nameof(HasIssueLocation));
         OnPropertyChanged(nameof(HasAuthorProfile));
+        OnPropertyChanged(nameof(LocationText));
+        OnPropertyChanged(nameof(HasMediaGallery));
+        OnPropertyChanged(nameof(HasStatusHistory));
+        OnPropertyChanged(nameof(IsIssueOwner));
     }
 
     partial void OnAnalysisChanged(IssueAnalysis? value)
@@ -374,6 +435,68 @@ public partial class IssueDetailViewModel : ObservableObject, IQueryAttributable
         }
 
         return !HasCommentError;
+    }
+
+    [RelayCommand]
+    private async Task LikeCommentAsync(Comment? comment, CancellationToken ct)
+    {
+        if (comment == null || string.IsNullOrWhiteSpace(IssueId))
+            return;
+        HapticService.Click();
+        var result = await _api.LikeCommentAsync(IssueId, comment.Id, ct);
+        if (result.Success)
+        {
+            comment.LikeCount += comment.UserHasLiked ? -1 : 1;
+            if (comment.UserHasDisliked) { comment.DislikeCount--; comment.UserHasDisliked = false; }
+            comment.UserHasLiked = !comment.UserHasLiked;
+        }
+    }
+
+    [RelayCommand]
+    private async Task DislikeCommentAsync(Comment? comment, CancellationToken ct)
+    {
+        if (comment == null || string.IsNullOrWhiteSpace(IssueId))
+            return;
+        HapticService.Click();
+        var result = await _api.DislikeCommentAsync(IssueId, comment.Id, ct);
+        if (result.Success)
+        {
+            comment.DislikeCount += comment.UserHasDisliked ? -1 : 1;
+            if (comment.UserHasLiked) { comment.LikeCount--; comment.UserHasLiked = false; }
+            comment.UserHasDisliked = !comment.UserHasDisliked;
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteIssueAsync(CancellationToken ct)
+    {
+        if (Issue == null)
+            return;
+
+        var confirmed = await Shell.Current.DisplayAlert(
+            LocalizationService.Get("Detail_DeleteConfirmTitle"),
+            LocalizationService.Get("Detail_DeleteConfirmMessage"),
+            LocalizationService.Get("Common_Delete"),
+            LocalizationService.Get("Common_Cancel"));
+
+        if (!confirmed)
+            return;
+
+        HapticService.Click();
+        var result = await _api.DeleteIssueAsync(Issue.Id, ct);
+        if (result.Success)
+        {
+            await Shell.Current.GoToAsync("..");
+        }
+    }
+
+    [RelayCommand]
+    private async Task EditIssueAsync(CancellationToken ct)
+    {
+        if (Issue == null)
+            return;
+        HapticService.Click();
+        await Shell.Current.GoToAsync($"{AppConstants.RouteEditIssue}?IssueId={Uri.EscapeDataString(Issue.Id)}");
     }
 
     [RelayCommand]

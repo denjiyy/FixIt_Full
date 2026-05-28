@@ -60,7 +60,8 @@ public class IssueService : IIssueService
         bool isAnonymous = false,
         IssuePriority? priority = null,
         IssueCategory? category = null,
-        string? department = null)
+        string? department = null,
+        string? address = null)
     {
         // Validate inputs
         if (string.IsNullOrWhiteSpace(title))
@@ -77,6 +78,7 @@ public class IssueService : IIssueService
             Title = title.Trim(),
             Description = description.Trim(),
             Location = GeoJson.Point(GeoJson.Geographic(longitude, latitude)),
+            Address = string.IsNullOrWhiteSpace(address) ? null : address.Trim(),
             CityId = cityId,
             Reporter = reporter,
             IsAnonymous = isAnonymous,

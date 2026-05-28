@@ -11,14 +11,25 @@ public partial class App : Application
 
     public static event EventHandler? Resumed;
 
-    public App(IServiceProvider serviceProvider, IAnalyticsService analytics)
+    private readonly IThemePreferenceService _themePreference;
+
+    public App(IServiceProvider serviceProvider, IAnalyticsService analytics, IThemePreferenceService themePreference)
     {
         InitializeComponent();
         _serviceProvider = serviceProvider;
         _analytics = analytics;
+        _themePreference = themePreference;
+
+        themePreference.Apply();
+        RequestedThemeChanged += OnRequestedThemeChanged;
 
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    private void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
+    {
+        _themePreference.Apply();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

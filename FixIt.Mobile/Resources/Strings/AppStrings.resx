@@ -35,6 +35,7 @@
   <data name="Login_NoAccount" xml:space="preserve"><value>Don't have an account?</value></data>
   <data name="Login_Error_Empty" xml:space="preserve"><value>Please enter your email and password.</value></data>
   <data name="Login_Error_Invalid" xml:space="preserve"><value>Invalid email or password.</value></data>
+  <data name="Login_Error_Persistence" xml:space="preserve"><value>Couldn't save sign-in. Please try again.</value></data>
   <data name="Login_Error_EmailRequired" xml:space="preserve"><value>Email is required.</value></data>
   <data name="Login_Error_EmailInvalid" xml:space="preserve"><value>Enter a valid email address.</value></data>
   <data name="Login_Error_PasswordRequired" xml:space="preserve"><value>Password is required.</value></data>
@@ -55,6 +56,16 @@
   <data name="Report_Error_DescriptionLength" xml:space="preserve"><value>Description must be 2,000 characters or fewer.</value></data>
   <data name="Report_Error_LocationLength" xml:space="preserve"><value>Location must be 500 characters or fewer.</value></data>
   <data name="Report_CameraUnavailable" xml:space="preserve"><value>Photo capture is not supported on this device.</value></data>
+  <data name="Report_AddPhoto" xml:space="preserve"><value>Add photo</value></data>
+  <data name="Report_TakePhoto" xml:space="preserve"><value>Take Photo</value></data>
+  <data name="Report_PickFromGallery" xml:space="preserve"><value>Pick from Gallery</value></data>
+  <data name="Report_PhotoActions_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Report_RemovePhoto" xml:space="preserve"><value>Remove</value></data>
+  <data name="Report_PhotoLimit" xml:space="preserve"><value>Up to 5 photos.</value></data>
+  <data name="Report_PhotoTooLarge" xml:space="preserve"><value>Photo too large. Max 10 MB.</value></data>
+  <data name="Report_LocationPending" xml:space="preserve"><value>Tap the map to confirm location.</value></data>
+  <data name="Report_LocationDetecting" xml:space="preserve"><value>Finding your location…</value></data>
+  <data name="Report_PartialUploadWarning" xml:space="preserve"><value>Issue submitted, but some photos couldn't upload.</value></data>
   <data name="Profile_Title" xml:space="preserve"><value>Profile</value></data>
   <data name="Profile_SignOut" xml:space="preserve"><value>Sign Out</value></data>
   <data name="Profile_MyIssues" xml:space="preserve"><value>My Issues</value></data>
@@ -112,6 +123,11 @@
   <data name="Settings_ProfileVisibility_Private" xml:space="preserve"><value>Private</value></data>
   <data name="Settings_ProfileVisibility_Save" xml:space="preserve"><value>Save</value></data>
   <data name="Settings_ProfileVisibility_Saved" xml:space="preserve"><value>Profile visibility updated.</value></data>
+  <data name="Settings_Appearance_Title" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Settings_Appearance_Description" xml:space="preserve"><value>Choose how the app looks. System follows your device theme.</value></data>
+  <data name="Settings_Appearance_System" xml:space="preserve"><value>System</value></data>
+  <data name="Settings_Appearance_Light" xml:space="preserve"><value>Light</value></data>
+  <data name="Settings_Appearance_Dark" xml:space="preserve"><value>Dark</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Common_Trust" xml:space="preserve"><value>Trust</value></data>
   <data name="Tab_Home" xml:space="preserve"><value>Home</value></data>
@@ -189,4 +205,51 @@
   <data name="Register_Error_PasswordsMismatch" xml:space="preserve"><value>Passwords do not match.</value></data>
   <data name="Register_Error_FormInvalid" xml:space="preserve"><value>Please fill in all fields correctly.</value></data>
   <data name="Register_Error_RegistrationFailed" xml:space="preserve"><value>Registration failed. Please try again.</value></data>
+  <data name="Detail_Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Detail_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Detail_DeleteConfirmTitle" xml:space="preserve"><value>Delete this report?</value></data>
+  <data name="Detail_DeleteConfirmMessage" xml:space="preserve"><value>This action cannot be undone.</value></data>
+  <data name="Detail_Media" xml:space="preserve"><value>Media</value></data>
+  <data name="Detail_StatusHistory" xml:space="preserve"><value>Status History</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Edit_Title" xml:space="preserve"><value>Edit Report</value></data>
+  <data name="Edit_Save" xml:space="preserve"><value>Save Changes</value></data>
+  <data name="Edit_Success" xml:space="preserve"><value>Report updated successfully.</value></data>
+  <data name="ForgotPassword_Title" xml:space="preserve"><value>Forgot Password</value></data>
+  <data name="ForgotPassword_Description" xml:space="preserve"><value>Enter your email and we'll send you a reset link.</value></data>
+  <data name="ForgotPassword_Send" xml:space="preserve"><value>Send Reset Link</value></data>
+  <data name="ForgotPassword_Success" xml:space="preserve"><value>If an account exists with that email, a reset link has been sent.</value></data>
+  <data name="ForgotPassword_Link" xml:space="preserve"><value>Forgot password?</value></data>
+  <data name="Settings_CityPreference" xml:space="preserve"><value>Preferred City</value></data>
+  <data name="Settings_EmailPreferences" xml:space="preserve"><value>Email Notifications</value></data>
+  <data name="Settings_WeeklyReports" xml:space="preserve"><value>Weekly Health Reports</value></data>
+  <data name="Settings_SafetyAlerts" xml:space="preserve"><value>Safety Alerts</value></data>
+  <data name="Settings_Reminders" xml:space="preserve"><value>Reminders</value></data>
+  <data name="Settings_EmailMaster" xml:space="preserve"><value>Email Notifications</value></data>
+  <data name="Cities_Title" xml:space="preserve"><value>Cities</value></data>
+  <data name="Cities_Empty" xml:space="preserve"><value>No cities available</value></data>
+  <data name="Cities_Issues" xml:space="preserve"><value>issues</value></data>
+  <data name="Cities_ViewIssues" xml:space="preserve"><value>View Issues</value></data>
+  <data name="Heatmap_Title" xml:space="preserve"><value>Issue Heatmap</value></data>
+  <data name="Tags_Title" xml:space="preserve"><value>Browse by Tag</value></data>
+  <data name="Tags_Empty" xml:space="preserve"><value>No issues with this tag</value></data>
+  <data name="Comment_Sort" xml:space="preserve"><value>Sort</value></data>
+  <data name="Comment_Newest" xml:space="preserve"><value>Newest</value></data>
+  <data name="Comment_Oldest" xml:space="preserve"><value>Oldest</value></data>
+  <data name="Comment_MostLiked" xml:space="preserve"><value>Most Liked</value></data>
+  <data name="ConnectedAccounts_Title" xml:space="preserve"><value>Connected Accounts</value></data>
+  <data name="ConnectedAccounts_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="ConnectedAccounts_Unlink" xml:space="preserve"><value>Unlink</value></data>
+  <data name="ConnectedAccounts_Empty" xml:space="preserve"><value>No accounts linked yet</value></data>
+  <data name="HazardMode_Title" xml:space="preserve"><value>Hazard Mode</value></data>
+  <data name="HazardMode_Report" xml:space="preserve"><value>Report Hazard</value></data>
+  <data name="HazardMode_Type" xml:space="preserve"><value>Hazard Type</value></data>
+  <data name="HazardMode_Severity" xml:space="preserve"><value>Severity</value></data>
+  <data name="HazardMode_Details" xml:space="preserve"><value>Description</value></data>
+  <data name="Report_Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="Report_TagsHint" xml:space="preserve"><value>Add tags separated by commas</value></data>
+  <data name="Report_AISuggestions" xml:space="preserve"><value>AI Suggestions</value></data>
+  <data name="Report_Category" xml:space="preserve"><value>Category</value></data>
+  <data name="Report_Priority" xml:space="preserve"><value>Priority</value></data>
+  <data name="Report_Department" xml:space="preserve"><value>Department</value></data>
 </root>

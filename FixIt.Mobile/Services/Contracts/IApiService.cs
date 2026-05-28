@@ -42,4 +42,24 @@ public interface IApiService
     // Tags
     Task<List<Tag>> GetPopularTagsAsync(int limit = 20, CancellationToken ct = default);
     Task<List<Issue>> GetIssuesByTagAsync(string tagName, int page = 1, int pageSize = 20, CancellationToken ct = default);
+
+    // Issue editing
+    Task<ApiResult> UpdateIssueAsync(string issueId, string title, string description, string address, CancellationToken ct = default);
+
+    // Auth
+    Task<ApiResult> ForgotPasswordAsync(string email, CancellationToken ct = default);
+
+    // Cities
+    Task<List<CityInfo>> GetCitiesAsync(CancellationToken ct = default);
+
+    // Hazard management
+    Task<ApiResult> ReportHazardAsync(string type, string severity, string title, string description, double latitude, double longitude, CancellationToken ct = default);
+
+    // Email preferences
+    Task<EmailPreferences?> GetEmailPreferencesAsync(CancellationToken ct = default);
+    Task<ApiResult> SaveEmailPreferencesAsync(EmailPreferences preferences, CancellationToken ct = default);
+
+    // City preference
+    Task<string?> GetCityPreferenceAsync(CancellationToken ct = default);
+    Task<ApiResult> SaveCityPreferenceAsync(string cityId, CancellationToken ct = default);
 }

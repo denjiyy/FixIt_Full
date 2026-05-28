@@ -62,8 +62,12 @@ public class AuthService : IAuthService
                 return new AuthResult(false, Localization.LocalizationService.Get("Common_Error_Generic"));
             }
 
-            await SecureSetAsync(TokenKey, accessToken);
-            await SecureSetAsync(RefreshTokenKey, refreshToken);
+            if (!await SecureSetAsync(TokenKey, accessToken) ||
+                !await SecureSetAsync(RefreshTokenKey, refreshToken))
+            {
+                await ClearTokensAsync();
+                return new AuthResult(false, Localization.LocalizationService.Get("Login_Error_Persistence"));
+            }
 
             CurrentDisplayName = envelope?.Data?.User?.DisplayName ?? ExtractDisplayNameFromJwt(accessToken);
             SetLoginState(true);
@@ -113,8 +117,12 @@ public class AuthService : IAuthService
                 return new AuthResult(false, Localization.LocalizationService.Get("Common_Error_Generic"));
             }
 
-            await SecureSetAsync(TokenKey, accessToken);
-            await SecureSetAsync(RefreshTokenKey, refreshToken);
+            if (!await SecureSetAsync(TokenKey, accessToken) ||
+                !await SecureSetAsync(RefreshTokenKey, refreshToken))
+            {
+                await ClearTokensAsync();
+                return new AuthResult(false, Localization.LocalizationService.Get("Login_Error_Persistence"));
+            }
 
             CurrentDisplayName = envelope?.Data?.User?.DisplayName ?? ExtractDisplayNameFromJwt(accessToken);
             SetLoginState(true);
@@ -269,8 +277,12 @@ public class AuthService : IAuthService
             return false;
         }
 
-        await SecureSetAsync(TokenKey, payload.AccessToken);
-        await SecureSetAsync(RefreshTokenKey, payload.RefreshToken);
+        if (!await SecureSetAsync(TokenKey, payload.AccessToken) ||
+            !await SecureSetAsync(RefreshTokenKey, payload.RefreshToken))
+        {
+            return false;
+        }
+
         CurrentDisplayName = ExtractDisplayNameFromJwt(payload.AccessToken);
         return true;
     }
@@ -313,15 +325,17 @@ public class AuthService : IAuthService
         }
     }
 
-    private static async Task SecureSetAsync(string key, string value)
+    private static async Task<bool> SecureSetAsync(string key, string value)
     {
         try
         {
             await SecureStorage.Default.SetAsync(key, value);
+            return true;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[AUTH] Failed to write secure storage: {ex.Message}");
+            return false;
         }
     }
 

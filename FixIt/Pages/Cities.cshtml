@@ -21,67 +21,63 @@
         <div class="cities-hero__copy">
             <span class="cities-hero__eyebrow">
                 <i class="bi bi-globe2"></i>
-                Infrastructure Explorer
+                @Localizer["Cities_Eyebrow"]
             </span>
-            <h1 class="cities-hero__title">Discover cities through live civic reporting</h1>
-            <p class="cities-hero__subtitle">
-                Jump from regional coverage to street-level context. Explore supported cities, open their heatmaps, and review recent community reports without losing your place.
-            </p>
+            <h1 class="cities-hero__title">@Localizer["Cities_HeroTitle"]</h1>
+            <p class="cities-hero__subtitle">@Localizer["Cities_HeroSubtitle"]</p>
             <div class="cities-hero__actions">
                 <a href="/issues" class="btn btn-primary">
                     <i class="bi bi-list-ul"></i>
-                    Browse all issues
+                    @Localizer["Cities_BrowseAllIssues"]
                 </a>
                 <a href="/issues/create" class="btn btn-outline-primary">
                     <i class="bi bi-plus-circle"></i>
-                    Report a new issue
+                    @Localizer["Cities_ReportNewIssue"]
                 </a>
             </div>
         </div>
 
         <div class="cities-hero__stats">
             <article class="cities-hero-stat">
-                <span>Selected country</span>
+                <span>@Localizer["Cities_Stat_SelectedCountry"]</span>
                 <strong>@selectedCountry</strong>
-                <small>Current region in focus</small>
+                <small>@Localizer["Cities_Stat_SelectedCountryDesc"]</small>
             </article>
             <article class="cities-hero-stat">
-                <span>Available cities</span>
+                <span>@Localizer["Cities_Stat_AvailableCities"]</span>
                 <strong>@Model.TotalCities</strong>
-                <small>@visibleCities visible on this page</small>
+                <small>@string.Format(Localizer["Cities_Stat_VisibleOnPage"].Value, visibleCities)</small>
             </article>
             <article class="cities-hero-stat">
-                <span>Explorer coverage</span>
+                <span>@Localizer["Cities_Stat_ExplorerCoverage"]</span>
                 <strong>@Model.Countries.Count</strong>
-                <small>Countries currently supported</small>
+                <small>@Localizer["Cities_Stat_CountriesSupported"]</small>
             </article>
             <article class="cities-hero-stat">
-                <span>Page progress</span>
+                <span>@Localizer["Cities_Stat_PageProgress"]</span>
                 <strong>@Model.CurrentPage / @Math.Max(1, Model.TotalPages)</strong>
-                <small>Pagination across the selected country</small>
+                <small>@Localizer["Cities_Stat_PaginationCopy"]</small>
             </article>
         </div>
     </section>
 
     <section class="cities-toolbar">
         <div>
-            <p class="cities-toolbar__eyebrow">Filter by country</p>
-            <h2 class="cities-toolbar__title">@selectedCountry coverage</h2>
-            <p class="cities-toolbar__copy">
-                Switch countries to review coverage breadth, or drill into a specific city to surface the latest reported issues.
-            </p>
+            <p class="cities-toolbar__eyebrow">@Localizer["Cities_FilterByCountry"]</p>
+            <h2 class="cities-toolbar__title">@string.Format(Localizer["Cities_CountryCoverage"].Value, selectedCountry)</h2>
+            <p class="cities-toolbar__copy">@Localizer["Cities_ToolbarCopy"]</p>
         </div>
 
         @if (hasSelectedCity)
         {
             <div class="cities-toolbar__selected">
-                <span class="cities-toolbar__selected-label">Focused city</span>
+                <span class="cities-toolbar__selected-label">@Localizer["Cities_FocusedCityLabel"]</span>
                 <strong>@selectedCity</strong>
                 <a asp-page="/Cities"
                    asp-route-selectedCountry="@selectedCountry"
                    asp-route-selectedCity=""
                    asp-route-currentPage="@Model.CurrentPage">
-                    Clear city focus
+                    @Localizer["Cities_ClearCityFocus"]
                 </a>
             </div>
         }
@@ -106,15 +102,13 @@
     <section class="cities-directory">
         <div class="cities-directory__head">
             <div>
-                <p class="cities-directory__eyebrow">City directory</p>
+                <p class="cities-directory__eyebrow">@Localizer["Cities_DirectoryEyebrow"]</p>
                 <h2 class="cities-directory__title">@selectedCountry</h2>
-                <p class="cities-directory__copy">
-                    Review cities, open mapping and health views, or focus the page on a single city to see its latest reports.
-                </p>
+                <p class="cities-directory__copy">@Localizer["Cities_DirectoryCopy"]</p>
             </div>
             <div class="cities-directory__meta">
-                <span><i class="bi bi-buildings"></i> @Model.TotalCities total cities</span>
-                <span><i class="bi bi-grid"></i> @visibleCities shown on this page</span>
+                <span><i class="bi bi-buildings"></i> @string.Format(Localizer["Cities_TotalCities"].Value, Model.TotalCities)</span>
+                <span><i class="bi bi-grid"></i> @string.Format(Localizer["Cities_ShownOnPage"].Value, visibleCities)</span>
             </div>
         </div>
 
@@ -140,7 +134,7 @@
                             </div>
                             <div class="city-card__badge">
                                 <i class="bi bi-pin-map"></i>
-                                @(isSelected ? "Focused city" : "Explore city")
+                                @(isSelected ? Localizer["Cities_BadgeFocused"].Value : Localizer["Cities_BadgeExplore"].Value)
                             </div>
                         </div>
 
@@ -168,15 +162,15 @@
                                    asp-route-city="@city.Name"
                                    class="btn btn-primary">
                                     <i class="bi bi-list-stars"></i>
-                                    @(isSelected ? "Viewing issues" : "View recent issues")
+                                    @(isSelected ? Localizer["Cities_ActionViewing"].Value : Localizer["Cities_ActionViewRecent"].Value)
                                 </a>
                                 <a href="/Heatmaps/@city.Id" class="btn btn-outline-primary">
                                     <i class="bi bi-map"></i>
-                                    Heatmap
+                                    @Localizer["Cities_ActionHeatmap"]
                                 </a>
                                 <a href="/HealthReports/@city.Id" class="btn btn-outline-primary">
                                     <i class="bi bi-heart-pulse"></i>
-                                    Health report
+                                    @Localizer["Cities_ActionHealthReport"]
                                 </a>
                             </div>
                         </div>
@@ -195,7 +189,7 @@
                            asp-route-currentPage="@(Model.CurrentPage - 1)"
                            class="cities-pagination__link">
                             <i class="bi bi-arrow-left"></i>
-                            Previous
+                            @Localizer["Cities_PaginationPrev"]
                         </a>
                     }
 
@@ -224,7 +218,7 @@
                            asp-route-selectedCity="@selectedCity"
                            asp-route-currentPage="@(Model.CurrentPage + 1)"
                            class="cities-pagination__link">
-                            Next
+                            @Localizer["Cities_PaginationNext"]
                             <i class="bi bi-arrow-right"></i>
                         </a>
                     }
@@ -237,11 +231,11 @@
                 <div class="cities-empty__icon">
                     <i class="bi bi-inbox"></i>
                 </div>
-                <h3>No cities available in this region yet</h3>
-                <p>There is no city coverage for <strong>@selectedCountry</strong> right now. Try another country or come back once the network expands.</p>
+                <h3>@Localizer["Cities_EmptyTitle"]</h3>
+                <p>@string.Format(Localizer["Cities_EmptyCopy"].Value, selectedCountry)</p>
                 <a asp-page="/Cities" asp-route-selectedCountry="Bulgaria" class="btn btn-primary">
                     <i class="bi bi-arrow-left"></i>
-                    Back to Bulgaria
+                    @Localizer["Cities_BackToBulgaria"]
                 </a>
             </div>
         }
@@ -252,18 +246,18 @@
         <section class="city-focus">
             <div class="city-focus__head">
                 <div>
-                    <p class="city-focus__eyebrow">Focused issue feed</p>
+                    <p class="city-focus__eyebrow">@Localizer["Cities_FocusEyebrow"]</p>
                     <h2 class="city-focus__title">@selectedCity</h2>
                     <p class="city-focus__copy">
                         @(Model.CityIssues.Any()
-                            ? $"Showing the most recent community reports currently tied to {selectedCity}."
-                            : $"No community issues are currently attached to {selectedCity}.")
+                            ? string.Format(Localizer["Cities_FocusActiveCopy"].Value, selectedCity)
+                            : string.Format(Localizer["Cities_FocusEmptyCopy"].Value, selectedCity))
                     </p>
                 </div>
                 <div class="city-focus__actions">
                     <a href="/issues/create" class="btn btn-primary">
                         <i class="bi bi-plus-circle"></i>
-                        Report an issue here
+                        @Localizer["Cities_FocusReportHere"]
                     </a>
                     @if (Model.Cities?.Any(c => c.Name == selectedCity) == true)
                     {
@@ -272,7 +266,7 @@
                         {
                             <a href="/Heatmaps/@selectedCityObject.Id" class="btn btn-outline-primary">
                                 <i class="bi bi-map"></i>
-                                Open heatmap
+                                @Localizer["Cities_FocusOpenHeatmap"]
                             </a>
                         }
                     }
@@ -303,7 +297,7 @@
                 @if (Model.CityIssues.Count > issuePreview.Count)
                 {
                     <div class="city-focus__footer">
-                        <p>Showing the latest @issuePreview.Count reports from a total of @Model.CityIssues.Count for @selectedCity.</p>
+                        <p>@string.Format(Localizer["Cities_FocusFooter"].Value, issuePreview.Count, Model.CityIssues.Count, selectedCity)</p>
                     </div>
                 }
             }
@@ -313,8 +307,8 @@
                     <div class="cities-empty__icon cities-empty__icon--success">
                         <i class="bi bi-check-circle"></i>
                     </div>
-                    <h3>All clear in @selectedCity</h3>
-                    <p>The city feed is quiet right now. If you spot something that needs attention, create a report and the community can rally around it.</p>
+                    <h3>@string.Format(Localizer["Cities_AllClearTitle"].Value, selectedCity)</h3>
+                    <p>@Localizer["Cities_AllClearCopy"]</p>
                 </div>
             }
         </section>

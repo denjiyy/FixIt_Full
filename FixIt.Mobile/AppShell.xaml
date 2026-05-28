@@ -4,7 +4,6 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:FixIt.Mobile.Localization"
        xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
-       BackgroundColor="{StaticResource Background}"
        Style="{StaticResource AppShellStyle}"
        x:DataType="viewModels:ShellViewModel"
        Title="FixIt">
@@ -24,25 +23,32 @@
         </Border>
     </Shell.TitleView>
 
+    <!--
+        The centre Report tab uses a custom FAB-style icon (white report glyph on a
+        primary-color circle with shadow). This is the "tasteful elevated centre"
+        report action: visually prominent without requiring a Shell visual override,
+        which MAUI's Shell does not support via ControlTemplate. Auth gating
+        (report_fab vs report_fab_locked, generated from SVG by MAUI) is wired in AppShell.xaml.cs.
+    -->
     <TabBar>
-        <Tab x:Name="HomeTab" Title="Home" Route="home" Icon="home.svg">
-            <ShellContent x:Name="HomeContent" Route="home-page" Icon="home.svg" />
+        <Tab x:Name="HomeTab" Title="Home" Route="home" Icon="home.png">
+            <ShellContent x:Name="HomeContent" Route="home-page" Icon="home.png" />
         </Tab>
 
-        <Tab x:Name="IssuesTab" Title="Issues" Route="issues" Icon="issues.svg">
-            <ShellContent x:Name="IssuesContent" Route="issues-page" Icon="issues.svg" />
+        <Tab x:Name="IssuesTab" Title="Issues" Route="issues" Icon="issues.png">
+            <ShellContent x:Name="IssuesContent" Route="issues-page" Icon="issues.png" />
         </Tab>
 
-        <Tab x:Name="AlertsTab" Title="Alerts" Route="alerts" Icon="alerts.svg">
-            <ShellContent x:Name="AlertsContent" Route="alerts-page" Icon="alerts.svg" />
+        <Tab x:Name="ReportIssueTab" Title="Report" Route="report-issue-tab" Icon="report_fab_locked.png">
+            <ShellContent x:Name="ReportIssueContent" Route="report-issue-page" Icon="report_fab_locked.png" />
         </Tab>
 
-        <Tab x:Name="ReportIssueTab" Title="Report Issue" Route="report-issue-tab" Icon="report_locked.svg">
-            <ShellContent x:Name="ReportIssueContent" Route="report-issue-page" Icon="report_locked.svg" />
+        <Tab x:Name="AlertsTab" Title="Alerts" Route="alerts" Icon="alerts.png">
+            <ShellContent x:Name="AlertsContent" Route="alerts-page" Icon="alerts.png" />
         </Tab>
 
-        <Tab x:Name="AccountTab" Title="Sign In" Route="sign-in-tab" Icon="profile.svg">
-            <ShellContent x:Name="AccountContent" Route="account-page" Icon="profile.svg" />
+        <Tab x:Name="AccountTab" Title="Sign In" Route="account-tab" Icon="profile.png">
+            <ShellContent x:Name="AccountContent" Route="account-page" Icon="profile.png" />
         </Tab>
     </TabBar>
 </Shell>

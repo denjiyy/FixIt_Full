@@ -1,12 +1,14 @@
 # FixIt — Civic Engagement Platform
 
-FixIt is a full-stack civic engagement platform that lets citizens report local infrastructure issues and safety hazards, track resolution progress, and earn reputation through community participation. It ships as both a web application and a native mobile app for iOS and Android.
+FixIt is a full-stack civic engagement platform that lets citizens report local infrastructure issues and safety hazards, track resolution progress, and earn reputation through community participation. It ships as both a web application and a native mobile app for iOS and Android, served by a single REST API.
 
 ![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-9.0-black?logo=dotnet)
 ![MAUI](https://img.shields.io/badge/.NET%20MAUI-iOS%20%7C%20Android-512BD4?logo=dotnet)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)
 ![Railway](https://img.shields.io/badge/Deployed%20on-Railway-0B0D0E?logo=railway)
+
+Live at **[fixit-production-202d.up.railway.app](https://fixit-production-202d.up.railway.app)**.
 
 ---
 
@@ -34,9 +36,9 @@ FixIt is a full-stack civic engagement platform that lets citizens report local 
 
 ## Overview
 
-FixIt connects citizens with local government by giving them a straightforward way to report infrastructure problems — potholes, broken streetlights, graffiti, flooding — and track them through to resolution. The platform pairs traditional issue tracking with AI-powered analysis, a gamification layer that rewards civic participation, and real-time safety alerts for the community.
+FixIt connects citizens with local government by giving them a straightforward way to report infrastructure problems — potholes, broken streetlights, graffiti, flooding — and track them through to resolution. The platform pairs traditional issue tracking with AI-assisted analysis, a gamification layer that rewards civic participation, and real-time safety alerts for the community.
 
-The platform is live at **[fixit-production-202d.up.railway.app](https://fixit-production-202d.up.railway.app)**.
+Web and mobile share the same REST API, the same domain models, and the same business-logic services. The two clients differ only in the presentation layer.
 
 ---
 
@@ -45,37 +47,38 @@ The platform is live at **[fixit-production-202d.up.railway.app](https://fixit-p
 ### Core
 
 | Feature | Description |
-|---------|-------------|
-| **Issue Reporting** | Report infrastructure problems with photos, location data, and descriptions |
-| **Safety Hazards** | Real-time hazard reporting with severity levels and community confirmation |
-| **Voting System** | Upvote/downvote issues to surface the most urgent community concerns |
-| **Comments & Discussion** | Threaded discussions on issues with media attachments |
-| **Official Responses** | Government entities can post status updates and resolution timelines |
-| **Anonymous Reporting** | User-controlled privacy setting for anonymous submissions |
+|---|---|
+| **Issue reporting** | Photos, geocoded location, descriptions, optional anonymity |
+| **Safety hazards** | Hazard reporting with severity levels and community confirmation |
+| **Voting** | Upvote / downvote to surface the most urgent community concerns |
+| **Comments** | Threaded discussions on issues with media attachments |
+| **Official responses** | Government entities can post status updates and resolution timelines |
+| **Map picker** | Pin location on a Leaflet map; reverse-geocoded to street address |
+| **Heatmaps** | Geospatial visualisation of issue clusters and hotspots |
 
 ### Advanced
 
 | Feature | Description |
-|---------|-------------|
-| **Gamification** | Reputation points, achievements, trust levels, and leaderboards |
-| **AI Analysis** | Automatic categorisation, duplicate detection, and priority suggestions via OpenAI |
-| **Heatmaps** | Geospatial visualisation of issue clusters and hotspots |
-| **Health Reports** | City-level metrics including resolution rates and response times |
-| **Multi-language** | Localised UI in English (en-US) and Bulgarian (bg-BG) |
-| **OAuth** | Google, Microsoft, and Facebook login; JWT support for mobile clients |
-| **Audit Logging** | Comprehensive security and compliance audit trail |
-| **Rate Limiting** | DDoS protection with configurable limits per endpoint |
+|---|---|
+| **Gamification** | Reputation points, achievements, four-tier trust levels, leaderboards |
+| **AI analysis** | Automatic categorisation, duplicate detection, priority suggestion via OpenAI |
+| **Health reports** | City-level metrics: resolution rates, response times, hazard density |
+| **Multi-language** | Localised UI in English (`en`) and Bulgarian (`bg`) |
+| **OAuth / JWT** | Google sign-in for the web; JWT bearer tokens for the mobile app |
+| **Rate limiting** | Per-endpoint limits with sliding-window enforcement |
+| **Audit logging** | Comprehensive admin-action audit trail |
 
 ### Mobile (FixIt.Mobile)
 
 | Feature | Description |
-|---------|-------------|
-| **Native iOS & Android** | Built with .NET MAUI, single codebase for both platforms |
-| **Camera Integration** | Tap the centre dock button to photograph an issue and go straight to the report form |
-| **Bottom Navigation** | Custom tab bar with elevated centre camera button; camera only shown when logged in |
-| **JWT Auth** | Email/password login with tokens stored in platform SecureStorage |
-| **Issue Feed** | Browse and filter community issues from the mobile app |
-| **Offline-friendly** | API calls fail gracefully with user-visible error states |
+|---|---|
+| **Native iOS & Android** | One .NET MAUI codebase for both platforms |
+| **Map-based location picker** | Tap a Leaflet map to drop a pin; reverse geocoded to address + city |
+| **Auto-geolocation** | Asks for location permission on first Report-Issue visit, centres the map there |
+| **Multi-photo capture** | Take photos with the camera, pick from gallery, remove, up to 5 per report; photos are optional |
+| **Adaptive theming** | Light / dark / system theme preference with adaptive iOS status bar |
+| **JWT auth** | Email + password login with refresh tokens; tokens stored in platform SecureStorage |
+| **Offline-aware** | API calls fail gracefully with localised error states |
 
 ---
 
@@ -84,46 +87,47 @@ The platform is live at **[fixit-production-202d.up.railway.app](https://fixit-p
 ### Web Backend
 
 | Component | Technology |
-|-----------|------------|
+|---|---|
 | Framework | ASP.NET Core 9.0 |
 | Language | C# 13 |
 | Database | MongoDB Atlas |
 | Identity | ASP.NET Core Identity + AspNetCore.Identity.Mongo 9.0.0 |
-| Authentication | Cookie-based + JWT Bearer |
-| OAuth | Google, Microsoft, Facebook |
-| AI | OpenAI API (gpt-4o-mini) |
+| Authentication | Cookie session (web) + JWT Bearer (mobile/API) |
+| OAuth | Google |
+| AI | OpenAI API (`gpt-4o-mini`) |
 | Email | SMTP (SendGrid / Gmail) |
 | Driver | MongoDB.Driver 2.30.0 |
 
 ### Web Frontend
 
 | Component | Technology |
-|-----------|------------|
+|---|---|
 | UI | Razor Pages + MVC |
 | Maps | Leaflet.js + OpenStreetMap |
-| Styling | Custom CSS with design tokens + Bootstrap |
+| Styling | Custom CSS with design tokens + Bootstrap utilities |
 | JavaScript | Vanilla ES6+ modules |
 | Charts | Custom SVG/CSS charts |
 
 ### Mobile
 
 | Component | Technology |
-|-----------|------------|
+|---|---|
 | Framework | .NET MAUI 9.0 |
-| Platforms | iOS 14+, Android 10+ |
+| Platforms | iOS 15+, Android 5+ |
 | Architecture | MVVM with CommunityToolkit.Mvvm |
 | UI Toolkit | CommunityToolkit.Maui |
-| HTTP | Microsoft.Extensions.Http |
-| Storage | SecureStorage (JWT tokens) |
-| Camera | MediaPicker.Default (built-in MAUI API) |
+| HTTP | `Microsoft.Extensions.Http` with `DelegatingHandler` for auth + refresh |
+| Storage | `SecureStorage` (JWT + refresh tokens) |
+| Camera / gallery | `MediaPicker.Default` |
+| Geolocation | `Geolocation.Default` + `Permissions` |
+| Maps | Leaflet inside `WebView`, with a `fixit://` URL bridge for taps |
 
 ### DevOps
 
 | Component | Technology |
-|-----------|------------|
+|---|---|
 | Hosting | Railway |
 | Containerisation | Docker (multi-stage) |
-| Version Control | Git / GitHub |
 | API Docs | Swagger / OpenAPI |
 | Compression | Brotli + Gzip |
 | Caching | MemoryCache + OutputCache |
@@ -132,35 +136,34 @@ The platform is live at **[fixit-production-202d.up.railway.app](https://fixit-p
 
 ## Architecture
 
-FixIt follows a layered architecture with clear separation of concerns. The mobile app communicates with the same REST API used by the web frontend.
-
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                      Clients                                  │
-│   ┌─────────────────────┐     ┌─────────────────────────┐   │
-│   │   Web Browser        │     │   FixIt.Mobile (MAUI)   │   │
-│   │ (Razor Pages / MVC)  │     │   iOS  |  Android        │   │
-│   └──────────┬──────────┘     └────────────┬────────────┘   │
-└──────────────┼──────────────────────────────┼────────────────┘
-               │  HTTP/Cookie                  │  HTTP/JWT
-┌──────────────▼──────────────────────────────▼────────────────┐
-│                  Presentation Layer                            │
-│   Razor Pages  |  API Controllers  |  Admin Area              │
-└─────────────────────────────┬────────────────────────────────┘
-                               │
-┌─────────────────────────────▼────────────────────────────────┐
-│                  Services Layer                                │
-│   Issues | Safety | AI | Gamification | Auth | Analytics      │
-└─────────────────────────────┬────────────────────────────────┘
-                               │
-┌─────────────────────────────▼────────────────────────────────┐
-│                  Data Layer                                    │
-│   Repository<T>  |  MongoDbContext  |  MigrationRunner        │
-└─────────────────────────────┬────────────────────────────────┘
-                               │
-┌─────────────────────────────▼────────────────────────────────┐
-│                  MongoDB Atlas                                  │
-│   Issues | Users | Hazards | Comments | Votes | Media | ...   │
+│                          Clients                              │
+│  ┌─────────────────────┐         ┌──────────────────────────┐ │
+│  │  Web Browser         │         │  FixIt.Mobile (MAUI)     │ │
+│  │  Razor Pages / MVC   │         │  iOS  |  Android         │ │
+│  └──────────┬──────────┘         └────────────┬─────────────┘ │
+└─────────────┼──────────────────────────────────┼──────────────┘
+              │ HTTP / Cookie session             │ HTTP / JWT
+┌─────────────▼──────────────────────────────────▼──────────────┐
+│                      Presentation Layer                        │
+│  Razor Pages  |  REST API Controllers  |  Admin Area          │
+└──────────────────────────────┬────────────────────────────────┘
+                                │
+┌──────────────────────────────▼────────────────────────────────┐
+│                       Service Layer                            │
+│  Issues | Safety | AI | Gamification | Auth | Analytics |     │
+│  Media | Geocoding | Reputation                               │
+└──────────────────────────────┬────────────────────────────────┘
+                                │
+┌──────────────────────────────▼────────────────────────────────┐
+│                        Data Layer                              │
+│  Repository<T>  |  MongoDbContext  |  MigrationRunner         │
+└──────────────────────────────┬────────────────────────────────┘
+                                │
+┌──────────────────────────────▼────────────────────────────────┐
+│                      MongoDB Atlas                              │
+│  Issues | Users | Hazards | Comments | Votes | Media | ...    │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -170,44 +173,58 @@ FixIt follows a layered architecture with clear separation of concerns. The mobi
 
 ```
 FixIt/
-├── FixIt/                        # Web application
-│   ├── Areas/                    # Admin & Identity areas
-│   ├── Controllers/              # REST API controllers
-│   ├── Pages/                    # Razor pages
-│   ├── Middleware/               # Custom middleware
-│   ├── Resources/                # Localisation files (en-US, bg-BG)
-│   ├── wwwroot/                  # Static assets (CSS, JS, lib, uploads)
-│   ├── Program.cs                # Application entry point & DI setup
-│   └── appsettings.json
+├── FixIt/                          # Web application + REST API
+│   ├── Areas/                      # Admin & Identity areas
+│   ├── Controllers/                # REST API controllers
+│   │   ├── AnalysisController.cs       # AI analysis
+│   │   ├── AuditLogsController.cs
+│   │   ├── AuthController.cs           # /api/auth/* (JWT login, refresh)
+│   │   ├── GeocodingController.cs      # /api/geocoding/reverse
+│   │   ├── HealthController.cs         # Liveness / readiness
+│   │   ├── IssuesController.cs         # CRUD + /api/issues/{id}/media
+│   │   ├── MediaController.cs          # Media stream / download
+│   │   ├── SafetyController.cs
+│   │   ├── SuggestionsController.cs
+│   │   ├── TagsController.cs
+│   │   └── UsersController.cs
+│   ├── Extensions/                 # AuthExtensions, IdentityExtensions, ...
+│   ├── Pages/                      # Razor pages (Web UI)
+│   ├── Middleware/                 # Custom middleware
+│   ├── Resources/                  # Localisation files (en, bg)
+│   ├── wwwroot/                    # Static assets (CSS, JS, lib, uploads)
+│   └── Program.cs                  # Entry point & DI composition
 │
-├── FixIt.Mobile/                 # .NET MAUI mobile app (iOS & Android)
-│   ├── Views/                    # XAML pages
-│   │   ├── HomePage.xaml
-│   │   ├── IssuesPage.xaml
-│   │   ├── ReportIssuePage.xaml  # Camera → report flow
-│   │   └── LoginPage.xaml
-│   ├── ViewModels/               # MVVM view models
-│   │   ├── HomeViewModel.cs
-│   │   ├── IssuesViewModel.cs
-│   │   ├── ReportIssueViewModel.cs
-│   │   └── LoginViewModel.cs
+├── FixIt.Mobile/                   # .NET MAUI mobile app (iOS & Android)
+│   ├── Views/                      # XAML pages
+│   ├── ViewModels/                 # MVVM view models
 │   ├── Services/
-│   │   ├── ApiService.cs         # HTTP client wrapper for Railway API
-│   │   └── AuthService.cs        # JWT login, SecureStorage
-│   ├── Models/
-│   │   └── Issue.cs              # Mobile DTO
+│   │   ├── ApiService.cs               # HTTP client wrapper for the REST API
+│   │   ├── AuthService.cs              # JWT login / refresh / SecureStorage
+│   │   ├── MapHtmlBuilder.cs           # Leaflet HTML for issue + picker maps
+│   │   ├── ThemePreferenceService.cs   # Light / dark / system theming
+│   │   └── Contracts/
+│   ├── Models/                     # Mobile-side DTOs (PhotoAttachment, ...)
+│   ├── Controls/                   # Reusable XAML controls
 │   ├── Platforms/
-│   │   └── iOS/
-│   │       └── Info.plist        # Camera & photo permissions
-│   ├── AppShell.xaml             # Shell with custom bottom tab bar
-│   └── MauiProgram.cs            # DI, HttpClient, toolkit setup
+│   │   ├── iOS/
+│   │   │   ├── Info.plist              # Camera, photo, location strings
+│   │   │   ├── Entitlements.plist      # keychain-access-groups (device builds)
+│   │   │   └── StatusBar.iOS.cs        # Adaptive status-bar style
+│   │   └── Android/
+│   │       └── AndroidManifest.xml     # Camera + fine/coarse location permissions
+│   ├── Resources/
+│   │   ├── Images/                     # SVG sources → MAUI-generated PNGs
+│   │   └── Strings/AppStrings.[bg.]resx
+│   ├── AppShell.xaml               # Bottom tab bar with elevated centre FAB
+│   └── MauiProgram.cs              # DI, HttpClient, toolkit setup
 │
-├── FixIt.Models/                 # Domain models & enums (shared)
-├── FixIt.Services/               # Business logic (shared)
-├── FixIt.Data/                   # Data access — repositories, migrations
-├── FixIt.ViewModels/             # DTOs and view models (web)
-├── FixIt.Tests/                  # Unit & integration tests
-├── Dockerfile                    # Multi-stage Docker build
+├── FixIt.Mobile.Tests/             # xUnit tests for the mobile project
+├── FixIt.Models/                   # Domain models & enums (shared)
+├── FixIt.Services/                 # Business logic (shared)
+├── FixIt.Data/                     # Repositories, migrations, MongoDB context
+├── FixIt.ViewModels/               # DTOs, responses, MapperExtensions
+├── FixIt.Tests/                    # Backend unit & integration tests
+├── Dockerfile                      # Multi-stage Docker build
 └── FixIt.sln
 ```
 
@@ -218,31 +235,31 @@ FixIt/
 ### Prerequisites
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [MongoDB](https://www.mongodb.com/try/download/community) (v6.0+) or a MongoDB Atlas account
+- [MongoDB](https://www.mongodb.com/try/download/community) (v6.0+) — local or MongoDB Atlas
 - [Git](https://git-scm.com/)
-- macOS + Xcode (for iOS mobile development)
+- macOS + Xcode (for iOS mobile development) — optional
+- Android SDK (for Android mobile development) — optional
 
 ### Web App
 
 ```bash
-# 1. Clone
 git clone https://github.com/denjiyy/FixIt.git
 cd FixIt
 
-# 2. Configure environment
+# Configure environment
 cp .env.example .env
-# Edit .env with your credentials (see Configuration section)
+# Edit .env with your MongoDB URI, JWT secret, OAuth, etc. (see Configuration)
 
-# 3. Restore & run
+# Restore & run
 dotnet restore
-cd FixIt
-dotnet run
-
-# 4. Open
-# Web:     http://localhost:5092
-# API:     http://localhost:5092/api
-# Swagger: http://localhost:5092/swagger
+dotnet run --project FixIt
 ```
+
+Once running:
+
+- Web:     http://localhost:5092
+- API:     http://localhost:5092/api
+- Swagger: http://localhost:5092/swagger
 
 ### Development Admin Account
 
@@ -262,35 +279,32 @@ Add to `appsettings.Development.json`:
 }
 ```
 
+The admin account is created on startup with the `Admin` role when the seed flag is enabled.
+
 ---
 
 ## Mobile App
 
-### Overview
-
 `FixIt.Mobile` is a .NET MAUI app targeting iOS and Android. It talks to the same Railway-hosted REST API as the web app using JWT Bearer tokens.
 
-### Key UX: Camera → Report Flow
+### Report-Issue flow
 
-1. User opens the app and logs in.
-2. A prominent circular camera button appears in the centre of the bottom navigation dock.
-3. Tapping it immediately opens the device camera.
-4. After a photo is captured it is passed directly to the Report Issue page — the user never has to re-select it.
-5. The user fills in title, description, category, and location, then submits.
-
-If the user is not logged in, the centre button shows a lock icon and tapping it navigates to the login screen instead.
+1. The user opens **Report Issue** from the elevated centre FAB.
+2. The app requests location permission. If granted it centres the Leaflet map on the device's coordinates, otherwise it falls back to Sofia and asks the user to tap the map.
+3. Each tap on the map drops the pin, updates Lat/Lon, and reverse-geocodes to fill the address and city automatically.
+4. The native camera launches once per session so the user can photograph the issue. Cancelling returns to the form without losing context.
+5. The photo tile lets the user **Take Photo**, **Pick from Gallery**, **Remove**, or skip photos entirely — photos are optional, capped at five.
+6. Submitting first POSTs `/api/issues` (JSON) and then uploads each photo to `/api/issues/{id}/media` (multipart). Partial-upload failures surface as a warning; the issue itself is created regardless.
 
 ### Running on iOS Simulator
 
 ```bash
-# Build for iOS
 dotnet build FixIt.Mobile/FixIt.Mobile.csproj -f net9.0-ios -c Debug
-
-# Run on simulator (from Visual Studio for Mac or Rider)
-# Select an iOS simulator target and press Run
 ```
 
-Xcode must be installed. A free Apple ID is sufficient for simulator builds — a paid Developer account is only required for device deployment.
+Or launch the iOS simulator target from Visual Studio for Mac / Rider / VS Code's MAUI integration. Xcode must be installed; a free Apple ID is sufficient for simulator builds.
+
+The simulator skips the `Entitlements.plist` keychain-access-group (it would otherwise require a provisioning profile). On device, the entitlement is applied automatically and SecureStorage uses the bundle keychain group.
 
 ### Running on Android
 
@@ -298,9 +312,11 @@ Xcode must be installed. A free Apple ID is sufficient for simulator builds — 
 dotnet build FixIt.Mobile/FixIt.Mobile.csproj -f net9.0-android -c Debug
 ```
 
+Requires the Android SDK to be installed and `AndroidSdkDirectory` set (Visual Studio / Rider handle this automatically).
+
 ### Authentication
 
-The mobile app authenticates against `/api/auth/login` and stores the returned JWT in `SecureStorage`. All subsequent API calls include the token as a Bearer header. Tokens expire after 30 minutes; a refresh endpoint is available at `/api/auth/refresh`.
+The mobile app authenticates against `/api/auth/login` and stores the access and refresh tokens in platform `SecureStorage`. An `AuthHeaderHandler` attaches the access token as a Bearer header on every API call, transparently refreshes it on a 401, and signs the user out if the refresh fails. Login fails cleanly with a localised error if token persistence ever fails — the user is never left in a phantom logged-in state.
 
 ---
 
@@ -309,21 +325,21 @@ The mobile app authenticates against `/api/auth/login` and stores the returned J
 ### Environment Variables
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+|---|---|---|
 | `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://user:pass@cluster.mongodb.net/` |
 | `MONGODB_DATABASE` | Database name | `fixit` |
 | `JWT_SECRET_KEY` | JWT signing key (min 32 chars) | `your-64-char-random-secret` |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth secret | `GOCSPX-...` |
-| `OPENAI_API_KEY` | OpenAI API key | `<openai-api-key>` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret | `GOCSPX-…` |
+| `OPENAI_API_KEY` | OpenAI API key (optional — disables AI if unset) | `<openai-api-key>` |
 | `AllowedHosts` | Accepted hostnames | `*` |
 | `SMTP_HOST` | SMTP server | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP port | `587` |
 | `SMTP_USERNAME` | SMTP username | `noreply@fixit.app` |
-| `SMTP_PASSWORD` | SMTP password | `...` |
+| `SMTP_PASSWORD` | SMTP password | `…` |
 | `DATA_PROTECTION_KEY_RING_PATH` | Key storage path | `/app/data-protection-keys` |
 
-### appsettings.json
+### appsettings.json (excerpt)
 
 ```json
 {
@@ -340,6 +356,7 @@ The mobile app authenticates against `/api/auth/login` and stores the returned J
   "Media": {
     "StoragePath": "wwwroot/uploads",
     "MaxFileSizeBytes": 5242880,
+    "MaxVideoFileSizeBytes": 104857600,
     "AllowedExtensions": [".jpg", ".jpeg", ".png", ".mp4", ".webm"]
   },
   "OpenAI": {
@@ -363,46 +380,65 @@ The mobile app authenticates against `/api/auth/login` and stores the returned J
 ### Authentication
 
 | Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/auth/login/{provider}` | Initiate OAuth login | No |
-| `GET` | `/api/auth/signin-callback` | OAuth callback | No |
+|---|---|---|---|
+| `POST` | `/api/auth/login` | Email + password login (JWT) | No |
+| `POST` | `/api/auth/register` | New user registration | No |
+| `POST` | `/api/auth/refresh` | Refresh access token | No |
 | `POST` | `/api/auth/logout` | Sign out | Yes |
-| `POST` | `/api/auth/refresh` | Refresh JWT | No |
 | `GET` | `/api/auth/user` | Current user info | Yes |
 
 ### Issues
 
 | Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/issues` | Create issue | Yes |
-| `GET` | `/api/issues/{id}` | Get issue | No |
+|---|---|---|---|
+| `POST` | `/api/issues` | Create issue (JSON: title, description, lat, lon, cityId, address) | Yes |
+| `POST` | `/api/issues/{id}/media` | Upload a media file (`multipart/form-data`, field `file`) | Yes (reporter or admin) |
+| `GET` | `/api/issues/{id}` | Get issue details | No |
 | `GET` | `/api/issues/city/{cityId}` | Issues by city | No |
 | `POST` | `/api/issues/city/{cityId}/search` | Search issues | No |
-| `GET` | `/api/issues/my-issues` | My issues | Yes |
-| `PUT` | `/api/issues/{id}/status` | Update status | Mod+ |
-| `POST` | `/api/issues/{id}/vote` | Vote | Yes |
+| `GET` | `/api/issues/my-issues` | Current user's issues | Yes |
+| `PUT` | `/api/issues/{id}/status` | Update status | Mod / Admin |
+| `PUT` | `/api/issues/{id}/priority` | Update priority | Mod / Admin |
+| `POST` | `/api/issues/{id}/vote` | Vote up / down | Yes |
 | `DELETE` | `/api/issues/{id}/vote` | Remove vote | Yes |
-| `DELETE` | `/api/issues/{id}` | Delete | Owner/Admin |
+| `DELETE` | `/api/issues/{id}` | Soft-delete | Owner / Admin |
 | `POST` | `/api/issues/{id}/comments` | Add comment | Yes |
 | `GET` | `/api/issues/{id}/comments` | Get comments | No |
+| `POST` | `/api/issues/{id}/comments/{commentId}/like` | Like comment | Yes |
+| `POST` | `/api/issues/{id}/comments/{commentId}/dislike` | Dislike comment | Yes |
+
+`IssueDetailResponse` and `IssueSummaryResponse` both expose `latitude` and `longitude` derived from the entity's GeoJSON point, so map renderers don't need to look up the location separately.
 
 ### Safety
 
 | Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
+|---|---|---|---|
 | `GET` | `/api/safety/nearby-hazards` | Nearby hazards | No |
 | `GET` | `/api/safety/critical-hazards` | Critical hazards | No |
-| `POST` | `/api/safety/report` | Report hazard | Yes |
-| `POST` | `/api/safety/{id}/confirm` | Confirm hazard | Yes |
-| `POST` | `/api/safety/{id}/resolve` | Resolve hazard | Admin |
+| `POST` | `/api/safety/report` | Report a hazard | Yes |
+| `POST` | `/api/safety/{id}/confirm` | Confirm a hazard | Yes |
+| `POST` | `/api/safety/{id}/resolve` | Resolve a hazard | Admin |
+
+### Geocoding
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/geocoding/reverse?latitude={lat}&longitude={lng}` | Address + city for a coordinate; cached server-side | No |
 
 ### AI
 
 | Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/analysis/analyze/{issueId}` | Analyse issue | No |
-| `POST` | `/api/analysis/issue-draft-suggestions` | Draft suggestions | Yes |
-| `POST` | `/api/suggestions/pending` | Pending suggestions | Admin |
+|---|---|---|---|
+| `POST` | `/api/analysis/analyze/{issueId}` | Analyse an issue | No |
+| `POST` | `/api/analysis/issue-draft-suggestions` | Title + description → category/priority/department draft | Yes |
+| `GET` | `/api/issues/{id}/analysis` | Poll latest analysis (204 while pending) | No |
+| `POST` | `/api/suggestions/pending` | Pending moderation suggestions | Admin |
+
+### Media
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/media/{id}` | Stream a media file (image / video) | No |
 
 Full interactive docs available at `/swagger` on any running instance.
 
@@ -413,31 +449,33 @@ Full interactive docs available at `/swagger` on any running instance.
 ### Collections
 
 | Collection | Description |
-|------------|-------------|
-| `users` | ApplicationUser — email, roles, reputation |
-| `issues` | Issue reports with GeoJSON location |
+|---|---|
+| `users` | `ApplicationUser` — email, roles, reputation, anonymous-reporting flag |
+| `issues` | Issue reports with GeoJSON location + optional address |
 | `hazards` | Safety hazards with severity and confirmation count |
 | `comments` | Threaded comments on issues |
-| `votes` | Issue votes (unique compound index on IssueId + UserId) |
-| `media` | Uploaded file metadata |
+| `votes` | Issue votes (unique compound index on `IssueId + UserId`) |
+| `media` | Uploaded media metadata (storage path / Cloudinary URL) |
+| `media_references` | Backlinks from media → issue or comment |
 | `tags` | Issue tags with usage counts |
 | `cities` | City configurations with coordinates |
-| `user_reputations` | Reputation profiles |
+| `user_reputations` | Per-user reputation profiles |
 | `reputation_transactions` | Full points history |
-| `leaderboards` | Weekly/monthly leaderboard snapshots |
+| `leaderboards` | Weekly / monthly leaderboard snapshots |
 | `issue_analyses` | AI analysis results |
-| `audit_logs` | Admin action audit trail |
+| `audit_logs` | Admin-action audit trail |
 
 ### Key Relationships
 
 ```
-ApplicationUser (1) → (M) Issue
-ApplicationUser (1) → (1) UserReputation
-Issue           (1) → (M) Comment
-Issue           (1) → (M) Vote
-Issue           (1) → (1) IssueAnalysis
-City            (1) → (M) Issue
-City            (1) → (M) Hazard
+ApplicationUser (1) ─→ (M) Issue
+ApplicationUser (1) ─→ (1) UserReputation
+Issue           (1) ─→ (M) Comment
+Issue           (1) ─→ (M) Vote
+Issue           (1) ─→ (1) IssueAnalysis
+Issue           (1) ─→ (M) MediaReference ─→ (1) Media
+City            (1) ─→ (M) Issue
+City            (1) ─→ (M) Hazard
 ```
 
 ---
@@ -447,7 +485,7 @@ City            (1) → (M) Hazard
 ### Trust Levels
 
 | Level | Name | Points | Permissions |
-|-------|------|--------|-------------|
+|---|---|---|---|
 | 0 | New | 0–10 | Basic reporting |
 | 1 | Active | 11–50 | Increased vote weight |
 | 2 | Trusted | 51–150 | Priority vote weight, profile badge |
@@ -456,7 +494,7 @@ City            (1) → (M) Hazard
 ### Reputation Points
 
 | Action | Points |
-|--------|--------|
+|---|---|
 | Report a new issue | +5 |
 | Issue confirmed by community | +3 |
 | Post a comment | +2 |
@@ -467,7 +505,7 @@ City            (1) → (M) Hazard
 ### Achievements
 
 | Achievement | Requirement | Points |
-|-------------|-------------|--------|
+|---|---|---|
 | FirstReporter | Report first issue | 10 |
 | HelpfulCommenter | Post 10 comments | 15 |
 | CommunityHelper | Receive 50 upvotes | 25 |
@@ -475,89 +513,101 @@ City            (1) → (M) Hazard
 | CivicContributor | Reach Trust Level 2 | 20 |
 | CommunityChampion | Reach Trust Level 3 | 50 |
 | CivicLeader | Top of weekly leaderboard | 40 |
-| AccurateReporter | 90%+ issues confirmed | 35 |
+| AccurateReporter | 90 %+ issues confirmed | 35 |
 | VerifiedCitizen | Verify email + phone | 15 |
 
 ---
 
 ## AI Features
 
-The AI system runs automatically on new issue reports:
+When OpenAI is enabled, the AI system runs automatically on new issue reports via a background queue:
 
-- **Categorisation** — Infrastructure, Public Safety, Environmental, etc.
+- **Categorisation** — Infrastructure, Public Safety, Environmental Health, Parks, Transportation, Utilities, Sanitation, Public Health, Other
 - **Priority suggestion** — Low / Medium / High / Critical
-- **Duplicate detection** — compares against existing open issues
+- **Duplicate detection** — compares against existing open issues nearby
 - **Keyword extraction** — improves searchability
 - **Tag suggestions** — drawn from the live tag database
 
 Additional AI capabilities:
 
 | Feature | Description |
-|---------|-------------|
+|---|---|
 | `SuggestIssueDraft` | Category, priority, and department from title + description |
-| `SummarizeIssueThread` | Summary of issue and all comments (streaming) |
+| `SummarizeIssueThread` | Summary of the issue and all comments (streaming) |
 | `GenerateHazardInsight` | Pattern analysis across hazard clusters |
-| `TranslateIssueFilter` | Natural language → structured filter conversion |
+| `TranslateIssueFilter` | Natural-language query → structured filter |
 
-Deterministic fallbacks are used when the OpenAI API is unavailable.
+Deterministic fallbacks are used when the OpenAI API is unavailable or disabled.
 
 ---
 
 ## Security
 
-### Authentication Flows
+### Authentication flows
 
-- **Web:** Cookie-based session with CSRF protection
-- **Mobile/API:** JWT Bearer with 30-minute expiry and 7-day refresh tokens
-- **OAuth:** Google, Microsoft, Facebook via standard OAuth 2.0 callbacks
+- **Web** — Cookie-based session with anti-forgery tokens
+- **Mobile / API** — JWT Bearer (30-minute access token + 7-day refresh) with transparent refresh in the mobile client
+- **OAuth** — Google via standard OAuth 2.0 callback
 
-### Rate Limiting
+### Token persistence (mobile)
+
+The mobile `AuthService` writes both tokens to platform `SecureStorage` on login. If either write fails, the login is rolled back and the user sees a clear `Login_Error_Persistence` message — there is no "phantom logged-in" state. On iOS device builds, the bundle's `Entitlements.plist` grants the keychain-access-group needed for SecureStorage to succeed.
+
+### Rate limiting
 
 | Endpoint group | Limit |
-|----------------|-------|
+|---|---|
 | Auth endpoints | 5 req / 15 min |
 | General API | 60 req / min |
 | Reporting & analytics | 30 req / min |
 | File uploads | 10 req / min |
 
-### Security Headers
+### Security headers
 
 All responses include `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, and a configurable `Content-Security-Policy`.
 
-### Audit Logging
+### Audit logging
 
-Every admin action is logged with event type, resource, actor, IP address, user agent, and before/after values.
+Every admin action is logged with event type, resource, actor, IP address, user agent, and before / after values.
 
 ---
 
 ## Testing
 
 ```bash
-# Run all tests
-dotnet test
-
-# Run a specific project
+# Backend (unit + integration)
 dotnet test FixIt.Tests/FixIt.Tests.csproj
+
+# Mobile (view models, services, converters)
+dotnet test FixIt.Mobile.Tests/FixIt.Mobile.Tests.csproj
+
+# Everything in the solution
+dotnet test
 ```
 
-### Test Structure
+### Test layout
 
 ```
-FixIt.Tests/
-├── Services/       # Unit tests — IssueService, CivicAiService, JwtTokenService, ...
-├── Controllers/    # Controller tests
-├── Data/           # Repository tests
-├── Middleware/     # Middleware tests
-└── Security/       # Security tests
+FixIt.Tests/                    # Backend
+├── Services/                   # IssueService, CivicAiService, JwtTokenService, ...
+├── Controllers/                # Controller tests
+├── Data/                       # Repository tests
+├── Middleware/                 # Middleware tests
+└── Security/                   # Security tests
+
+FixIt.Mobile.Tests/             # Mobile (plain net9.0 — no MAUI framework)
+├── ViewModels/                 # Report, Issues, Home, Login view models
+├── Services/                   # Localization, converters
+└── TestSupport/                # MAUI type stubs so the VMs compile under net9.0
 ```
 
-A running MongoDB instance is required. The test database is isolated from development data.
+The backend tests use Moq + xUnit and run against in-memory mocks of `IRepository<T>`. A running MongoDB instance is **not** required for the test suite — only the development app needs one.
 
 ---
 
 ## Deployment
 
-### Docker (Recommended)
+### Docker (recommended for self-hosting)
 
 ```bash
 # Development
@@ -569,26 +619,27 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml \
   --env-file .env.production up -d
 ```
 
-### Railway
+### Railway (current production)
 
-The production deployment runs on Railway with MongoDB Atlas.
+The live deployment runs on Railway with MongoDB Atlas.
 
-Key Railway environment variables to set:
+Required Railway environment variables:
 
 ```
-MONGODB_URI          = mongodb+srv://...
-MONGODB_DATABASE     = fixit
-JWT_SECRET_KEY       = <64-char random secret>
-GOOGLE_CLIENT_ID     = ...
-GOOGLE_CLIENT_SECRET = ...
-AllowedHosts         = *
+MONGODB_URI            = mongodb+srv://...
+MONGODB_DATABASE       = fixit
+JWT_SECRET_KEY         = <64-char random secret>
+GOOGLE_CLIENT_ID       = ...
+GOOGLE_CLIENT_SECRET   = ...
+OPENAI_API_KEY         = <openai-api-key>        # optional
+AllowedHosts           = *
 ASPNETCORE_ENVIRONMENT = Production
 ```
 
-### Production Checklist
+### Production checklist
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`
-- [ ] JWT_SECRET_KEY is at least 64 random characters
+- [ ] `JWT_SECRET_KEY` is at least 64 random characters
 - [ ] MongoDB Atlas IP Access List includes `0.0.0.0/0` or Railway egress IPs
 - [ ] Google OAuth credentials set
 - [ ] `AllowedHosts=*` (or your specific domain)
@@ -596,7 +647,7 @@ ASPNETCORE_ENVIRONMENT = Production
 - [ ] Rate limiting enabled
 - [ ] Audit logging active
 
-### Operational Scripts
+### Operational scripts
 
 ```bash
 # Preflight validation
@@ -612,25 +663,27 @@ scripts/ops/smoke.sh https://fixit-production-202d.up.railway.app
 FIXIT_ENV_FILE=.env.production scripts/ops/mongo-backup.sh ./backups
 ```
 
-For full documentation see:
+### Further docs
 
 - [`DOCKER.md`](./DOCKER.md) — container setup and troubleshooting
-- [`SECRETS.md`](./SECRETS.md) — secrets management for all environments
+- [`SECRETS.md`](./SECRETS.md) — secrets management across environments
 - [`PRODUCTION_READINESS.md`](./PRODUCTION_READINESS.md) — implementation status
-- [`BETA_RELEASE_CHECKLIST.md`](./BETA_RELEASE_CHECKLIST.md) — go/no-go checklist
+- [`BETA_RELEASE_CHECKLIST.md`](./BETA_RELEASE_CHECKLIST.md) — go / no-go checklist
 - [`.github/CI-CD.md`](./.github/CI-CD.md) — GitHub Actions workflows
+- [`MIGRATIONS.md`](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md) — database migration guide
 
 ---
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'Add my feature'`
-4. Push: `git push origin feature/my-feature`
-5. Open a Pull Request
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/my-feature`.
+3. Run the test suite (`dotnet test`) before pushing.
+4. Commit: `git commit -m "Add my feature"`.
+5. Push: `git push origin feature/my-feature`.
+6. Open a Pull Request.
 
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for coding standards, testing requirements, and the PR process. Database schema changes require a migration — see [`MIGRATIONS.md`](./FixIt.Data/Infrastructure/Migrations/MIGRATIONS.md).
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for coding standards, testing requirements, and the PR process. Database schema changes require a migration — see the migrations guide linked above.
 
 ---
 

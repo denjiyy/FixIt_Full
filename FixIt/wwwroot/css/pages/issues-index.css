@@ -43,17 +43,16 @@
     margin-bottom: var(--space-5);
     padding: var(--space-4);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--raw-rgba-125-211-252-0-3);
-    background: linear-gradient(135deg, var(--raw-rgba-239-246-255-0-96), var(--raw-rgba-255-255-255-0-96));
+    border: 1px solid var(--primary-200);
+    background: var(--primary-50);
 }
 
 .issues-toolbar__ai-label {
     margin: 0;
-    color: var(--gray-600);
+    color: var(--primary-700);
     font-size: var(--text-xs);
-    font-weight: var(--font-bold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.04em;
 }
 
 .issues-toolbar__ai-row {
@@ -105,11 +104,10 @@
 
 .issues-field span,
 .issues-toolbar__sort-label {
-    color: var(--gray-500);
+    color: var(--gray-600);
     font-size: var(--text-xs);
-    font-weight: var(--font-bold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.04em;
 }
 
 .issues-field input,
@@ -203,20 +201,20 @@
 }
 
 .issues-active-filters__label {
-    color: var(--gray-500);
+    color: var(--gray-600);
     font-size: var(--text-xs);
-    font-weight: var(--font-bold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.04em;
 }
 
 .issues-active-filters__chip {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    padding: 0.45rem 0.75rem;
+    padding: 0.35rem 0.75rem;
     border-radius: var(--radius-full);
-    background: var(--raw-rgba-224-242-254-0-92);
+    background: var(--white);
+    border: 1px solid var(--primary-200);
     color: var(--primary-700);
     font-size: var(--text-xs);
     font-weight: var(--font-semibold);

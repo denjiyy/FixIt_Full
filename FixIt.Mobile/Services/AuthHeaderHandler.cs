@@ -97,7 +97,7 @@ public class AuthHeaderHandler : DelegatingHandler
         {
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
+                await Shell.Current.GoToAsync(AppConstants.RouteAccountTabAbsolute);
             });
         }
     }

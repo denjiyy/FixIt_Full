@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.HeatmapPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:HeatmapViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Heatmap_Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <VerticalStackLayout Grid.Row="0" Padding="20,20,20,10" Spacing="4">
+            <Label Text="{local:Localize Key=Heatmap_Title}" Style="{StaticResource HeadlineMedium}" />
+            <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" />
+        </VerticalStackLayout>
+
+        <Grid Grid.Row="1" Margin="20,0">
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16">
+                <WebView Source="{Binding MapSource}" />
+            </Border>
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                               VerticalOptions="Center" HorizontalOptions="Center" />
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="12"
+              Padding="20,12,20,20">
+            <Border Grid.Column="0" Style="{StaticResource StatCard}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{local:Localize Key=Health_OpenIssues}" Style="{StaticResource LabelSmall}" />
+                    <Label Text="{Binding OpenIssues}" FontSize="Title" FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource StatCard}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{local:Localize Key=Health_ResolvedIssues}" Style="{StaticResource LabelSmall}" />
+                    <Label Text="{Binding ResolvedIssues}" FontSize="Title" FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource StatCard}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{local:Localize Key=Health_TotalIssues}" Style="{StaticResource LabelSmall}" />
+                    <Label Text="{Binding TotalIssues}" FontSize="Title" FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

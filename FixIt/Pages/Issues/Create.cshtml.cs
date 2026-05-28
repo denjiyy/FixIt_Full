@@ -155,7 +155,8 @@ public class CreateIssueModel : PageModel
                 isAnonymous: isAnonymous,
                 priority: Input.Priority,
                 category: Input.Category,
-                department: string.IsNullOrWhiteSpace(Input.Department) ? null : Input.Department.Trim()
+                department: string.IsNullOrWhiteSpace(Input.Department) ? null : Input.Department.Trim(),
+                address: Input.Address
             );
 
             _logger.LogInformation("Created issue {IssueId} by user {UserId}", issue.Id, userId);

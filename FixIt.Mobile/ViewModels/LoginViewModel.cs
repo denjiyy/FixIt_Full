@@ -166,6 +166,12 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         await Shell.Current.GoToAsync("register");
     }
 
+    [RelayCommand]
+    private async Task GoToForgotPasswordAsync()
+    {
+        await Shell.Current.GoToAsync(Constants.AppConstants.RouteForgotPassword);
+    }
+
     private void CancelAndRenew()
     {
         _cts.Cancel();

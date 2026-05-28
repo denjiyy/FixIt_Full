@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.EditIssuePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:EditIssueViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Edit_Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20,28,20,40" Spacing="16">
+            <Label Text="{local:Localize Key=Edit_Title}"
+                   Style="{StaticResource HeadlineMedium}" />
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="{local:Localize Key=Report_Title}" Style="{StaticResource LabelSmall}" />
+                <Border Style="{StaticResource EntryCard}">
+                    <Entry Text="{Binding Title}" MaxLength="200" />
+                </Border>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="{local:Localize Key=Report_Description}" Style="{StaticResource LabelSmall}" />
+                <Border Style="{StaticResource EntryCard}">
+                    <Editor Text="{Binding Description}" MaxLength="5000"
+                            HeightRequest="160" AutoSize="TextChanges" />
+                </Border>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Spacing="6">
+                <Label Text="{local:Localize Key=Report_Address}" Style="{StaticResource LabelSmall}" />
+                <Border Style="{StaticResource EntryCard}">
+                    <Entry Text="{Binding Address}" MaxLength="300" />
+                </Border>
+            </VerticalStackLayout>
+
+            <Button Text="{local:Localize Key=Edit_Save}"
+                    Style="{StaticResource CompactPrimaryButton}"
+                    Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
+                    Margin="0,8,0,0" />
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

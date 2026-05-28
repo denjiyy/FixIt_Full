@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.CitiesPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:CitiesViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=Cities_Title}">
+
+    <Grid RowDefinitions="Auto,*">
+        <Label Grid.Row="0" Text="{local:Localize Key=Cities_Title}"
+               Style="{StaticResource HeadlineMedium}"
+               Padding="20,24,20,10" />
+
+        <CollectionView Grid.Row="1"
+                         ItemsSource="{Binding Cities}"
+                         SelectionMode="None"
+                         Margin="20,0">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout>
+                    <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                                       Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                       Margin="0,40,0,0" />
+                    <controls:EmptyStateView IsVisible="{Binding IsEmpty}"
+                                             IconSource="map.png"
+                                             Title="{local:Localize Key=Cities_Empty}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:CityInfo">
+                    <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
+                        <Grid ColumnDefinitions="56,*" ColumnSpacing="14">
+                            <Border WidthRequest="56" HeightRequest="56"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 12">
+                                <Label Text="{Binding Initials}"
+                                       TextColor="{StaticResource White}"
+                                       FontSize="Title" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                <Label Text="{Binding Name}" Style="{StaticResource TitleMedium}" />
+                                <Label Text="{Binding Country}" Style="{StaticResource LabelSmall}" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="{Binding IssueCount, StringFormat='{0} issues'}"
+                                           Style="{StaticResource LabelSmall}"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="8" Margin="0,4,0,0">
+                                    <Label Text="{local:Localize Key=Cities_ViewIssues}"
+                                           FontSize="Caption" FontAttributes="Bold"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:CitiesViewModel}}, Path=NavigateToCityCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                    <Label Text="{local:Localize Key=Health_Title}"
+                                           FontSize="Caption" FontAttributes="Bold"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:CitiesViewModel}}, Path=ViewHealthReportCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

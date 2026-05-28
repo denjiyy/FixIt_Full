@@ -61,6 +61,11 @@ namespace FixIt.Mobile.ViewModels
         {
             return Task.FromResult(true);
         }
+
+        public Task<string?> DisplayActionSheet(string title, string? cancel, string? destruction, params string[] buttons)
+        {
+            return Task.FromResult<string?>(cancel);
+        }
     }
 
     public static class MainThread
@@ -100,15 +105,109 @@ namespace FixIt.Mobile.ViewModels
         {
             return Task.FromResult<FileResult?>(null);
         }
+
+        public Task<FileResult?> PickPhotoAsync(MediaPickerOptions options)
+        {
+            return Task.FromResult<FileResult?>(null);
+        }
     }
 
     public sealed class FileResult
     {
         public string FileName { get; init; } = "issue-photo.jpg";
+        public string ContentType { get; init; } = "image/jpeg";
 
         public Task<Stream> OpenReadAsync()
         {
             return Task.FromResult<Stream>(new MemoryStream([1, 2, 3]));
         }
+    }
+
+    public sealed class HtmlWebViewSource
+    {
+        public string Html { get; set; } = string.Empty;
+    }
+
+    public sealed class Location
+    {
+        public double Latitude { get; init; }
+        public double Longitude { get; init; }
+    }
+
+    public enum GeolocationAccuracy
+    {
+        Lowest, Low, Medium, High, Best
+    }
+
+    public sealed class GeolocationRequest
+    {
+        public GeolocationRequest(GeolocationAccuracy accuracy, TimeSpan timeout)
+        {
+            Accuracy = accuracy;
+            Timeout = timeout;
+        }
+
+        public GeolocationAccuracy Accuracy { get; }
+        public TimeSpan Timeout { get; }
+    }
+
+    public sealed class Geolocation
+    {
+        public static Geolocation Default { get; } = new();
+
+        public Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken ct = default)
+        {
+            return Task.FromResult<Location?>(null);
+        }
+    }
+
+    public class FeatureNotSupportedException : Exception
+    {
+        public FeatureNotSupportedException() : base() { }
+    }
+
+    public class FeatureNotEnabledException : Exception
+    {
+        public FeatureNotEnabledException() : base() { }
+    }
+
+    public class PermissionException : Exception
+    {
+        public PermissionException() : base() { }
+    }
+
+    public enum PermissionStatus
+    {
+        Unknown, Denied, Disabled, Granted, Restricted
+    }
+
+    public abstract class BasePermission
+    {
+        public virtual Task<PermissionStatus> CheckStatusAsync() => Task.FromResult(PermissionStatus.Granted);
+        public virtual Task<PermissionStatus> RequestAsync() => Task.FromResult(PermissionStatus.Granted);
+    }
+
+    public static class Permissions
+    {
+        public sealed class LocationWhenInUse : BasePermission { }
+
+        public static Task<PermissionStatus> CheckStatusAsync<T>() where T : BasePermission, new()
+            => new T().CheckStatusAsync();
+
+        public static Task<PermissionStatus> RequestAsync<T>() where T : BasePermission, new()
+            => new T().RequestAsync();
+    }
+}
+
+namespace FixIt.Mobile.Services
+{
+    using FixIt.Mobile.Models;
+    using FixIt.Mobile.ViewModels;
+
+    public static class MapHtmlBuilder
+    {
+        public static HtmlWebViewSource BuildIssueMap(Issue issue) => new();
+        public static HtmlWebViewSource BuildHazardMap(IEnumerable<SafetyHazard> hazards) => new();
+        public static HtmlWebViewSource BuildPickerMap(double latitude, double longitude, int zoom = 15) => new();
     }
 }

@@ -2,13 +2,14 @@
 <ContentPage x:Class="FixIt.Mobile.Views.AlertsPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:AlertsViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Alerts_Title}">
@@ -31,7 +32,7 @@
         <RefreshView Grid.Row="2"
                      Command="{Binding LoadAlertsCommand}"
                      IsRefreshing="{Binding IsLoading}"
-                     RefreshColor="{StaticResource Primary}">
+                     RefreshColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
             <CollectionView x:Name="AlertsCollection"
                             ItemsSource="{Binding Alerts}"
                             SelectionMode="None"
@@ -43,37 +44,27 @@
                             <views:SkeletonCardView />
                             <views:SkeletonCardView />
                         </VerticalStackLayout>
-                        <VerticalStackLayout IsVisible="{Binding IsEmpty}"
-                                             Padding="0,64" Spacing="10"
-                                             HorizontalOptions="Center">
-                            <Label Text="🔔" FontSize="44" HorizontalOptions="Center" />
-                            <Label Text="{local:Localize Key=Alerts_Empty_Title}"
-                                   Style="{StaticResource TitleMedium}"
-                                   HorizontalTextAlignment="Center"
-                                   SemanticProperties.HeadingLevel="Level2" />
-                            <Label Text="{local:Localize Key=Alerts_Empty_Subtitle}"
-                                   Style="{StaticResource LabelSmall}"
-                                   HorizontalTextAlignment="Center" />
-                        </VerticalStackLayout>
+                        <controls:EmptyStateView IsVisible="{Binding IsEmpty}"
+                                                 IconSource="bell.png"
+                                                 Title="{local:Localize Key=Alerts_Empty_Title}"
+                                                 Subtitle="{local:Localize Key=Alerts_Empty_Subtitle}" />
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:SafetyHazard">
-                        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                        <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
                             <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
 
-                                <!-- Title row with severity badge -->
                                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                                    <Border BackgroundColor="{StaticResource Error}"
-                                            StrokeThickness="0"
-                                            StrokeShape="RoundRectangle 8"
-                                            Padding="8,4"
-                                            VerticalOptions="Center">
+                                    <Border Style="{StaticResource StatusBadge}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}">
                                         <Label Text="{Binding Severity}"
                                                TextColor="{StaticResource White}"
-                                               FontSize="Caption"
-                                               FontAttributes="Bold" />
+                                               FontSize="11"
+                                               FontAttributes="Bold"
+                                               CharacterSpacing="0.2"
+                                               VerticalTextAlignment="Center" />
                                     </Border>
                                     <Label Grid.Column="1"
                                            Text="{Binding Title}"
@@ -87,14 +78,13 @@
                                        MaxLines="2"
                                        LineBreakMode="TailTruncation" />
 
-                                <!-- Footer row -->
                                 <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
-                                        <Label Text="📍" FontSize="Caption" />
-                                        <Label Text="{Binding Address}" Style="{StaticResource LabelSmall}" />
-                                        <Label Text="·" Style="{StaticResource LabelSmall}" />
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <Image Source="pin.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
+                                        <Label Text="{Binding Address}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                                        <Label Text="·" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
                                         <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
-                                               Style="{StaticResource LabelSmall}" />
+                                               Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
                                     </HorizontalStackLayout>
                                     <Button Grid.Column="1"
                                             Text="{local:Localize Key=Alerts_Confirm}"

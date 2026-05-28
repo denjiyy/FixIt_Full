@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FixIt.Mobile.Constants;
@@ -10,14 +11,18 @@ namespace FixIt.Mobile.ViewModels;
 
 public partial class ReportIssueViewModel : ObservableObject, IDisposable
 {
+    private const int MaxPhotos = 5;
+    private const long MaxBytesPerPhoto = 10L * 1024 * 1024;
+    private const double DefaultLatitude = 42.6977;   // Sofia city centre
+    private const double DefaultLongitude = 23.3219;
+
     private readonly IAnalyticsService _analytics;
     private readonly IApiService _api;
     private readonly IAuthService _auth;
     private readonly IPerformanceService _performance;
-    private byte[]? _photoBytes;
-    private string _photoFileName = "issue-photo.jpg";
     private CancellationTokenSource _cts = new();
     private bool _disposed;
+    private bool _cameraAutoLaunched;
 
     public ReportIssueViewModel(IApiService api, IAuthService auth, IAnalyticsService analytics, IPerformanceService performance)
     {
@@ -25,7 +30,20 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         _auth = auth;
         _analytics = analytics;
         _performance = performance;
+        Photos = new ObservableCollection<PhotoAttachment>();
+        Photos.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasPhotos));
+            OnPropertyChanged(nameof(CanAddPhoto));
+        };
+        CityId = AppConstants.DefaultCityId;
     }
+
+    public ObservableCollection<PhotoAttachment> Photos { get; }
+
+    public bool HasPhotos => Photos.Count > 0;
+
+    public bool CanAddPhoto => Photos.Count < MaxPhotos && !IsSubmitting;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSubmit))]
@@ -36,18 +54,35 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
     private string _description = string.Empty;
 
     [ObservableProperty]
-    private string _location = string.Empty;
+    private string _address = string.Empty;
 
     [ObservableProperty]
-    private ImageSource? _capturedPhotoSource;
+    private string _cityId = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSubmit))]
     [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
-    private bool _hasPhoto;
+    private double? _latitude;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSubmit))]
+    [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
+    private double? _longitude;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSubmit))]
+    [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
+    private bool _isLocationConfirmed;
+
+    [ObservableProperty]
+    private bool _isLocating;
+
+    [ObservableProperty]
+    private HtmlWebViewSource? _mapSource;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSubmit))]
+    [NotifyPropertyChangedFor(nameof(CanAddPhoto))]
     [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]
     private bool _isSubmitting;
 
@@ -67,23 +102,54 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
     private string _submitError = string.Empty;
 
     [ObservableProperty]
+    private string _submitWarning = string.Empty;
+
+    [ObservableProperty]
     private bool _submissionSucceeded;
 
-    public bool CanSubmit => HasPhoto && !string.IsNullOrWhiteSpace(Title) && !IsSubmitting;
+    [ObservableProperty]
+    private string _tagsText = string.Empty;
+
+    [ObservableProperty]
+    private DraftSuggestion? _aiSuggestion;
+
+    [ObservableProperty]
+    private bool _isLoadingSuggestion;
+
+    public bool HasAiSuggestion => AiSuggestion != null;
+
+    partial void OnAiSuggestionChanged(DraftSuggestion? value) => OnPropertyChanged(nameof(HasAiSuggestion));
+
+    public bool CanSubmit =>
+        !string.IsNullOrWhiteSpace(Title)
+        && Latitude.HasValue
+        && Longitude.HasValue
+        && IsLocationConfirmed
+        && !IsSubmitting;
 
     public bool HasTitleError => !string.IsNullOrWhiteSpace(TitleError);
-
     public bool HasDescriptionError => !string.IsNullOrWhiteSpace(DescriptionError);
-
     public bool HasLocationError => !string.IsNullOrWhiteSpace(LocationError);
-
     public bool HasPhotoError => !string.IsNullOrWhiteSpace(PhotoError);
-
     public bool HasSubmitError => !string.IsNullOrWhiteSpace(SubmitError);
+    public bool HasSubmitWarning => !string.IsNullOrWhiteSpace(SubmitWarning);
+    public bool HasAddress => !string.IsNullOrWhiteSpace(Address);
 
     public async Task OnAppearingAsync()
     {
         await _analytics.TrackScreen("ReportIssue");
+        if (!_auth.IsLoggedIn)
+        {
+            return;
+        }
+
+        await InitializeLocationAsync(_cts.Token);
+
+        if (!_cameraAutoLaunched && Photos.Count == 0)
+        {
+            _cameraAutoLaunched = true;
+            await TakePhotoAsync(_cts.Token);
+        }
     }
 
     public void OnDisappearing()
@@ -91,44 +157,89 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         CancelAndRenew();
     }
 
+    public async Task OnMapPointSelectedAsync(double latitude, double longitude, CancellationToken ct)
+    {
+        Latitude = latitude;
+        Longitude = longitude;
+        IsLocationConfirmed = true;
+        LocationError = string.Empty;
+        await TryReverseGeocodeAsync(latitude, longitude, ct);
+    }
+
     partial void OnTitleChanged(string value)
     {
-        if (HasTitleError)
-        {
-            TitleError = string.Empty;
-        }
+        if (HasTitleError) TitleError = string.Empty;
     }
 
     partial void OnDescriptionChanged(string value)
     {
-        if (HasDescriptionError)
-        {
-            DescriptionError = string.Empty;
-        }
+        if (HasDescriptionError) DescriptionError = string.Empty;
+        if (Title.Length >= 10 && value.Length >= 20)
+            _ = FetchAiSuggestionsAsync();
     }
 
-    partial void OnLocationChanged(string value)
+    private async Task FetchAiSuggestionsAsync()
     {
-        if (HasLocationError)
+        if (IsLoadingSuggestion) return;
+        try
         {
-            LocationError = string.Empty;
+            IsLoadingSuggestion = true;
+            AiSuggestion = await _api.GetDraftSuggestionsAsync(Title, Description);
         }
+        catch { /* non-critical */ }
+        finally { IsLoadingSuggestion = false; }
     }
 
+    partial void OnAddressChanged(string value) => OnPropertyChanged(nameof(HasAddress));
     partial void OnTitleErrorChanged(string value) => OnPropertyChanged(nameof(HasTitleError));
-
     partial void OnDescriptionErrorChanged(string value) => OnPropertyChanged(nameof(HasDescriptionError));
-
     partial void OnLocationErrorChanged(string value) => OnPropertyChanged(nameof(HasLocationError));
-
     partial void OnPhotoErrorChanged(string value) => OnPropertyChanged(nameof(HasPhotoError));
-
     partial void OnSubmitErrorChanged(string value) => OnPropertyChanged(nameof(HasSubmitError));
+    partial void OnSubmitWarningChanged(string value) => OnPropertyChanged(nameof(HasSubmitWarning));
+
+    [RelayCommand]
+    private async Task AddPhotoAsync(CancellationToken ct)
+    {
+        if (Photos.Count >= MaxPhotos)
+        {
+            PhotoError = LocalizationService.Get("Report_PhotoLimit");
+            return;
+        }
+
+        HapticService.Click();
+        if (Shell.Current is not { } shell)
+        {
+            await TakePhotoAsync(ct);
+            return;
+        }
+
+        var action = await shell.DisplayActionSheet(
+            LocalizationService.Get("Report_AddPhoto"),
+            LocalizationService.Get("Report_PhotoActions_Cancel"),
+            null,
+            LocalizationService.Get("Report_TakePhoto"),
+            LocalizationService.Get("Report_PickFromGallery"));
+
+        if (string.Equals(action, LocalizationService.Get("Report_TakePhoto"), StringComparison.Ordinal))
+        {
+            await TakePhotoAsync(ct);
+        }
+        else if (string.Equals(action, LocalizationService.Get("Report_PickFromGallery"), StringComparison.Ordinal))
+        {
+            await PickPhotoAsync(ct);
+        }
+    }
 
     [RelayCommand]
     private async Task TakePhotoAsync(CancellationToken ct)
     {
-        HapticService.Click();
+        if (Photos.Count >= MaxPhotos)
+        {
+            PhotoError = LocalizationService.Get("Report_PhotoLimit");
+            return;
+        }
+
         try
         {
             if (!MediaPicker.Default.IsCaptureSupported)
@@ -139,23 +250,10 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
 
             var photo = await MediaPicker.Default.CapturePhotoAsync(new MediaPickerOptions
             {
-                Title = LocalizationService.Get("Report_PhotoPlaceholder")
+                Title = LocalizationService.Get("Report_AddPhoto")
             });
 
-            if (photo == null)
-            {
-                return;
-            }
-
-            _photoFileName = string.IsNullOrWhiteSpace(photo.FileName) ? "issue-photo.jpg" : photo.FileName;
-            await using var stream = await photo.OpenReadAsync();
-            using var memory = new MemoryStream();
-            await stream.CopyToAsync(memory, ct);
-            _photoBytes = memory.ToArray();
-
-            CapturedPhotoSource = ImageSource.FromStream(() => new MemoryStream(_photoBytes));
-            HasPhoto = true;
-            PhotoError = string.Empty;
+            await AddPhotoFromFileResultAsync(photo, ct);
         }
         catch (OperationCanceledException ex)
         {
@@ -168,13 +266,80 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         }
     }
 
+    [RelayCommand]
+    private async Task PickPhotoAsync(CancellationToken ct)
+    {
+        if (Photos.Count >= MaxPhotos)
+        {
+            PhotoError = LocalizationService.Get("Report_PhotoLimit");
+            return;
+        }
+
+        try
+        {
+            var photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+            {
+                Title = LocalizationService.Get("Report_AddPhoto")
+            });
+
+            await AddPhotoFromFileResultAsync(photo, ct);
+        }
+        catch (OperationCanceledException ex)
+        {
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "photo_cancelled" });
+        }
+        catch (Exception ex)
+        {
+            PhotoError = LocalizationService.Get("Common_Error_Generic");
+            await _analytics.TrackError(ex);
+        }
+    }
+
+    [RelayCommand]
+    private void RemovePhoto(PhotoAttachment? photo)
+    {
+        if (photo is null) return;
+        Photos.Remove(photo);
+        PhotoError = string.Empty;
+    }
+
+    private async Task AddPhotoFromFileResultAsync(FileResult? photo, CancellationToken ct)
+    {
+        if (photo == null) return;
+
+        await using var stream = await photo.OpenReadAsync();
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory, ct);
+        var bytes = memory.ToArray();
+
+        if (bytes.Length > MaxBytesPerPhoto)
+        {
+            PhotoError = LocalizationService.Get("Report_PhotoTooLarge");
+            return;
+        }
+
+        var fileName = string.IsNullOrWhiteSpace(photo.FileName)
+            ? $"issue-photo-{Guid.NewGuid():N}.jpg"
+            : photo.FileName;
+        var contentType = string.IsNullOrWhiteSpace(photo.ContentType) ? "image/jpeg" : photo.ContentType;
+
+        Photos.Add(new PhotoAttachment
+        {
+            Bytes = bytes,
+            FileName = fileName,
+            ContentType = contentType,
+            Thumbnail = ImageSource.FromStream(() => new MemoryStream(bytes))
+        });
+        PhotoError = string.Empty;
+    }
+
     [RelayCommand(CanExecute = nameof(CanSubmit))]
     private async Task SubmitAsync(CancellationToken ct)
     {
         HapticService.Click();
         if (!_auth.IsLoggedIn)
         {
-            await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
+            await Shell.Current.GoToAsync(AppConstants.RouteAccountTabAbsolute);
             return;
         }
 
@@ -187,27 +352,20 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         {
             IsSubmitting = true;
             SubmitError = string.Empty;
+            SubmitWarning = string.Empty;
 
             using (_performance.StartTrace("ReportIssue"))
             {
-                // FIX B-03: dispose the upload stream only after the awaited HttpClient call has completed.
-                var stream = new MemoryStream(_photoBytes ?? []);
-                ApiResult result;
-                try
+                var result = await _api.ReportIssueAsync(new ReportIssueRequest
                 {
-                    result = await _api.ReportIssueAsync(new ReportIssueRequest
-                    {
-                        Title = Title.Trim(),
-                        Description = Description.Trim(),
-                        Location = Location.Trim(),
-                        PhotoStream = stream,
-                        PhotoFileName = _photoFileName
-                    }, ct);
-                }
-                finally
-                {
-                    stream.Dispose();
-                }
+                    Title = Title.Trim(),
+                    Description = Description.Trim(),
+                    Latitude = Latitude!.Value,
+                    Longitude = Longitude!.Value,
+                    CityId = string.IsNullOrWhiteSpace(CityId) ? AppConstants.DefaultCityId : CityId,
+                    Address = string.IsNullOrWhiteSpace(Address) ? null : Address.Trim(),
+                    Photos = Photos.ToList()
+                }, ct);
 
                 ct.ThrowIfCancellationRequested();
 
@@ -216,6 +374,10 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
                     HapticService.LongPress();
                     await _analytics.TrackEvent("issue_reported");
                     SubmissionSucceeded = true;
+                    if (!string.IsNullOrEmpty(result.Error))
+                    {
+                        SubmitWarning = result.Error;
+                    }
                     ClearForm();
                     await Task.Delay(800, ct);
                     await Shell.Current.GoToAsync(AppConstants.RouteHome);
@@ -241,11 +403,108 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         }
     }
 
-    public void SetPhotoForTesting(byte[] bytes)
+    public void AddPhotoForTesting(PhotoAttachment photo)
     {
-        _photoBytes = bytes;
-        HasPhoto = bytes.Length > 0;
-        CapturedPhotoSource = HasPhoto ? ImageSource.FromStream(() => new MemoryStream(bytes)) : null;
+        Photos.Add(photo);
+    }
+
+    public void SetCoordinatesForTesting(double lat, double lon, bool confirmed = true)
+    {
+        Latitude = lat;
+        Longitude = lon;
+        IsLocationConfirmed = confirmed;
+    }
+
+    private async Task InitializeLocationAsync(CancellationToken ct)
+    {
+        if (Latitude.HasValue && Longitude.HasValue && IsLocationConfirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            IsLocating = true;
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            }
+
+            Location? location = null;
+            if (status == PermissionStatus.Granted)
+            {
+                try
+                {
+                    var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(8));
+                    location = await Geolocation.Default.GetLocationAsync(request, ct);
+                }
+                catch (FeatureNotSupportedException)
+                {
+                    // Simulator without GPS — fall back to default below.
+                }
+                catch (FeatureNotEnabledException)
+                {
+                    // Location services disabled — fall back to default below.
+                }
+                catch (PermissionException)
+                {
+                }
+            }
+
+            if (location != null)
+            {
+                Latitude = location.Latitude;
+                Longitude = location.Longitude;
+                IsLocationConfirmed = true;
+                MapSource = MapHtmlBuilder.BuildPickerMap(location.Latitude, location.Longitude);
+                LocationError = string.Empty;
+                await TryReverseGeocodeAsync(location.Latitude, location.Longitude, ct);
+            }
+            else
+            {
+                Latitude = DefaultLatitude;
+                Longitude = DefaultLongitude;
+                IsLocationConfirmed = false;
+                MapSource = MapHtmlBuilder.BuildPickerMap(DefaultLatitude, DefaultLongitude, zoom: 12);
+                LocationError = LocalizationService.Get("Report_LocationPending");
+            }
+        }
+        catch (Exception ex)
+        {
+            Latitude = DefaultLatitude;
+            Longitude = DefaultLongitude;
+            IsLocationConfirmed = false;
+            MapSource = MapHtmlBuilder.BuildPickerMap(DefaultLatitude, DefaultLongitude, zoom: 12);
+            LocationError = LocalizationService.Get("Report_LocationPending");
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "location_init" });
+        }
+        finally
+        {
+            IsLocating = false;
+        }
+    }
+
+    private async Task TryReverseGeocodeAsync(double latitude, double longitude, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _api.ReverseGeocodeAsync(latitude, longitude, ct);
+            if (result is null) return;
+
+            if (!string.IsNullOrWhiteSpace(result.Address))
+            {
+                Address = result.Address;
+            }
+            if (!string.IsNullOrWhiteSpace(result.CityId))
+            {
+                CityId = result.CityId!;
+            }
+        }
+        catch (Exception ex)
+        {
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "reverse_geocode" });
+        }
     }
 
     private bool Validate()
@@ -255,11 +514,6 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
         LocationError = string.Empty;
         PhotoError = string.Empty;
         SubmitError = string.Empty;
-
-        if (_photoBytes == null || _photoBytes.Length == 0)
-        {
-            PhotoError = LocalizationService.Get("Report_PhotoPlaceholder");
-        }
 
         if (string.IsNullOrWhiteSpace(Title))
         {
@@ -275,23 +529,22 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
             DescriptionError = LocalizationService.Get("Report_Error_DescriptionLength");
         }
 
-        if (Location.Length > MobileSettings.MaxLocationLength)
+        if (!Latitude.HasValue || !Longitude.HasValue || !IsLocationConfirmed)
         {
-            LocationError = LocalizationService.Get("Report_Error_LocationLength");
+            LocationError = LocalizationService.Get("Report_LocationPending");
         }
 
-        return !HasTitleError && !HasDescriptionError && !HasLocationError && !HasPhotoError;
+        return !HasTitleError && !HasDescriptionError && !HasLocationError;
     }
 
     private void ClearForm()
     {
         Title = string.Empty;
         Description = string.Empty;
-        Location = string.Empty;
-        HasPhoto = false;
-        CapturedPhotoSource = null;
-        _photoBytes = null;
-        _photoFileName = "issue-photo.jpg";
+        Address = string.Empty;
+        Photos.Clear();
+        PhotoError = string.Empty;
+        _cameraAutoLaunched = false;
     }
 
     private void CancelAndRenew()

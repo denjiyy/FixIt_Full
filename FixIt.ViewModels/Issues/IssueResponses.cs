@@ -22,6 +22,8 @@ public class IssueSummaryResponse
     public UserSummaryResponse Reporter { get; set; } = null!;
     public bool IsAnonymous { get; set; }
     public IEnumerable<string> TagIds { get; set; } = Array.Empty<string>();
+    public double Longitude { get; set; }
+    public double Latitude { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime LastActivityAt { get; set; }
 

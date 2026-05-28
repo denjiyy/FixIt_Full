@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.TagDetailPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:TagDetailViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             ios:Page.UseSafeArea="True"
+             Title="{Binding TagName, StringFormat='#{0}'}">
+
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Row="0" Padding="20,24,20,10" Spacing="4">
+            <Label Text="{Binding TagName, StringFormat='#{0}'}" Style="{StaticResource HeadlineMedium}" />
+            <Label Text="{local:Localize Key=Tags_Title}" Style="{StaticResource LabelSmall}" />
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1"
+                         ItemsSource="{Binding Issues}"
+                         SelectionMode="None"
+                         RemainingItemsThreshold="3"
+                         RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
+                         Margin="20,0,20,20">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout>
+                    <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                                       Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                       Margin="0,40,0,0" />
+                    <controls:EmptyStateView IsVisible="{Binding IsEmpty}"
+                                             IconSource="checklist.png"
+                                             Title="{local:Localize Key=Tags_Empty}" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Issue">
+                    <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:TagDetailViewModel}}, Path=NavigateToIssueCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
+                            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                <Label Grid.Column="0" Style="{StaticResource TitleMedium}"
+                                       Text="{Binding Title}" MaxLines="1" LineBreakMode="TailTruncation" />
+                                <Border Grid.Column="1" Style="{StaticResource StatusBadge}"
+                                        BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
+                                    <Label Text="{Binding Status}" TextColor="{StaticResource White}"
+                                           FontSize="11" FontAttributes="Bold" VerticalTextAlignment="Center" />
+                                </Border>
+                            </Grid>
+                            <HorizontalStackLayout Grid.Row="1" Spacing="6">
+                                <Image Source="pin.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
+                                <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                                <Label Text="·" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                                <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
+                                       Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

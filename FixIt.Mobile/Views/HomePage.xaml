@@ -2,13 +2,14 @@
 <ContentPage x:Class="FixIt.Mobile.Views.HomePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:HomeViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Home_Title}">
@@ -20,22 +21,18 @@
             <VerticalStackLayout x:Name="HeroBanner" Opacity="0" TranslationY="30">
                 <Border Margin="20,28,20,0"
                         StrokeThickness="0"
-                        StrokeShape="RoundRectangle 24"
-                        Padding="24,28,24,28">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#2563EB" Offset="0" />
-                            <GradientStop Color="#1E3A8A" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
+                        StrokeShape="RoundRectangle 20"
+                        Padding="24,26"
+                        Background="{StaticResource PrimaryBrush}">
                     <VerticalStackLayout Spacing="0">
                         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,12">
                             <VerticalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
                                 <Label Text="{local:Localize Key=Home_Platform}"
-                                       TextTransform="Uppercase"
-                                       CharacterSpacing="1.5"
+                                       CharacterSpacing="0.6"
                                        FontSize="Caption"
-                                       TextColor="#93C5FD" />
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource White}"
+                                       Opacity="0.8" />
                                 <Label Text="{Binding Title}"
                                        FontSize="Title"
                                        FontAttributes="Bold"
@@ -46,7 +43,7 @@
                             <Border Grid.Column="1"
                                     WidthRequest="48" HeightRequest="48"
                                     MaximumWidthRequest="80"
-                                    BackgroundColor="#FFFFFF28"
+                                    BackgroundColor="#33FFFFFF"
                                     StrokeThickness="0"
                                     StrokeShape="RoundRectangle 24"
                                     VerticalOptions="Start">
@@ -61,14 +58,15 @@
 
                         <Label Text="{Binding WelcomeMessage}"
                                FontSize="Body"
-                               TextColor="#BFDBFE"
+                               TextColor="{StaticResource White}"
+                               Opacity="0.9"
                                LineHeight="1.45"
                                Margin="0,0,0,20"
                                SemanticProperties.Description="{Binding WelcomeMessage}" />
 
                         <Button Text="{local:Localize Key=Home_ReportCTA}"
                                 BackgroundColor="{StaticResource White}"
-                                TextColor="{StaticResource Primary}"
+                                TextColor="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimaryStrong}}"
                                 FontAttributes="Bold"
                                 FontSize="Body"
                                 HeightRequest="52"
@@ -76,7 +74,14 @@
                                 Command="{Binding ReportIssueCommand}"
                                 SemanticProperties.Description="{local:Localize Key=Home_ReportCTA}" />
                         <Button Text="{local:Localize Key=Health_Title}"
-                                Style="{StaticResource SecondaryButton}"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource White}"
+                                BorderColor="#80FFFFFF"
+                                BorderWidth="1"
+                                FontAttributes="Bold"
+                                FontSize="Body"
+                                HeightRequest="52"
+                                CornerRadius="14"
                                 Margin="0,12,0,0"
                                 Command="{Binding GoToHealthReportCommand}" />
                     </VerticalStackLayout>
@@ -97,7 +102,7 @@
                             <Label Style="{StaticResource LabelSmall}"
                                    Text="{local:Localize Key=Home_TotalIssues}" />
                             <Label FontSize="Title" FontAttributes="Bold"
-                                   TextColor="{StaticResource Accent}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                    Text="{Binding TotalIssues}" />
                         </VerticalStackLayout>
                     </Border>
@@ -107,7 +112,7 @@
                             <Label Style="{StaticResource LabelSmall}"
                                    Text="{local:Localize Key=Home_Resolved}" />
                             <Label FontSize="Title" FontAttributes="Bold"
-                                   TextColor="{StaticResource Success}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}"
                                    Text="{Binding ResolvedIssues}" />
                         </VerticalStackLayout>
                     </Border>
@@ -117,7 +122,7 @@
                             <Label Style="{StaticResource LabelSmall}"
                                    Text="{local:Localize Key=Home_InProgress}" />
                             <Label FontSize="Title" FontAttributes="Bold"
-                                   TextColor="{StaticResource Warning}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}"
                                    Text="{Binding InProgressIssues}" />
                         </VerticalStackLayout>
                     </Border>
@@ -127,13 +132,13 @@
                             <Label Style="{StaticResource LabelSmall}"
                                    Text="{local:Localize Key=Home_Critical}" />
                             <Label FontSize="Title" FontAttributes="Bold"
-                                   TextColor="{StaticResource Error}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                                    Text="{Binding CriticalIssues}" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                            Text="Leaderboard"
+                            Text="{local:Localize Key=Leaderboard_Title}"
                             Margin="0"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding GoToLeaderboardCommand}" />
@@ -153,11 +158,11 @@
                             <TapGestureRecognizer Command="{Binding GoToHazardMapCommand}" />
                         </Border.GestureRecognizers>
                         <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
-                            <Label Text="🗺" FontSize="28" HorizontalOptions="Center" />
+                            <Image Source="map.png" WidthRequest="32" HeightRequest="32" HorizontalOptions="Center" />
                             <Label Text="{local:Localize Key=HazardMap_Title}"
                                    FontSize="Caption"
                                    FontAttributes="Bold"
-                                   TextColor="{StaticResource OnBackground}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
                                    HorizontalTextAlignment="Center"
                                    MaxLines="2" />
                         </VerticalStackLayout>
@@ -168,11 +173,11 @@
                             <TapGestureRecognizer Command="{Binding GoToHealthReportCommand}" />
                         </Border.GestureRecognizers>
                         <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
-                            <Label Text="📊" FontSize="28" HorizontalOptions="Center" />
+                            <Image Source="chart.png" WidthRequest="32" HeightRequest="32" HorizontalOptions="Center" />
                             <Label Text="{local:Localize Key=Health_Title}"
                                    FontSize="Caption"
                                    FontAttributes="Bold"
-                                   TextColor="{StaticResource OnBackground}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
                                    HorizontalTextAlignment="Center"
                                    MaxLines="2" />
                         </VerticalStackLayout>
@@ -183,11 +188,11 @@
                             <TapGestureRecognizer Command="{Binding GoToLeaderboardCommand}" />
                         </Border.GestureRecognizers>
                         <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
-                            <Label Text="🏆" FontSize="28" HorizontalOptions="Center" />
+                            <Image Source="trophy.png" WidthRequest="32" HeightRequest="32" HorizontalOptions="Center" />
                             <Label Text="{local:Localize Key=Leaderboard_Title}"
                                    FontSize="Caption"
                                    FontAttributes="Bold"
-                                   TextColor="{StaticResource OnBackground}"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
                                    HorizontalTextAlignment="Center"
                                    MaxLines="2" />
                         </VerticalStackLayout>
@@ -207,7 +212,7 @@
                            Text="{local:Localize Key=Home_SeeAll}"
                            FontSize="Caption"
                            FontAttributes="Bold"
-                           TextColor="{StaticResource Accent}"
+                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                            VerticalOptions="Center">
                         <Label.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding GoToIssuesCommand}" />
@@ -223,20 +228,15 @@
                                 <views:SkeletonCardView />
                                 <views:SkeletonCardView />
                             </VerticalStackLayout>
-                            <VerticalStackLayout IsVisible="{Binding IsEmpty}"
-                                                 Padding="0,40" Spacing="10"
-                                                 HorizontalOptions="Center">
-                                <Label Text="📋" FontSize="44" HorizontalOptions="Center" />
-                                <Label Text="{local:Localize Key=Home_NoRecent}"
-                                       Style="{StaticResource BodyMedium}"
-                                       HorizontalOptions="Center" />
-                            </VerticalStackLayout>
+                            <controls:EmptyStateView IsVisible="{Binding IsEmpty}"
+                                                     IconSource="checklist.png"
+                                                     Title="{local:Localize Key=Home_NoRecent}" />
                         </VerticalStackLayout>
                     </CollectionView.EmptyView>
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Issue">
-                            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnIssueTapped" CommandParameter="{Binding Id}" />
                                 </Border.GestureRecognizers>
@@ -249,15 +249,14 @@
                                                LineBreakMode="TailTruncation"
                                                SemanticProperties.Description="{Binding Title}" />
                                         <Border Grid.Column="1"
-                                                BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
-                                                StrokeThickness="0"
-                                                Padding="8,4"
-                                                StrokeShape="RoundRectangle 8"
-                                                VerticalOptions="Center">
+                                                Style="{StaticResource StatusBadge}"
+                                                BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
                                             <Label Text="{Binding Status}"
-                                                   FontSize="Caption"
+                                                   FontSize="11"
                                                    FontAttributes="Bold"
-                                                   TextColor="{StaticResource White}" />
+                                                   CharacterSpacing="0.2"
+                                                   TextColor="{StaticResource White}"
+                                                   VerticalTextAlignment="Center" />
                                         </Border>
                                     </Grid>
                                     <Label Grid.Row="1"
@@ -265,9 +264,9 @@
                                            Text="{Binding Description}"
                                            MaxLines="2"
                                            LineBreakMode="TailTruncation" />
-                                    <HorizontalStackLayout Grid.Row="2" Spacing="4">
-                                        <Label Text="📍" FontSize="Caption" />
-                                        <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" />
+                                    <HorizontalStackLayout Grid.Row="2" Spacing="6">
+                                        <Image Source="pin.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
+                                        <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
                                     </HorizontalStackLayout>
                                 </Grid>
                             </Border>

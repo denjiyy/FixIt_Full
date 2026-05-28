@@ -35,6 +35,17 @@
   <data name="Login_NoAccount" xml:space="preserve"><value>Нямате профил?</value></data>
   <data name="Login_Error_Empty" xml:space="preserve"><value>Моля, въведете имейл и парола.</value></data>
   <data name="Login_Error_Invalid" xml:space="preserve"><value>Невалиден имейл или парола.</value></data>
+  <data name="Login_Error_Persistence" xml:space="preserve"><value>Неуспешно запазване на сесията. Опитайте отново.</value></data>
+  <data name="Report_AddPhoto" xml:space="preserve"><value>Добави снимка</value></data>
+  <data name="Report_TakePhoto" xml:space="preserve"><value>Заснеми</value></data>
+  <data name="Report_PickFromGallery" xml:space="preserve"><value>Избери от галерия</value></data>
+  <data name="Report_PhotoActions_Cancel" xml:space="preserve"><value>Отказ</value></data>
+  <data name="Report_RemovePhoto" xml:space="preserve"><value>Премахни</value></data>
+  <data name="Report_PhotoLimit" xml:space="preserve"><value>До 5 снимки.</value></data>
+  <data name="Report_PhotoTooLarge" xml:space="preserve"><value>Снимката е твърде голяма. Максимум 10 MB.</value></data>
+  <data name="Report_LocationPending" xml:space="preserve"><value>Натиснете върху картата, за да потвърдите местоположението.</value></data>
+  <data name="Report_LocationDetecting" xml:space="preserve"><value>Откриване на местоположението…</value></data>
+  <data name="Report_PartialUploadWarning" xml:space="preserve"><value>Сигналът е изпратен, но някои снимки не успяха да се качат.</value></data>
   <data name="Login_Error_EmailRequired" xml:space="preserve"><value>Имейлът е задължителен.</value></data>
   <data name="Login_Error_EmailInvalid" xml:space="preserve"><value>Въведете валиден имейл адрес.</value></data>
   <data name="Login_Error_PasswordRequired" xml:space="preserve"><value>Паролата е задължителна.</value></data>
@@ -169,4 +180,25 @@
   <data name="Register_Error_PasswordsMismatch" xml:space="preserve"><value>Паролите не съвпадат.</value></data>
   <data name="Register_Error_FormInvalid" xml:space="preserve"><value>Моля, попълнете всички полета правилно.</value></data>
   <data name="Register_Error_RegistrationFailed" xml:space="preserve"><value>Регистрацията не се удаде. Опитайте отново.</value></data>
+  <data name="Settings_Privacy_Title" xml:space="preserve"><value>Поверителност</value></data>
+  <data name="Settings_Privacy_AnonymousReporting" xml:space="preserve"><value>Анонимни сигнали</value></data>
+  <data name="Settings_Privacy_AnonymousReportingHint" xml:space="preserve"><value>Скрийте името си в сигналите и коментарите, които подавате.</value></data>
+  <data name="Settings_Alerts_Title" xml:space="preserve"><value>Известия</value></data>
+  <data name="Settings_Alerts_Crime" xml:space="preserve"><value>Престъпления</value></data>
+  <data name="Settings_Alerts_Accident" xml:space="preserve"><value>Произшествия</value></data>
+  <data name="Settings_Alerts_Infrastructure" xml:space="preserve"><value>Инфраструктура</value></data>
+  <data name="Settings_Alerts_Radius" xml:space="preserve"><value>Радиус (км)</value></data>
+  <data name="Settings_Alerts_Severity" xml:space="preserve"><value>Праг на сериозност</value></data>
+  <data name="Settings_Alerts_Save" xml:space="preserve"><value>Запази настройките</value></data>
+  <data name="Settings_Alerts_Saved" xml:space="preserve"><value>Настройките за известия са запазени.</value></data>
+  <data name="Settings_ProfileVisibility_Title" xml:space="preserve"><value>Видимост на профила</value></data>
+  <data name="Settings_ProfileVisibility_Public" xml:space="preserve"><value>Публичен</value></data>
+  <data name="Settings_ProfileVisibility_Private" xml:space="preserve"><value>Личен</value></data>
+  <data name="Settings_ProfileVisibility_Save" xml:space="preserve"><value>Запази</value></data>
+  <data name="Settings_ProfileVisibility_Saved" xml:space="preserve"><value>Видимостта на профила е обновена.</value></data>
+  <data name="Settings_Appearance_Title" xml:space="preserve"><value>Външен вид</value></data>
+  <data name="Settings_Appearance_Description" xml:space="preserve"><value>Изберете как изглежда приложението. „Системен“ следва темата на устройството ви.</value></data>
+  <data name="Settings_Appearance_System" xml:space="preserve"><value>Системен</value></data>
+  <data name="Settings_Appearance_Light" xml:space="preserve"><value>Светъл</value></data>
+  <data name="Settings_Appearance_Dark" xml:space="preserve"><value>Тъмен</value></data>
 </root>

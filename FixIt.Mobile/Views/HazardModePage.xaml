@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.HazardModePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             x:DataType="viewModels:HazardModeViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=HazardMode_Title}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="20,20,20,10">
+            <Label Text="{local:Localize Key=HazardMode_Title}" Style="{StaticResource HeadlineMedium}" />
+            <Button Grid.Column="1"
+                    Text="{local:Localize Key=HazardMode_Report}"
+                    Style="{StaticResource CompactPrimaryButton}"
+                    Command="{Binding ToggleReportFormCommand}" />
+        </Grid>
+
+        <!-- Map -->
+        <Grid Grid.Row="1" Margin="20,0">
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                    StrokeThickness="1" StrokeShape="RoundRectangle 16">
+                <WebView Source="{Binding MapSource}" />
+            </Border>
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                               VerticalOptions="Center" HorizontalOptions="Center" />
+        </Grid>
+
+        <!-- Report Form (bottom sheet style) -->
+        <Border Grid.Row="2"
+                IsVisible="{Binding ShowReportForm}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                Stroke="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}"
+                StrokeThickness="1" StrokeShape="RoundRectangle 20,20,0,0"
+                Padding="20,16,20,34">
+            <ScrollView>
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{local:Localize Key=HazardMode_Report}" Style="{StaticResource TitleMedium}" />
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{local:Localize Key=HazardMode_Type}" Style="{StaticResource LabelSmall}" />
+                        <Border Style="{StaticResource EntryCard}">
+                            <Picker ItemsSource="{Binding HazardTypes}"
+                                    SelectedItem="{Binding HazardType}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{local:Localize Key=HazardMode_Severity}" Style="{StaticResource LabelSmall}" />
+                        <Border Style="{StaticResource EntryCard}">
+                            <Picker ItemsSource="{Binding SeverityLevels}"
+                                    SelectedItem="{Binding HazardSeverity}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <Border Style="{StaticResource EntryCard}">
+                        <Entry Placeholder="{local:Localize Key=Report_Title}"
+                               Text="{Binding HazardTitle}" MaxLength="200" />
+                    </Border>
+
+                    <Border Style="{StaticResource EntryCard}">
+                        <Editor Placeholder="{local:Localize Key=HazardMode_Details}"
+                                Text="{Binding HazardDescription}" MaxLength="2000"
+                                HeightRequest="100" AutoSize="TextChanges" />
+                    </Border>
+
+                    <Button Text="{local:Localize Key=Report_Submit}"
+                            Style="{StaticResource CompactPrimaryButton}"
+                            Command="{Binding SubmitHazardCommand}"
+                            IsEnabled="{Binding IsReporting, Converter={StaticResource InverseBoolConverter}}" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </Border>
+    </Grid>
+</ContentPage>

@@ -18,7 +18,7 @@
                         <i class="bi bi-person-plus"></i>
                     </div>
                     <h1 class="h3 mb-2">@Localizer["CreateAccount"]</h1>
-                    <p class="text-muted mb-0">Create your FixIt profile so you can report issues, follow progress, and contribute to your community.</p>
+                    <p class="text-muted mb-0">@Localizer["Account_Register_Subtitle"]</p>
                 </div>
 
                 <form method="post">
@@ -41,7 +41,7 @@
                         <label asp-for="Input.Password" class="form-label">@Localizer["PasswordLabel"]</label>
                         <input asp-for="Input.Password" type="password" class="form-control" autocomplete="new-password" aria-required="true" placeholder='@Localizer["PasswordPlaceholder"]' />
                         <span asp-validation-for="Input.Password" class="text-danger small d-block mt-2"></span>
-                        <small class="text-muted">Use at least 8 characters with a mix of upper-case letters and numbers.</small>
+                        <small class="text-muted">@Localizer["Account_Register_PasswordHelp"]</small>
                     </div>
 
                     <div class="mb-4">

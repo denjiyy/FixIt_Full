@@ -27,4 +27,42 @@
     <PackageReference Include="CloudinaryDotNet" Version="1.26.0" />
   </ItemGroup>
 
+  <!--
+    Regenerate wwwroot/css/bundle.min.css and admin.bundle.min.css from their
+    source files before each build. bundleconfig.json remains the input manifest
+    for humans; this target keeps the runtime bundle in sync without a separate
+    tool. Plain concatenation — gzip at the edge absorbs the size; we avoid the
+    deprecated BuildBundlerMinifier dependency.
+  -->
+  <Target Name="GenerateCssBundles"
+          BeforeTargets="BeforeBuild"
+          Inputs="wwwroot/css/design-tokens.css;wwwroot/css/design-system.css;wwwroot/css/site.css;wwwroot/css/admin.css;bundleconfig.json"
+          Outputs="wwwroot/css/bundle.min.css;wwwroot/css/admin.bundle.min.css">
+    <ReadLinesFromFile File="wwwroot/css/design-tokens.css">
+      <Output TaskParameter="Lines" ItemName="BundleMainLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="wwwroot/css/design-system.css">
+      <Output TaskParameter="Lines" ItemName="BundleMainLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="wwwroot/css/site.css">
+      <Output TaskParameter="Lines" ItemName="BundleMainLines" />
+    </ReadLinesFromFile>
+    <WriteLinesToFile File="wwwroot/css/bundle.min.css"
+                      Lines="@(BundleMainLines)"
+                      Overwrite="true" />
+
+    <ReadLinesFromFile File="wwwroot/css/design-tokens.css">
+      <Output TaskParameter="Lines" ItemName="BundleAdminLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="wwwroot/css/design-system.css">
+      <Output TaskParameter="Lines" ItemName="BundleAdminLines" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="wwwroot/css/admin.css">
+      <Output TaskParameter="Lines" ItemName="BundleAdminLines" />
+    </ReadLinesFromFile>
+    <WriteLinesToFile File="wwwroot/css/admin.bundle.min.css"
+                      Lines="@(BundleAdminLines)"
+                      Overwrite="true" />
+  </Target>
+
 </Project>

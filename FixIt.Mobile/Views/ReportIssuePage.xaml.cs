@@ -1,14 +1,18 @@
 using System.ComponentModel;
+using System.Globalization;
 using FixIt.Mobile.ViewModels;
 
 namespace FixIt.Mobile.Views;
 
 public partial class ReportIssuePage : ContentPage
 {
+    private const string MapBridgeScheme = "fixit://location";
+
     public ReportIssuePage(ReportIssueViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;
+        MapWebView.Navigating += OnMapNavigating;
     }
 
     protected override void OnBindingContextChanged()
@@ -56,16 +60,71 @@ public partial class ReportIssuePage : ContentPage
         base.OnDisappearing();
     }
 
-    private async void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private async void OnMapNavigating(object? sender, WebNavigatingEventArgs e)
     {
-        if (e.PropertyName == nameof(ReportIssueViewModel.HasPhoto) &&
-            BindingContext is ReportIssueViewModel { HasPhoto: true })
+        if (string.IsNullOrEmpty(e.Url) || !e.Url.StartsWith(MapBridgeScheme, StringComparison.OrdinalIgnoreCase))
         {
-            await PulsePhotoBorderAsync();
-            await PhotoPreview.ScaleTo(1.05, 150, Easing.CubicOut);
-            await PhotoPreview.ScaleTo(1.0, 150, Easing.CubicOut);
+            return;
         }
 
+        e.Cancel = true;
+
+        if (BindingContext is not ReportIssueViewModel viewModel)
+        {
+            return;
+        }
+
+        if (!TryParseLatLng(e.Url, out var lat, out var lng))
+        {
+            return;
+        }
+
+        try
+        {
+            await viewModel.OnMapPointSelectedAsync(lat, lng, CancellationToken.None);
+        }
+        catch
+        {
+            // Reverse-geocode failures are already logged by the VM; never let the WebView bridge crash the page.
+        }
+    }
+
+    private static bool TryParseLatLng(string url, out double lat, out double lng)
+    {
+        lat = 0;
+        lng = 0;
+        var queryIndex = url.IndexOf('?');
+        if (queryIndex < 0) return false;
+
+        var query = url[(queryIndex + 1)..];
+        double? parsedLat = null;
+        double? parsedLng = null;
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var idx = pair.IndexOf('=');
+            if (idx <= 0) continue;
+            var key = pair[..idx];
+            var value = Uri.UnescapeDataString(pair[(idx + 1)..]);
+            if (string.Equals(key, "lat", StringComparison.OrdinalIgnoreCase) &&
+                double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var l))
+            {
+                parsedLat = l;
+            }
+            else if (string.Equals(key, "lng", StringComparison.OrdinalIgnoreCase) &&
+                     double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var g))
+            {
+                parsedLng = g;
+            }
+        }
+
+        if (parsedLat is null || parsedLng is null) return false;
+        lat = parsedLat.Value;
+        lng = parsedLng.Value;
+        return true;
+    }
+
+    private async void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
         if (e.PropertyName == nameof(ReportIssueViewModel.SubmissionSucceeded) &&
             BindingContext is ReportIssueViewModel { SubmissionSucceeded: true })
         {
@@ -75,14 +134,5 @@ public partial class ReportIssuePage : ContentPage
                 SuccessCheckLabel.ScaleTo(1.1, 220, Easing.SpringOut));
             await SuccessCheckLabel.ScaleTo(1.0, 120, Easing.CubicOut);
         }
-    }
-
-    private async Task PulsePhotoBorderAsync()
-    {
-        var original = (Brush)Application.Current!.Resources["Surface2"];
-        var primary = (Brush)Application.Current.Resources["Primary"];
-        PhotoBorder.Stroke = primary;
-        await Task.Delay(300);
-        PhotoBorder.Stroke = original;
     }
 }

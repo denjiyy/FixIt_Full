@@ -4,10 +4,123 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!--
-        Mobile design tokens — aligned with the web design-system on
-        2026-05-26 per spec §5.3. Any hardcoded hex in screens should be
-        migrated to these keys.
+        Mobile design tokens — civic-tech, optimistic, light baseline.
+        Adaptive via {AppThemeBinding} so OS-level dark mode is supported.
+
+        Light* and Dark* literal colors hold the palette; semantic Color
+        resources at the bottom resolve via AppThemeBinding and should be
+        the only thing screen XAML references. Some legacy keys (Primary,
+        Surface, etc.) remain as plain colors for backwards compatibility
+        while screens are migrated to the *Color tokens in Stage 2.
     -->
+
+    <!-- =================================================================
+         LIGHT PALETTE
+         ================================================================= -->
+
+    <Color x:Key="LightBackground">#F8FAFC</Color>
+    <Color x:Key="LightSurface">#FFFFFF</Color>
+    <Color x:Key="LightSurfaceElevated">#FFFFFF</Color>
+    <Color x:Key="LightSurfaceMuted">#F1F5F9</Color>
+    <Color x:Key="LightSurfaceStrong">#E2E8F0</Color>
+
+    <Color x:Key="LightOnBackground">#0F172A</Color>
+    <Color x:Key="LightOnSurface">#334155</Color>
+    <Color x:Key="LightOnSurfaceMuted">#64748B</Color>
+
+    <Color x:Key="LightBorder">#E2E8F0</Color>
+    <Color x:Key="LightDivider">#E2E8F0</Color>
+
+    <Color x:Key="LightPrimary">#0EA5E9</Color>
+    <Color x:Key="LightPrimaryStrong">#0284C7</Color>
+    <Color x:Key="LightPrimarySoft">#E0F2FE</Color>
+    <Color x:Key="LightOnPrimary">#FFFFFF</Color>
+
+    <Color x:Key="LightAccent">#F97316</Color>
+    <Color x:Key="LightAccentSoft">#FFEDD5</Color>
+
+    <Color x:Key="LightSuccess">#10B981</Color>
+    <Color x:Key="LightSuccessSoft">#D1FAE5</Color>
+    <Color x:Key="LightWarning">#F59E0B</Color>
+    <Color x:Key="LightWarningSoft">#FEF3C7</Color>
+    <Color x:Key="LightDanger">#EF4444</Color>
+    <Color x:Key="LightDangerSoft">#FEE2E2</Color>
+    <Color x:Key="LightInfo">#3B82F6</Color>
+    <Color x:Key="LightInfoSoft">#DBEAFE</Color>
+
+    <Color x:Key="LightOverlay">#33000000</Color>
+
+    <!-- =================================================================
+         DARK PALETTE
+         ================================================================= -->
+
+    <Color x:Key="DarkBackground">#0F172A</Color>
+    <Color x:Key="DarkSurface">#1E293B</Color>
+    <Color x:Key="DarkSurfaceElevated">#334155</Color>
+    <Color x:Key="DarkSurfaceMuted">#1E293B</Color>
+    <Color x:Key="DarkSurfaceStrong">#475569</Color>
+
+    <Color x:Key="DarkOnBackground">#F8FAFC</Color>
+    <Color x:Key="DarkOnSurface">#CBD5E1</Color>
+    <Color x:Key="DarkOnSurfaceMuted">#94A3B8</Color>
+
+    <Color x:Key="DarkBorder">#334155</Color>
+    <Color x:Key="DarkDivider">#334155</Color>
+
+    <Color x:Key="DarkPrimary">#38BDF8</Color>
+    <Color x:Key="DarkPrimaryStrong">#0EA5E9</Color>
+    <Color x:Key="DarkPrimarySoft">#0C4A6E</Color>
+    <Color x:Key="DarkOnPrimary">#0F172A</Color>
+
+    <Color x:Key="DarkAccent">#FB923C</Color>
+    <Color x:Key="DarkAccentSoft">#7C2D12</Color>
+
+    <Color x:Key="DarkSuccess">#34D399</Color>
+    <Color x:Key="DarkSuccessSoft">#064E3B</Color>
+    <Color x:Key="DarkWarning">#FBBF24</Color>
+    <Color x:Key="DarkWarningSoft">#78350F</Color>
+    <Color x:Key="DarkDanger">#F87171</Color>
+    <Color x:Key="DarkDangerSoft">#7F1D1D</Color>
+    <Color x:Key="DarkInfo">#60A5FA</Color>
+    <Color x:Key="DarkInfoSoft">#1E3A8A</Color>
+
+    <Color x:Key="DarkOverlay">#80000000</Color>
+
+    <!-- =================================================================
+         ADAPTIVE BRUSHES — preferred for new XAML when a brush is wanted
+         (Border.Stroke, Shadow.Brush, Background, etc.)
+         ================================================================= -->
+
+    <SolidColorBrush x:Key="BackgroundBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
+    <SolidColorBrush x:Key="SurfaceBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}" />
+    <SolidColorBrush x:Key="SurfaceElevatedBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightSurfaceElevated}, Dark={StaticResource DarkSurfaceElevated}}" />
+    <SolidColorBrush x:Key="SurfaceMutedBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceMuted}}" />
+    <SolidColorBrush x:Key="BorderBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}" />
+    <SolidColorBrush x:Key="PrimaryBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+    <SolidColorBrush x:Key="AccentBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+    <SolidColorBrush x:Key="SuccessBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+    <SolidColorBrush x:Key="WarningBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
+    <SolidColorBrush x:Key="DangerBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
+    <SolidColorBrush x:Key="InfoBrush"
+                     Color="{AppThemeBinding Light={StaticResource LightInfo}, Dark={StaticResource DarkInfo}}" />
+    <SolidColorBrush x:Key="ShadowBrush" Color="#000000" />
+
+    <!-- =================================================================
+         LEGACY KEYS — retained so existing screen XAML doesn't break.
+         Stage 2 will migrate screen-by-screen to {AppThemeBinding} on
+         the Light*/Dark* tokens above. Until then, these colors render
+         with the current (dark) palette regardless of OS theme.
+         ================================================================= -->
 
     <!-- Backgrounds -->
     <Color x:Key="Background">#0F172A</Color>
@@ -15,7 +128,7 @@
     <Color x:Key="Surface2">#334155</Color>
     <Color x:Key="Surface3">#475569</Color>
 
-    <!-- Brand (web parity) -->
+    <!-- Brand -->
     <Color x:Key="Primary">#0ea5e9</Color>
     <Color x:Key="PrimaryDark">#0284c7</Color>
     <Color x:Key="PrimaryLight">#38bdf8</Color>
@@ -28,14 +141,14 @@
     <Color x:Key="OnSurfaceMuted">#64748B</Color>
     <Color x:Key="OnPrimary">#FFFFFF</Color>
 
-    <!-- Semantic (web parity) -->
+    <!-- Semantic -->
     <Color x:Key="Success">#10b981</Color>
     <Color x:Key="Warning">#f59e0b</Color>
     <Color x:Key="Error">#ef4444</Color>
     <Color x:Key="Danger">#ef4444</Color>
     <Color x:Key="Info">#38bdf8</Color>
 
-    <!-- Priority (matches web heatmap legend: red=critical, orange=high, yellow=medium, green=low) -->
+    <!-- Priority -->
     <Color x:Key="PriorityCritical">#ef4444</Color>
     <Color x:Key="PriorityHigh">#f97316</Color>
     <Color x:Key="PriorityMedium">#f59e0b</Color>
@@ -60,12 +173,22 @@
     <Color x:Key="White">#FFFFFF</Color>
     <Color x:Key="ShadowBlack">#000000</Color>
 
-    <!-- Radius scale (dp) -->
+    <!-- =================================================================
+         SHAPE / SPACING SCALE
+         ================================================================= -->
+
     <x:Double x:Key="RadiusSm">8</x:Double>
     <x:Double x:Key="RadiusMd">12</x:Double>
     <x:Double x:Key="RadiusLg">16</x:Double>
     <x:Double x:Key="RadiusXl">20</x:Double>
     <x:Double x:Key="Radius2xl">24</x:Double>
     <x:Double x:Key="RadiusFull">9999</x:Double>
+
+    <Thickness x:Key="SpacingXs">4</Thickness>
+    <Thickness x:Key="SpacingSm">8</Thickness>
+    <Thickness x:Key="SpacingMd">12</Thickness>
+    <Thickness x:Key="SpacingLg">16</Thickness>
+    <Thickness x:Key="SpacingXl">20</Thickness>
+    <Thickness x:Key="SpacingXxl">24</Thickness>
 
 </ResourceDictionary>

@@ -167,7 +167,7 @@ public partial class ProfileViewModel : ObservableObject, IDisposable
     {
         HapticService.Click();
         await _auth.LogoutAsync(ct);
-        await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
+        await Shell.Current.GoToAsync(AppConstants.RouteAccountTabAbsolute);
     }
 
     private void OnCultureChanged(object? sender, System.Globalization.CultureInfo e)

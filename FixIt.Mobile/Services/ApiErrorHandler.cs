@@ -42,7 +42,7 @@ public static class ApiErrorHandler
                 {
                     if (Shell.Current != null)
                     {
-                        await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
+                        await Shell.Current.GoToAsync(AppConstants.RouteAccountTabAbsolute);
                     }
                 }
                 catch { /* ignore */ }

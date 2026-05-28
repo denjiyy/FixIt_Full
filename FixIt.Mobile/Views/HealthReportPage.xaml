@@ -6,7 +6,7 @@
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:HealthReportViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="True"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Health_Title}">
@@ -26,11 +26,11 @@
                     <Label Text="{Binding HealthScoreDisplay, StringFormat='{0}/100'}"
                            FontSize="48"
                            FontAttributes="Bold"
-                           TextColor="{StaticResource Accent}"
+                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                            HorizontalTextAlignment="Center" />
                     <ProgressBar Progress="{Binding HealthScoreProgress}"
-                                 ProgressColor="{StaticResource Success}"
-                                 BackgroundColor="{StaticResource Surface2}"
+                                 ProgressColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}"
+                                 BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}"
                                  WidthRequest="220" />
                     <Label Text="{local:Localize Key=Health_Score}"
                            Style="{StaticResource TitleMedium}"
@@ -42,25 +42,29 @@
                 <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
                         <Label Text="{local:Localize Key=Health_TotalIssues}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Report.TotalIssues}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+                        <Label Text="{Binding Report.TotalIssues}" FontSize="Title" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
                     </VerticalStackLayout>
                 </Border>
                 <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
                         <Label Text="{local:Localize Key=Health_Resolved}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Report.ResolvedIssues}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Success}" />
+                        <Label Text="{Binding Report.ResolvedIssues}" FontSize="Title" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
                     </VerticalStackLayout>
                 </Border>
                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
                         <Label Text="{local:Localize Key=Health_Open}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Report.OpenIssues}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Warning}" />
+                        <Label Text="{Binding Report.OpenIssues}" FontSize="Title" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
                     </VerticalStackLayout>
                 </Border>
                 <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource StatCard}">
                     <VerticalStackLayout Spacing="6">
                         <Label Text="{local:Localize Key=Health_Engagement}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Engagement}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource OnBackground}" />
+                        <Label Text="{Binding Engagement}" FontSize="Title" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
                     </VerticalStackLayout>
                 </Border>
             </Grid>
@@ -73,19 +77,23 @@
                     <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                         <VerticalStackLayout>
                             <Label Text="{local:Localize Key=Health_Critical}" Style="{StaticResource LabelSmall}" />
-                            <Label Text="{Binding Report.CriticalIssues}" FontAttributes="Bold" TextColor="{StaticResource Error}" />
+                            <Label Text="{Binding Report.CriticalIssues}" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="1">
                             <Label Text="{local:Localize Key=Health_High}" Style="{StaticResource LabelSmall}" />
-                            <Label Text="{Binding Report.HighIssues}" FontAttributes="Bold" TextColor="{StaticResource Warning}" />
+                            <Label Text="{Binding Report.HighIssues}" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="2">
                             <Label Text="{local:Localize Key=Health_Medium}" Style="{StaticResource LabelSmall}" />
-                            <Label Text="{Binding Report.MediumIssues}" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
+                            <Label Text="{Binding Report.MediumIssues}" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="3">
                             <Label Text="{local:Localize Key=Health_Low}" Style="{StaticResource LabelSmall}" />
-                            <Label Text="{Binding Report.LowIssues}" FontAttributes="Bold" TextColor="{StaticResource Success}" />
+                            <Label Text="{Binding Report.LowIssues}" FontAttributes="Bold"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
                         </VerticalStackLayout>
                     </Grid>
                 </VerticalStackLayout>
@@ -93,7 +101,7 @@
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
-                               Color="{StaticResource Primary}" />
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

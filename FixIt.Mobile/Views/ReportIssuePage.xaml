@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage x:Class="FixIt.Mobile.Views.ReportIssuePage"
+             x:Name="ReportPageRoot"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:ReportIssueViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="True"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Report_Title}">
@@ -17,115 +19,161 @@
                              Padding="20,20,20,40"
                              Spacing="16">
 
-            <!-- Photo Area -->
-            <Border x:Name="PhotoBorder"
-                    HeightRequest="220"
-                    BackgroundColor="{StaticResource Surface}"
-                    Stroke="{StaticResource Surface2}"
-                    StrokeThickness="1"
-                    StrokeShape="RoundRectangle 20"
-                    SemanticProperties.Description="{local:Localize Key=Report_PhotoTap}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding TakePhotoCommand}" />
-                </Border.GestureRecognizers>
-                <Grid>
-                    <VerticalStackLayout IsVisible="{Binding HasPhoto, Converter={StaticResource InverseBoolConverter}}"
-                                         Spacing="10"
-                                         HorizontalOptions="Center"
-                                         VerticalOptions="Center">
-                        <Label Text="📷" FontSize="44" HorizontalOptions="Center" />
-                        <Label Text="{local:Localize Key=Report_PhotoPlaceholder}"
-                               Style="{StaticResource TitleMedium}"
-                               HorizontalOptions="Center" />
-                        <Label Text="{local:Localize Key=Report_PhotoTap}"
-                               Style="{StaticResource LabelSmall}"
-                               HorizontalOptions="Center" />
-                    </VerticalStackLayout>
+            <!-- Location / Map Picker -->
+            <Label Text="{local:Localize Key=Report_Location}"
+                   Style="{StaticResource Eyebrow}"
+                   SemanticProperties.HeadingLevel="Level2" />
 
-                    <Image x:Name="PhotoPreview"
-                           Aspect="AspectFill"
-                           IsVisible="{Binding HasPhoto}"
-                           Source="{Binding CapturedPhotoSource}"
-                           SemanticProperties.Description="{local:Localize Key=Detail_IssuePhoto}" />
-
-                    <Border IsVisible="{Binding HasPhoto}"
-                            BackgroundColor="#000000AA"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 10"
-                            Padding="10,5"
-                            HorizontalOptions="End"
-                            VerticalOptions="Start"
-                            Margin="12">
-                        <Label Text="{local:Localize Key=Report_Retake}"
-                               FontSize="Caption"
-                               FontAttributes="Bold"
-                               TextColor="{StaticResource White}" />
-                    </Border>
-                </Grid>
-            </Border>
-            <Label Text="{Binding PhotoError}"
-                   TextColor="{StaticResource Error}"
+            <Grid HeightRequest="220">
+                <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 20">
+                    <WebView x:Name="MapWebView"
+                             Source="{Binding MapSource}"
+                             SemanticProperties.Description="{local:Localize Key=Report_Location}" />
+                </Border>
+                <ActivityIndicator IsRunning="{Binding IsLocating}"
+                                   IsVisible="{Binding IsLocating}"
+                                   Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+            </Grid>
+            <Label Text="{Binding Address}"
+                   IsVisible="{Binding HasAddress}"
+                   Style="{StaticResource BodyMedium}"
+                   Margin="4,0,0,0" />
+            <Label Text="{Binding LocationError}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasPhotoError}"
+                   IsVisible="{Binding HasLocationError}"
                    Margin="4,0,0,0" />
 
             <!-- Details Section -->
             <Label Text="{local:Localize Key=Report_Details}"
-                   Style="{StaticResource LabelSmall}"
-                   CharacterSpacing="1.5"
-                   TextTransform="Uppercase"
+                   Style="{StaticResource Eyebrow}"
                    Margin="0,8,0,0"
                    SemanticProperties.HeadingLevel="Level2" />
 
             <Border Style="{StaticResource EntryCard}">
                 <Entry Placeholder="{local:Localize Key=Report_TitlePlaceholder}"
-                       PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                       TextColor="{StaticResource OnBackground}"
                        Text="{Binding Title}"
                        MaxLength="200"
                        SemanticProperties.Hint="{local:Localize Key=Report_TitlePlaceholder}" />
             </Border>
             <Label Text="{Binding TitleError}"
-                   TextColor="{StaticResource Error}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                    FontSize="Caption"
                    IsVisible="{Binding HasTitleError}"
                    Margin="4,0,0,0" />
 
             <Border Style="{StaticResource EditorCard}" MinimumHeightRequest="110">
                 <Editor Placeholder="{local:Localize Key=Report_DescPlaceholder}"
-                        PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                        TextColor="{StaticResource OnBackground}"
                         AutoSize="TextChanges"
                         MaxLength="2000"
                         Text="{Binding Description}"
                         SemanticProperties.Hint="{local:Localize Key=Report_DescPlaceholder}" />
             </Border>
             <Label Text="{Binding DescriptionError}"
-                   TextColor="{StaticResource Error}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                    FontSize="Caption"
                    IsVisible="{Binding HasDescriptionError}"
                    Margin="4,0,0,0" />
 
-            <!-- Location Section -->
-            <Label Text="{local:Localize Key=Report_Location}"
-                   Style="{StaticResource LabelSmall}"
-                   CharacterSpacing="1.5"
-                   TextTransform="Uppercase"
-                   Margin="0,8,0,0"
-                   SemanticProperties.HeadingLevel="Level2" />
-
+            <!-- Tags -->
+            <Label Text="{local:Localize Key=Report_Tags}"
+                   Style="{StaticResource Eyebrow}"
+                   Margin="0,8,0,0" />
             <Border Style="{StaticResource EntryCard}">
-                <Entry Placeholder="{local:Localize Key=Report_LocationPlaceholder}"
-                       PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                       TextColor="{StaticResource OnBackground}"
-                       MaxLength="500"
-                       Text="{Binding Location}"
-                       SemanticProperties.Hint="{local:Localize Key=Report_LocationPlaceholder}" />
+                <Entry Placeholder="{local:Localize Key=Report_TagsHint}"
+                       Text="{Binding TagsText}" />
             </Border>
-            <Label Text="{Binding LocationError}"
-                   TextColor="{StaticResource Error}"
+
+            <!-- AI Suggestions -->
+            <Border Style="{StaticResource IssueCardBorder}"
+                    IsVisible="{Binding HasAiSuggestion}"
+                    Margin="0,4,0,0">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{local:Localize Key=Report_AISuggestions}"
+                           Style="{StaticResource TitleMedium}" />
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                        <Label Grid.Row="0" Grid.Column="0" Text="{local:Localize Key=Report_Category}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding AiSuggestion.Category}" Style="{StaticResource BodyMedium}" />
+                        <Label Grid.Row="1" Grid.Column="0" Text="{local:Localize Key=Report_Priority}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding AiSuggestion.Priority}" Style="{StaticResource BodyMedium}" />
+                        <Label Grid.Row="2" Grid.Column="0" Text="{local:Localize Key=Report_Department}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding AiSuggestion.Department}" Style="{StaticResource BodyMedium}" />
+                    </Grid>
+                    <Label Text="{Binding AiSuggestion.ConfidenceScore, StringFormat='Confidence: {0}%'}"
+                           Style="{StaticResource LabelSmall}"
+                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                </VerticalStackLayout>
+            </Border>
+            <ActivityIndicator IsRunning="{Binding IsLoadingSuggestion}"
+                               IsVisible="{Binding IsLoadingSuggestion}"
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                               HeightRequest="24" />
+
+            <!-- Photos (optional) -->
+            <Label Text="{local:Localize Key=Report_AddPhoto}"
+                   Style="{StaticResource Eyebrow}"
+                   Margin="0,8,0,0" />
+
+            <CollectionView ItemsSource="{Binding Photos}"
+                            ItemsLayout="HorizontalList"
+                            HeightRequest="110"
+                            SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PhotoAttachment">
+                        <Border WidthRequest="100"
+                                HeightRequest="100"
+                                Margin="0,0,8,0"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14">
+                            <Grid>
+                                <Image Source="{Binding Thumbnail}"
+                                       Aspect="AspectFill" />
+                                <ImageButton Source="check.png"
+                                             BackgroundColor="#B3000000"
+                                             WidthRequest="28"
+                                             HeightRequest="28"
+                                             CornerRadius="14"
+                                             HorizontalOptions="End"
+                                             VerticalOptions="Start"
+                                             Margin="6"
+                                             Padding="6"
+                                             Command="{Binding Source={x:Reference ReportPageRoot}, Path=BindingContext.RemovePhotoCommand}"
+                                             CommandParameter="{Binding .}"
+                                             SemanticProperties.Description="{local:Localize Key=Report_RemovePhoto}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Footer>
+                    <Border WidthRequest="100"
+                            HeightRequest="100"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                            Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                            StrokeThickness="1"
+                            StrokeDashArray="4,4"
+                            StrokeShape="RoundRectangle 14"
+                            IsVisible="{Binding CanAddPhoto}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddPhotoCommand}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
+                            <Image Source="camera.png" WidthRequest="32" HeightRequest="32" Opacity="0.7" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=Report_AddPhoto}"
+                                   FontSize="Caption"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </CollectionView.Footer>
+            </CollectionView>
+            <Label Text="{Binding PhotoError}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                    FontSize="Caption"
-                   IsVisible="{Binding HasLocationError}"
+                   IsVisible="{Binding HasPhotoError}"
                    Margin="4,0,0,0" />
 
             <!-- Submit -->
@@ -137,14 +185,21 @@
                     SemanticProperties.Description="{local:Localize Key=Report_Submit}" />
 
             <Label Text="{Binding SubmitError}"
-                   TextColor="{StaticResource Error}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                    FontSize="Caption"
                    IsVisible="{Binding HasSubmitError}"
                    HorizontalTextAlignment="Center" />
 
-            <Label x:Name="SuccessCheckLabel"
-                   Text="✅"
-                   FontSize="48"
+            <Label Text="{Binding SubmitWarning}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
+                   FontSize="Caption"
+                   IsVisible="{Binding HasSubmitWarning}"
+                   HorizontalTextAlignment="Center" />
+
+            <Image x:Name="SuccessCheckLabel"
+                   Source="check.png"
+                   WidthRequest="48"
+                   HeightRequest="48"
                    Scale="0" Opacity="0"
                    HorizontalOptions="Center"
                    IsVisible="{Binding SubmissionSucceeded}"
@@ -152,7 +207,7 @@
 
             <ActivityIndicator IsRunning="{Binding IsSubmitting}"
                                IsVisible="{Binding IsSubmitting}"
-                               Color="{StaticResource Primary}" />
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

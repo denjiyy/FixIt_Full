@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="FixIt.Mobile.Views.ConnectedAccountsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FixIt.Mobile.Localization"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             ios:Page.UseSafeArea="True"
+             Title="{local:Localize Key=ConnectedAccounts_Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20,28,20,40" Spacing="16">
+            <Label Text="{local:Localize Key=ConnectedAccounts_Title}"
+                   Style="{StaticResource HeadlineMedium}" />
+
+            <Label Text="Manage your linked sign-in providers. Linking multiple accounts makes it easier to recover access."
+                   Style="{StaticResource BodyMedium}" />
+
+            <!-- Provider cards -->
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Border WidthRequest="40" HeightRequest="40"
+                            BackgroundColor="#4285F4" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+                        <Label Text="G" TextColor="{StaticResource White}" FontAttributes="Bold" FontSize="Title"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Google" Style="{StaticResource TitleMedium}" />
+                        <Label Text="Sign in with Google" Style="{StaticResource LabelSmall}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2" Text="{local:Localize Key=ConnectedAccounts_Link}"
+                            Style="{StaticResource CompactPrimaryButton}"
+                            Clicked="OnLinkProviderClicked" CommandParameter="Google" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Border WidthRequest="40" HeightRequest="40"
+                            BackgroundColor="#24292F" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+                        <Label Text="GH" TextColor="{StaticResource White}" FontAttributes="Bold" FontSize="Body"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="GitHub" Style="{StaticResource TitleMedium}" />
+                        <Label Text="Sign in with GitHub" Style="{StaticResource LabelSmall}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2" Text="{local:Localize Key=ConnectedAccounts_Link}"
+                            Style="{StaticResource CompactPrimaryButton}"
+                            Clicked="OnLinkProviderClicked" CommandParameter="GitHub" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Border WidthRequest="40" HeightRequest="40"
+                            BackgroundColor="#00A4EF" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+                        <Label Text="M" TextColor="{StaticResource White}" FontAttributes="Bold" FontSize="Title"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Microsoft" Style="{StaticResource TitleMedium}" />
+                        <Label Text="Sign in with Microsoft" Style="{StaticResource LabelSmall}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2" Text="{local:Localize Key=ConnectedAccounts_Link}"
+                            Style="{StaticResource CompactPrimaryButton}"
+                            Clicked="OnLinkProviderClicked" CommandParameter="Microsoft" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                    <Border WidthRequest="40" HeightRequest="40"
+                            BackgroundColor="#1877F2" StrokeThickness="0" StrokeShape="RoundRectangle 10">
+                        <Label Text="f" TextColor="{StaticResource White}" FontAttributes="Bold" FontSize="Title"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Facebook" Style="{StaticResource TitleMedium}" />
+                        <Label Text="Sign in with Facebook" Style="{StaticResource LabelSmall}" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2" Text="{local:Localize Key=ConnectedAccounts_Link}"
+                            Style="{StaticResource CompactPrimaryButton}"
+                            Clicked="OnLinkProviderClicked" CommandParameter="Facebook" />
+                </Grid>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

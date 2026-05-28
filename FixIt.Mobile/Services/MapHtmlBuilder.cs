@@ -25,6 +25,34 @@ public static class MapHtmlBuilder
         };
     }
 
+    /// <summary>
+    /// Selectable Leaflet map. Map click and marker drag both navigate to
+    /// <c>fixit://location?lat=…&amp;lng=…</c> so the host page can pick the
+    /// new coordinates up via WebView.Navigating.
+    /// </summary>
+    public static HtmlWebViewSource BuildPickerMap(double latitude, double longitude, int zoom = 15)
+    {
+        var lat = latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var lng = longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        return new HtmlWebViewSource
+        {
+            Html = BuildHtml(latitude, longitude, zoom, $$"""
+                const marker = L.marker([{{lat}}, {{lng}}], { draggable: true }).addTo(map);
+                function emit(latlng) {
+                    window.location.href = 'fixit://location?lat=' + latlng.lat + '&lng=' + latlng.lng;
+                }
+                map.on('click', function (e) {
+                    marker.setLatLng(e.latlng);
+                    emit(e.latlng);
+                });
+                marker.on('dragend', function () {
+                    emit(marker.getLatLng());
+                });
+                """)
+        };
+    }
+
     public static HtmlWebViewSource BuildHazardMap(IEnumerable<SafetyHazard> hazards)
     {
         var pins = hazards

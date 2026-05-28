@@ -2,13 +2,14 @@
 <ContentPage x:Class="FixIt.Mobile.Views.ProfilePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:ProfileViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Profile_Title}">
@@ -24,13 +25,13 @@
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
                     <Border WidthRequest="88" HeightRequest="88"
-                            BackgroundColor="{StaticResource Primary}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                             StrokeThickness="0"
                             StrokeShape="RoundRectangle 44"
                             HorizontalOptions="Center">
                         <Border.Shadow>
-                            <Shadow Brush="{StaticResource Primary}"
-                                    Opacity="0.4" Offset="0,4" Radius="14" />
+                            <Shadow Brush="{StaticResource PrimaryBrush}"
+                                    Opacity="0.3" Offset="0,4" Radius="14" />
                         </Border.Shadow>
                         <Label Text="{Binding Initials}"
                                TextColor="{StaticResource White}"
@@ -50,7 +51,7 @@
                                HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
 
-                    <Border BackgroundColor="{StaticResource StatusNew}"
+                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                             StrokeThickness="0"
                             Padding="12,5"
                             StrokeShape="RoundRectangle 10"
@@ -59,12 +60,12 @@
                             <Label Text="{local:Localize Key=Common_Trust}"
                                    FontSize="Caption"
                                    FontAttributes="Bold"
-                                   CharacterSpacing="1"
+                                   CharacterSpacing="0.4"
                                    TextColor="{StaticResource White}" />
                             <Label Text="{Binding TrustLevel}"
                                    FontSize="Caption"
                                    FontAttributes="Bold"
-                                   CharacterSpacing="1"
+                                   CharacterSpacing="0.4"
                                    TextColor="{StaticResource White}" />
                         </HorizontalStackLayout>
                     </Border>
@@ -82,26 +83,26 @@
                     <Button Grid.Column="1" Text="EN"
                             Command="{Binding SwitchLanguageCommand}"
                             CommandParameter="en-US"
-                            Style="{StaticResource SecondaryButton}"
-                            HeightRequest="42" WidthRequest="56">
+                            Style="{StaticResource OutlineToggleButton}"
+                            WidthRequest="56">
                         <Button.Triggers>
                             <DataTrigger TargetType="Button" Binding="{Binding IsEnglish}" Value="True">
-                                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                                 <Setter Property="TextColor" Value="{StaticResource White}" />
-                                <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
                     <Button Grid.Column="2" Text="BG"
                             Command="{Binding SwitchLanguageCommand}"
                             CommandParameter="bg-BG"
-                            Style="{StaticResource SecondaryButton}"
-                            HeightRequest="42" WidthRequest="56">
+                            Style="{StaticResource OutlineToggleButton}"
+                            WidthRequest="56">
                         <Button.Triggers>
                             <DataTrigger TargetType="Button" Binding="{Binding IsBulgarian}" Value="True">
-                                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                                 <Setter Property="TextColor" Value="{StaticResource White}" />
-                                <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
@@ -115,7 +116,7 @@
                         <Label Style="{StaticResource LabelSmall}"
                                Text="{local:Localize Key=Profile_Reputation}" />
                         <Label FontSize="Title" FontAttributes="Bold"
-                               TextColor="{StaticResource Accent}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                Text="{Binding ReputationPoints}" />
                     </VerticalStackLayout>
                 </Border>
@@ -124,7 +125,7 @@
                         <Label Style="{StaticResource LabelSmall}"
                                Text="{local:Localize Key=Profile_Reported}" />
                         <Label FontSize="Title" FontAttributes="Bold"
-                               TextColor="{StaticResource OnBackground}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
                                Text="{Binding IssuesReported}" />
                     </VerticalStackLayout>
                 </Border>
@@ -133,7 +134,7 @@
                         <Label Style="{StaticResource LabelSmall}"
                                Text="{local:Localize Key=Profile_Resolved}" />
                         <Label FontSize="Title" FontAttributes="Bold"
-                               TextColor="{StaticResource Success}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}"
                                Text="{Binding IssuesResolved}" />
                     </VerticalStackLayout>
                 </Border>
@@ -159,7 +160,7 @@
                            SemanticProperties.HeadingLevel="Level2" />
                     <Label Grid.Column="1"
                            Text="{local:Localize Key=Profile_ViewAll}"
-                           TextColor="{StaticResource Accent}"
+                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                            FontSize="Caption"
                            FontAttributes="Bold"
                            VerticalOptions="Center">
@@ -179,17 +180,15 @@
                                 <views:SkeletonCardView />
                                 <views:SkeletonCardView />
                             </VerticalStackLayout>
-                            <Label Text="{local:Localize Key=Profile_NoIssues}"
-                                   IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                                   Style="{StaticResource BodyMedium}"
-                                   HorizontalTextAlignment="Center"
-                                   Padding="0,24" />
+                            <controls:EmptyStateView IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                                                     IconSource="checklist.png"
+                                                     Title="{local:Localize Key=Profile_NoIssues}" />
                         </VerticalStackLayout>
                     </CollectionView.EmptyView>
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="models:Issue">
-                            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
                                 <Grid RowDefinitions="Auto,Auto" RowSpacing="8">
                                     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <Label Grid.Column="0"
@@ -198,23 +197,22 @@
                                                MaxLines="1"
                                                LineBreakMode="TailTruncation" />
                                         <Border Grid.Column="1"
-                                                StrokeThickness="0"
-                                                StrokeShape="RoundRectangle 8"
-                                                Padding="8,4"
-                                                VerticalOptions="Center"
+                                                Style="{StaticResource StatusBadge}"
                                                 BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
                                             <Label Text="{Binding Status}"
                                                    TextColor="{StaticResource White}"
-                                                   FontSize="Caption"
-                                                   FontAttributes="Bold" />
+                                                   FontSize="11"
+                                                   FontAttributes="Bold"
+                                                   CharacterSpacing="0.2"
+                                                   VerticalTextAlignment="Center" />
                                         </Border>
                                     </Grid>
-                                    <HorizontalStackLayout Grid.Row="1" Spacing="4">
-                                        <Label Text="📍" FontSize="Caption" />
-                                        <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" />
-                                        <Label Text="·" Style="{StaticResource LabelSmall}" />
+                                    <HorizontalStackLayout Grid.Row="1" Spacing="6">
+                                        <Image Source="pin.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
+                                        <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                                        <Label Text="·" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
                                         <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
-                                               Style="{StaticResource LabelSmall}" />
+                                               Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
                                     </HorizontalStackLayout>
                                 </Grid>
                             </Border>
@@ -226,15 +224,15 @@
             <!-- Sign Out -->
             <Button Text="{local:Localize Key=Profile_SignOut}"
                     Style="{StaticResource SecondaryButton}"
-                    TextColor="{StaticResource Error}"
-                    BorderColor="{StaticResource Error}"
+                    TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
+                    BorderColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                     Command="{Binding LogoutCommand}"
                     Margin="0,8,0,0"
                     SemanticProperties.Description="{local:Localize Key=Profile_SignOut}" />
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
-                               Color="{StaticResource Primary}" />
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

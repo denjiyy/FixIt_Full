@@ -604,6 +604,57 @@ public class IssueServiceTests
     }
 
     [Fact]
+    public async Task CreateIssueAsync_WithAddress_SetsIssueAddress()
+    {
+        var reporter = new UserSummary { Id = "user1", DisplayName = "Test User" };
+        Issue? capturedIssue = null;
+
+        _issueRepoMock.Setup(r => r.InsertAsync(It.IsAny<Issue>()))
+            .Callback<Issue>(issue => capturedIssue = issue)
+            .ReturnsAsync((Issue issue) => issue);
+
+        _tagRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Tag, bool>>>()))
+            .ReturnsAsync(new List<Tag>());
+
+        await _issueService.CreateIssueAsync(
+            "Broken sign",
+            "Stop sign missing reflective coating",
+            23.3219,
+            42.6977,
+            "city1",
+            reporter,
+            address: "  ул. Витоша 1, София  ");
+
+        Assert.NotNull(capturedIssue);
+        Assert.Equal("ул. Витоша 1, София", capturedIssue!.Address);
+    }
+
+    [Fact]
+    public async Task CreateIssueAsync_WithNullAddress_LeavesIssueAddressNull()
+    {
+        var reporter = new UserSummary { Id = "user1", DisplayName = "Test User" };
+        Issue? capturedIssue = null;
+
+        _issueRepoMock.Setup(r => r.InsertAsync(It.IsAny<Issue>()))
+            .Callback<Issue>(issue => capturedIssue = issue)
+            .ReturnsAsync((Issue issue) => issue);
+
+        _tagRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Tag, bool>>>()))
+            .ReturnsAsync(new List<Tag>());
+
+        await _issueService.CreateIssueAsync(
+            "Broken sign",
+            "Stop sign missing reflective coating",
+            0,
+            0,
+            "city1",
+            reporter);
+
+        Assert.NotNull(capturedIssue);
+        Assert.Null(capturedIssue!.Address);
+    }
+
+    [Fact]
     public async Task GetPublicIssueOverviewAsync_ReturnsCountsAndFeaturedIssues()
     {
         // Arrange

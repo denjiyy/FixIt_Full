@@ -13,13 +13,15 @@ public partial class SettingsPage : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         if (_viewModel.LoadCommand.CanExecute(null))
         {
             _viewModel.LoadCommand.Execute(null);
         }
+
+        await _viewModel.LoadCitiesAndEmailAsync();
     }
 
     private void OnAnonymousToggled(object? sender, ToggledEventArgs e)
@@ -28,5 +30,10 @@ public partial class SettingsPage : ContentPage
         {
             _viewModel.ToggleAnonymousCommand.Execute(e.Value);
         }
+    }
+
+    private async void OnConnectedAccountsClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(Constants.AppConstants.RouteConnectedAccounts);
     }
 }

@@ -6,7 +6,7 @@
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:RegisterViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Register_SignUp}">
@@ -23,16 +23,16 @@
                                          Spacing="0"
                                          Margin="0,0,0,40">
                         <Border WidthRequest="72" HeightRequest="72"
-                                BackgroundColor="{StaticResource Primary}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                 StrokeThickness="0"
                                 StrokeShape="RoundRectangle 36"
                                 HorizontalOptions="Center"
                                 Margin="0,0,0,20">
                             <Border.Shadow>
-                                <Shadow Brush="{StaticResource Primary}"
-                                        Opacity="0.5"
+                                <Shadow Brush="{StaticResource PrimaryBrush}"
+                                        Opacity="0.35"
                                         Offset="0,6"
-                                        Radius="16" />
+                                        Radius="14" />
                             </Border.Shadow>
                             <Label Text="F"
                                    FontSize="Title"
@@ -47,7 +47,7 @@
                                SemanticProperties.HeadingLevel="Level1" />
                         <Label Text="{local:Localize Key=Register_Subtitle}"
                                Style="{StaticResource BodyMedium}"
-                               TextColor="{StaticResource OnSurfaceMuted}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}"
                                HorizontalTextAlignment="Center"
                                Margin="0,8,0,0" />
                     </VerticalStackLayout>
@@ -55,96 +55,80 @@
                     <!-- Form block -->
                     <VerticalStackLayout x:Name="FormBlock" Opacity="0" TranslationY="20" Spacing="0">
 
-                        <!-- Full Name -->
                         <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
                             <Entry Placeholder="{local:Localize Key=Register_FullNamePlaceholder}"
-                                   PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                                   TextColor="{StaticResource OnBackground}"
                                    Text="{Binding FullName}"
                                    SemanticProperties.Hint="{local:Localize Key=Register_FullNamePlaceholder}" />
                         </Border>
                         <Label Text="{Binding FullNameError}"
-                               TextColor="{StaticResource Error}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                                FontSize="Caption"
                                IsVisible="{Binding HasFullNameError}"
                                Margin="4,0,0,10" />
 
-                        <!-- Email -->
                         <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
                             <Entry Keyboard="Email"
                                    Placeholder="{local:Localize Key=Register_EmailPlaceholder}"
-                                   PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                                   TextColor="{StaticResource OnBackground}"
                                    Text="{Binding Email}"
                                    SemanticProperties.Hint="{local:Localize Key=Register_EmailPlaceholder}" />
                         </Border>
                         <Label Text="{Binding EmailError}"
-                               TextColor="{StaticResource Error}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                                FontSize="Caption"
                                IsVisible="{Binding HasEmailError}"
                                Margin="4,0,0,10" />
 
-                        <!-- Password -->
                         <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
                             <Entry IsPassword="True"
                                    Placeholder="{local:Localize Key=Register_PasswordPlaceholder}"
-                                   PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                                   TextColor="{StaticResource OnBackground}"
                                    Text="{Binding Password}"
                                    SemanticProperties.Hint="{local:Localize Key=Register_PasswordPlaceholder}" />
                         </Border>
                         <Label Text="{Binding PasswordError}"
-                               TextColor="{StaticResource Error}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                                FontSize="Caption"
                                IsVisible="{Binding HasPasswordError}"
                                Margin="4,0,0,10" />
 
-                        <!-- Confirm Password -->
                         <Border Style="{StaticResource EntryCard}" Margin="0,0,0,6">
                             <Entry IsPassword="True"
                                    Placeholder="{local:Localize Key=Register_ConfirmPasswordPlaceholder}"
-                                   PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                                   TextColor="{StaticResource OnBackground}"
                                    Text="{Binding ConfirmPassword}"
                                    SemanticProperties.Hint="{local:Localize Key=Register_ConfirmPasswordPlaceholder}" />
                         </Border>
                         <Label Text="{Binding ConfirmPasswordError}"
-                               TextColor="{StaticResource Error}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                                FontSize="Caption"
                                IsVisible="{Binding HasConfirmPasswordError}"
                                Margin="4,2,0,0" />
 
-                        <!-- General Error Message -->
                         <Label Text="{Binding ErrorMessage}"
-                               TextColor="{StaticResource Error}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                                FontSize="Caption"
                                IsVisible="{Binding HasError}"
                                HorizontalTextAlignment="Center"
                                Margin="0,0,0,14" />
 
-                        <!-- Create Account Button -->
                         <Button Text="{local:Localize Key=Register_CreateAccount}"
                                 Style="{StaticResource PrimaryButton}"
                                 Command="{Binding RegisterCommand}"
                                 Margin="0,8,0,0"
                                 SemanticProperties.Description="{local:Localize Key=Register_CreateAccount}" />
 
-                        <!-- Loading Indicator -->
                         <ActivityIndicator IsRunning="{Binding IsLoading}"
                                            IsVisible="{Binding IsLoading}"
-                                           Color="{StaticResource Primary}"
+                                           Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                            Margin="0,20,0,0" />
 
-                        <!-- Sign In Link -->
                         <Label HorizontalOptions="Center" Margin="0,28,0,0">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="{local:Localize Key=Register_AlreadyHaveAccount}"
-                                          TextColor="{StaticResource OnSurface}"
+                                          TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}"
                                           FontSize="Caption" />
                                     <Span Text=" " />
                                     <Span Text="{local:Localize Key=Register_SignIn}"
-                                          TextColor="{StaticResource Accent}"
+                                          TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                           FontAttributes="Bold"
                                           FontSize="Caption" />
                                 </FormattedString>

@@ -2,13 +2,14 @@
 <ContentPage x:Class="FixIt.Mobile.Views.LeaderboardPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:LeaderboardViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Leaderboard_Title}">
@@ -27,20 +28,12 @@
             <Button Text="{local:Localize Key=Leaderboard_Weekly}"
                     Command="{Binding SelectPeriodCommand}"
                     CommandParameter="weekly"
-                    BackgroundColor="{StaticResource Surface}"
-                    BorderColor="{StaticResource Surface2}"
-                    BorderWidth="1"
-                    TextColor="{StaticResource OnSurface}"
-                    FontSize="Caption"
-                    FontAttributes="Bold"
-                    CornerRadius="18"
-                    MinimumHeightRequest="44"
-                    Padding="14,0"
+                    Style="{StaticResource OutlineToggleButton}"
                     SemanticProperties.Description="Select weekly leaderboard">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button" Binding="{Binding IsWeekly}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                         <Setter Property="TextColor" Value="{StaticResource White}" />
                     </DataTrigger>
                 </Button.Triggers>
@@ -48,20 +41,12 @@
             <Button Text="{local:Localize Key=Leaderboard_Monthly}"
                     Command="{Binding SelectPeriodCommand}"
                     CommandParameter="monthly"
-                    BackgroundColor="{StaticResource Surface}"
-                    BorderColor="{StaticResource Surface2}"
-                    BorderWidth="1"
-                    TextColor="{StaticResource OnSurface}"
-                    FontSize="Caption"
-                    FontAttributes="Bold"
-                    CornerRadius="18"
-                    MinimumHeightRequest="44"
-                    Padding="14,0"
+                    Style="{StaticResource OutlineToggleButton}"
                     SemanticProperties.Description="Select monthly leaderboard">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button" Binding="{Binding IsMonthly}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                         <Setter Property="TextColor" Value="{StaticResource White}" />
                     </DataTrigger>
                 </Button.Triggers>
@@ -69,20 +54,12 @@
             <Button Text="{local:Localize Key=Leaderboard_AllTime}"
                     Command="{Binding SelectPeriodCommand}"
                     CommandParameter="alltime"
-                    BackgroundColor="{StaticResource Surface}"
-                    BorderColor="{StaticResource Surface2}"
-                    BorderWidth="1"
-                    TextColor="{StaticResource OnSurface}"
-                    FontSize="Caption"
-                    FontAttributes="Bold"
-                    CornerRadius="18"
-                    MinimumHeightRequest="44"
-                    Padding="14,0"
+                    Style="{StaticResource OutlineToggleButton}"
                     SemanticProperties.Description="Select all-time leaderboard">
                 <Button.Triggers>
                     <DataTrigger TargetType="Button" Binding="{Binding IsAllTime}" Value="True">
-                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+                        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
                         <Setter Property="TextColor" Value="{StaticResource White}" />
                     </DataTrigger>
                 </Button.Triggers>
@@ -93,26 +70,25 @@
                         ItemsSource="{Binding Entries}"
                         SelectionMode="None">
             <CollectionView.EmptyView>
-                <VerticalStackLayout Spacing="10" Padding="0,56" HorizontalOptions="Center">
+                <VerticalStackLayout Spacing="10" Padding="0,40">
                     <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
                         <views:SkeletonCardView />
                         <views:SkeletonCardView />
                         <views:SkeletonCardView />
                     </VerticalStackLayout>
-                    <Label Text="🏆" FontSize="44" HorizontalOptions="Center" />
-                    <Label Text="{local:Localize Key=Leaderboard_Empty}"
-                           Style="{StaticResource BodyMedium}"
-                           HorizontalTextAlignment="Center" />
+                    <controls:EmptyStateView IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                                             IconSource="trophy.png"
+                                             Title="{local:Localize Key=Leaderboard_Empty}" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:LeaderboardEntry">
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
                         <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
                             <Label Text="{Binding MedalPrefix}" Style="{StaticResource TitleMedium}" VerticalOptions="Center" />
                             <Border Grid.Column="1" WidthRequest="42" HeightRequest="42"
                                     StrokeThickness="0"
-                                    BackgroundColor="{StaticResource Surface2}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                     StrokeShape="RoundRectangle 21">
                                 <Label Text="{Binding Initials}"
                                        TextColor="{StaticResource White}"
@@ -128,20 +104,19 @@
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                             <Border Grid.Column="3"
-                                    BackgroundColor="{StaticResource Surface2}"
-                                    StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 10"
-                                    Padding="10,6"
-                                    VerticalOptions="Center">
+                                    Style="{StaticResource StatusBadge}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightAccentSoft}, Dark={StaticResource DarkAccentSoft}}">
                                 <HorizontalStackLayout Spacing="4">
                                     <Label Text="{Binding Points}"
-                                           TextColor="{StaticResource Accent}"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                            FontAttributes="Bold"
-                                           FontSize="Caption" />
+                                           FontSize="Caption"
+                                           VerticalTextAlignment="Center" />
                                     <Label Text="{local:Localize Key=Leaderboard_Points}"
-                                           TextColor="{StaticResource Accent}"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                            FontAttributes="Bold"
-                                           FontSize="Caption" />
+                                           FontSize="Caption"
+                                           VerticalTextAlignment="Center" />
                                 </HorizontalStackLayout>
                             </Border>
                         </Grid>

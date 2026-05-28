@@ -2,13 +2,14 @@
 <ContentPage x:Class="FixIt.Mobile.Views.IssueDetailPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:IssueDetailViewModel"
-             BackgroundColor="{StaticResource Background}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="True"
              ios:Page.UseSafeArea="True"
              Title="{Binding Issue.Title}">
@@ -22,13 +23,8 @@
                 <!-- Hero Image -->
                 <Grid HeightRequest="240">
                     <Border IsVisible="{Binding HasIssuePhoto, Converter={StaticResource InverseBoolConverter}}"
-                            StrokeThickness="0">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#2563EB" Offset="0" />
-                                <GradientStop Color="#1E3A8A" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.Background>
+                            StrokeThickness="0"
+                            Background="{StaticResource PrimaryBrush}">
                         <Label Text="FixIt"
                                FontSize="Title"
                                FontAttributes="Bold"
@@ -52,23 +48,22 @@
 
                     <!-- Status & Category -->
                     <HorizontalStackLayout Spacing="8">
-                        <Border StrokeThickness="0"
-                                StrokeShape="RoundRectangle 8"
-                                Padding="8,4"
+                        <Border Style="{StaticResource StatusBadge}"
                                 BackgroundColor="{Binding Issue.Status, Converter={StaticResource StatusToColorConverter}}">
                             <Label Text="{Binding Issue.Status}"
                                    TextColor="{StaticResource White}"
-                                   FontSize="Caption"
+                                   FontSize="11"
                                    FontAttributes="Bold"
-                                   CharacterSpacing="1" />
+                                   CharacterSpacing="0.4"
+                                   VerticalTextAlignment="Center" />
                         </Border>
-                        <Border Stroke="{StaticResource Surface2}"
-                                StrokeShape="RoundRectangle 8"
-                                Padding="8,4"
-                                BackgroundColor="{StaticResource Surface}">
+                        <Border Style="{StaticResource StatusBadge}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}">
                             <Label Text="{Binding Issue.Category}"
-                                   TextColor="{StaticResource OnSurface}"
-                                   FontSize="Caption" />
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}"
+                                   FontSize="11"
+                                   FontAttributes="Bold"
+                                   VerticalTextAlignment="Center" />
                         </Border>
                     </HorizontalStackLayout>
 
@@ -80,7 +75,7 @@
                     <!-- Author row -->
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                         <Border WidthRequest="32" HeightRequest="32"
-                                BackgroundColor="{StaticResource Primary}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                 StrokeThickness="0"
                                 StrokeShape="RoundRectangle 16">
                             <Label Text="{Binding Issue.AuthorInitials}"
@@ -105,46 +100,93 @@
                         <Label Grid.Column="2"
                                Text="{Binding Issue.VoteCount, StringFormat='▲ {0}'}"
                                Style="{StaticResource LabelSmall}"
-                               TextColor="{StaticResource Accent}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                VerticalOptions="Center" />
                     </Grid>
 
-                    <!-- Vote Buttons -->
-                    <HorizontalStackLayout Spacing="10">
+                    <!-- Vote & Owner Actions -->
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="10">
                         <Button x:Name="UpvoteButton"
+                                Grid.Column="0"
                                 Text="{local:Localize Key=Detail_Upvote}"
                                 Style="{StaticResource SecondaryButton}"
                                 HeightRequest="44"
-                                Clicked="OnUpvoteClicked"
-                                SemanticProperties.Description="{local:Localize Key=Detail_Upvote}" />
+                                Clicked="OnUpvoteClicked" />
                         <Button x:Name="DownvoteButton"
+                                Grid.Column="1"
                                 Text="{local:Localize Key=Detail_Downvote}"
                                 Style="{StaticResource SecondaryButton}"
                                 HeightRequest="44"
-                                Clicked="OnDownvoteClicked"
-                                SemanticProperties.Description="{local:Localize Key=Detail_Downvote}" />
-                    </HorizontalStackLayout>
+                                Clicked="OnDownvoteClicked" />
+                        <Button Grid.Column="3"
+                                Text="{local:Localize Key=Detail_Edit}"
+                                Style="{StaticResource SecondaryButton}"
+                                HeightRequest="44"
+                                IsVisible="{Binding IsIssueOwner}"
+                                Command="{Binding EditIssueCommand}" />
+                        <Button Grid.Column="4"
+                                Text="{local:Localize Key=Detail_Delete}"
+                                Style="{StaticResource SecondaryButton}"
+                                HeightRequest="44"
+                                TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
+                                BorderColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
+                                IsVisible="{Binding IsIssueOwner}"
+                                Command="{Binding DeleteIssueCommand}" />
+                    </Grid>
 
-                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
+                    <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}" />
 
                     <!-- Description -->
                     <Label Text="{Binding Issue.Description}"
                            Style="{StaticResource BodyMedium}"
                            SemanticProperties.Description="{Binding Issue.Description}" />
 
-                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
+                    <!-- Media Gallery -->
+                    <VerticalStackLayout IsVisible="{Binding HasMediaGallery}" Spacing="10">
+                        <Label Text="{local:Localize Key=Detail_Media}"
+                               Style="{StaticResource TitleMedium}" />
+                        <CollectionView ItemsSource="{Binding AllMediaUrls}"
+                                        HeightRequest="180"
+                                        ItemsLayout="HorizontalList">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12"
+                                            Margin="0,0,10,0"
+                                            WidthRequest="240" HeightRequest="180">
+                                        <Image Aspect="AspectFill">
+                                            <Image.Source>
+                                                <UriImageSource Uri="{Binding .}"
+                                                                CacheValidity="1.00:00:00"
+                                                                CachingEnabled="True" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+
+                    <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}" />
 
                     <!-- Location Map -->
                     <VerticalStackLayout IsVisible="{Binding HasIssueLocation}" Spacing="10">
                         <Label Text="{local:Localize Key=Detail_LocationSection}"
                                Style="{StaticResource TitleMedium}"
                                SemanticProperties.HeadingLevel="Level2" />
-                        <Border Style="{StaticResource Card}" Padding="0" HeightRequest="220">
-                            <WebView Source="{Binding IssueMapSource}" />
-                        </Border>
+                        <Grid HeightRequest="220">
+                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16">
+                                <WebView Source="{Binding IssueMapSource}" />
+                            </Border>
+                        </Grid>
+                        <Label Text="{Binding LocationText}"
+                               Style="{StaticResource LabelSmall}" />
                     </VerticalStackLayout>
 
-                    <BoxView IsVisible="{Binding HasIssueLocation}" HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
+                    <BoxView IsVisible="{Binding HasIssueLocation}" HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}" />
 
                     <!-- AI Analysis -->
                     <VerticalStackLayout Spacing="10">
@@ -152,7 +194,7 @@
                                Style="{StaticResource TitleMedium}"
                                SemanticProperties.HeadingLevel="Level2" />
 
-                        <Border Style="{StaticResource Card}" IsVisible="{Binding IsAnalysisPending}">
+                        <Border Style="{StaticResource IssueCardBorder}" IsVisible="{Binding IsAnalysisPending}">
                             <VerticalStackLayout Spacing="10">
                                 <views:SkeletonCardView />
                                 <Label Text="{local:Localize Key=Analysis_Generating}"
@@ -160,7 +202,7 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Style="{StaticResource Card}" IsVisible="{Binding HasAnalysis}">
+                        <Border Style="{StaticResource IssueCardBorder}" IsVisible="{Binding HasAnalysis}">
                             <VerticalStackLayout Spacing="12">
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                     <VerticalStackLayout Spacing="4">
@@ -170,15 +212,13 @@
                                                Style="{StaticResource TitleMedium}" />
                                     </VerticalStackLayout>
                                     <Border Grid.Column="1"
-                                            BackgroundColor="{StaticResource Surface2}"
-                                            StrokeThickness="0"
-                                            StrokeShape="RoundRectangle 10"
-                                            Padding="10,6"
-                                            VerticalOptions="Center">
+                                            Style="{StaticResource StatusBadge}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}">
                                         <Label Text="{Binding Analysis.ConfidenceScore, StringFormat='{0}%'}"
-                                               TextColor="{StaticResource Accent}"
+                                               TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
                                                FontAttributes="Bold"
-                                               FontSize="Caption" />
+                                               FontSize="Caption"
+                                               VerticalTextAlignment="Center" />
                                     </Border>
                                 </Grid>
 
@@ -191,8 +231,8 @@
                                                Style="{StaticResource LabelSmall}" />
                                     </Grid>
                                     <ProgressBar Progress="{Binding AnalysisSeverityProgress}"
-                                                 ProgressColor="{StaticResource Warning}"
-                                                 BackgroundColor="{StaticResource Surface2}" />
+                                                 ProgressColor="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}"
+                                                 BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}" />
                                 </VerticalStackLayout>
 
                                 <Label Text="{local:Localize Key=Analysis_Keywords}"
@@ -203,14 +243,14 @@
                                             AlignItems="Start">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="x:String">
-                                            <Border BackgroundColor="{StaticResource Surface2}"
+                                            <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}"
                                                     StrokeThickness="0"
                                                     StrokeShape="RoundRectangle 10"
                                                     Padding="10,5"
                                                     Margin="0,0,6,6">
                                                 <Label Text="{Binding .}"
                                                        FontSize="Caption"
-                                                       TextColor="{StaticResource OnSurface}" />
+                                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
                                             </Border>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
@@ -225,7 +265,7 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Style="{StaticResource Card}" IsVisible="{Binding IsAnalysisUnavailable}">
+                        <Border Style="{StaticResource IssueCardBorder}" IsVisible="{Binding IsAnalysisUnavailable}">
                             <VerticalStackLayout Spacing="10">
                                 <Label Text="{local:Localize Key=Analysis_Unavailable}"
                                        Style="{StaticResource BodyMedium}" />
@@ -236,10 +276,59 @@
                         </Border>
                     </VerticalStackLayout>
 
-                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource DividerColor}" />
+                    <!-- Status History -->
+                    <VerticalStackLayout IsVisible="{Binding HasStatusHistory}" Spacing="10">
+                        <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}" />
+                        <Label Text="{local:Localize Key=Detail_StatusHistory}"
+                               Style="{StaticResource TitleMedium}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <BindableLayout.ItemsSource>
+                            <x:NullExtension />
+                        </BindableLayout.ItemsSource>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Issue.StatusHistory}" Spacing="0">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:IssueStatusEvent">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="0,8">
+                                        <Border WidthRequest="10" HeightRequest="10"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 5"
+                                                VerticalOptions="Start"
+                                                Margin="4,5,0,0" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                            <HorizontalStackLayout Spacing="6">
+                                                <Border Style="{StaticResource StatusBadge}"
+                                                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}">
+                                                    <Label Text="{Binding From}"
+                                                           FontSize="10" FontAttributes="Bold"
+                                                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}"
+                                                           VerticalTextAlignment="Center" />
+                                                </Border>
+                                                <Label Text="→" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
+                                                <Border Style="{StaticResource StatusBadge}"
+                                                        BackgroundColor="{Binding To, Converter={StaticResource StatusToColorConverter}}">
+                                                    <Label Text="{Binding To}"
+                                                           FontSize="10" FontAttributes="Bold"
+                                                           TextColor="{StaticResource White}"
+                                                           VerticalTextAlignment="Center" />
+                                                </Border>
+                                            </HorizontalStackLayout>
+                                            <Label Text="{Binding ChangedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
+                                                   Style="{StaticResource LabelSmall}" />
+                                            <Label Text="{Binding Comment}"
+                                                   Style="{StaticResource BodyMedium}"
+                                                   IsVisible="{Binding Comment, Converter={StaticResource IsNotNullConverter}}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+
+                    <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}" />
 
                     <!-- Comments Header -->
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                         <Label Grid.Column="0"
                                Text="{local:Localize Key=Detail_Comments}"
                                Style="{StaticResource TitleMedium}"
@@ -248,6 +337,12 @@
                                Text="{Binding Comments.Count}"
                                Style="{StaticResource LabelSmall}"
                                VerticalOptions="Center" />
+                        <Picker Grid.Column="2"
+                                ItemsSource="{Binding CommentSortOptions}"
+                                SelectedItem="{Binding SelectedCommentSort}"
+                                TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
+                                FontSize="Caption"
+                                VerticalOptions="Center" />
                     </Grid>
 
                     <!-- Comments List -->
@@ -257,19 +352,14 @@
                                     RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommentsCommand}"
                                     Margin="0,0,0,20">
                         <CollectionView.EmptyView>
-                            <VerticalStackLayout IsVisible="{Binding HasNoComments}"
-                                                 Padding="0,36" Spacing="10"
-                                                 HorizontalOptions="Center">
-                                <Label Text="💬" FontSize="44" HorizontalOptions="Center" />
-                                <Label Text="{local:Localize Key=Detail_NoComments}"
-                                       Style="{StaticResource BodyMedium}"
-                                       HorizontalOptions="Center" />
-                            </VerticalStackLayout>
+                            <controls:EmptyStateView IsVisible="{Binding HasNoComments}"
+                                                     IconSource="chat.png"
+                                                     Title="{local:Localize Key=Detail_NoComments}" />
                         </CollectionView.EmptyView>
                         <CollectionView.Footer>
                             <ActivityIndicator IsRunning="{Binding IsLoadingMoreComments}"
                                                IsVisible="{Binding IsLoadingMoreComments}"
-                                               Color="{StaticResource Primary}"
+                                               Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                                Margin="0,8,0,20" />
                         </CollectionView.Footer>
                         <CollectionView.ItemTemplate>
@@ -277,7 +367,7 @@
                                 <Grid ColumnDefinitions="36,*" ColumnSpacing="12"
                                       Padding="0,12,0,0">
                                     <Border WidthRequest="36" HeightRequest="36"
-                                            BackgroundColor="{StaticResource Surface2}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                             StrokeThickness="0"
                                             StrokeShape="RoundRectangle 18">
                                         <Label Text="{Binding AuthorInitials}"
@@ -296,6 +386,32 @@
                                                    Style="{StaticResource LabelSmall}" />
                                         </Grid>
                                         <Label Text="{Binding Text}" Style="{StaticResource BodyMedium}" />
+                                        <HorizontalStackLayout Spacing="16" Margin="0,4,0,0">
+                                            <HorizontalStackLayout Spacing="4">
+                                                <Label Text="{Binding LikeCount, StringFormat='Like ({0})'}"
+                                                       FontSize="Caption"
+                                                       TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
+                                                       VerticalOptions="Center">
+                                                    <Label.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:IssueDetailViewModel}}, Path=LikeCommentCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                    </Label.GestureRecognizers>
+                                                </Label>
+                                            </HorizontalStackLayout>
+                                            <HorizontalStackLayout Spacing="4">
+                                                <Label Text="{Binding DislikeCount, StringFormat='Dislike ({0})'}"
+                                                       FontSize="Caption"
+                                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}"
+                                                       VerticalOptions="Center">
+                                                    <Label.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:IssueDetailViewModel}}, Path=DislikeCommentCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                    </Label.GestureRecognizers>
+                                                </Label>
+                                            </HorizontalStackLayout>
+                                        </HorizontalStackLayout>
                                     </VerticalStackLayout>
                                 </Grid>
                             </DataTemplate>
@@ -309,8 +425,8 @@
         <!-- Comment Input -->
         <Border Grid.Row="1"
                 IsVisible="{Binding IsLoggedIn}"
-                BackgroundColor="{StaticResource Background}"
-                Stroke="{StaticResource DividerColor}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                Stroke="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}"
                 StrokeThickness="1"
                 StrokeShape="RoundRectangle 0"
                 Padding="{OnPlatform iOS='16,12,16,34', Android='16,12,16,24'}">
@@ -319,12 +435,10 @@
                     <Border Style="{StaticResource EntryCard}">
                         <Entry Placeholder="{local:Localize Key=Detail_CommentPlaceholder}"
                                Text="{Binding CommentText}"
-                               PlaceholderColor="{StaticResource OnSurfaceMuted}"
-                               TextColor="{StaticResource OnBackground}"
                                SemanticProperties.Hint="{local:Localize Key=Detail_CommentPlaceholder}" />
                     </Border>
                     <Label Text="{Binding CommentError}"
-                           TextColor="{StaticResource Error}"
+                           TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
                            FontSize="Caption"
                            IsVisible="{Binding HasCommentError}"
                            Margin="4,0,0,0" />

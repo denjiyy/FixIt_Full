@@ -1,13 +1,12 @@
-using System.Text.Json.Serialization;
-
 namespace FixIt.Mobile.Models;
 
 public class ReportIssueRequest
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public string Location { get; set; } = string.Empty;
-    [JsonIgnore]
-    public Stream PhotoStream { get; set; } = Stream.Null;
-    public string PhotoFileName { get; set; } = "issue-photo.jpg";
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string CityId { get; set; } = string.Empty;
+    public string? Address { get; set; }
+    public List<PhotoAttachment> Photos { get; set; } = new();
 }

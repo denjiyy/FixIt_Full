@@ -14,6 +14,7 @@
             <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
             <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
             <converters:DateTimeToRelativeConverter x:Key="DateTimeToRelativeConverter" />
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -19,7 +19,8 @@ public interface IIssueService
         bool isAnonymous = false,
         IssuePriority? priority = null,
         IssueCategory? category = null,
-        string? department = null);
+        string? department = null,
+        string? address = null);
 
     Task<Issue?> GetIssueByIdAsync(string issueId);
 

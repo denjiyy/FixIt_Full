@@ -24,6 +24,7 @@ public class IssuesController : ControllerBase
     private readonly IIssueService _issueService;
     private readonly ITagService _tagService;
     private readonly IIssueAnalysisService _analysisService;
+    private readonly IMediaService _mediaService;
     private readonly IRepository<ApplicationUser> _userRepo;
     private readonly ILogger<IssuesController> _logger;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -32,6 +33,7 @@ public class IssuesController : ControllerBase
         IIssueService issueService,
         ITagService tagService,
         IIssueAnalysisService analysisService,
+        IMediaService mediaService,
         IRepository<ApplicationUser> userRepo,
         ILogger<IssuesController> logger,
         UserManager<ApplicationUser> userManager)
@@ -39,6 +41,7 @@ public class IssuesController : ControllerBase
         _issueService = issueService;
         _tagService = tagService;
         _analysisService = analysisService;
+        _mediaService = mediaService;
         _userRepo = userRepo;
         _logger = logger;
         _userManager = userManager;
@@ -108,7 +111,8 @@ public class IssuesController : ControllerBase
                 request.IsAnonymous,
                 request.Priority,
                 request.Category,
-                request.Department
+                request.Department,
+                request.Address
             );
 
             _logger.LogInformation(
@@ -134,6 +138,75 @@ public class IssuesController : ControllerBase
         {
             _logger.LogError(ex, "Error creating issue");
             return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToCreateIssue));
+        }
+    }
+
+    /// <summary>
+    /// Upload a single media file for an existing issue.
+    /// The caller must be the issue's reporter or have admin role.
+    /// </summary>
+    [HttpPost("{id}/media")]
+    [Authorize]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(110 * 1024 * 1024)]
+    [ProducesResponseType(typeof(ApiResponse<IssueMediaUploadResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IssueMediaUploadResponse>>> UploadIssueMedia(
+        string id,
+        IFormFile file)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
+            }
+
+            if (file is null || file.Length == 0)
+            {
+                return BadRequest(ApiResponse<object>.CreateError("File is required"));
+            }
+
+            var issue = await _issueService.GetIssueByIdAsync(id);
+            if (issue is null)
+            {
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
+            }
+
+            if (issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
+            {
+                return Forbid();
+            }
+
+            var media = await _mediaService.UploadFileAsync(
+                file,
+                userId,
+                FixIt.Models.Enums.MediaReferenceType.Issue,
+                id);
+
+            return CreatedAtAction(
+                nameof(GetIssueById),
+                new { id },
+                ApiResponse<IssueMediaUploadResponse>.CreateSuccess(
+                    new IssueMediaUploadResponse
+                    {
+                        Id = media.Id,
+                        Url = $"/api/media/{media.Id}"
+                    },
+                    "Media uploaded successfully"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading media for issue {IssueId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to upload media"));
         }
     }
 
@@ -855,4 +928,13 @@ public class CommentLikeResponse
 {
     public int LikeCount { get; set; }
     public int DislikeCount { get; set; }
+}
+
+/// <summary>
+/// Response model returned after a media file is attached to an issue.
+/// </summary>
+public class IssueMediaUploadResponse
+{
+    public string Id { get; set; } = null!;
+    public string Url { get; set; } = null!;
 }

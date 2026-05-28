@@ -92,7 +92,7 @@ public partial class HomeViewModel : ObservableObject, IDisposable
             return;
         }
 
-        await Shell.Current.GoToAsync(AppConstants.RouteSignInTabAbsolute);
+        await Shell.Current.GoToAsync(AppConstants.RouteAccountTabAbsolute);
     }
 
     [RelayCommand]

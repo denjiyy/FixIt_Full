@@ -46,8 +46,13 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(AppConstants.RouteHealthReport, typeof(HealthReportPage));
         Routing.RegisterRoute(AppConstants.RoutePublicProfile, typeof(PublicProfilePage));
         Routing.RegisterRoute(AppConstants.RouteSettings, typeof(SettingsPage));
-        // FIX B-01: keep the raw sign-in tab route registered and use the absolute route only for Shell tab selection.
-        Routing.RegisterRoute(AppConstants.RouteSignInTab, typeof(LoginPage));
+        Routing.RegisterRoute(AppConstants.RouteEditIssue, typeof(EditIssuePage));
+        Routing.RegisterRoute(AppConstants.RouteForgotPassword, typeof(ForgotPasswordPage));
+        Routing.RegisterRoute(AppConstants.RouteCities, typeof(CitiesPage));
+        Routing.RegisterRoute(AppConstants.RouteHeatmap, typeof(HeatmapPage));
+        Routing.RegisterRoute(AppConstants.RouteTagDetail, typeof(TagDetailPage));
+        Routing.RegisterRoute(AppConstants.RouteHazardMode, typeof(HazardModePage));
+        Routing.RegisterRoute(AppConstants.RouteConnectedAccounts, typeof(ConnectedAccountsPage));
         Routing.RegisterRoute("register", typeof(RegisterPage));
 
         UpdateAuthVisualState(_auth.IsLoggedIn);
@@ -106,7 +111,7 @@ public partial class AppShell : Shell
         _isRedirecting = true;
         try
         {
-            await GoToAsync(AppConstants.RouteSignInTabAbsolute);
+            await GoToAsync(AppConstants.RouteAccountTabAbsolute);
         }
         finally
         {
@@ -123,7 +128,7 @@ public partial class AppShell : Shell
             if (isLoggedIn)
                 await GoToAsync(AppConstants.RouteHome);
             else
-                await GoToAsync(AppConstants.RouteSignInTabAbsolute);
+                await GoToAsync(AppConstants.RouteAccountTabAbsolute);
         });
     }
 
@@ -158,10 +163,12 @@ public partial class AppShell : Shell
         SetTabIcon(HomeTab, HomeContent, TabIconFile("home", HomeContent));
         SetTabIcon(IssuesTab, IssuesContent, TabIconFile("issues", IssuesContent));
         SetTabIcon(AlertsTab, AlertsContent, TabIconFile("alerts", AlertsContent));
+        // Centre tab uses a fixed elevated FAB-style icon; it does not flip between
+        // selected/unselected variants because the icon is the same in both states.
         SetTabIcon(
             ReportIssueTab,
             ReportIssueContent,
-            _auth.IsLoggedIn ? TabIconFile("report", ReportIssueContent) : "report_locked.svg");
+            _auth.IsLoggedIn ? "report_fab.png" : "report_fab_locked.png");
         SetTabIcon(AccountTab, AccountContent, TabIconFile("profile", AccountContent));
     }
 
@@ -175,7 +182,7 @@ public partial class AppShell : Shell
     private string TabIconFile(string name, ShellContent content)
     {
         var suffix = IsCurrentContent(content) ? "_selected" : string.Empty;
-        return $"{name}{suffix}.svg";
+        return $"{name}{suffix}.png";
     }
 
     private bool IsCurrentContent(ShellContent content)

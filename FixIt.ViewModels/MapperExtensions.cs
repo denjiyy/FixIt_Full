@@ -29,6 +29,8 @@ public static class MapperExtensions
             Reporter = issue.IsAnonymous ? new UserSummaryResponse { DisplayName = "Anonymous" } : issue.Reporter.ToResponse(),
             IsAnonymous = issue.IsAnonymous,
             TagIds = issue.TagIds,
+            Longitude = issue.Location?.Coordinates?.Longitude ?? 0,
+            Latitude = issue.Location?.Coordinates?.Latitude ?? 0,
             CreatedAt = issue.CreatedAt,
             LastActivityAt = issue.LastActivityAt
         };
@@ -42,8 +44,8 @@ public static class MapperExtensions
             Description = issue.Description,
             CityId = issue.CityId,
             Address = issue.Address,
-            Longitude = 0,  // Default values - these should be extracted from Location in services
-            Latitude = 0,
+            Longitude = issue.Location?.Coordinates?.Longitude ?? 0,
+            Latitude = issue.Location?.Coordinates?.Latitude ?? 0,
             Status = issue.Status,
             Priority = issue.Priority,
             Category = issue.Category,
