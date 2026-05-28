@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -22,6 +23,7 @@ namespace FixIt.Controllers;
 public class IssuesController : ControllerBase
 {
     private readonly IIssueService _issueService;
+    private readonly ICommentService _commentService;
     private readonly ITagService _tagService;
     private readonly IIssueAnalysisService _analysisService;
     private readonly IMediaService _mediaService;
@@ -31,6 +33,7 @@ public class IssuesController : ControllerBase
 
     public IssuesController(
         IIssueService issueService,
+        ICommentService commentService,
         ITagService tagService,
         IIssueAnalysisService analysisService,
         IMediaService mediaService,
@@ -39,6 +42,7 @@ public class IssuesController : ControllerBase
         UserManager<ApplicationUser> userManager)
     {
         _issueService = issueService;
+        _commentService = commentService;
         _tagService = tagService;
         _analysisService = analysisService;
         _mediaService = mediaService;
@@ -53,7 +57,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Issue creation request</param>
     /// <returns>The created issue</returns>
     [HttpPost]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -146,7 +150,7 @@ public class IssuesController : ControllerBase
     /// The caller must be the issue's reporter or have admin role.
     /// </summary>
     [HttpPost("{id}/media")]
-    [Authorize]
+    [ApiAuthorize]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(110 * 1024 * 1024)]
     [ProducesResponseType(typeof(ApiResponse<IssueMediaUploadResponse>), StatusCodes.Status201Created)]
@@ -320,7 +324,7 @@ public class IssuesController : ControllerBase
     /// </summary>
     /// <returns>Paginated list of user's issues</returns>
     [HttpGet("my-issues")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<PaginatedResponse<IssueSummaryResponse>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -356,7 +360,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Status update request</param>
     /// <returns>Updated issue</returns>
     [HttpPut("{id}/status")]
-    [Authorize(Policy = PolicyNames.AdminArea)]
+    [ApiAuthorize(PolicyNames.AdminArea)]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -407,7 +411,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Priority update request</param>
     /// <returns>Updated issue</returns>
     [HttpPut("{id}/priority")]
-    [Authorize(Policy = PolicyNames.AdminArea)]
+    [ApiAuthorize(PolicyNames.AdminArea)]
     [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -453,7 +457,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Vote request</param>
     /// <returns>Success response with updated vote counts</returns>
     [HttpPost("{id}/vote")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -500,7 +504,7 @@ public class IssuesController : ControllerBase
     /// <param name="id">Issue ID</param>
     /// <returns>Success response</returns>
     [HttpDelete("{id}/vote")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -534,7 +538,7 @@ public class IssuesController : ControllerBase
     /// <param name="id">Issue ID</param>
     /// <returns>Success response</returns>
     [HttpDelete("{id}")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -662,7 +666,7 @@ public class IssuesController : ControllerBase
     /// <param name="request">Comment creation request</param>
     /// <returns>The created comment</returns>
     [HttpPost("{issueId}/comments")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<CommentResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -688,7 +692,7 @@ public class IssuesController : ControllerBase
             
             bool isAnonymous = user.AnonymousReportingEnabled;
 
-            var comment = await _issueService.AddCommentAsync(
+            var comment = await _commentService.AddCommentAsync(
                 issueId,
                 userId,
                 request.Text,
@@ -743,7 +747,7 @@ public class IssuesController : ControllerBase
                 return NotFound(ApiResponse<object>.CreateError("Issue not found"));
             }
 
-            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comments = await _commentService.GetCommentsForIssueAsync(issueId);
 
             return Ok(ApiResponse<IEnumerable<CommentResponse>>.CreateSuccess(
                 comments.Select(c => c.ToResponse()),
@@ -764,7 +768,7 @@ public class IssuesController : ControllerBase
     /// <param name="commentId">Comment ID</param>
     /// <returns>Success response</returns>
     [HttpDelete("{issueId}/comments/{commentId}")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -780,7 +784,7 @@ public class IssuesController : ControllerBase
                 return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
             }
 
-            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comments = await _commentService.GetCommentsForIssueAsync(issueId);
             var comment = comments?.FirstOrDefault(c => c.Id == commentId);
             if (comment == null)
             {
@@ -793,7 +797,7 @@ public class IssuesController : ControllerBase
                 return Forbid();
             }
 
-            await _issueService.DeleteCommentAsync(issueId, commentId);
+            await _commentService.DeleteCommentAsync(issueId, commentId);
 
             _logger.LogInformation("Comment {CommentId} deleted by user {UserId}", commentId, userId);
 
@@ -817,7 +821,7 @@ public class IssuesController : ControllerBase
     /// <param name="commentId">Comment ID</param>
     /// <returns>Updated comment with like counts</returns>
     [HttpPost("{issueId}/comments/{commentId}/like")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<CommentLikeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -832,17 +836,17 @@ public class IssuesController : ControllerBase
                 return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
             }
 
-            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comments = await _commentService.GetCommentsForIssueAsync(issueId);
             var comment = comments?.FirstOrDefault(c => c.Id == commentId);
             if (comment == null)
             {
                 return NotFound(ApiResponse<object>.CreateError("Comment not found"));
             }
 
-            await _issueService.LikeCommentAsync(issueId, commentId, userId);
+            await _commentService.LikeCommentAsync(issueId, commentId, userId);
 
             // Fetch updated comment
-            var updatedComments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var updatedComments = await _commentService.GetCommentsForIssueAsync(issueId);
             var updatedComment = updatedComments?.FirstOrDefault(c => c.Id == commentId);
 
             return Ok(ApiResponse<CommentLikeResponse>.CreateSuccess(
@@ -872,7 +876,7 @@ public class IssuesController : ControllerBase
     /// <param name="commentId">Comment ID</param>
     /// <returns>Updated comment with dislike counts</returns>
     [HttpPost("{issueId}/comments/{commentId}/dislike")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<CommentLikeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -887,17 +891,17 @@ public class IssuesController : ControllerBase
                 return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
             }
 
-            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comments = await _commentService.GetCommentsForIssueAsync(issueId);
             var comment = comments?.FirstOrDefault(c => c.Id == commentId);
             if (comment == null)
             {
                 return NotFound(ApiResponse<object>.CreateError("Comment not found"));
             }
 
-            await _issueService.DislikeCommentAsync(issueId, commentId, userId);
+            await _commentService.DislikeCommentAsync(issueId, commentId, userId);
 
             // Fetch updated comment
-            var updatedComments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var updatedComments = await _commentService.GetCommentsForIssueAsync(issueId);
             var updatedComment = updatedComments?.FirstOrDefault(c => c.Id == commentId);
 
             return Ok(ApiResponse<CommentLikeResponse>.CreateSuccess(

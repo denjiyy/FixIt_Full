@@ -18,6 +18,7 @@ public static class ServicesExtensions
         IConfiguration configuration)
     {
         services.AddScoped<IIssueService, IssueService>();
+        services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IOAuthService, OAuthService>();
         services.AddScoped<IReputationService, ReputationService>();

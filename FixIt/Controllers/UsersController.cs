@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using FixIt.Models.Users;
 using FixIt.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("profile-visibility")]
-    [Authorize]
+    [ApiAuthorize]
     [ValidateAntiForgeryToken]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]

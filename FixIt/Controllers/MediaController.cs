@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FixIt.Services.Contracts;
@@ -99,7 +100,7 @@ public class MediaController : ControllerBase
     /// Delete media (owner only)
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize]
+    [ApiAuthorize]
     [Produces("application/json")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]

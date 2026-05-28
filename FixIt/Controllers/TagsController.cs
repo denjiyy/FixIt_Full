@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FixIt.Services.Contracts;
@@ -185,7 +186,7 @@ public class TagsController : ControllerBase
     /// <param name="request">Tag creation request</param>
     /// <returns>The created tag</returns>
     [HttpPost]
-    [Authorize(Policy = PolicyNames.AdminArea)]
+    [ApiAuthorize(PolicyNames.AdminArea)]
     [ProducesResponseType(typeof(ApiResponse<TagResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

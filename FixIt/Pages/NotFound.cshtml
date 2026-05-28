@@ -107,17 +107,4 @@
 }
 </style>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const backButton = document.querySelector('[data-history-back]');
-    if (backButton) {
-        backButton.addEventListener('click', function () {
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                window.location.href = '/';
-            }
-        });
-    }
-});
-</script>
+<script src="~/js/pages/not-found.js" asp-append-version="true" defer></script>

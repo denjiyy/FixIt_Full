@@ -383,51 +383,8 @@ public class IssueServiceTests
         Assert.Null(result);
     }
 
-    [Fact]
-    public async Task AddCommentAsync_WithValidComment_CreatesCommentSuccessfully()
-    {
-        // Arrange
-        var issue = new Issue { Id = "issue1", Title = "Test", CommentCount = 0 };
-        Comment? capturedComment = null;
-
-        _issueRepoMock.Setup(r => r.GetByIdAsync("issue1"))
-            .ReturnsAsync(issue);
-        _commentRepoMock.Setup(r => r.InsertAsync(It.IsAny<Comment>()))
-            .Callback<Comment>(c => capturedComment = c)
-            .ReturnsAsync((Comment c) => c);
-        _issueRepoMock.Setup(r => r.ReplaceAsync("issue1", It.IsAny<Issue>()))
-            .Returns(Task.CompletedTask);
-        _reputationServiceMock.Setup(r => r.AddPointsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _issueService.AddCommentAsync("issue1", "user1", "Great issue!");
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal("Great issue!", result.Text);
-        Assert.Equal(1, issue.CommentCount);
-    }
-
-    [Fact]
-    public async Task GetCommentsForIssueAsync_ReturnsIssueComments()
-    {
-        // Arrange
-        var comments = new List<Comment>
-        {
-            new Comment { Id = "c1", IssueId = "issue1", Text = "Comment 1" },
-            new Comment { Id = "c2", IssueId = "issue1", Text = "Comment 2" }
-        };
-
-        _commentRepoMock.Setup(r => r.FindAsync(It.IsAny<Expression<Func<Comment, bool>>>()))
-            .ReturnsAsync(comments);
-
-        // Act
-        var result = await _issueService.GetCommentsForIssueAsync("issue1");
-
-        // Assert
-        Assert.Equal(2, result.Count);
-    }
+    // AddCommentAsync_* and GetCommentsForIssueAsync_* tests moved to
+    // CommentServiceTests when comment methods were extracted from IssueService.
 
     [Fact]
     public async Task SoftDeleteIssueAsync_MarkIssueAsDeleted()

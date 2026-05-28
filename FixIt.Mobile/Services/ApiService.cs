@@ -12,8 +12,12 @@ public class ApiService : IApiService
     private readonly IConnectivityService _connectivity;
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
-    private readonly Dictionary<string, Issue> _issueCache = [];
-    private readonly Dictionary<string, List<Comment>> _commentsCache = [];
+    // Bounded caches replace the previously unbounded Dictionary<,>'s that
+    // would grow indefinitely over a long session. Capacities chosen for
+    // typical browse-back-and-forth navigation: ~50 issue details and ~30
+    // comment threads. ApiService is registered as a singleton in MauiProgram.
+    private readonly BoundedCache<string, Issue> _issueCache = new(capacity: 50);
+    private readonly BoundedCache<string, List<Comment>> _commentsCache = new(capacity: 30);
     private List<Issue> _cachedIssues = [];
     private List<Issue> _cachedMyIssues = [];
     private List<SafetyHazard> _cachedHazards = [];

@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -155,7 +156,7 @@ public class SafetyController : ControllerBase
     /// <param name="request">Hazard report details</param>
     /// <returns>Created hazard information</returns>
     [HttpPost("report")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -223,7 +224,7 @@ public class SafetyController : ControllerBase
     /// Report a hazard anonymously (legacy endpoint - redirects to unified report endpoint)
     /// </summary>
     [HttpPost("report-anonymous")]
-    [Authorize]
+    [ApiAuthorize]
     public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ReportHazardAnonymous(
         [FromBody] AnonymousHazardReportRequest request)
     {
@@ -238,7 +239,7 @@ public class SafetyController : ControllerBase
     /// <param name="hazardId">Hazard ID</param>
     /// <returns>Updated confirmation count</returns>
     [HttpPost("{hazardId}/confirm")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<HazardConfirmationResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<HazardConfirmationResponse>>> ConfirmHazard(string hazardId)
@@ -284,7 +285,7 @@ public class SafetyController : ControllerBase
     /// <param name="request">Resolution details</param>
     /// <returns>Resolved hazard information</returns>
     [HttpPost("{hazardId}/resolve")]
-    [Authorize(Policy = PolicyNames.AdminOnly)]
+    [ApiAuthorize(PolicyNames.AdminOnly)]
     [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> ResolveHazard(
@@ -474,7 +475,7 @@ public class SafetyController : ControllerBase
     /// <param name="request">Toggle request</param>
     /// <returns>Updated anonymous reporting status</returns>
     [HttpPost("anonymous-reporting/toggle")]
-    [Authorize]
+    [ApiAuthorize]
     // Browser clients use cookie auth here, so CSRF protection is required.
     [ValidateAntiForgeryToken]
     [ProducesResponseType(typeof(ApiResponse<AnonymousReportingStatusResponse>), StatusCodes.Status200OK)]
@@ -514,7 +515,7 @@ public class SafetyController : ControllerBase
     /// Updates hazard alert preferences for the current user.
     /// </summary>
     [HttpPost("alert-preferences")]
-    [Authorize]
+    [ApiAuthorize]
     [ValidateAntiForgeryToken]
     [ProducesResponseType(typeof(ApiResponse<AlertPreferencesResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -586,7 +587,7 @@ public class SafetyController : ControllerBase
     /// Updates hazard severity threshold for notifications.
     /// </summary>
     [HttpPost("alert-preferences/severity")]
-    [Authorize]
+    [ApiAuthorize]
     [ValidateAntiForgeryToken]
     [ProducesResponseType(typeof(ApiResponse<AlertPreferencesResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
@@ -633,7 +634,7 @@ public class SafetyController : ControllerBase
     /// <param name="id">Hazard ID</param>
     /// <returns>Success response</returns>
     [HttpDelete("{id}")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -689,7 +690,7 @@ public class SafetyController : ControllerBase
     /// Restore a soft-deleted hazard (admin only)
     /// </summary>
     [HttpPost("{id}/restore")]
-    [Authorize(Policy = PolicyNames.AdminOnly)]
+    [ApiAuthorize(PolicyNames.AdminOnly)]
     public async Task<ActionResult<ApiResponse<object>>> RestoreHazard(string id)
     {
         try
@@ -714,7 +715,7 @@ public class SafetyController : ControllerBase
     /// Update a hazard (partial update) - allowed for reporter or admin
     /// </summary>
     [HttpPut("{id}")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> UpdateHazard(string id, [FromBody] UpdateHazardRequest request)
     {

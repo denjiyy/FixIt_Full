@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using FixIt.Extensions;
 using FixIt.Services.Authentication;
 using FixIt.Services.Contracts;
 using FixIt.Models.Users;
@@ -376,7 +377,7 @@ public class AuthController : ControllerBase
     /// Returns JSON response for API/mobile clients
     /// </summary>
     [HttpPost("logout")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<object>>> Logout()
@@ -525,7 +526,7 @@ public class AuthController : ControllerBase
     /// Returns wrapped API response for consistency
     /// </summary>
     [HttpGet("user")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ApiResponse<object>>> GetCurrentUser()
@@ -558,7 +559,7 @@ public class AuthController : ControllerBase
     /// For mobile clients, returns authorization URL instead of Challenge
     /// </summary>
     [HttpPost("link-provider/{provider}")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
     public IActionResult LinkProvider(string provider, [FromQuery] bool mobile = false)
@@ -649,7 +650,7 @@ public class AuthController : ControllerBase
     /// Returns wrapped API response for consistency
     /// </summary>
     [HttpPost("unlink-provider/{provider}")]
-    [Authorize]
+    [ApiAuthorize]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

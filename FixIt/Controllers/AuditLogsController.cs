@@ -1,7 +1,7 @@
+using FixIt.Extensions;
 using FixIt.Models;
 using FixIt.Services.Contracts;
 using FixIt.Services.Constants;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace FixIt.Controllers
     /// Admin-only API for viewing audit logs and compliance records.
     /// All endpoints require Admin role.
     /// </summary>
-    [Authorize(Policy = PolicyNames.AdminOnly)]
+    [ApiAuthorize(PolicyNames.AdminOnly)]
     [Route("api/admin/audit-logs")]
     [ApiController]
     [Produces("application/json")]

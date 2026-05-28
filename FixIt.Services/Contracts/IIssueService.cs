@@ -93,17 +93,5 @@ public interface IIssueService
 
     Task UpdateIssueAsync(Issue issue);
 
-    Task<FixIt.Models.Engagement.Comment> AddCommentAsync(
-        string issueId,
-        string authorId,
-        string text,
-        bool isAnonymous = false);
-
-    Task<List<FixIt.Models.Engagement.Comment>> GetCommentsForIssueAsync(string issueId);
-
-    Task DeleteCommentAsync(string issueId, string commentId);
-
-    Task LikeCommentAsync(string issueId, string commentId, string userId);
-
-    Task DislikeCommentAsync(string issueId, string commentId, string userId);
+    // Comment-related operations moved to ICommentService — see CommentService.cs.
 }

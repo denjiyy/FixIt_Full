@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,13 @@ namespace FixIt.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = PolicyNames.AdminArea)]
+[ApiAuthorize(PolicyNames.AdminArea)]
 [EnableRateLimiting(RateLimitPolicyNames.Reporting)]
 public class SuggestionsController : ControllerBase
 {
     private readonly IAdminSuggestionsService _suggestionsService;
     private readonly IIssueService _issueService;
+    private readonly ICommentService _commentService;
     private readonly IRepository<ContentReport> _reportRepository;
     private readonly ICivicAiService _civicAiService;
     private readonly UserManager<ApplicationUser> _userManager;
@@ -32,6 +34,7 @@ public class SuggestionsController : ControllerBase
     public SuggestionsController(
         IAdminSuggestionsService suggestionsService,
         IIssueService issueService,
+        ICommentService commentService,
         IRepository<ContentReport> reportRepository,
         ICivicAiService civicAiService,
         UserManager<ApplicationUser> userManager,
@@ -39,6 +42,7 @@ public class SuggestionsController : ControllerBase
     {
         _suggestionsService = suggestionsService;
         _issueService = issueService;
+        _commentService = commentService;
         _reportRepository = reportRepository;
         _civicAiService = civicAiService;
         _userManager = userManager;
@@ -253,7 +257,7 @@ public class SuggestionsController : ControllerBase
                 return NotFound(new { error = "Issue not found" });
             }
 
-            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comments = await _commentService.GetCommentsForIssueAsync(issueId);
             var result = await _civicAiService.SummarizeIssueThreadAsync(new IssueThreadSummaryInput
             {
                 IssueId = issueId,
@@ -301,7 +305,7 @@ public class SuggestionsController : ControllerBase
                 return;
             }
 
-            var comments = await _issueService.GetCommentsForIssueAsync(issueId);
+            var comments = await _commentService.GetCommentsForIssueAsync(issueId);
             await foreach (var aiEvent in _civicAiService.StreamIssueThreadSummaryAsync(new IssueThreadSummaryInput
                            {
                                IssueId = issueId,
@@ -406,7 +410,7 @@ public class SuggestionsController : ControllerBase
             var issue = await _issueService.GetIssueByIdAsync(report.TargetId);
             if (issue != null)
             {
-                var comments = await _issueService.GetCommentsForIssueAsync(report.TargetId);
+                var comments = await _commentService.GetCommentsForIssueAsync(report.TargetId);
                 reportInput.IssueTitle = issue.Title;
                 reportInput.IssueDescription = issue.Description;
                 reportInput.IssueComments = comments

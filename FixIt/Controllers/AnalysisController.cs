@@ -1,3 +1,4 @@
+using FixIt.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -70,7 +71,7 @@ public class AnalysisController : ControllerBase
     /// Suggest issue category / severity / department from draft data.
     /// </summary>
     [HttpPost("issue-draft-suggestions")]
-    [Authorize]
+    [ApiAuthorize]
     [RequestSizeLimit(6 * 1024 * 1024)]
     public async Task<ActionResult<IssueDraftSuggestionResult>> SuggestIssueDraft([FromForm] IssueDraftSuggestionRequest request, CancellationToken cancellationToken)
     {

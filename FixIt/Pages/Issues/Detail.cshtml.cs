@@ -16,6 +16,7 @@ namespace FixIt.Pages.Issues;
 public class IssueDetailModel : PageModel
 {
     private readonly IIssueService _issueService;
+    private readonly ICommentService _commentService;
     private readonly IMediaService _mediaService;
     private readonly IIssueAnalysisService _analysisService;
     private readonly IIssueAnalysisQueue _issueAnalysisQueue;
@@ -25,6 +26,7 @@ public class IssueDetailModel : PageModel
 
     public IssueDetailModel(
         IIssueService issueService,
+        ICommentService commentService,
         IMediaService mediaService,
         IIssueAnalysisService analysisService,
         IIssueAnalysisQueue issueAnalysisQueue,
@@ -33,6 +35,7 @@ public class IssueDetailModel : PageModel
         ILogger<IssueDetailModel> logger)
     {
         _issueService = issueService;
+        _commentService = commentService;
         _mediaService = mediaService;
         _analysisService = analysisService;
         _issueAnalysisQueue = issueAnalysisQueue;
@@ -140,7 +143,7 @@ public class IssueDetailModel : PageModel
             );
             
             // Load comments
-            Comments = await _issueService.GetCommentsForIssueAsync(Id);
+            Comments = await _commentService.GetCommentsForIssueAsync(Id);
 
             var currentUserId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var isAdmin = User?.IsInRole(RoleNames.Admin) == true;
@@ -191,7 +194,7 @@ public class IssueDetailModel : PageModel
             bool isAnonymous = user?.AnonymousReportingEnabled ?? false;
 
             // Add comment via service
-            await _issueService.AddCommentAsync(Id, userId, commentText, isAnonymous);
+            await _commentService.AddCommentAsync(Id, userId, commentText, isAnonymous);
 
             return RedirectToPage(new { id = Id });
         }
