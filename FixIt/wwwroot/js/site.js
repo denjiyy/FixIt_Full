@@ -39,6 +39,7 @@
     window.FixItApp.safeParseJson = safeParseJson;
 
     onReady(() => {
+        initBootstrapComponents();
         initAppToasts();
         initPublicShell();
         initAdminShell();
@@ -50,6 +51,20 @@
         initHistoryActions();
         initAutoSubmitControls();
     });
+
+    function initBootstrapComponents() {
+        if (typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach((el) => {
+            bootstrap.Dropdown.getOrCreateInstance(el);
+        });
+
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach((el) => {
+            bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+        });
+    }
 
     function initAppToasts() {
         let toastRegion = document.getElementById('appToastRegion');
