@@ -1,5 +1,6 @@
 using System.Reflection;
 using FixIt.Controllers;
+using FixIt.Extensions;
 using FixIt.Pages.Issues;
 using FixIt.Services.Constants;
 using Microsoft.AspNetCore.Authorization;
@@ -28,7 +29,10 @@ public class SecurityAttributeTests
     public void SafetyController_ToggleAnonymousReporting_RequiresAntiforgery()
     {
         var method = typeof(SafetyController).GetMethod(nameof(SafetyController.ToggleAnonymousReporting));
-        var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
+        // Endpoint is reachable via both cookie and bearer auth, so it uses
+        // [ConditionalAntiforgery] (CSRF enforced for browsers, skipped for
+        // bearer/mobile clients) in place of plain [ValidateAntiForgeryToken].
+        var antiforgery = method?.GetCustomAttribute<ConditionalAntiforgeryAttribute>();
 
         Assert.NotNull(antiforgery);
     }
@@ -37,7 +41,7 @@ public class SecurityAttributeTests
     public void SafetyController_UpdateAlertPreferences_RequiresAntiforgery()
     {
         var method = typeof(SafetyController).GetMethod(nameof(SafetyController.UpdateAlertPreferences));
-        var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
+        var antiforgery = method?.GetCustomAttribute<ConditionalAntiforgeryAttribute>();
 
         Assert.NotNull(antiforgery);
     }
@@ -46,7 +50,7 @@ public class SecurityAttributeTests
     public void UsersController_UpdateProfileVisibility_RequiresAntiforgery()
     {
         var method = typeof(UsersController).GetMethod(nameof(UsersController.UpdateProfileVisibility));
-        var antiforgery = method?.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>();
+        var antiforgery = method?.GetCustomAttribute<ConditionalAntiforgeryAttribute>();
 
         Assert.NotNull(antiforgery);
     }
