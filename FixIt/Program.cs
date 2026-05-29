@@ -85,10 +85,11 @@ if (isProduction)
     var requiredVars = new[] { "MONGODB_URI", "MONGODB_DATABASE", "JWT_SECRET_KEY", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET" };
     foreach (var varName in requiredVars)
     {
-        var varValue = Environment.GetEnvironmentVariable(varName);
-        var isSet = !string.IsNullOrWhiteSpace(varValue);
-        var displayValue = isSet ? (varValue!.Length > 20 ? varValue.Substring(0, 20) + "..." : varValue) : "NOT SET";
-        Console.WriteLine($"[STARTUP] {varName}: {(isSet ? "✓" : "✗")} ({displayValue})");
+        // Presence/absence only — never log any portion of a configuration value,
+        // since several of these (JWT_SECRET_KEY, GOOGLE_CLIENT_SECRET) are secrets
+        // and even a prefix is sensitive.
+        var isSet = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(varName));
+        Console.WriteLine($"[STARTUP] {varName}: {(isSet ? "✓ set" : "✗ NOT SET")}");
     }
     Console.WriteLine("[STARTUP] === End Diagnostics ===");
 }

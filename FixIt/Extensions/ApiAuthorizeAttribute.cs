@@ -1,30 +1,39 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 
 namespace FixIt.Extensions;
 
 /// <summary>
-/// [Authorize] variant that pins the authentication scheme to JWT bearer.
-/// Use on API controllers under /api/* so unauthenticated requests get a clean
-/// 401 (and authenticated-but-forbidden get 403) instead of the cookie scheme's
-/// 302 redirect to /Identity/Account/Login — which is meaningless to mobile
-/// clients.
+/// [Authorize] variant for /api/* endpoints that accepts BOTH authentication
+/// schemes:
+///   - JWT bearer  → mobile / external API clients
+///   - Cookie      → browser (Razor pages) calling the same JSON endpoints
 ///
-/// Web pages and the Razor-Pages admin area keep using plain [Authorize]; that
-/// flows through the global default scheme (Cookie) and preserves redirect-to-
-/// login behavior in the browser.
+/// Previously this pinned bearer only, which 401'd browser cookie calls to /api
+/// even though the user was signed in. Accepting both schemes lets a single
+/// endpoint serve web and mobile. Unauthenticated requests still get a clean
+/// JSON 401/403 (not a login redirect) because the cookie handler is configured
+/// to return status codes for /api paths — see AuthExtensions.
+///
+/// CSRF: cookie-authenticated mutating requests must still carry an antiforgery
+/// token (see <see cref="ConditionalAntiforgeryAttribute"/>); bearer requests do
+/// not, since they are not subject to CSRF.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public sealed class ApiAuthorizeAttribute : AuthorizeAttribute
 {
+    public const string ApiSchemes =
+        $"{CookieAuthenticationDefaults.AuthenticationScheme},{JwtBearerDefaults.AuthenticationScheme}";
+
     public ApiAuthorizeAttribute()
     {
-        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
+        AuthenticationSchemes = ApiSchemes;
     }
 
     public ApiAuthorizeAttribute(string policy)
         : base(policy)
     {
-        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme;
+        AuthenticationSchemes = ApiSchemes;
     }
 }

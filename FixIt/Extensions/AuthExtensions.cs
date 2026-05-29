@@ -30,6 +30,36 @@ public static class AuthExtensions
             options.Cookie.SecurePolicy = isProduction ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
             options.SlidingExpiration = true;
             options.ExpireTimeSpan = TimeSpan.FromHours(12);
+
+            // For /api/* requests, return JSON-friendly status codes instead of
+            // redirecting to the login / access-denied pages. Browser code calling
+            // the API (and any non-browser cookie client) gets a clean 401/403,
+            // matching the bearer scheme. Non-API requests keep the redirect UX.
+            options.Events = new CookieAuthenticationEvents
+            {
+                OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                },
+                OnRedirectToAccessDenied = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         var authConfig = configuration.GetSection("Authentication");

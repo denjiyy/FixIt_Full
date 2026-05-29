@@ -10,8 +10,12 @@ using FixIt.Models.Users;
 using FixIt.ViewModels;
 using FixIt.ViewModels.Auth;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
 using FixIt.Services.Constants;
+using FixIt.Services.Email;
 
 namespace FixIt.Controllers;
 
@@ -32,6 +36,7 @@ public class AuthController : ControllerBase
     private readonly ILogger<AuthController> _logger;
     private readonly IAuditService _auditService;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
 
     public AuthController(
         IOAuthService oauthService,
@@ -39,7 +44,8 @@ public class AuthController : ControllerBase
         SignInManager<ApplicationUser> signInManager,
         ILogger<AuthController> logger,
         IAuditService auditService,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IEmailService emailService)
     {
         _oauthService = oauthService;
         _userManager = userManager;
@@ -47,6 +53,7 @@ public class AuthController : ControllerBase
         _logger = logger;
         _auditService = auditService;
         _tokenService = tokenService;
+        _emailService = emailService;
     }
 
     /// <summary>
@@ -288,27 +295,15 @@ public class AuthController : ControllerBase
             return Redirect("/login?error=account_inactive");
         }
 
-        // Sign in the user with custom claims
-        // Get user roles for claims
         var userRoles = await _userManager.GetRolesAsync(user);
-        
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(CustomClaimTypes.DisplayName, user.DisplayName),
-            new Claim(ClaimTypes.Email, user.Email ?? "")
-        };
-        
-        // Add role claims for authorization
-        foreach (var role in userRoles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-        
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var customPrincipal = new ClaimsPrincipal(identity);
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, customPrincipal);
-        
+
+        // Establish a complete Identity principal through SignInManager so the
+        // auth cookie carries NameIdentifier, roles, email and display name —
+        // identical to password sign-in. Previously this built a partial cookie
+        // principal by hand, which diverged from the password path and omitted
+        // the security stamp. The claims factory owns the custom claims.
+        await _signInManager.SignInAsync(user, isPersistent: false);
+
         await _oauthService.UpdateLastSignInAsync(user, provider);
 
         // Log admin logins for audit compliance
@@ -683,4 +678,67 @@ public class AuthController : ControllerBase
             $"{provider} unlinked successfully"
         ));
     }
+
+    /// <summary>
+    /// Initiates a password reset for the given email. Always returns success to
+    /// avoid leaking whether an account exists (user enumeration). Used by mobile.
+    /// </summary>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ApiResponse<object>>> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Email))
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Email is required"));
+        }
+
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        // Mirror the web ForgotPassword flow: only send for active, email-confirmed
+        // accounts, but never reveal that state to the caller (anti-enumeration).
+        if (user is { IsDeleted: false } && await _userManager.IsEmailConfirmedAsync(user))
+        {
+            try
+            {
+                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+                var callbackUrl = Url.Page(
+                    "/Account/ResetPassword",
+                    pageHandler: null,
+                    values: new { area = "Identity", code },
+                    protocol: Request.Scheme);
+
+                await _emailService.SendEmailAsync(
+                    user.Email!,
+                    "Reset your FixIt password",
+                    $"Reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl!)}'>clicking here</a>.");
+
+                _logger.LogInformation("Password reset email sent for user {UserId}", user.Id);
+            }
+            catch (Exception ex)
+            {
+                // Delivery failures must not leak account state or fail the request.
+                _logger.LogError(ex, "Failed to send password reset email for user {UserId}", user.Id);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("Password reset requested for a non-existent, inactive, or unconfirmed email");
+        }
+
+        return Ok(ApiResponse<object>.CreateSuccess(
+            new { message = "If an account exists for that email, a password reset link has been sent." },
+            "Password reset requested"));
+    }
+}
+
+/// <summary>
+/// Request payload for <c>POST api/auth/forgot-password</c>.
+/// </summary>
+public class ForgotPasswordRequest
+{
+    public string? Email { get; set; }
 }

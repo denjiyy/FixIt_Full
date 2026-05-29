@@ -586,6 +586,74 @@ public class IssuesController : ControllerBase
     }
 
     /// <summary>
+    /// Update an issue's editable fields (title, description, address).
+    /// Allowed for the issue's reporter or an administrator.
+    /// (mobile: PUT api/issues/{id})
+    /// </summary>
+    [HttpPut("{id}")]
+    [ApiAuthorize]
+    [ConditionalAntiforgery]
+    [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IssueDetailResponse>>> UpdateIssue(
+        string id,
+        [FromBody] UpdateIssueRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
+            }
+
+            var issue = await _issueService.GetIssueByIdAsync(id);
+            if (issue == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
+            }
+
+            if (issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
+            {
+                return Forbid();
+            }
+
+            if (!string.IsNullOrWhiteSpace(request?.Title))
+            {
+                issue.Title = request.Title.Trim();
+            }
+            if (request?.Description != null)
+            {
+                issue.Description = request.Description.Trim();
+            }
+            if (request?.Address != null)
+            {
+                issue.Address = request.Address.Trim();
+            }
+
+            await _issueService.UpdateIssueAsync(issue);
+
+            _logger.LogInformation("Issue {IssueId} edited by user {UserId}", id, userId);
+
+            return Ok(ApiResponse<IssueDetailResponse>.CreateSuccess(
+                issue.ToDetailResponse(),
+                "Issue updated successfully"));
+        }
+        catch (InvalidOperationException)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Request could not be processed"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating issue {IssueId}", id);
+            return BadRequest(ApiResponse<object>.CreateError("Failed to update issue"));
+        }
+    }
+
+    /// <summary>
     /// Get issues by city
     /// </summary>
     /// <param name="cityId">The city ID</param>
@@ -941,4 +1009,15 @@ public class IssueMediaUploadResponse
 {
     public string Id { get; set; } = null!;
     public string Url { get; set; } = null!;
+}
+
+/// <summary>
+/// Request payload for editing an issue's user-editable fields
+/// (PUT api/issues/{id}).
+/// </summary>
+public class UpdateIssueRequest
+{
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public string? Address { get; set; }
 }

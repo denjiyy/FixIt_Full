@@ -233,6 +233,60 @@ public class SafetyController : ControllerBase
     }
 
     /// <summary>
+    /// Mobile-friendly hazard creation (POST api/safety/hazards). Accepts string
+    /// type/severity, resolves the city from the request or the caller's preferred
+    /// city, and delegates to the unified <see cref="ReportHazard"/> pipeline.
+    /// </summary>
+    [HttpPost("hazards")]
+    [ApiAuthorize]
+    [ConditionalAntiforgery]
+    [ProducesResponseType(typeof(ApiResponse<HazardDetailResponse>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<HazardDetailResponse>>> CreateHazard([FromBody] CreateHazardRequest request)
+    {
+        if (request == null)
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Request payload is required."));
+        }
+
+        if (!Enum.TryParse<HazardType>(request.Type, ignoreCase: true, out var type))
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Invalid hazard type."));
+        }
+
+        if (!Enum.TryParse<HazardSeverity>(request.Severity, ignoreCase: true, out var severity))
+        {
+            return BadRequest(ApiResponse<object>.CreateError("Invalid hazard severity."));
+        }
+
+        var cityId = request.CityId;
+        if (string.IsNullOrWhiteSpace(cityId))
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            cityId = currentUser?.PreferredCityId;
+        }
+
+        if (string.IsNullOrWhiteSpace(cityId))
+        {
+            return BadRequest(ApiResponse<object>.CreateError(
+                "City ID is required. Include cityId or set a preferred city."));
+        }
+
+        return await ReportHazard(new AnonymousHazardReportRequest
+        {
+            CityId = cityId,
+            Type = type,
+            Severity = severity,
+            Title = request.Title ?? string.Empty,
+            Description = request.Description ?? string.Empty,
+            Latitude = request.Latitude,
+            Longitude = request.Longitude,
+            Address = request.Address
+        });
+    }
+
+    /// <summary>
     /// Confirm/verify a hazard (Community Safety Feature)
     /// Multiple users can confirm a hazard to increase its credibility
     /// </summary>
@@ -476,8 +530,9 @@ public class SafetyController : ControllerBase
     /// <returns>Updated anonymous reporting status</returns>
     [HttpPost("anonymous-reporting/toggle")]
     [ApiAuthorize]
-    // Browser clients use cookie auth here, so CSRF protection is required.
-    [ValidateAntiForgeryToken]
+    // Browser clients use cookie auth here, so CSRF protection is required;
+    // bearer (mobile) requests skip it via ConditionalAntiforgery.
+    [ConditionalAntiforgery]
     [ProducesResponseType(typeof(ApiResponse<AnonymousReportingStatusResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ApiResponse<AnonymousReportingStatusResponse>>> ToggleAnonymousReporting(
         [FromBody] ToggleAnonymousReportingRequest request)
@@ -512,11 +567,37 @@ public class SafetyController : ControllerBase
     }
 
     /// <summary>
+    /// Returns the current user's hazard alert preferences. Mobile parity with
+    /// the POST endpoint; shape matches the FixIt.Mobile AlertPreferences model.
+    /// </summary>
+    [HttpGet("alert-preferences")]
+    [ApiAuthorize]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<object>>> GetAlertPreferences()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized(ApiResponse<object>.CreateError("User identity not found"));
+        }
+
+        return Ok(ApiResponse<object>.CreateSuccess(new
+        {
+            crimeAlertsEnabled = user.CrimeAlertsEnabled,
+            accidentAlertsEnabled = user.AccidentAlertsEnabled,
+            infrastructureAlertsEnabled = user.InfrastructureAlertsEnabled,
+            radiusKm = user.AlertRadiusKm,
+            severityThreshold = user.HazardSeverityThreshold
+        }, "Alert preferences retrieved"));
+    }
+
+    /// <summary>
     /// Updates hazard alert preferences for the current user.
     /// </summary>
     [HttpPost("alert-preferences")]
     [ApiAuthorize]
-    [ValidateAntiForgeryToken]
+    [ConditionalAntiforgery]
     [ProducesResponseType(typeof(ApiResponse<AlertPreferencesResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -588,7 +669,7 @@ public class SafetyController : ControllerBase
     /// </summary>
     [HttpPost("alert-preferences/severity")]
     [ApiAuthorize]
-    [ValidateAntiForgeryToken]
+    [ConditionalAntiforgery]
     [ProducesResponseType(typeof(ApiResponse<AlertPreferencesResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -856,6 +937,23 @@ public class AnonymousHazardReportRequest
     public double Longitude { get; set; }
     public string? Address { get; set; }
     public bool IsAnonymous { get; set; } = false;
+}
+
+/// <summary>
+/// Mobile hazard creation payload (POST api/safety/hazards). Type/severity are
+/// strings parsed into the corresponding enums; CityId is optional and falls
+/// back to the caller's preferred city.
+/// </summary>
+public class CreateHazardRequest
+{
+    public string? Type { get; set; }
+    public string? Severity { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string? Address { get; set; }
+    public string? CityId { get; set; }
 }
 
 public class ResolveHazardRequest

@@ -36,17 +36,29 @@ public class ExternalLoginModel : PageModel
 
     public string? ReturnUrl { get; set; }
 
+    [TempData]
+    public string? ErrorMessage { get; set; }
+
     public async Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null)
     {
-        returnUrl ??= Url.Content("~/");
+        // Only ever redirect to a local URL; fall back to the site root otherwise.
+        returnUrl = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : Url.Content("~/");
+
         if (remoteError != null)
         {
-            ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+            // Surface the provider error on the login page (a redirect drops
+            // ModelState, so we carry the message via TempData instead).
+            _logger.LogWarning("External provider returned an error: {RemoteError}", remoteError);
+            ErrorMessage = $"Error from external provider: {remoteError}";
+            return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
         }
 
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info == null)
         {
+            ErrorMessage = "Error loading external login information.";
             return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
         }
 
@@ -54,24 +66,33 @@ public class ExternalLoginModel : PageModel
         var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
         if (result.Succeeded)
         {
-            _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.LoginProvider, info.LoginProvider);
+            _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity?.Name, info.LoginProvider);
             return LocalRedirect(returnUrl);
         }
         if (result.IsLockedOut)
         {
             return RedirectToPage("./Lockout");
         }
-        else
+
+        // If the user does not have an account, then ask the user to create an account.
+        ReturnUrl = returnUrl;
+        LoginProvider = info.LoginProvider;
+
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        var providerName = info.Principal.FindFirstValue(ClaimTypes.Name);
+        // Choose a safe, non-empty default display name from provider claims/email.
+        var defaultDisplayName = !string.IsNullOrWhiteSpace(providerName)
+            ? providerName
+            : !string.IsNullOrWhiteSpace(email)
+                ? email.Split('@')[0]
+                : $"{info.LoginProvider} user";
+
+        Input = new InputModel
         {
-            // If the user does not have an account, then ask the user to create an account.
-            ReturnUrl = returnUrl;
-            LoginProvider = info.LoginProvider;
-            if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-            {
-                Input = new InputModel { Email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? "" };
-            }
-            return Page();
-        }
+            Email = email ?? string.Empty,
+            DisplayName = defaultDisplayName
+        };
+        return Page();
     }
 
     public Task<IActionResult> OnPostAsync(string provider, string? returnUrl = null)
@@ -84,7 +105,9 @@ public class ExternalLoginModel : PageModel
 
     public async Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/");
+        returnUrl = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : Url.Content("~/");
 
         // Get the information about the user from the external login provider
         var info = await _signInManager.GetExternalLoginInfoAsync();
@@ -110,6 +133,23 @@ public class ExternalLoginModel : PageModel
                 result = await _userManager.AddLoginAsync(user, info);
                 if (result.Succeeded)
                 {
+                    // Mirror the Identity external login into
+                    // ApplicationUser.ExternalIdentities so the connected-accounts
+                    // UI reflects the linked provider accurately.
+                    if (!user.ExternalIdentities.Any(e =>
+                            e.Provider == info.LoginProvider && e.ProviderId == info.ProviderKey))
+                    {
+                        user.ExternalIdentities.Add(new ExternalIdentity
+                        {
+                            Provider = info.LoginProvider,
+                            ProviderId = info.ProviderKey,
+                            ProviderDisplayName = Input.DisplayName,
+                            ConnectedAt = DateTime.UtcNow,
+                            LastSignInAt = DateTime.UtcNow
+                        });
+                        await _userManager.UpdateAsync(user);
+                    }
+
                     _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
                     // If account confirmation is required, we need to show the link if we don't have a real email sender
