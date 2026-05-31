@@ -1,5 +1,6 @@
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.AI;
+using FixIt.Models.Enums;
 using FixIt.Models.Issues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -58,12 +59,7 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         if (issue == null)
             throw new InvalidOperationException($"Issue {issueId} not found");
 
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        var isApiEnabled = _configuration.GetValue("OpenAI:Enabled", true);
-        var isApiConfigured = !string.IsNullOrEmpty(apiKey)
-            && !apiKey.StartsWith("sk-YOUR")
-            && !apiKey.StartsWith("${")
-            && isApiEnabled;
+        var isApiConfigured = OpenAiConfig.IsConfigured(_configuration);
 
         IssueAnalysis analysis;
 
@@ -83,11 +79,15 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
         else
         {
             _logger.LogInformation("OpenAI not configured (Enabled={Enabled}, KeySet={KeySet}); using heuristic analysis for issue {IssueId}",
-                isApiEnabled, !string.IsNullOrEmpty(apiKey), issueId);
+                OpenAiConfig.IsEnabled(_configuration), !string.IsNullOrEmpty(OpenAiConfig.GetApiKey(_configuration)), issueId);
             analysis = GenerateHeuristicAnalysis(issue);
         }
 
         analysis.IssueId = issueId;
+
+        // Duplicate detection is always computed locally (the model can't see the DB),
+        // so it works identically with or without an OpenAI key.
+        analysis.PotentialDuplicates = await FindPotentialDuplicatesAsync(issue);
 
         try
         {
@@ -117,20 +117,13 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
     private async Task<IssueAnalysis> CallOpenAIAsync(Issue issue)
     {
         var prompt = BuildAnalysisPrompt(issue);
-        var model = _configuration["OpenAI:Model"] ?? "gpt-4o-mini";
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
+        var model = OpenAiConfig.GetModel(_configuration);
+        var apiKey = OpenAiConfig.GetApiKey(_configuration);
 
-        // Validate API key format
-        if (string.IsNullOrWhiteSpace(apiKey) || apiKey.StartsWith("${"))
+        if (!OpenAiConfig.IsUsableKey(apiKey))
         {
             throw new InvalidOperationException(
-                "OpenAI API key is not properly configured. Please set the OPENAI_API_KEY environment variable with a valid key starting with 'sk-'");
-        }
-
-        if (!apiKey.StartsWith("sk-"))
-        {
-            var preview = apiKey.Substring(0, Math.Min(10, apiKey.Length));
-            _logger.LogWarning("OpenAI API key does not start with 'sk-' prefix (preview: {Preview}...)", preview);
+                "OpenAI API key is not properly configured. Set OpenAI:ApiKey (or the OPENAI_API_KEY env var) to a valid key.");
         }
 
         var request = new
@@ -152,7 +145,7 @@ public class OpenAIIssueAnalysisService : IIssueAnalysisService
 
         httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
 
-        var timeout = int.TryParse(_configuration["OpenAI:TimeoutSeconds"], out var seconds) ? seconds : 30;
+        var timeout = OpenAiConfig.GetTimeoutSeconds(_configuration);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
 
         var response = await _httpClient.SendAsync(httpRequest, cts.Token);
@@ -375,115 +368,62 @@ Provide response as JSON format with these exact field names.";
     }
 
     /// <summary>
-    /// Generates heuristic analysis without OpenAI API
+    /// Finds likely duplicate issues for <paramref name="issue"/> via a local
+    /// text-similarity pass over open issues in the same city. Bounded and best-effort.
+    /// </summary>
+    private async Task<List<DuplicateMatch>> FindPotentialDuplicatesAsync(Issue issue)
+    {
+        if (string.IsNullOrWhiteSpace(issue.CityId))
+        {
+            return new List<DuplicateMatch>();
+        }
+
+        try
+        {
+            var candidates = await _issueRepository.QueryAsync(
+                i => i.Id != issue.Id
+                    && i.CityId == issue.CityId
+                    && !i.IsDeleted
+                    && i.Status != IssueStatus.Fixed
+                    && i.Status != IssueStatus.Rejected
+                    && i.Status != IssueStatus.Duplicate
+                    && i.Status != IssueStatus.Archived,
+                skip: 0,
+                limit: 200);
+
+            return DuplicateDetection.FindDuplicates(issue, candidates.Items);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Duplicate detection failed for issue {IssueId}", issue.Id);
+            return new List<DuplicateMatch>();
+        }
+    }
+
+    /// <summary>
+    /// Generates heuristic analysis without OpenAI API, using the shared
+    /// <see cref="IssueHeuristics"/> classifier so it agrees with the civic
+    /// draft-suggestion fallback on identical input.
     /// </summary>
     private IssueAnalysis GenerateHeuristicAnalysis(Issue issue)
     {
-        var analysis = new IssueAnalysis
+        var result = IssueHeuristics.Classify(issue.Title, issue.Description);
+
+        return new IssueAnalysis
         {
-            Category = IssueCategory.Other,
-            ConfidenceScore = 65,
-            Reasoning = "Automated analysis based on keywords",
-            EstimatedSeverity = 5,
-            Keywords = ExtractKeywords(issue),
-            SuggestedTags = SuggestTags(issue),
+            Category = result.Category,
+            ConfidenceScore = result.Confidence,
+            Reasoning = "Automated keyword-based analysis (no AI key configured).",
+            EstimatedSeverity = result.Severity,
+            Keywords = result.Keywords.ToList(),
+            SuggestedTags = result.Tags.ToList(),
             PotentialDuplicates = new()
         };
-
-        // Categorize based on keywords
-        var lowerTitle = issue.Title.ToLowerInvariant();
-        var lowerDesc = issue.Description?.ToLowerInvariant() ?? "";
-        var combined = $"{lowerTitle} {lowerDesc}";
-
-        if (combined.Contains("road") || combined.Contains("pothole") || combined.Contains("street") || combined.Contains("pavement") || combined.Contains("asphalt"))
-            analysis.Category = IssueCategory.Infrastructure;
-        else if (combined.Contains("park") || combined.Contains("recreation") || combined.Contains("green space") || combined.Contains("playground"))
-            analysis.Category = IssueCategory.Parks;
-        else if (combined.Contains("accident") || combined.Contains("injury") || combined.Contains("crime") || combined.Contains("theft") || combined.Contains("vandalism") || combined.Contains("unsafe"))
-            analysis.Category = IssueCategory.PublicSafety;
-        else if (combined.Contains("water") || combined.Contains("electric") || combined.Contains("gas") || combined.Contains("utility") || combined.Contains("pipe") || combined.Contains("cable"))
-            analysis.Category = IssueCategory.Utilities;
-        else if (combined.Contains("pollution") || combined.Contains("waste") || combined.Contains("trash") || combined.Contains("litter") || combined.Contains("contamination"))
-            analysis.Category = IssueCategory.EnvironmentalHealth;
-        else if (combined.Contains("traffic") || combined.Contains("parking") || combined.Contains("congestion") || combined.Contains("transit") || combined.Contains("bus") || combined.Contains("sidewalk"))
-            analysis.Category = IssueCategory.Transportation;
-        else if (combined.Contains("clean") || combined.Contains("maintenance") || combined.Contains("repair") || combined.Contains("debris") || combined.Contains("rubble"))
-            analysis.Category = IssueCategory.Sanitation;
-        else if (combined.Contains("disease") || combined.Contains("illness") || combined.Contains("health") || combined.Contains("hazard") || combined.Contains("odor") || combined.Contains("flooding"))
-            analysis.Category = IssueCategory.PublicHealth;
-
-        // Estimate severity based on keywords
-        if (combined.Contains("critical") || combined.Contains("urgent") || combined.Contains("emergency") || combined.Contains("dangerous"))
-            analysis.EstimatedSeverity = 9;
-        else if (combined.Contains("serious") || combined.Contains("major") || combined.Contains("severe") || combined.Contains("accident"))
-            analysis.EstimatedSeverity = 7;
-        else if (combined.Contains("minor") || combined.Contains("small") || combined.Contains("slight"))
-            analysis.EstimatedSeverity = 2;
-        else
-            analysis.EstimatedSeverity = 5;
-
-        return analysis;
     }
 
     public Task<List<string>> SuggestTagsAsync(string title, string description)
     {
-        var issue = new Issue
-        {
-            Title = title ?? string.Empty,
-            Description = description ?? string.Empty
-        };
-
-        return Task.FromResult(SuggestTags(issue));
-    }
-
-    /// <summary>
-    /// Extracts keywords from an issue
-    /// </summary>
-    private List<string> ExtractKeywords(Issue issue)
-    {
-        var keywords = new HashSet<string>();
-        var text = $"{issue.Title} {issue.Description}".ToLowerInvariant();
-
-        // Common keywords
-        var commonKeywords = new[] 
-        { 
-            "road", "street", "pothole", "accident", "traffic", "water", 
-            "electricity", "park", "safety", "pollution", "waste", "maintenance",
-            "broken", "damaged", "flooding", "crime", "theft", "vandalism",
-            "congestion", "delay", "infrastructure", "hazard", "dangerous",
-            "urgent", "repair", "reconstruction", "cleaning", "sidewalk"
-        };
-
-        foreach (var keyword in commonKeywords)
-        {
-            if (text.Contains(keyword))
-                keywords.Add(keyword);
-        }
-
-        return keywords.Take(8).ToList();
-    }
-
-    /// <summary>
-    /// Suggests tags for an issue
-    /// </summary>
-    private List<string> SuggestTags(Issue issue)
-    {
-        var tags = new HashSet<string>();
-        var text = $"{issue.Title} {issue.Description}".ToLowerInvariant();
-
-        if (text.Contains("urgent") || text.Contains("critical") || text.Contains("emergency"))
-            tags.Add("urgent");
-        if (text.Contains("safety") || text.Contains("danger") || text.Contains("accident"))
-            tags.Add("safety-concern");
-        if (text.Contains("infrastructure") || text.Contains("road") || text.Contains("street"))
-            tags.Add("infrastructure");
-        if (text.Contains("environment") || text.Contains("pollution") || text.Contains("waste"))
-            tags.Add("environment");
-        if (text.Contains("transportation") || text.Contains("traffic") || text.Contains("parking"))
-            tags.Add("transportation");
-        if (text.Contains("parks") || text.Contains("recreation") || text.Contains("green"))
-            tags.Add("parks");
-
-        return tags.Any() ? tags.ToList() : new List<string> { "report", "review-needed" };
+        var result = IssueHeuristics.Classify(title, description);
+        return Task.FromResult(result.Tags.ToList());
     }
 }

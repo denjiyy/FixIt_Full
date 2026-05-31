@@ -134,8 +134,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
     public async Task<IssueDraftSuggestionResult> SuggestIssueDraftAsync(IssueDraftSuggestionInput input, CancellationToken cancellationToken = default)
     {
         var fallback = BuildDraftSuggestionFallback(input);
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             fallback.FallbackUsed = true;
             return fallback;
@@ -203,8 +202,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
     public async Task<AiTextResult> SummarizeIssueThreadAsync(IssueThreadSummaryInput input, CancellationToken cancellationToken = default)
     {
         var fallback = BuildIssueSummaryFallback(input);
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             return new AiTextResult { Content = fallback, AiGenerated = false, FallbackUsed = true };
         }
@@ -255,8 +253,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
     public async Task<AiTextResult> SummarizeReportAsync(ReportSummaryInput input, CancellationToken cancellationToken = default)
     {
         var fallback = BuildReportSummaryFallback(input);
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             return new AiTextResult { Content = fallback, AiGenerated = false, FallbackUsed = true };
         }
@@ -307,8 +304,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
     public async Task<AiTextResult> GenerateHazardInsightAsync(HazardInsightInput input, CancellationToken cancellationToken = default)
     {
         var fallback = BuildHazardInsightFallback(input);
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             return new AiTextResult { Content = fallback, AiGenerated = false, FallbackUsed = true };
         }
@@ -359,8 +355,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
     public async Task<IssueFilterTranslationResult> TranslateIssueFilterAsync(IssueFilterTranslationInput input, CancellationToken cancellationToken = default)
     {
         var fallback = BuildFilterTranslationFallback(input.Query);
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             fallback.FallbackUsed = true;
             return fallback;
@@ -410,8 +405,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
         string fallback,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (IsApiConfigured(apiKey))
+        if (OpenAiConfig.IsConfigured(_configuration))
         {
             var streamEvents = await TryStreamEventsAsync(systemPrompt, userPrompt, cancellationToken);
             if (streamEvents != null)
@@ -500,15 +494,15 @@ public sealed class OpenAiCivicAiService : ICivicAiService
         bool jsonMode,
         CancellationToken cancellationToken)
     {
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        var apiKey = OpenAiConfig.GetApiKey(_configuration);
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             return null;
         }
 
         var request = new Dictionary<string, object?>
         {
-            ["model"] = _configuration["OpenAI:Model"] ?? "gpt-4o-mini",
+            ["model"] = OpenAiConfig.GetModel(_configuration),
             ["messages"] = messages,
             ["temperature"] = temperature,
             ["max_tokens"] = maxTokens
@@ -526,9 +520,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
 
         httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
 
-        var timeout = int.TryParse(_configuration["OpenAI:TimeoutSeconds"], out var timeoutSeconds)
-            ? timeoutSeconds
-            : 30;
+        var timeout = OpenAiConfig.GetTimeoutSeconds(_configuration);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeout));
 
@@ -551,15 +543,15 @@ public sealed class OpenAiCivicAiService : ICivicAiService
 
     private async IAsyncEnumerable<string> StreamTextAsync(string systemPrompt, string userPrompt, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var apiKey = _configuration["OpenAI:ApiKey"]?.Trim();
-        if (!IsApiConfigured(apiKey))
+        var apiKey = OpenAiConfig.GetApiKey(_configuration);
+        if (!OpenAiConfig.IsConfigured(_configuration))
         {
             yield break;
         }
 
         var request = new
         {
-            model = _configuration["OpenAI:Model"] ?? "gpt-4o-mini",
+            model = OpenAiConfig.GetModel(_configuration),
             messages = new object[]
             {
                 new { role = "system", content = systemPrompt },
@@ -576,9 +568,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
         };
         httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
 
-        var timeout = int.TryParse(_configuration["OpenAI:TimeoutSeconds"], out var timeoutSeconds)
-            ? timeoutSeconds
-            : 30;
+        var timeout = OpenAiConfig.GetTimeoutSeconds(_configuration);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeout));
 
@@ -639,54 +629,15 @@ public sealed class OpenAiCivicAiService : ICivicAiService
 
     private static IssueDraftSuggestionResult BuildDraftSuggestionFallback(IssueDraftSuggestionInput input)
     {
-        var merged = $"{input.Title} {input.Description}".ToLowerInvariant();
-        var category = IssueCategory.Other;
-        var priority = IssuePriority.Medium;
-
-        if (ContainsAny(merged, "pothole", "road", "sidewalk", "bridge", "asphalt"))
-        {
-            category = IssueCategory.Infrastructure;
-            priority = IssuePriority.High;
-        }
-        else if (ContainsAny(merged, "crime", "unsafe", "assault", "accident", "danger"))
-        {
-            category = IssueCategory.PublicSafety;
-            priority = IssuePriority.Critical;
-        }
-        else if (ContainsAny(merged, "trash", "garbage", "waste", "litter"))
-        {
-            category = IssueCategory.Sanitation;
-        }
-        else if (ContainsAny(merged, "water", "gas", "electric", "power", "sewage"))
-        {
-            category = IssueCategory.Utilities;
-            priority = IssuePriority.High;
-        }
-        else if (ContainsAny(merged, "traffic", "parking", "bus", "transit", "intersection"))
-        {
-            category = IssueCategory.Transportation;
-        }
-        else if (ContainsAny(merged, "flood", "pollution", "odor", "contamination"))
-        {
-            category = IssueCategory.EnvironmentalHealth;
-            priority = IssuePriority.High;
-        }
-        else if (ContainsAny(merged, "park", "playground", "tree", "green"))
-        {
-            category = IssueCategory.Parks;
-        }
-
-        if (ContainsAny(merged, "urgent", "immediate", "emergency", "critical"))
-        {
-            priority = IssuePriority.Critical;
-        }
+        // Shared with the issue-analysis fallback so both engines agree on identical input.
+        var result = IssueHeuristics.Classify(input.Title, input.Description);
 
         return new IssueDraftSuggestionResult
         {
-            Category = category,
-            Priority = priority,
-            Department = MapDepartment(category),
-            Confidence = 62,
+            Category = result.Category,
+            Priority = result.Priority,
+            Department = result.Department,
+            Confidence = result.Confidence,
             AiGenerated = false,
             FallbackUsed = true
         };
@@ -707,7 +658,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
 
             var category = ParseIssueCategory(GetStringOrNull(root, "category")) ?? fallback.Category;
             var priority = ParsePriority(GetStringOrNull(root, "priority")) ?? fallback.Priority;
-            var department = (GetStringOrNull(root, "department") ?? MapDepartment(category ?? IssueCategory.Other)).Trim();
+            var department = (GetStringOrNull(root, "department") ?? IssueHeuristics.DepartmentFor(category ?? IssueCategory.Other)).Trim();
             var confidence = ClampInt(GetIntOrNull(root, "confidence") ?? fallback.Confidence, 0, 100);
 
             return new IssueDraftSuggestionResult
@@ -1061,21 +1012,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    private static string MapDepartment(IssueCategory category)
-    {
-        return category switch
-        {
-            IssueCategory.Infrastructure => "Public Works Department",
-            IssueCategory.PublicSafety => "Public Safety Department",
-            IssueCategory.EnvironmentalHealth => "Environmental Health Department",
-            IssueCategory.Parks => "Parks and Recreation",
-            IssueCategory.Transportation => "Transportation Department",
-            IssueCategory.Utilities => "Utilities Department",
-            IssueCategory.Sanitation => "Sanitation Department",
-            IssueCategory.PublicHealth => "Public Health Department",
-            _ => "General Services"
-        };
-    }
+    // Department mapping now lives in IssueHeuristics.DepartmentFor (single source of truth).
 
     private static bool ContainsAny(string value, params string[] terms)
     {
@@ -1090,12 +1027,7 @@ public sealed class OpenAiCivicAiService : ICivicAiService
         return false;
     }
 
-    private static bool IsApiConfigured(string? apiKey)
-    {
-        return !string.IsNullOrWhiteSpace(apiKey)
-            && apiKey.StartsWith("sk-", StringComparison.Ordinal)
-            && !apiKey.Contains("YOUR", StringComparison.OrdinalIgnoreCase);
-    }
+    // "Is the API configured?" now lives in OpenAiConfig.IsConfigured (shared, honors OpenAI:Enabled).
 
     private static bool IsImageMimeType(string? mimeType)
     {
