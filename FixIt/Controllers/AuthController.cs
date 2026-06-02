@@ -183,39 +183,65 @@ public class AuthController : ControllerBase
             return BadRequest(ApiResponse<object>.CreateError(errors));
         }
 
-        // Add default User role
-        await _userManager.AddToRoleAsync(user, RoleNames.User);
-        var userRoles = await _userManager.GetRolesAsync(user);
-
-        user.LastRefreshTokenIssuedAt = DateTime.UtcNow;
-        await _userManager.UpdateAsync(user);
-
-        var accessToken = _tokenService.GenerateAccessToken(user, userRoles);
-        var refreshToken = _tokenService.GenerateRefreshToken(user);
-
-        _logger.LogInformation("New user {UserId} registered via password", user.Id);
-
-        var tokenResponse = new TokenResponse
+        // Everything past CreateAsync runs in a try/catch so any failure rolls back the
+        // freshly-created account instead of orphaning the email (which would then 400
+        // "account already exists" on retry and block the user permanently).
+        try
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            TokenType = "Bearer",
-            ExpiresIn = _tokenService.AccessTokenExpirationMinutes * 60,
-            User = new UserTokenInfo
-            {
-                Id = user.Id.ToString(),
-                Email = user.Email ?? "",
-                DisplayName = user.DisplayName,
-                Roles = userRoles,
-                ReputationScore = user.ReputationScore,
-                TrustLevel = user.TrustLevel,
-                IsVerifiedOfficial = user.IsVerifiedOfficial,
-                OfficialTitle = user.OfficialTitle,
-                OfficialDepartment = user.OfficialDepartment
-            }
-        };
+            // Regular users carry NO managed Identity role: "User" is represented by the
+            // ApplicationUser.Role enum (which already defaults to UserRole.User) plus the
+            // absence of Admin/Moderator role claims — see UserRoleSync, which deliberately
+            // never assigns or seeds a "User" role. Calling AddToRoleAsync(user, "User")
+            // here threw "Role User does not exist" (the role is never created), and because
+            // the account was already created above, every registration 500'd and orphaned
+            // the email. GetRolesAsync returns the (empty) managed-role set for the token.
+            var userRoles = await _userManager.GetRolesAsync(user);
 
-        return Ok(ApiResponse<TokenResponse>.CreateSuccess(tokenResponse, "Registration successful"));
+            user.LastRefreshTokenIssuedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            var accessToken = _tokenService.GenerateAccessToken(user, userRoles);
+            var refreshToken = _tokenService.GenerateRefreshToken(user);
+
+            _logger.LogInformation("New user {UserId} registered via password", user.Id);
+
+            var tokenResponse = new TokenResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                TokenType = "Bearer",
+                ExpiresIn = _tokenService.AccessTokenExpirationMinutes * 60,
+                User = new UserTokenInfo
+                {
+                    Id = user.Id.ToString(),
+                    Email = user.Email ?? "",
+                    DisplayName = user.DisplayName,
+                    Roles = userRoles,
+                    ReputationScore = user.ReputationScore,
+                    TrustLevel = user.TrustLevel,
+                    IsVerifiedOfficial = user.IsVerifiedOfficial,
+                    OfficialTitle = user.OfficialTitle,
+                    OfficialDepartment = user.OfficialDepartment
+                }
+            };
+
+            return Ok(ApiResponse<TokenResponse>.CreateSuccess(tokenResponse, "Registration successful"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Registration failed after account creation for {Email}; rolling back the new user", request.Email);
+            try
+            {
+                await _userManager.DeleteAsync(user);
+            }
+            catch (Exception cleanupEx)
+            {
+                _logger.LogError(cleanupEx, "Failed to roll back partially-created user {UserId}", user.Id);
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ApiResponse<object>.CreateError("Registration failed. Please try again."));
+        }
     }
 
     /// <summary>
