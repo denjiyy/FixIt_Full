@@ -16,8 +16,10 @@ using Microsoft.AspNetCore.Identity;
 var builder = WebApplication.CreateBuilder(args);
 var isProduction = builder.Environment.IsProduction();
 
-// Normalize allowed hosts so both comma- and semicolon-delimited env values are supported.
-var allowedHostsRaw = builder.Configuration["AllowedHosts"];
+// Resolve the Railway-style "${ALLOWED_HOSTS:default}" placeholder first — the ALLOWED_HOSTS
+// env var is not auto-substituted into the "AllowedHosts" config key — then normalize so both
+// comma- and semicolon-delimited host lists are supported.
+var allowedHostsRaw = StartupConfigurationHelpers.ResolveRailwayStylePlaceholder(builder.Configuration["AllowedHosts"]);
 if (!string.IsNullOrWhiteSpace(allowedHostsRaw))
 {
     var normalizedAllowedHosts = allowedHostsRaw
