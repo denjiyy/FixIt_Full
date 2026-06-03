@@ -248,4 +248,59 @@
   <data name="Settings_Appearance_System" xml:space="preserve"><value>Системен</value></data>
   <data name="Settings_Appearance_Light" xml:space="preserve"><value>Светъл</value></data>
   <data name="Settings_Appearance_Dark" xml:space="preserve"><value>Тъмен</value></data>
+  <data name="Cities_Empty" xml:space="preserve"><value>Няма налични градове</value></data>
+  <data name="Cities_Issues" xml:space="preserve"><value>сигнали</value></data>
+  <data name="Cities_Title" xml:space="preserve"><value>Градове</value></data>
+  <data name="Cities_ViewIssues" xml:space="preserve"><value>Виж сигналите</value></data>
+  <data name="Comment_MostLiked" xml:space="preserve"><value>Най-харесвани</value></data>
+  <data name="Comment_Newest" xml:space="preserve"><value>Най-нови</value></data>
+  <data name="Comment_Oldest" xml:space="preserve"><value>Най-стари</value></data>
+  <data name="Comment_Sort" xml:space="preserve"><value>Подреждане</value></data>
+  <data name="Common_Error_Forbidden" xml:space="preserve"><value>Нямате право да извършите това действие.</value></data>
+  <data name="Common_Error_Timeout" xml:space="preserve"><value>Времето за заявката изтече. Опитайте отново.</value></data>
+  <data name="Common_Error_TooManyRequests" xml:space="preserve"><value>Твърде много заявки. Моля, изчакайте момент.</value></data>
+  <data name="Common_Error_Unauthorized" xml:space="preserve"><value>Моля, влезте, за да продължите.</value></data>
+  <data name="ConnectedAccounts_Empty" xml:space="preserve"><value>Все още няма свързани акаунти</value></data>
+  <data name="ConnectedAccounts_Link" xml:space="preserve"><value>Свържи</value></data>
+  <data name="ConnectedAccounts_Title" xml:space="preserve"><value>Свързани акаунти</value></data>
+  <data name="ConnectedAccounts_Unlink" xml:space="preserve"><value>Премахни връзката</value></data>
+  <data name="Detail_Delete" xml:space="preserve"><value>Изтрий</value></data>
+  <data name="Detail_DeleteConfirmMessage" xml:space="preserve"><value>Това действие не може да бъде отменено.</value></data>
+  <data name="Detail_DeleteConfirmTitle" xml:space="preserve"><value>Изтриване на този сигнал?</value></data>
+  <data name="Detail_Edit" xml:space="preserve"><value>Редактирай</value></data>
+  <data name="Detail_Media" xml:space="preserve"><value>Медия</value></data>
+  <data name="Detail_StatusHistory" xml:space="preserve"><value>История на статуса</value></data>
+  <data name="Edit_Save" xml:space="preserve"><value>Запази промените</value></data>
+  <data name="Edit_Success" xml:space="preserve"><value>Сигналът е обновен успешно.</value></data>
+  <data name="Edit_Title" xml:space="preserve"><value>Редактиране на сигнал</value></data>
+  <data name="ForgotPassword_Description" xml:space="preserve"><value>Въведете своя имейл и ще ви изпратим връзка за нулиране.</value></data>
+  <data name="ForgotPassword_Link" xml:space="preserve"><value>Забравена парола?</value></data>
+  <data name="ForgotPassword_Send" xml:space="preserve"><value>Изпрати връзка за нулиране</value></data>
+  <data name="ForgotPassword_Success" xml:space="preserve"><value>Ако съществува акаунт с този имейл, изпратихме връзка за нулиране.</value></data>
+  <data name="ForgotPassword_Title" xml:space="preserve"><value>Забравена парола</value></data>
+  <data name="HazardMode_Details" xml:space="preserve"><value>Описание</value></data>
+  <data name="HazardMode_Report" xml:space="preserve"><value>Подай сигнал за опасност</value></data>
+  <data name="HazardMode_Severity" xml:space="preserve"><value>Сериозност</value></data>
+  <data name="HazardMode_Title" xml:space="preserve"><value>Режим за опасности</value></data>
+  <data name="HazardMode_Type" xml:space="preserve"><value>Тип опасност</value></data>
+  <data name="Health_OpenIssues" xml:space="preserve"><value>Отворени сигнали</value></data>
+  <data name="Health_ResolvedIssues" xml:space="preserve"><value>Решени сигнали</value></data>
+  <data name="Heatmap_Title" xml:space="preserve"><value>Топлинна карта на сигналите</value></data>
+  <data name="Login_Error_EmptyEmail" xml:space="preserve"><value>Моля, въведете своя имейл адрес.</value></data>
+  <data name="Report_AISuggestions" xml:space="preserve"><value>AI предложения</value></data>
+  <data name="Report_Address" xml:space="preserve"><value>Адрес</value></data>
+  <data name="Report_Category" xml:space="preserve"><value>Категория</value></data>
+  <data name="Report_Department" xml:space="preserve"><value>Отдел</value></data>
+  <data name="Report_Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="Report_Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Report_Tags" xml:space="preserve"><value>Етикети</value></data>
+  <data name="Report_TagsHint" xml:space="preserve"><value>Добавете етикети, разделени със запетаи</value></data>
+  <data name="Settings_CityPreference" xml:space="preserve"><value>Предпочитан град</value></data>
+  <data name="Settings_EmailMaster" xml:space="preserve"><value>Имейл известия</value></data>
+  <data name="Settings_EmailPreferences" xml:space="preserve"><value>Имейл известия</value></data>
+  <data name="Settings_Reminders" xml:space="preserve"><value>Напомняния</value></data>
+  <data name="Settings_SafetyAlerts" xml:space="preserve"><value>Сигнали за безопасност</value></data>
+  <data name="Settings_WeeklyReports" xml:space="preserve"><value>Седмични здравни отчети</value></data>
+  <data name="Tags_Empty" xml:space="preserve"><value>Няма сигнали с този етикет</value></data>
+  <data name="Tags_Title" xml:space="preserve"><value>Преглед по етикет</value></data>
 </root>

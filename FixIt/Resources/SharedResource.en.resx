@@ -762,22 +762,6 @@
   <data name="TimelineUnderway" xml:space="preserve"><value>Work underway</value></data>
   <data name="TimelinePending" xml:space="preserve"><value>Pending</value></data>
   <data name="PinnedLocation" xml:space="preserve"><value>Pinned location</value></data>
-  <data name="Neighbor" xml:space="preserve"><value>neighbor</value></data>
-  <data name="TownGreeting" xml:space="preserve"><value>Your town</value></data>
-  <data name="TownReportTitle" xml:space="preserve"><value>See something that needs fixing?</value></data>
-  <data name="TownReportCopy" xml:space="preserve"><value>Report it in about a minute. A photo and a pin is all it takes to get your town on it.</value></data>
-  <data name="TownStepSnap" xml:space="preserve"><value>Snap</value></data>
-  <data name="TownStepPin" xml:space="preserve"><value>Pin</value></data>
-  <data name="TownStepDone" xml:space="preserve"><value>Done</value></data>
-  <data name="TownYourReports" xml:space="preserve"><value>Your Reports</value></data>
-  <data name="TownWatching" xml:space="preserve"><value>You're keeping an eye on</value></data>
-  <data name="TownNearYou" xml:space="preserve"><value>Near You</value></data>
-  <data name="TownHappeningAround" xml:space="preserve"><value>Happening near you</value></data>
-  <data name="TownStepNew" xml:space="preserve"><value>Reported · awaiting confirmation</value></data>
-  <data name="TownStepConfirmed" xml:space="preserve"><value>Confirmed by neighbors</value></data>
-  <data name="TownStepInProgress" xml:space="preserve"><value>Crew on the way</value></data>
-  <data name="TownStepFixed" xml:space="preserve"><value>Resolved — thank you!</value></data>
-  <data name="TownStepClosed" xml:space="preserve"><value>Closed</value></data>
   <data name="Community" xml:space="preserve"><value>Community</value></data>
   <data name="TopContributors" xml:space="preserve"><value>Top contributors</value></data>
   <data name="LeaderboardPeriodLabel" xml:space="preserve"><value>Leaderboard period</value></data>

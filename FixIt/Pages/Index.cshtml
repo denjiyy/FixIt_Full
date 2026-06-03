@@ -37,27 +37,6 @@
         return name.Length > 0 ? name[0].ToString().ToUpperInvariant() : "?";
     }
     string AddressOf(Issue it) => string.IsNullOrWhiteSpace(it.Address) ? Localizer["CommunityIssues"].Value : it.Address!;
-
-    // Resident "your town" home data + helpers.
-    var greetingName = string.IsNullOrWhiteSpace(Model.DisplayName) ? Localizer["Neighbor"].Value : Model.DisplayName;
-    var myReports = Model.MyReports;
-    var nearYou = featured;
-    string TownStep(IssueStatus s) => s switch
-    {
-        IssueStatus.New => Localizer["TownStepNew"].Value,
-        IssueStatus.Confirmed => Localizer["TownStepConfirmed"].Value,
-        IssueStatus.InProgress => Localizer["TownStepInProgress"].Value,
-        IssueStatus.Fixed => Localizer["TownStepFixed"].Value,
-        _ => Localizer["TownStepClosed"].Value
-    };
-    int TownPct(IssueStatus s) => s switch
-    {
-        IssueStatus.New => 25,
-        IssueStatus.Confirmed => 55,
-        IssueStatus.InProgress => 80,
-        IssueStatus.Fixed => 100,
-        _ => 100
-    };
 }
 
 @section PageCss {
@@ -67,82 +46,6 @@
 
 <div class="home-index-page">
 
-@if (Model.IsResident)
-{
-    <section class="section--tight townhome">
-        <div class="wrap">
-            <div class="greet">
-                <div>
-                    <span class="kicker"><i class="bi bi-sunrise"></i>@Localizer["TownGreeting"]</span>
-                    <h1>@Localizer["WelcomeBack"], @greetingName</h1>
-                </div>
-            </div>
-
-            <div class="report-card">
-                <div class="report-card__copy">
-                    <h2>@Localizer["TownReportTitle"]</h2>
-                    <p>@Localizer["TownReportCopy"]</p>
-                    <a class="app-link-btn home-cta-btn btn-onblue" asp-area="" asp-page="/Issues/Create">
-                        <i class="bi bi-plus-circle-fill"></i>
-                        <span>@Localizer["LandingReportCta"]</span>
-                    </a>
-                    <div class="report-card__steps">
-                        <span class="rc-step"><i class="bi bi-camera"></i>@Localizer["TownStepSnap"]</span>
-                        <span class="rc-step"><i class="bi bi-geo-alt"></i>@Localizer["TownStepPin"]</span>
-                        <span class="rc-step"><i class="bi bi-send"></i>@Localizer["TownStepDone"]</span>
-                    </div>
-                </div>
-                <div class="report-card__visual" aria-hidden="true">
-                    <div class="report-card__photo grad-a"><i class="bi bi-buildings"></i></div>
-                </div>
-            </div>
-
-            @if (myReports.Any())
-            {
-                <div class="sec-row">
-                    <div class="sec-row__copy">
-                        <span class="kicker"><i class="bi bi-bookmark-heart"></i>@Localizer["TownYourReports"]</span>
-                        <h2 class="h-section townhome__h2">@Localizer["TownWatching"] @myReports.Count</h2>
-                    </div>
-                    <a class="linkmore" asp-area="" asp-page="/Issues/Index">@Localizer["LandingBrowseAll"]<i class="bi bi-arrow-right"></i></a>
-                </div>
-                <div class="your-reports">
-                    @foreach (var it in myReports)
-                    {
-                        <a href="/issues/@it.Id" class="yr-card">
-                            <div class="yr-card__top">
-                                <partial name="_BadgeStatus" model="it.Status" />
-                                <span class="gcard__confirm"><i class="bi bi-hand-thumbs-up-fill"></i>@it.Upvotes</span>
-                            </div>
-                            <h4>@it.Title</h4>
-                            <div class="yr-bar"><i class="@(it.Status == IssueStatus.Fixed ? "is-done" : "")" style="width:@(TownPct(it.Status))%"></i></div>
-                            <div class="yr-card__step">@TownStep(it.Status)</div>
-                        </a>
-                    }
-                </div>
-            }
-
-            @if (nearYou.Any())
-            {
-                <div class="sec-row townhome__near">
-                    <div class="sec-row__copy">
-                        <span class="kicker"><i class="bi bi-pin-map"></i>@Localizer["TownNearYou"]</span>
-                        <h2 class="h-section townhome__h2">@Localizer["TownHappeningAround"]</h2>
-                    </div>
-                    <a class="linkmore" asp-area="" asp-page="/Issues/Index">@Localizer["LandingBrowseAll"]<i class="bi bi-arrow-right"></i></a>
-                </div>
-                <div class="gallery">
-                    @foreach (var it in nearYou)
-                    {
-                        <partial name="_GalleryCard" model="it" />
-                    }
-                </div>
-            }
-        </div>
-    </section>
-}
-else
-{
     @* ---------- Hero ---------- *@
     <section class="lhero">
         <div class="wrap">
@@ -375,5 +278,4 @@ else
             </div>
         </div>
     </section>
-}
 </div>
