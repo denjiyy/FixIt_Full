@@ -31,25 +31,4 @@ public class ConsoleEmailService : IEmailService
         _logger.LogInformation("[EMAIL] Health Report to {RecipientEmail} for {CityName}", userEmail, cityName);
         await SendEmailAsync(userEmail, $"Weekly Health Report - {cityName}", reportHtml);
     }
-
-    public async Task SendWeeklyReminderEmailAsync(string userEmail, string userName, int openIssuesCount, string cityName)
-    {
-        _logger.LogInformation(
-            "[EMAIL] Weekly reminder to {RecipientEmail}: {OpenIssueCount} open issues in {CityName}",
-            userEmail,
-            openIssuesCount,
-            cityName);
-        await SendEmailAsync(userEmail, $"Weekly Reminder - {openIssuesCount} Open Issues", "Weekly reminder email");
-    }
-
-    public async Task SendHazardAlertEmailAsync(string userEmail, string userName, string hazardTitle, string hazardType, double distance)
-    {
-        _logger.LogInformation(
-            "[EMAIL] Hazard alert to {RecipientEmail}: {HazardType} ({HazardTitle}) at {DistanceKm} km",
-            userEmail,
-            hazardType,
-            hazardTitle,
-            distance);
-        await SendEmailAsync(userEmail, $"Safety Alert: {hazardType}", "Hazard alert email");
-    }
 }

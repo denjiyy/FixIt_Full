@@ -1,0 +1,51 @@
+@using FixIt.Models.Enums
+@using FixIt.Models.Issues
+@model Issue
+@inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
+@{
+    var grads = new[] { "grad-a", "grad-b", "grad-c", "grad-d" };
+    var avatarColors = new[] { "var(--sky-600)", "var(--violet-500)", "var(--emerald-600)", "var(--amber-500)", "var(--sky-500)" };
+
+    // Deterministic, per-issue colour so each card reads distinctly without index plumbing.
+    var hash = 0;
+    foreach (var ch in Model.Id ?? string.Empty) { hash = (hash + ch) % 9973; }
+    var grad = grads[hash % grads.Length];
+    var avatar = avatarColors[hash % avatarColors.Length];
+
+    var glyph = Model.Status switch
+    {
+        IssueStatus.Fixed => "bi-check2-circle",
+        IssueStatus.InProgress => "bi-tools",
+        IssueStatus.Confirmed => "bi-hand-thumbs-up",
+        IssueStatus.Rejected => "bi-x-circle",
+        IssueStatus.Duplicate => "bi-files",
+        _ => "bi-exclamation-circle"
+    };
+    var reporter = Model.IsAnonymous
+        ? Localizer["AnonymousReporter"].Value
+        : (string.IsNullOrWhiteSpace(Model.Reporter?.DisplayName) ? Localizer["CommunityMember"].Value : Model.Reporter!.DisplayName);
+    var initial = Model.IsAnonymous
+        ? "?"
+        : (reporter.Trim().Length > 0 ? reporter.Trim()[0].ToString().ToUpperInvariant() : "?");
+    var address = string.IsNullOrWhiteSpace(Model.Address) ? Localizer["CommunityIssues"].Value : Model.Address!;
+}
+
+<a href="/issues/@Model.Id" class="gcard">
+    <div class="gcard__photo @grad">
+        <span class="gcard__glyph"><i class="bi @glyph"></i></span>
+        <span class="gcard__status"><partial name="_BadgeStatus" model="Model.Status" /></span>
+    </div>
+    <div class="gcard__body">
+        <h3 class="gcard__title">@Model.Title</h3>
+        <span class="gcard__loc"><i class="bi bi-geo-alt-fill"></i>@address</span>
+        <div class="gcard__foot">
+            <span class="gcard__reporter">
+                <span class="gcard__avatar" style="background:@avatar">@initial</span>
+                @reporter
+            </span>
+            <span class="gcard__confirm">
+                <i class="bi bi-hand-thumbs-up-fill"></i>@Model.Upvotes @Localizer["LandingConfirmed"]
+            </span>
+        </div>
+    </div>
+</a>

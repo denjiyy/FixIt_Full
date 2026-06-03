@@ -8,6 +8,7 @@ public partial class IssueDetailPage : ContentPage
     {
         InitializeComponent();
         BindingContext = viewModel;
+        SizeChanged += OnPageSizeChanged;
     }
 
     protected override async void OnAppearing()
@@ -36,6 +37,20 @@ public partial class IssueDetailPage : ContentPage
         base.OnDisappearing();
     }
 
+    // Keep the hero photo a square that tracks the device width.
+    private void OnPageSizeChanged(object? sender, EventArgs e)
+    {
+        if (Width > 0)
+        {
+            PhotoHost.HeightRequest = Math.Min(Width, 460);
+        }
+    }
+
+    private async void OnBackClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("..");
+    }
+
     private async void OnUpvoteClicked(object? sender, EventArgs e)
     {
         await AnimateVoteButtonAsync(UpvoteButton);
@@ -45,18 +60,9 @@ public partial class IssueDetailPage : ContentPage
         }
     }
 
-    private async void OnDownvoteClicked(object? sender, EventArgs e)
-    {
-        await AnimateVoteButtonAsync(DownvoteButton);
-        if (BindingContext is IssueDetailViewModel viewModel)
-        {
-            await viewModel.VoteCommand.ExecuteAsync(false);
-        }
-    }
-
     private static async Task AnimateVoteButtonAsync(VisualElement button)
     {
-        await button.ScaleTo(1.2, 100, Easing.SpringOut);
+        await button.ScaleTo(1.12, 100, Easing.SpringOut);
         await button.ScaleTo(1.0, 100, Easing.SpringOut);
     }
 }

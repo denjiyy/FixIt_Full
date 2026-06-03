@@ -74,12 +74,52 @@ public class ExternalLoginModel : PageModel
             return RedirectToPage("./Lockout");
         }
 
-        // If the user does not have an account, then ask the user to create an account.
         ReturnUrl = returnUrl;
         LoginProvider = info.LoginProvider;
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);
         var providerName = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+        // If a local account already exists for this (provider-verified) email but
+        // isn't yet linked to this external login, link them and sign in instead of
+        // dead-ending. Without this, a user who first registered with a password
+        // (or via the mobile OAuth path) hits "email already taken" when they click
+        // "Sign in with Google" — the create below would fail. Google verifies email
+        // ownership, so linking by email is safe and matches the API OAuth flow.
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                var linkResult = await _userManager.AddLoginAsync(existingUser, info);
+                if (linkResult.Succeeded)
+                {
+                    MirrorExternalIdentity(existingUser, info, providerName ?? existingUser.DisplayName);
+                    if (!existingUser.EmailConfirmed)
+                    {
+                        existingUser.EmailConfirmed = true;
+                    }
+                    await _userManager.UpdateAsync(existingUser);
+
+                    await _signInManager.SignInAsync(existingUser, isPersistent: false);
+                    _logger.LogInformation(
+                        "Linked {LoginProvider} login to existing account {UserId} by verified email and signed in.",
+                        info.LoginProvider, existingUser.Id);
+                    return LocalRedirect(returnUrl);
+                }
+
+                // Linking failed for an unexpected reason — surface it rather than
+                // falling through to a create that will also fail on the unique email.
+                _logger.LogWarning(
+                    "Failed to link {LoginProvider} login to existing account {UserId}: {Errors}",
+                    info.LoginProvider, existingUser.Id,
+                    string.Join("; ", linkResult.Errors.Select(e => e.Description)));
+                ErrorMessage = "We couldn't connect your account. Please sign in with your password and link the provider from settings.";
+                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+            }
+        }
+
+        // Otherwise, ask the user to confirm creating a new account.
         // Choose a safe, non-empty default display name from provider claims/email.
         var defaultDisplayName = !string.IsNullOrWhiteSpace(providerName)
             ? providerName
@@ -125,6 +165,10 @@ public class ExternalLoginModel : PageModel
                 Email = Input.Email,
                 DisplayName = Input.DisplayName,
                 Role = UserRole.User,
+                // The provider (Google) has verified ownership of this email, so the
+                // account is confirmed from the start and won't be blocked if
+                // SignIn.RequireConfirmedEmail is enabled.
+                EmailConfirmed = true,
             };
 
             var result = await _userManager.CreateAsync(user);
@@ -136,19 +180,8 @@ public class ExternalLoginModel : PageModel
                     // Mirror the Identity external login into
                     // ApplicationUser.ExternalIdentities so the connected-accounts
                     // UI reflects the linked provider accurately.
-                    if (!user.ExternalIdentities.Any(e =>
-                            e.Provider == info.LoginProvider && e.ProviderId == info.ProviderKey))
-                    {
-                        user.ExternalIdentities.Add(new ExternalIdentity
-                        {
-                            Provider = info.LoginProvider,
-                            ProviderId = info.ProviderKey,
-                            ProviderDisplayName = Input.DisplayName,
-                            ConnectedAt = DateTime.UtcNow,
-                            LastSignInAt = DateTime.UtcNow
-                        });
-                        await _userManager.UpdateAsync(user);
-                    }
+                    MirrorExternalIdentity(user, info, Input.DisplayName);
+                    await _userManager.UpdateAsync(user);
 
                     _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
@@ -171,6 +204,26 @@ public class ExternalLoginModel : PageModel
         LoginProvider = info.LoginProvider;
         ReturnUrl = returnUrl;
         return Page();
+    }
+
+    // Keep ApplicationUser.ExternalIdentities in sync with the Identity login store
+    // so the connected-accounts UI (and the mobile OAuth path) see the same links.
+    private static void MirrorExternalIdentity(ApplicationUser user, ExternalLoginInfo info, string displayName)
+    {
+        if (user.ExternalIdentities.Any(e =>
+                e.Provider == info.LoginProvider && e.ProviderId == info.ProviderKey))
+        {
+            return;
+        }
+
+        user.ExternalIdentities.Add(new ExternalIdentity
+        {
+            Provider = info.LoginProvider,
+            ProviderId = info.ProviderKey,
+            ProviderDisplayName = displayName,
+            ConnectedAt = DateTime.UtcNow,
+            LastSignInAt = DateTime.UtcNow
+        });
     }
 
     public class InputModel

@@ -1,3 +1,4 @@
+using FixIt.Mobile.Models;
 using FixIt.Mobile.ViewModels;
 
 namespace FixIt.Mobile.Views;
@@ -10,6 +11,27 @@ public partial class HomePage : ContentPage
         BindingContext = viewModel;
     }
 
+    // Feed card actions are wired in code-behind (not cross-context x:Reference command
+    // bindings, which proved unreliable from inside the CollectionView item template).
+    // The bound Issue comes from the tapped control's BindingContext.
+    private async void OnCommentClicked(object? sender, EventArgs e)
+    {
+        if (sender is BindableObject control && control.BindingContext is Issue issue &&
+            BindingContext is HomeViewModel viewModel)
+        {
+            await viewModel.NavigateToIssueCommand.ExecuteAsync(issue.Id);
+        }
+    }
+
+    private void OnSaveClicked(object? sender, EventArgs e)
+    {
+        if (sender is BindableObject control && control.BindingContext is Issue issue &&
+            BindingContext is HomeViewModel viewModel)
+        {
+            viewModel.SaveCommand.Execute(issue);
+        }
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -18,19 +40,6 @@ public partial class HomePage : ContentPage
         {
             await viewModel.OnAppearingAsync();
         }
-
-        ResetSection(HeroBanner);
-        ResetSection(StatsSection);
-        ResetSection(QuickActionsSection);
-        ResetSection(RecentSection);
-
-        await AnimateSectionAsync(HeroBanner);
-        await Task.Delay(150);
-        await AnimateSectionAsync(StatsSection);
-        await Task.Delay(150);
-        await AnimateSectionAsync(QuickActionsSection);
-        await Task.Delay(150);
-        await AnimateSectionAsync(RecentSection);
     }
 
     protected override void OnDisappearing()
@@ -41,32 +50,5 @@ public partial class HomePage : ContentPage
         }
 
         base.OnDisappearing();
-    }
-
-    private async void OnIssueTapped(object? sender, TappedEventArgs e)
-    {
-        if (sender is TapGestureRecognizer { Parent: VisualElement element })
-        {
-            await element.ScaleTo(0.97, 80, Easing.CubicOut);
-            await element.ScaleTo(1.0, 100, Easing.CubicOut);
-        }
-
-        if (BindingContext is HomeViewModel viewModel && e.Parameter is string issueId)
-        {
-            await viewModel.NavigateToIssueCommand.ExecuteAsync(issueId);
-        }
-    }
-
-    private static void ResetSection(VisualElement element)
-    {
-        element.Opacity = 0;
-        element.TranslationY = 30;
-    }
-
-    private static Task AnimateSectionAsync(VisualElement element)
-    {
-        return Task.WhenAll(
-            element.FadeTo(1, 400, Easing.CubicOut),
-            element.TranslateTo(0, 0, 400, Easing.CubicOut));
     }
 }

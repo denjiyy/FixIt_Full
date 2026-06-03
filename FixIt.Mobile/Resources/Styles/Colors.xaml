@@ -117,16 +117,20 @@
 
     <!-- =================================================================
          LEGACY KEYS — retained so existing screen XAML doesn't break.
-         Stage 2 will migrate screen-by-screen to {AppThemeBinding} on
-         the Light*/Dark* tokens above. Until then, these colors render
-         with the current (dark) palette regardless of OS theme.
+         Screens have been migrated to the Light*/Dark* tokens above (via
+         {AppThemeBinding} in Styles.xaml and direct Light* refs in views),
+         so the only legacy keys still referenced are theme-agnostic brand/
+         semantic colors (Primary, Accent, Success, Error, White). The
+         background/surface/text/border keys below now carry the LIGHT
+         baseline to match the design system's light theme; they are no
+         longer wired to any screen and are kept only as a safety net.
          ================================================================= -->
 
-    <!-- Backgrounds -->
-    <Color x:Key="Background">#0F172A</Color>
-    <Color x:Key="Surface">#1E293B</Color>
-    <Color x:Key="Surface2">#334155</Color>
-    <Color x:Key="Surface3">#475569</Color>
+    <!-- Backgrounds (light baseline — matches the LightSurface* tokens) -->
+    <Color x:Key="Background">#F8FAFC</Color>
+    <Color x:Key="Surface">#FFFFFF</Color>
+    <Color x:Key="Surface2">#F1F5F9</Color>
+    <Color x:Key="Surface3">#E2E8F0</Color>
 
     <!-- Brand -->
     <Color x:Key="Primary">#0ea5e9</Color>
@@ -135,9 +139,9 @@
     <Color x:Key="Accent">#f97316</Color>
     <Color x:Key="AccentDark">#ea580c</Color>
 
-    <!-- Text -->
-    <Color x:Key="OnBackground">#F8FAFC</Color>
-    <Color x:Key="OnSurface">#CBD5E1</Color>
+    <!-- Text (light baseline) -->
+    <Color x:Key="OnBackground">#0F172A</Color>
+    <Color x:Key="OnSurface">#334155</Color>
     <Color x:Key="OnSurfaceMuted">#64748B</Color>
     <Color x:Key="OnPrimary">#FFFFFF</Color>
 
@@ -160,14 +164,14 @@
     <Color x:Key="StatusResolved">#10b981</Color>
     <Color x:Key="StatusCritical">#ef4444</Color>
 
-    <!-- Borders -->
-    <Color x:Key="Border">#1E293B</Color>
-    <Color x:Key="DividerColor">#334155</Color>
+    <!-- Borders (light baseline) -->
+    <Color x:Key="Border">#E2E8F0</Color>
+    <Color x:Key="DividerColor">#E2E8F0</Color>
 
-    <!-- Tab bar -->
-    <Color x:Key="TabBarBackground">#0F172A</Color>
+    <!-- Tab bar (light baseline) -->
+    <Color x:Key="TabBarBackground">#FFFFFF</Color>
     <Color x:Key="TabBarSelected">#0ea5e9</Color>
-    <Color x:Key="TabBarUnselected">#475569</Color>
+    <Color x:Key="TabBarUnselected">#94A3B8</Color>
 
     <!-- Misc -->
     <Color x:Key="White">#FFFFFF</Color>

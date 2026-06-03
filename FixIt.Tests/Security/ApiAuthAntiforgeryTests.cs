@@ -1,8 +1,8 @@
 using FixIt.Extensions;
 using FixIt.ViewModels;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -28,7 +28,11 @@ public class ApiAuthAntiforgeryTests
 
         Assert.NotNull(attribute.AuthenticationSchemes);
         var schemes = attribute.AuthenticationSchemes!.Split(',', StringSplitOptions.TrimEntries);
-        Assert.Contains(CookieAuthenticationDefaults.AuthenticationScheme, schemes);
+        // The cookie scheme must be the Identity application cookie — the one
+        // SignInManager actually writes. The generic "Cookies" scheme is never
+        // signed into, so listing it 401'd real cookie users (see
+        // CookieApiAuthIntegrationTests).
+        Assert.Contains(IdentityConstants.ApplicationScheme, schemes);
         Assert.Contains(JwtBearerDefaults.AuthenticationScheme, schemes);
     }
 

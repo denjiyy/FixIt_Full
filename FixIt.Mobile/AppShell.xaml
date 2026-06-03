@@ -6,6 +6,7 @@
        xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
        Style="{StaticResource AppShellStyle}"
        x:DataType="viewModels:ShellViewModel"
+       Shell.TabBarIsVisible="False"
        Title="FixIt">
 
     <Shell.TitleView>
@@ -35,7 +36,7 @@
             <ShellContent x:Name="HomeContent" Route="home-page" Icon="home.png" />
         </Tab>
 
-        <Tab x:Name="IssuesTab" Title="Issues" Route="issues" Icon="issues.png">
+        <Tab x:Name="IssuesTab" Title="Explore" Route="issues" Icon="issues.png">
             <ShellContent x:Name="IssuesContent" Route="issues-page" Icon="issues.png" />
         </Tab>
 

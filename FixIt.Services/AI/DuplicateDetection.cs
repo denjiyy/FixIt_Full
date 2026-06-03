@@ -195,6 +195,99 @@ public static class DuplicateDetection
             .ToList();
     }
 
+    /// <summary>
+    /// A likely-duplicate match for a draft being reported, enriched with the
+    /// straight-line distance and the keywords it shares with the draft so the UI
+    /// can show "X km away · matches: pothole, road" alongside a link.
+    /// </summary>
+    public sealed record SimilarIssueMatch(
+        string IssueId,
+        string IssueTitle,
+        int SimilarityScore,
+        double? DistanceMeters,
+        IReadOnlyList<string> SharedKeywords);
+
+    /// <summary>
+    /// Ranks <paramref name="candidates"/> against an in-progress draft, keeping only
+    /// those within <paramref name="radiusMeters"/> (when both coordinates are known)
+    /// that share enough wording. Used for the pre-submit "this may already be
+    /// reported" reminder — advisory only, so the threshold is a little more eager
+    /// than <see cref="FindDuplicates"/>.
+    /// </summary>
+    public static List<SimilarIssueMatch> FindSimilarWithinRadius(
+        Issue target,
+        IEnumerable<Issue> candidates,
+        double? radiusMeters = 5000,
+        int maxResults = 5,
+        int minScore = 45)
+    {
+        var targetTokens = Tokenize($"{target.Title} {target.Description}");
+        if (targetTokens.Count == 0)
+        {
+            return new List<SimilarIssueMatch>();
+        }
+
+        var targetCoords = Coordinates(target);
+        var scored = new List<(int Score, double TextSim, SimilarIssueMatch Match)>();
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate is null || candidate.Id == target.Id)
+            {
+                continue;
+            }
+
+            var candidateTokens = Tokenize($"{candidate.Title} {candidate.Description}");
+            var textSim = TextSimilarity(targetTokens, candidateTokens);
+            if (textSim < TextFloor)
+            {
+                continue;
+            }
+
+            double? distance = null;
+            var candidateCoords = Coordinates(candidate);
+            if (targetCoords.HasValue && candidateCoords.HasValue)
+            {
+                distance = DistanceMeters(
+                    targetCoords.Value.Lat, targetCoords.Value.Lng,
+                    candidateCoords.Value.Lat, candidateCoords.Value.Lng);
+            }
+
+            // Hard radius gate: when we have a radius and both coordinates, anything
+            // beyond range is not a "nearby" duplicate and is dropped outright.
+            if (radiusMeters.HasValue && distance.HasValue && distance.Value > radiusMeters.Value)
+            {
+                continue;
+            }
+
+            var sameCategory = target.Category.HasValue
+                && candidate.Category.HasValue
+                && target.Category == candidate.Category;
+
+            var score = CombinedScore(textSim, sameCategory, distance);
+            if (score < minScore)
+            {
+                continue;
+            }
+
+            var shared = targetTokens
+                .Where(candidateTokens.Contains)
+                .OrderByDescending(t => t.Length)
+                .Take(5)
+                .ToList();
+
+            scored.Add((score, textSim, new SimilarIssueMatch(
+                candidate.Id, candidate.Title, score, distance, shared)));
+        }
+
+        return scored
+            .OrderByDescending(s => s.Score)
+            .ThenByDescending(s => s.TextSim)
+            .Take(maxResults)
+            .Select(s => s.Match)
+            .ToList();
+    }
+
     private static string BuildReason(
         HashSet<string> targetTokens,
         HashSet<string> candidateTokens,

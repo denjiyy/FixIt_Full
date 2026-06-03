@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
+using FixIt.Mobile.Constants;
+using FixIt.Mobile.Models;
 using FixIt.Mobile.ViewModels;
 
 namespace FixIt.Mobile.Views;
@@ -58,6 +60,23 @@ public partial class ReportIssuePage : ContentPage
         }
 
         base.OnDisappearing();
+    }
+
+    private async void OnCloseClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(AppConstants.RouteHome);
+    }
+
+    // Category selection is wired in code-behind: the cross-context x:Reference command
+    // binding from inside the BindableLayout item template didn't fire reliably. The
+    // tapped CategoryOption comes from the gesture's BindingContext (CommandParameter fallback).
+    private void OnCategoryTapped(object? sender, TappedEventArgs e)
+    {
+        var option = (sender as Element)?.BindingContext as CategoryOption ?? e.Parameter as CategoryOption;
+        if (option is not null && BindingContext is ReportIssueViewModel viewModel)
+        {
+            viewModel.SelectCategoryCommand.Execute(option);
+        }
     }
 
     private async void OnMapNavigating(object? sender, WebNavigatingEventArgs e)

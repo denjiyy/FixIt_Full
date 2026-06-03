@@ -5,40 +5,46 @@
              xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:AlertsViewModel"
              BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
              ios:Page.UseSafeArea="True"
-             Title="{local:Localize Key=Alerts_Title}">
+             Title="{local:Localize Key=Activity_Title}">
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-        <Grid Grid.Row="0"
-              ColumnDefinitions="*,Auto"
-              Margin="24,28,20,16"
-              ColumnSpacing="12">
-            <Label Text="{local:Localize Key=Alerts_Title}"
-                   Style="{StaticResource HeadlineLarge}"
-                   SemanticProperties.HeadingLevel="Level1" />
-            <Button Grid.Column="1"
-                    Text="{local:Localize Key=HazardMap_Title}"
-                    Style="{StaticResource CompactPrimaryButton}"
-                    Command="{Binding NavigateToMapCommand}" />
-        </Grid>
+        <!-- ============ Top bar ============ -->
+        <Border Grid.Row="0"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
+            <Grid ColumnDefinitions="*,Auto" Padding="18,6,10,10" VerticalOptions="Center">
+                <Label Grid.Column="0" Text="{local:Localize Key=Activity_Title}"
+                       FontSize="21" FontAttributes="Bold" CharacterSpacing="-0.5"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                       VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1" />
+                <ImageButton Grid.Column="1" Source="map.png" WidthRequest="22" HeightRequest="22"
+                             Padding="9" BackgroundColor="Transparent"
+                             Command="{Binding NavigateToMapCommand}"
+                             SemanticProperties.Description="{local:Localize Key=HazardMap_Title}" />
+            </Grid>
+        </Border>
 
-        <RefreshView Grid.Row="2"
+        <!-- ============ Activity feed ============ -->
+        <RefreshView Grid.Row="1"
                      Command="{Binding LoadAlertsCommand}"
                      IsRefreshing="{Binding IsLoading}"
                      RefreshColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
             <CollectionView x:Name="AlertsCollection"
                             ItemsSource="{Binding Alerts}"
                             SelectionMode="None"
-                            Margin="20,0,20,0">
+                            Margin="16,4,16,0">
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Spacing="0">
+                    <VerticalStackLayout Spacing="0" Padding="0,8">
                         <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
                             <views:SkeletonCardView />
                             <views:SkeletonCardView />
@@ -53,51 +59,80 @@
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:SafetyHazard">
-                        <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
-                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="0,13">
 
-                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                                    <Border Style="{StaticResource StatusBadge}"
-                                            BackgroundColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}">
-                                        <Label Text="{Binding Severity}"
-                                               TextColor="{StaticResource White}"
-                                               FontSize="11"
-                                               FontAttributes="Bold"
-                                               CharacterSpacing="0.2"
-                                               VerticalTextAlignment="Center" />
-                                    </Border>
-                                    <Label Grid.Column="1"
-                                           Text="{Binding Title}"
-                                           Style="{StaticResource TitleMedium}"
-                                           VerticalOptions="Center" />
-                                </Grid>
-
-                                <Label Grid.Row="1"
-                                       Text="{Binding Description}"
-                                       Style="{StaticResource BodyMedium}"
-                                       MaxLines="2"
-                                       LineBreakMode="TailTruncation" />
-
-                                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Image Source="pin.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
-                                        <Label Text="{Binding Address}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
-                                        <Label Text="·" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
-                                        <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
-                                               Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
-                                    </HorizontalStackLayout>
-                                    <Button Grid.Column="1"
-                                            Text="{local:Localize Key=Alerts_Confirm}"
-                                            Style="{StaticResource CompactPrimaryButton}"
-                                            IsVisible="{Binding CanConfirm}"
-                                            CommandParameter="{Binding Id}"
-                                            Clicked="OnConfirmClicked" />
-                                </Grid>
+                            <!-- icon badge -->
+                            <Grid Grid.Column="0" WidthRequest="46" HeightRequest="46" VerticalOptions="Center">
+                                <Border WidthRequest="46" HeightRequest="46" StrokeThickness="0" StrokeShape="RoundRectangle 999"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurfaceElevated}}">
+                                    <Image Source="feed_hazard.png" WidthRequest="20" HeightRequest="20"
+                                           HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{Binding Severity, Converter={StaticResource PriorityToColorConverter}}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                </Border>
+                                <Border WidthRequest="20" HeightRequest="20" StrokeThickness="2"
+                                        Stroke="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                        StrokeShape="RoundRectangle 999"
+                                        HorizontalOptions="End" VerticalOptions="End"
+                                        BackgroundColor="{Binding Severity, Converter={StaticResource PriorityToColorConverter}}">
+                                    <Image Source="feed_hazard.png" WidthRequest="9" HeightRequest="9"
+                                           HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="White" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                </Border>
                             </Grid>
-                        </Border>
+
+                            <!-- text -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label LineBreakMode="TailTruncation" MaxLines="2" FontSize="13.5" LineHeight="1.4">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Severity}"
+                                                  FontAttributes="Bold"
+                                                  TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+                                            <Span Text=" "
+                                                  TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+                                            <Span Text="{local:Localize Key=Activity_HazardReported}"
+                                                  TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+                                            <Span Text="  "
+                                                  TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+                                            <Span Text="{Binding Title}"
+                                                  FontAttributes="Bold"
+                                                  TextColor="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimary}}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label FontSize="11.5" FontAttributes="Bold"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Address}" />
+                                            <Span Text="  ·  " />
+                                            <Span Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+
+                            <!-- confirm -->
+                            <Button Grid.Column="2"
+                                    Text="{local:Localize Key=Alerts_Confirm}"
+                                    Style="{StaticResource CompactPrimaryButton}"
+                                    HeightRequest="38" Padding="12,0" FontSize="12"
+                                    VerticalOptions="Center"
+                                    IsVisible="{Binding CanConfirm}"
+                                    CommandParameter="{Binding Id}"
+                                    Clicked="OnConfirmClicked" />
+                        </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
+
+        <controls:AppTabBar Grid.Row="2" Active="alerts" />
     </Grid>
 </ContentPage>

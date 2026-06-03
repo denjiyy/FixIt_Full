@@ -35,4 +35,9 @@ public partial class PublicProfilePage : ContentPage
 
         base.OnDisappearing();
     }
+
+    private async void OnBackClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("..");
+    }
 }

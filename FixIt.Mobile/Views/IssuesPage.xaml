@@ -6,44 +6,71 @@
              xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:IssuesViewModel"
              BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
              ios:Page.UseSafeArea="True"
-             Title="{local:Localize Key=Issues_Title}">
+             Title="{local:Localize Key=Explore_Title}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
 
-        <!-- Header -->
-        <Label Grid.Row="0"
-               Text="{local:Localize Key=Issues_Title}"
-               Style="{StaticResource HeadlineLarge}"
-               Margin="24,28,24,16"
-               SemanticProperties.HeadingLevel="Level1" />
-
-        <!-- Search Bar -->
-        <Border Grid.Row="1"
-                Margin="20,0,20,0"
-                Style="{StaticResource EntryCard}">
-            <Entry Placeholder="{local:Localize Key=Issues_SearchPlaceholder}"
-                   Text="{Binding SearchText}"
-                   ClearButtonVisibility="WhileEditing"
-                   ReturnType="Search"
-                   SemanticProperties.Hint="{local:Localize Key=Issues_SearchPlaceholder}" />
+        <!-- ============ Top bar ============ -->
+        <Border Grid.Row="0"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
+            <Grid ColumnDefinitions="*,Auto" Padding="18,6,10,10" VerticalOptions="Center">
+                <Label Grid.Column="0"
+                       Text="{local:Localize Key=Explore_Title}"
+                       FontSize="21" FontAttributes="Bold"
+                       CharacterSpacing="-0.5"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                       VerticalOptions="Center"
+                       SemanticProperties.HeadingLevel="Level1" />
+                <ImageButton Grid.Column="1"
+                             Source="map.png" WidthRequest="22" HeightRequest="22"
+                             Padding="9" BackgroundColor="Transparent"
+                             Command="{Binding GoToHazardMapCommand}"
+                             SemanticProperties.Description="{local:Localize Key=HazardMap_Title}" />
+            </Grid>
         </Border>
 
-        <!-- AI Filter -->
+        <!-- ============ Search bar ============ -->
+        <Border Grid.Row="1"
+                Margin="16,12,16,0"
+                HeightRequest="48"
+                Padding="14,0"
+                StrokeThickness="1"
+                Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                StrokeShape="RoundRectangle 14">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9">
+                <Image Grid.Column="0" Source="feed_search.png" WidthRequest="17" HeightRequest="17" VerticalOptions="Center" />
+                <Entry Grid.Column="1"
+                       Placeholder="{local:Localize Key=Explore_SearchPlaceholder}"
+                       Text="{Binding SearchText}"
+                       ClearButtonVisibility="WhileEditing"
+                       ReturnType="Search"
+                       VerticalOptions="Center"
+                       SemanticProperties.Hint="{local:Localize Key=Explore_SearchPlaceholder}" />
+                <Image Grid.Column="2" Source="feed_sliders.png" WidthRequest="17" HeightRequest="17" VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <!-- ============ Natural-language (AI) filter ============ -->
         <Grid Grid.Row="2"
-              Margin="20,12,20,0"
+              Margin="16,10,16,0"
               ColumnDefinitions="*,Auto"
-              ColumnSpacing="10">
-            <Border Style="{StaticResource EntryCard}">
+              ColumnSpacing="8">
+            <Border Style="{StaticResource EntryCard}" HeightRequest="44">
                 <Entry Placeholder="{local:Localize Key=Issues_AIFilter_Placeholder}"
                        Text="{Binding NaturalLanguageQuery}"
                        ReturnType="Search"
+                       VerticalOptions="Center"
                        SemanticProperties.Hint="{local:Localize Key=Issues_AIFilter_Placeholder}" />
             </Border>
             <Button Grid.Column="1"
@@ -52,12 +79,12 @@
                     Command="{Binding ApplyNaturalLanguageFilterCommand}" />
         </Grid>
 
-        <!-- Filter Chips -->
+        <!-- ============ Filter chips ============ -->
         <ScrollView Grid.Row="3"
                     Orientation="Horizontal"
-                    Margin="0,14,0,0"
+                    Margin="0,12,0,2"
                     HorizontalScrollBarVisibility="Never">
-            <HorizontalStackLayout Padding="20,0" Spacing="8">
+            <HorizontalStackLayout Padding="16,0" Spacing="8">
 
                 <Border Style="{StaticResource FilterChipBorder}">
                     <Border.GestureRecognizers>
@@ -71,7 +98,7 @@
                         </DataTrigger>
                     </Border.Triggers>
                     <Label Text="{local:Localize Key=Issues_Filter_All}"
-                           FontSize="Caption" FontAttributes="Bold"
+                           FontSize="12.5" FontAttributes="Bold"
                            VerticalTextAlignment="Center"
                            TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}">
                         <Label.Triggers>
@@ -94,7 +121,7 @@
                         </DataTrigger>
                     </Border.Triggers>
                     <Label Text="{local:Localize Key=Issues_Filter_New}"
-                           FontSize="Caption" FontAttributes="Bold"
+                           FontSize="12.5" FontAttributes="Bold"
                            VerticalTextAlignment="Center"
                            TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}">
                         <Label.Triggers>
@@ -117,7 +144,7 @@
                         </DataTrigger>
                     </Border.Triggers>
                     <Label Text="{local:Localize Key=Issues_Filter_InProgress}"
-                           FontSize="Caption" FontAttributes="Bold"
+                           FontSize="12.5" FontAttributes="Bold"
                            VerticalTextAlignment="Center"
                            TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}">
                         <Label.Triggers>
@@ -140,7 +167,7 @@
                         </DataTrigger>
                     </Border.Triggers>
                     <Label Text="{local:Localize Key=Issues_Filter_Resolved}"
-                           FontSize="Caption" FontAttributes="Bold"
+                           FontSize="12.5" FontAttributes="Bold"
                            VerticalTextAlignment="Center"
                            TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}">
                         <Label.Triggers>
@@ -153,24 +180,28 @@
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- Issues List -->
+        <!-- ============ Photo grid ============ -->
         <RefreshView Grid.Row="4"
                      Command="{Binding RefreshIssuesCommand}"
                      IsRefreshing="{Binding IsLoading}"
                      RefreshColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
-                     Margin="0,14,0,0">
+                     Margin="0,10,0,0">
             <CollectionView x:Name="IssuesCollection"
                             ItemsSource="{Binding Issues}"
-                            Margin="20,0,20,0"
+                            Margin="3,0"
                             Opacity="0"
                             TranslationY="40"
                             SelectionMode="None"
-                            RemainingItemsThreshold="3"
+                            RemainingItemsThreshold="6"
                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreIssuesCommand}">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="3"
+                                     HorizontalItemSpacing="3" VerticalItemSpacing="3" />
+                </CollectionView.ItemsLayout>
+
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Spacing="0">
+                    <VerticalStackLayout Spacing="0" Padding="16,0">
                         <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
-                            <views:SkeletonCardView />
                             <views:SkeletonCardView />
                             <views:SkeletonCardView />
                             <views:SkeletonCardView />
@@ -186,52 +217,72 @@
                     <ActivityIndicator IsRunning="{Binding IsLoadingMore}"
                                        IsVisible="{Binding IsLoadingMore}"
                                        Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
-                                       Margin="0,8,0,32" />
+                                       Margin="0,12,0,32" />
                 </CollectionView.Footer>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Issue">
-                        <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
-                            <Border.GestureRecognizers>
+                        <Grid HeightRequest="168">
+                            <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnIssueTapped" CommandParameter="{Binding Id}" />
-                            </Border.GestureRecognizers>
-                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                    <Label Grid.Column="0"
-                                           Style="{StaticResource TitleMedium}"
-                                           Text="{Binding Title}"
-                                           MaxLines="1"
-                                           LineBreakMode="TailTruncation"
-                                           SemanticProperties.Description="{Binding Title}" />
-                                    <Border Grid.Column="1"
-                                            Style="{StaticResource StatusBadge}"
-                                            BackgroundColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}">
-                                        <Label Text="{Binding Status}"
-                                               TextColor="{StaticResource White}"
-                                               FontSize="11"
-                                               FontAttributes="Bold"
-                                               CharacterSpacing="0.2"
-                                               VerticalTextAlignment="Center" />
-                                    </Border>
-                                </Grid>
-                                <Label Grid.Row="1"
-                                       Style="{StaticResource BodyMedium}"
-                                       Text="{Binding Description}"
-                                       MaxLines="2"
-                                       LineBreakMode="TailTruncation" />
-                                <HorizontalStackLayout Grid.Row="2" Spacing="6">
-                                    <Image Source="pin.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" />
-                                    <Label Text="{Binding CityName}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
-                                    <Label Text="·" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
-                                    <Label Text="{Binding CreatedAt, Converter={StaticResource DateTimeToRelativeConverter}}"
-                                           Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
-                                </HorizontalStackLayout>
-                            </Grid>
-                        </Border>
+                            </Grid.GestureRecognizers>
+
+                            <!-- category-tinted backdrop -->
+                            <Border StrokeThickness="0"
+                                    Background="{Binding Category, Converter={StaticResource CategoryToBrushConverter}}" />
+
+                            <!-- category glyph (hidden once a real photo loads) -->
+                            <Image Source="{Binding Category, Converter={StaticResource CategoryToIconConverter}}"
+                                   WidthRequest="30" HeightRequest="30" Opacity="0.92"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   Margin="0,0,0,8">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="White" />
+                                </Image.Behaviors>
+                            </Image>
+
+                            <!-- real photo -->
+                            <Image IsVisible="{Binding HasPhoto}"
+                                   Source="{Binding PhotoUrl}"
+                                   Aspect="AspectFill" />
+
+                            <!-- priority dot -->
+                            <Border WidthRequest="16" HeightRequest="16"
+                                    Margin="7"
+                                    StrokeThickness="2"
+                                    Stroke="{StaticResource White}"
+                                    StrokeShape="RoundRectangle 999"
+                                    HorizontalOptions="End" VerticalOptions="Start"
+                                    IsVisible="{Binding Priority, Converter={StaticResource StringNotEmptyConverter}}"
+                                    BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}" />
+
+                            <!-- location overlay -->
+                            <Border VerticalOptions="End" StrokeThickness="0" HeightRequest="40" InputTransparent="True">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00000000" Offset="0.0" />
+                                        <GradientStop Color="#99000000" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <HorizontalStackLayout VerticalOptions="End" Padding="7,0,7,6" Spacing="3" InputTransparent="True">
+                                <Image Source="feed_geo.png" WidthRequest="11" HeightRequest="11" VerticalOptions="Center">
+                                    <Image.Behaviors>
+                                        <toolkit:IconTintColorBehavior TintColor="White" />
+                                    </Image.Behaviors>
+                                </Image>
+                                <Label Text="{Binding CityName}"
+                                       FontSize="10.5" FontAttributes="Bold"
+                                       TextColor="{StaticResource White}"
+                                       LineBreakMode="TailTruncation" MaxLines="1"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
 
+        <controls:AppTabBar Grid.Row="5" Active="explore" />
     </Grid>
 </ContentPage>

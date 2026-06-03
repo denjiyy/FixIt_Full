@@ -1,0 +1,7 @@
+@{
+    // Admin pages render inside the dark operations shell. Without this
+    // _ViewStart the area inherits no layout (the root Pages/_ViewStart does
+    // not cascade across the Areas boundary), so every admin page would render
+    // as an unstyled fragment. Login.cshtml opts out with Layout = null.
+    Layout = "/Areas/Admin/Pages/Shared/_Layout.cshtml";
+}

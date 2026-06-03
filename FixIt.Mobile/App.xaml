@@ -15,6 +15,12 @@
             <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
             <converters:DateTimeToRelativeConverter x:Key="DateTimeToRelativeConverter" />
             <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:PriorityToColorConverter x:Key="PriorityToColorConverter" />
+            <converters:CategoryToBrushConverter x:Key="CategoryToBrushConverter" />
+            <converters:CategoryToIconConverter x:Key="CategoryToIconConverter" />
+            <converters:HashtagConverter x:Key="HashtagConverter" />
+            <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+            <converters:FractionToStarConverter x:Key="FractionToStarConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -11,6 +11,53 @@
   <data name="Home_Recent" xml:space="preserve"><value>Последна активност</value></data>
   <data name="Home_NoRecent" xml:space="preserve"><value>Все още няма активност</value></data>
   <data name="Home_SeeAll" xml:space="preserve"><value>Виж всички</value></data>
+  <data name="Feed_HotHazards" xml:space="preserve"><value>Спешни сигнали</value></data>
+  <data name="Feed_Report" xml:space="preserve"><value>Сигнал</value></data>
+  <data name="Feed_Share" xml:space="preserve"><value>Сподели</value></data>
+  <data name="Feed_Watching" xml:space="preserve"><value>наблюдават</value></data>
+  <data name="Feed_Updated" xml:space="preserve"><value>Обновено</value></data>
+  <data name="Feed_Empty" xml:space="preserve"><value>Все още няма сигнали във вашия район</value></data>
+  <data name="Explore_Title" xml:space="preserve"><value>Разглеждай</value></data>
+  <data name="Explore_SearchPlaceholder" xml:space="preserve"><value>Търси сигнали, улици, тагове…</value></data>
+  <data name="Common_Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="Detail_Header" xml:space="preserve"><value>Сигнал</value></data>
+  <data name="Detail_Resolution" xml:space="preserve"><value>Напредък по решаване</value></data>
+  <data name="Detail_Discussion" xml:space="preserve"><value>Дискусия</value></data>
+  <data name="Detail_BeFirst" xml:space="preserve"><value>Бъдете първият, който добавя контекст към този сигнал.</value></data>
+  <data name="Detail_Official" xml:space="preserve"><value>ОФИЦИАЛНО</value></data>
+  <data name="Detail_StepReported" xml:space="preserve"><value>Подаден</value></data>
+  <data name="Detail_StepVerified" xml:space="preserve"><value>Потвърден от общината</value></data>
+  <data name="Detail_StepCrew" xml:space="preserve"><value>Назначен екип</value></data>
+  <data name="Detail_StepResolved" xml:space="preserve"><value>Разрешен</value></data>
+  <data name="Detail_ShareAction" xml:space="preserve"><value>Сподели</value></data>
+  <data name="Detail_SubAwaiting" xml:space="preserve"><value>Очаква преглед</value></data>
+  <data name="Detail_SubConfirmed" xml:space="preserve"><value>Потвърден и обработен</value></data>
+  <data name="Detail_SubCrew" xml:space="preserve"><value>Екип работи по сигнала</value></data>
+  <data name="Detail_SubPending" xml:space="preserve"><value>Предстои</value></data>
+  <data name="Detail_SubComplete" xml:space="preserve"><value>Отбелязан като решен</value></data>
+  <data name="Detail_SubNotYet" xml:space="preserve"><value>Все още не</value></data>
+  <data name="Detail_Reporter_Fallback" xml:space="preserve"><value>съсед</value></data>
+  <data name="Report_What" xml:space="preserve"><value>Какво е повредено?</value></data>
+  <data name="Report_TitleLabel" xml:space="preserve"><value>Заглавие</value></data>
+  <data name="Report_DescLabel" xml:space="preserve"><value>Описание</value></data>
+  <data name="Report_WhatSub" xml:space="preserve"><value>Снимай, постави карфица и съседите ти и общината го виждат веднага.</value></data>
+  <data name="Report_PhotoHint" xml:space="preserve"><value>Докосни за снимка или качване · до 4</value></data>
+  <data name="Report_AddPhotoTitle" xml:space="preserve"><value>Добави снимка</value></data>
+  <data name="Priority_Low" xml:space="preserve"><value>Нисък</value></data>
+  <data name="Priority_Medium" xml:space="preserve"><value>Среден</value></data>
+  <data name="Priority_High" xml:space="preserve"><value>Висок</value></data>
+  <data name="Priority_Critical" xml:space="preserve"><value>Критичен</value></data>
+  <data name="Profile_Reports" xml:space="preserve"><value>Сигнали</value></data>
+  <data name="Profile_Saved" xml:space="preserve"><value>Запазени</value></data>
+  <data name="Profile_Badges" xml:space="preserve"><value>Значки</value></data>
+  <data name="Profile_FixRate" xml:space="preserve"><value>Решени %</value></data>
+  <data name="Profile_Edit" xml:space="preserve"><value>Редактирай профил</value></data>
+  <data name="Profile_Settings" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Profile_SavedEmpty" xml:space="preserve"><value>Запазените сигнали се появяват тук.</value></data>
+  <data name="Profile_BadgesEmpty" xml:space="preserve"><value>Печелете значки, като подавате и решавате сигнали.</value></data>
+  <data name="Activity_Title" xml:space="preserve"><value>Активност</value></data>
+  <data name="Activity_MarkRead" xml:space="preserve"><value>Маркирай всички</value></data>
+  <data name="Activity_HazardReported" xml:space="preserve"><value>Нов сигнал за опасност</value></data>
   <data name="Home_Platform" xml:space="preserve"><value>Гражданска платформа</value></data>
   <data name="Home_TotalIssues" xml:space="preserve"><value>Всички сигнали</value></data>
   <data name="Home_Resolved" xml:space="preserve"><value>Решени</value></data>
@@ -106,7 +153,7 @@
   <data name="Common_Delete" xml:space="preserve"><value>Изтрий</value></data>
   <data name="Common_Trust" xml:space="preserve"><value>Доверие</value></data>
   <data name="Tab_Home" xml:space="preserve"><value>Начало</value></data>
-  <data name="Tab_Issues" xml:space="preserve"><value>Сигнали</value></data>
+  <data name="Tab_Issues" xml:space="preserve"><value>Разглеждай</value></data>
   <data name="Tab_Report" xml:space="preserve"><value>Подай сигнал</value></data>
   <data name="Tab_ReportLocked" xml:space="preserve"><value>Подай сигнал</value></data>
   <data name="Tab_Alerts" xml:space="preserve"><value>Известия</value></data>

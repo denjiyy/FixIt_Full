@@ -1,9 +1,12 @@
 @page "/issues"
+@using FixIt.Models.Enums
+@using FixIt.Models.Issues
 @model IssueListModel
 @inject Microsoft.Extensions.Localization.IStringLocalizer<SharedResource> Localizer
 @{
     ViewData["Title"] = Localizer["CommunityIssues"];
     ViewData["BodyClass"] = "page-issues-index";
+    ViewData["RequiresMap"] = true;
 
     var hasFilters = !string.IsNullOrWhiteSpace(Model.SearchQuery)
                      || Model.SelectedStatus >= 0
@@ -13,14 +16,47 @@
                      || Model.SelectedToUtc.HasValue;
     var currentSort = string.IsNullOrWhiteSpace(Model.Sort) ? "newest" : Model.Sort.ToLowerInvariant();
     var resultsOnPage = Model.Issues?.Count ?? 0;
+
+    string GlyphFor(IssueStatus s) => s switch
+    {
+        IssueStatus.Fixed => "bi-check2-circle",
+        IssueStatus.InProgress => "bi-tools",
+        IssueStatus.Confirmed => "bi-hand-thumbs-up",
+        IssueStatus.Rejected => "bi-x-circle",
+        IssueStatus.Duplicate => "bi-files",
+        _ => "bi-exclamation-circle"
+    };
+    string GradFor(string? id)
+    {
+        var h = 0;
+        foreach (var ch in id ?? string.Empty) { h = (h + ch) % 9973; }
+        return new[] { "grad-a", "grad-b", "grad-c", "grad-d" }[h % 4];
+    }
+    string AddrOf(Issue it) => string.IsNullOrWhiteSpace(it.Address) ? Localizer["CommunityIssues"].Value : it.Address!;
+
+    // Coordinates for the Leaflet map view (only issues that carry a location).
+    var mapPoints = (Model.Issues ?? new List<Issue>())
+        .Where(i => i.Location?.Coordinates != null)
+        .Select(i => new
+        {
+            id = i.Id,
+            title = i.Title,
+            lat = i.Location.Coordinates.Latitude,
+            lng = i.Location.Coordinates.Longitude,
+            status = i.Status.ToString(),
+            address = AddrOf(i)
+        })
+        .ToList();
+    var mapJson = System.Text.Json.JsonSerializer.Serialize(mapPoints);
 }
 
 @section PageCss {
     <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/calm-civic.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/issues-index.css" asp-append-version="true" />
 }
 
-<div class="issue-page issues-index-page"
+<div class="issue-page issues-index-page calm"
      id="issuesIndexRoot"
      data-ai-filter-loading="Interpreting your request with AI..."
      data-ai-filter-error="AI filter translation failed. Applying basic text search instead."
@@ -330,31 +366,66 @@
     @if (Model.Issues?.Any() == true)
     {
         <section class="issues-results">
-            <div class="issue-card-grid">
-                @foreach (var issue in Model.Issues)
+            <div class="browse-head">
+                <h2 class="h-section browse-head__title">@Localizer["CommunityIssues"]</h2>
+                <div class="toggle" role="group" aria-label="@Localizer["ViewMode"]" id="browseToggle">
+                    <button type="button" class="on" data-view="gallery">
+                        <i class="bi bi-grid-1x2-fill"></i><span>@Localizer["GalleryView"]</span>
+                    </button>
+                    <button type="button" data-view="map">
+                        <i class="bi bi-map-fill"></i><span>@Localizer["MapView"]</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="browseGallery">
+                <div class="gallery">
+                    @foreach (var issue in Model.Issues)
+                    {
+                        <partial name="_GalleryCard" model="issue" />
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
                 {
-                    <partial name="_IssueCard" model="issue" />
+                    var baseUrl = $"/issues?searchQuery={Uri.EscapeDataString(Model.SearchQuery ?? "")}" +
+                                  $"&status={Model.SelectedStatus}" +
+                                  $"&priority={Model.SelectedPriority}" +
+                                  $"&category={Uri.EscapeDataString(Model.SelectedCategory ?? string.Empty)}" +
+                                  $"&from={Uri.EscapeDataString(Model.SelectedFromUtc?.ToString("yyyy-MM-dd") ?? string.Empty)}" +
+                                  $"&to={Uri.EscapeDataString(Model.SelectedToUtc?.ToString("yyyy-MM-dd") ?? string.Empty)}" +
+                                  $"&sort={Uri.EscapeDataString(currentSort)}";
+                    var paginationModel = new FixIt.ViewModels.PaginationViewModel
+                    {
+                        CurrentPage = Model.CurrentPage,
+                        TotalPages = Model.TotalPages,
+                        BaseUrl = baseUrl
+                    };
+
+                    <partial name="_Pagination" model="paginationModel" />
                 }
             </div>
 
-            @if (Model.TotalPages > 1)
-            {
-                var baseUrl = $"/issues?searchQuery={Uri.EscapeDataString(Model.SearchQuery ?? "")}" +
-                              $"&status={Model.SelectedStatus}" +
-                              $"&priority={Model.SelectedPriority}" +
-                              $"&category={Uri.EscapeDataString(Model.SelectedCategory ?? string.Empty)}" +
-                              $"&from={Uri.EscapeDataString(Model.SelectedFromUtc?.ToString("yyyy-MM-dd") ?? string.Empty)}" +
-                              $"&to={Uri.EscapeDataString(Model.SelectedToUtc?.ToString("yyyy-MM-dd") ?? string.Empty)}" +
-                              $"&sort={Uri.EscapeDataString(currentSort)}";
-                var paginationModel = new FixIt.ViewModels.PaginationViewModel
-                {
-                    CurrentPage = Model.CurrentPage,
-                    TotalPages = Model.TotalPages,
-                    BaseUrl = baseUrl
-                };
+            <div id="browseMap" class="browse-map" style="display:none">
+                <div class="browse-map__list">
+                    @foreach (var issue in Model.Issues)
+                    {
+                        <a href="/issues/@issue.Id" class="mini-issue" data-issue-id="@issue.Id">
+                            <div class="mini-issue__photo @GradFor(issue.Id)"><i class="bi @GlyphFor(issue.Status)"></i></div>
+                            <div class="mini-issue__b">
+                                <partial name="_BadgeStatus" model="issue.Status" />
+                                <h4>@issue.Title</h4>
+                                <span class="gcard__loc"><i class="bi bi-geo-alt-fill"></i>@AddrOf(issue)</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+                <div class="browse-map__canvas">
+                    <div id="issuesLeaflet" style="width:100%;height:100%"></div>
+                </div>
+            </div>
 
-                <partial name="_Pagination" model="paginationModel" />
-            }
+            <script id="issuesMapConfig" type="application/json">@Html.Raw(mapJson)</script>
         </section>
     }
     else
@@ -398,4 +469,5 @@
 
 @section PageScripts {
     <script src="~/js/modules/issues-index.js" asp-append-version="true" defer></script>
+    <script src="~/js/pages/issues-browse.js" asp-append-version="true" defer></script>
 }

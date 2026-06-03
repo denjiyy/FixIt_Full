@@ -143,8 +143,55 @@ public partial class IssueDetailViewModel : ObservableObject, IQueryAttributable
 
     public double AnalysisSeverityProgress => Math.Clamp((Analysis?.EstimatedSeverity ?? 0) / 10d, 0, 1);
 
+    // ── Resolution progress + lifecycle timeline (design "post detail") ──
+    private int StatusRank => Issue?.Status?.Trim().ToLowerInvariant() switch
+    {
+        "resolved" or "fixed" or "closed" or "done" => 4,
+        "inprogress" or "in progress" or "in-progress" => 3,
+        "confirmed" or "verified" or "triaged" or "acknowledged" => 2,
+        "rejected" or "declined" or "duplicate" or "archived" => 1,
+        _ => 1
+    };
+
+    public double ResolutionProgress => Issue is null ? 0 : Issue.Status?.Trim().ToLowerInvariant() switch
+    {
+        "resolved" or "fixed" or "closed" or "done" => 1.0,
+        "inprogress" or "in progress" or "in-progress" => 0.65,
+        "confirmed" or "verified" or "triaged" or "acknowledged" => 0.40,
+        "rejected" or "declined" => 0.30,
+        "duplicate" or "archived" => 0.20,
+        _ => 0.12
+    };
+
+    public string ResolutionPercentText => $"{(int)Math.Round(ResolutionProgress * 100)}%";
+
+    public bool StepReportedDone => Issue is not null;
+    public bool StepVerifiedDone => Issue is not null && StatusRank >= 2;
+    public bool StepCrewDone => Issue is not null && StatusRank >= 3;
+    public bool StepResolvedDone => Issue is not null && StatusRank >= 4;
+
+    public string StepReportedSub =>
+        string.IsNullOrWhiteSpace(Issue?.AuthorName)
+            ? LocalizationService.Get("Detail_Reporter_Fallback")
+            : Issue!.AuthorName;
+
+    public string StepVerifiedSub => LocalizationService.Get(StepVerifiedDone ? "Detail_SubConfirmed" : "Detail_SubAwaiting");
+    public string StepCrewSub => LocalizationService.Get(StepCrewDone ? "Detail_SubCrew" : "Detail_SubPending");
+    public string StepResolvedSub => LocalizationService.Get(StepResolvedDone ? "Detail_SubComplete" : "Detail_SubNotYet");
+
     partial void OnIssueChanged(Issue? value)
     {
+        OnPropertyChanged(nameof(ResolutionProgress));
+        OnPropertyChanged(nameof(ResolutionPercentText));
+        OnPropertyChanged(nameof(StepReportedDone));
+        OnPropertyChanged(nameof(StepVerifiedDone));
+        OnPropertyChanged(nameof(StepCrewDone));
+        OnPropertyChanged(nameof(StepResolvedDone));
+        OnPropertyChanged(nameof(StepReportedSub));
+        OnPropertyChanged(nameof(StepVerifiedSub));
+        OnPropertyChanged(nameof(StepCrewSub));
+        OnPropertyChanged(nameof(StepResolvedSub));
+
         IssueMapSource = value?.HasCoordinates == true ? MapHtmlBuilder.BuildIssueMap(value) : null;
 
         AllMediaUrls.Clear();
@@ -377,6 +424,42 @@ public partial class IssueDetailViewModel : ObservableObject, IQueryAttributable
         catch (OperationCanceledException ex)
         {
             await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "vote_cancelled" });
+        }
+        catch (Exception ex)
+        {
+            await _analytics.TrackError(ex);
+        }
+    }
+
+    [RelayCommand]
+    private void Save()
+    {
+        if (Issue == null)
+        {
+            return;
+        }
+
+        HapticService.Click();
+        Issue.IsSaved = !Issue.IsSaved;
+        OnPropertyChanged(nameof(Issue));
+    }
+
+    [RelayCommand]
+    private async Task ShareAsync()
+    {
+        if (Issue == null)
+        {
+            return;
+        }
+
+        HapticService.Click();
+        try
+        {
+            await Share.Default.RequestAsync(new ShareTextRequest
+            {
+                Title = Issue.Title,
+                Text = $"{Issue.Title} — {Issue.PrimaryLocation}"
+            });
         }
         catch (Exception ex)
         {

@@ -199,6 +199,13 @@ public partial class IssuesViewModel : ObservableObject, IDisposable
         await Shell.Current.GoToAsync($"{AppConstants.RouteIssueDetail}?IssueId={Uri.EscapeDataString(issueId)}");
     }
 
+    [RelayCommand]
+    private async Task GoToHazardMapAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+    }
+
     private async Task LoadIssuesInternalAsync(bool forceRefresh, CancellationToken ct)
     {
         if (IsLoading)

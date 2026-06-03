@@ -178,6 +178,51 @@ public class AnalysisController : ControllerBase
     }
 
     /// <summary>
+    /// Returns existing issues similar to an in-progress report draft — same city,
+    /// within ~5 km, with overlapping keywords. Advisory only: the client shows a
+    /// non-blocking "this may already be reported" reminder and never prevents
+    /// submission. Fails soft (empty list) so it can't break the report form.
+    /// </summary>
+    [HttpPost("duplicate-check")]
+    [AllowAnonymous]
+    public async Task<ActionResult<List<SimilarIssueResult>>> CheckDuplicates([FromBody] DuplicateCheckRequest request)
+    {
+        if (request is null
+            || (string.IsNullOrWhiteSpace(request.Title) && string.IsNullOrWhiteSpace(request.Description)))
+        {
+            return Ok(new List<SimilarIssueResult>());
+        }
+
+        try
+        {
+            IssueCategory? category = null;
+            if (!string.IsNullOrWhiteSpace(request.Category)
+                && Enum.TryParse<IssueCategory>(request.Category, ignoreCase: true, out var parsed))
+            {
+                category = parsed;
+            }
+
+            var results = await _analysisService.FindSimilarIssuesForDraftAsync(new DraftSimilarityQuery
+            {
+                Title = request.Title?.Trim() ?? string.Empty,
+                Description = request.Description?.Trim() ?? string.Empty,
+                Latitude = request.Latitude,
+                Longitude = request.Longitude,
+                CityId = string.IsNullOrWhiteSpace(request.CityId) ? null : request.CityId.Trim(),
+                Category = category,
+                RadiusKm = 5,
+            });
+
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Duplicate check failed");
+            return Ok(new List<SimilarIssueResult>());
+        }
+    }
+
+    /// <summary>
     /// Translate natural-language issue query into structured filters.
     /// </summary>
     [HttpPost("issue-search/translate")]
@@ -223,6 +268,16 @@ public sealed class IssueDraftSuggestionRequest
 public sealed class IssueSearchTranslationRequest
 {
     public string? Query { get; set; }
+}
+
+public sealed class DuplicateCheckRequest
+{
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public string? CityId { get; set; }
+    public string? Category { get; set; }
 }
 
 /// <summary>

@@ -117,6 +117,8 @@ color-scheme: light;
 --breakpoint-lg: 62rem;
 --breakpoint-xl: 75rem;
 --raw-rgba-255-255-255-0: rgba(255, 255, 255, 0);
+--raw-rgba-255-255-255-0-06: rgba(255, 255, 255, 0.06);
+--raw-rgba-255-255-255-0-08: rgba(255, 255, 255, 0.08);
 --raw-hex-000: #000;
 --raw-hex-0284c7: #0284c7;
 --raw-hex-0369a1: #0369a1;

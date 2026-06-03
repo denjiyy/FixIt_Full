@@ -1,8 +1,10 @@
 using System.Linq.Expressions;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Gamification;
+using FixIt.Models.Users;
 using FixIt.Pages.Leaderboards;
 using FixIt.Services.Gamification;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -14,12 +16,15 @@ public class IndexModelTests
     private readonly Mock<IReputationService> _reputationServiceMock = new();
     private readonly Mock<IRepository<LeaderboardEntry>> _leaderboardRepositoryMock = new();
     private readonly Mock<ILogger<IndexModel>> _loggerMock = new();
+    private readonly Mock<UserManager<ApplicationUser>> _userManagerMock =
+        new(Mock.Of<IUserStore<ApplicationUser>>(), null!, null!, null!, null!, null!, null!, null!, null!);
 
     private IndexModel CreateModel()
     {
         return new IndexModel(
             _reputationServiceMock.Object,
             _leaderboardRepositoryMock.Object,
+            _userManagerMock.Object,
             _loggerMock.Object);
     }
 

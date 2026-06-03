@@ -4,6 +4,7 @@ using FixIt.Models.Enums;
 using FixIt.Models.Issues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver.GeoJsonObjectModel;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -17,6 +18,13 @@ public interface IIssueAnalysisService
     Task<IssueAnalysis> AnalyzeIssueAsync(string issueId);
     Task<IssueAnalysis?> GetAnalysisAsync(string issueId);
     Task<List<string>> SuggestTagsAsync(string title, string description);
+
+    /// <summary>
+    /// Finds existing issues that resemble an in-progress report draft, scoped to
+    /// the draft's city and within its radius. Advisory only — used to remind the
+    /// reporter a similar issue may already exist; never blocks submission.
+    /// </summary>
+    Task<List<SimilarIssueResult>> FindSimilarIssuesForDraftAsync(DraftSimilarityQuery query);
 }
 
 public class OpenAIIssueAnalysisService : IIssueAnalysisService
@@ -397,6 +405,75 @@ Provide response as JSON format with these exact field names.";
         {
             _logger.LogWarning(ex, "Duplicate detection failed for issue {IssueId}", issue.Id);
             return new List<DuplicateMatch>();
+        }
+    }
+
+    /// <summary>
+    /// Pre-submit duplicate reminder. Scopes candidates to the draft's city and open
+    /// statuses (same as post-creation dedupe), then ranks by keyword overlap within
+    /// the requested radius. Local + best-effort: never throws into the report flow.
+    /// </summary>
+    public async Task<List<SimilarIssueResult>> FindSimilarIssuesForDraftAsync(DraftSimilarityQuery query)
+    {
+        if (query is null
+            || (string.IsNullOrWhiteSpace(query.Title) && string.IsNullOrWhiteSpace(query.Description))
+            || string.IsNullOrWhiteSpace(query.CityId))
+        {
+            return new List<SimilarIssueResult>();
+        }
+
+        try
+        {
+            var candidates = await _issueRepository.QueryAsync(
+                i => i.CityId == query.CityId
+                    && !i.IsDeleted
+                    && i.Status != IssueStatus.Fixed
+                    && i.Status != IssueStatus.Rejected
+                    && i.Status != IssueStatus.Duplicate
+                    && i.Status != IssueStatus.Archived,
+                skip: 0,
+                limit: 200);
+
+            // Reuse the shared scorer by representing the draft as a transient Issue.
+            var draft = new Issue
+            {
+                Id = string.Empty,
+                Title = query.Title ?? string.Empty,
+                Description = query.Description ?? string.Empty,
+                Category = query.Category,
+                CityId = query.CityId,
+                Location = query is { Latitude: { } lat, Longitude: { } lng }
+                    ? new GeoJsonPoint<GeoJson2DGeographicCoordinates>(
+                        new GeoJson2DGeographicCoordinates(lng, lat))
+                    : null!,
+            };
+
+            var radiusMeters = query.RadiusKm > 0 ? query.RadiusKm * 1000 : (double?)null;
+            var matches = DuplicateDetection.FindSimilarWithinRadius(draft, candidates.Items, radiusMeters);
+            if (matches.Count == 0)
+            {
+                return new List<SimilarIssueResult>();
+            }
+
+            var statusById = candidates.Items
+                .Where(c => !string.IsNullOrEmpty(c.Id))
+                .GroupBy(c => c.Id!)
+                .ToDictionary(g => g.Key, g => g.First().Status);
+
+            return matches.Select(m => new SimilarIssueResult
+            {
+                IssueId = m.IssueId,
+                Title = m.IssueTitle,
+                SimilarityScore = m.SimilarityScore,
+                DistanceKm = m.DistanceMeters.HasValue ? Math.Round(m.DistanceMeters.Value / 1000d, 2) : 0,
+                MatchedKeywords = m.SharedKeywords.ToList(),
+                Status = statusById.TryGetValue(m.IssueId, out var status) ? status.ToString() : string.Empty,
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Draft duplicate check failed for city {CityId}", query.CityId);
+            return new List<SimilarIssueResult>();
         }
     }
 

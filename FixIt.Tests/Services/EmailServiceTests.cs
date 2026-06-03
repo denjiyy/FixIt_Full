@@ -54,43 +54,6 @@ public class ConsoleEmailServiceTests
             Times.AtLeastOnce);
     }
 
-    [Fact]
-    public async Task SendWeeklyReminderEmailAsync_LogsReminderEmail()
-    {
-        // Act
-        await _emailService.SendWeeklyReminderEmailAsync(
-            "user@example.com", "Jane Smith", 5, "San Francisco");
-
-        // Assert - SendWeeklyReminderEmailAsync calls SendEmailAsync which logs multiple times
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            ),
-            Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task SendHazardAlertEmailAsync_LogsHazardAlert()
-    {
-        // Act
-        await _emailService.SendHazardAlertEmailAsync(
-            "user@example.com", "Test User", "Pothole", "Pothole", 1.5);
-
-        // Assert - SendHazardAlertEmailAsync calls SendEmailAsync which logs multiple times
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            ),
-            Times.AtLeastOnce);
-    }
 }
 
 public class SmtpEmailServiceTests
@@ -170,53 +133,6 @@ public class SmtpEmailServiceTests
                 "John Doe",
                 "New York",
                 "<h1>Health Report for New York</h1>"));
-
-        // Assert
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            ),
-            Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task SendWeeklyReminderEmailAsync_IncludesIssueCount()
-    {
-        // Act
-        await Assert.ThrowsAnyAsync<Exception>(() =>
-            _emailService.SendWeeklyReminderEmailAsync(
-                "user@example.com",
-                "Jane Smith",
-                10,
-                "San Francisco"));
-
-        // Assert
-        _loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()
-            ),
-            Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task SendHazardAlertEmailAsync_IncludesHazardDetails()
-    {
-        // Act
-        await Assert.ThrowsAnyAsync<Exception>(() =>
-            _emailService.SendHazardAlertEmailAsync(
-                "user@example.com",
-                "Alert User",
-                "Traffic Congestion",
-                "TrafficCongestion",
-                2.5));
 
         // Assert
         _loggerMock.Verify(

@@ -38,6 +38,11 @@ public partial class PublicProfileViewModel : ObservableObject, IQueryAttributab
     public string DisplayName => Profile?.DisplayName ?? string.Empty;
     public string Initials => Profile?.Initials ?? "F";
 
+    // Resolved / reported %, shown in the profile stat strip (mirrors ProfileViewModel.FixRate).
+    public int FixRate => Profile is { IssuesReported: > 0 } p
+        ? (int)Math.Round((double)p.IssuesResolved / p.IssuesReported * 100)
+        : 0;
+
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.TryGetValue(nameof(UserId), out var value))
@@ -61,6 +66,7 @@ public partial class PublicProfileViewModel : ObservableObject, IQueryAttributab
     {
         OnPropertyChanged(nameof(DisplayName));
         OnPropertyChanged(nameof(Initials));
+        OnPropertyChanged(nameof(FixRate));
     }
 
     private async Task LoadProfileAsync(CancellationToken ct)

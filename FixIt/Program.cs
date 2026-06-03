@@ -74,7 +74,8 @@ builder.Services.AddFixItRateLimiting(builder.Configuration);
 // Mongo client/database + repository registrations, returning the resolved
 // connection string for Identity to reuse.
 var (_, mongoConnectionString, _) = builder.Services.AddMongoDb(builder.Configuration);
-builder.Services.AddIdentityWithMongo(mongoConnectionString);
+var requireConfirmedEmail = builder.Configuration.GetValue<bool>("Identity:RequireConfirmedEmail");
+builder.Services.AddIdentityWithMongo(mongoConnectionString, requireConfirmedEmail);
 
 // ========== STARTUP DIAGNOSTICS ==========
 // Kept inline per the operational-clarity rule so deployment configuration is

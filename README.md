@@ -319,6 +319,14 @@ dotnet user-secrets set "Database:EnableDevelopmentAdminSeed" "true" --project F
 
 Then start the app with an empty DB (or set `Database:ResetOnStartup=true`). The seeder routes through the same `EnsureAdminAsync` helper as the CLI.
 
+**Signing in as an admin:**
+
+The admin panel has its own login page at **`/Admin/Login`** — it is intentionally separate from the public `/Identity/Account/Login` and is not linked from the main navigation. There is also a discreet **"Staff sign-in"** link in the site footer (shown when signed out).
+
+- Sign in with your **email as the username** (the bootstrap sets `UserName = email` unless you pass `--username`) plus the password you provisioned.
+- Admins land on `/admin/dashboard`; moderators land on `/admin/issues`.
+- Regular accounts created through the public Register page get the `User` role and are rejected by the admin login with "You don't have permission to access the admin panel" — registering normally never grants admin. Provision via the CLI/seeder above.
+
 ### Production: starting from an empty database
 
 A production deploy on a fresh MongoDB will:

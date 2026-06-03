@@ -499,6 +499,12 @@
   <data name="ProfilePasswordEmail" xml:space="preserve"><value>Profile • Password • Email</value></data>
   <data name="LogIn" xml:space="preserve"><value>Log in</value></data>
   <data name="ForgotPassword" xml:space="preserve"><value>Forgot password?</value></data>
+  <data name="ResendConfirmationEmail" xml:space="preserve"><value>Resend confirmation email</value></data>
+  <data name="AdminSignIn" xml:space="preserve"><value>Staff sign-in</value></data>
+  <data name="DuplicateReminderHeading" xml:space="preserve"><value>This may already be reported</value></data>
+  <data name="DuplicateReminderIntro" xml:space="preserve"><value>We found similar issues reported nearby. Please open them to check whether yours is the same — if it's different, you can still submit your report.</value></data>
+  <data name="DuplicateReminderMatchesLabel" xml:space="preserve"><value>matches</value></data>
+  <data name="DuplicateReminderLive" xml:space="preserve"><value>Similar issues were found nearby.</value></data>
   <data name="DontHaveAnAccount" xml:space="preserve"><value>Don't have an account?</value></data>
   <data name="CreateOneNow" xml:space="preserve"><value>Create one now</value></data>
   <data name="TakePhotoAddLocation" xml:space="preserve"><value>Take a photo, add location, and submit in seconds</value></data>
@@ -722,4 +728,72 @@
   <data name="RememberThisMachine" xml:space="preserve"><value>Remember this machine</value></data>
   <data name="RegisterConfirmation" xml:space="preserve"><value>Registration confirmed</value></data>
   <data name="RegisterConfirmationDescription" xml:space="preserve"><value>Your account has been created. You can now sign in and start reporting issues in your community.</value></data>
+  <data name="LandingKicker" xml:space="preserve"><value>Your town, made better together</value></data>
+  <data name="LandingTitleLine1" xml:space="preserve"><value>Spot something broken?</value></data>
+  <data name="LandingTitleLine2" xml:space="preserve"><value>Tell your town.</value></data>
+  <data name="LandingLede" xml:space="preserve"><value>Report a pothole, a broken streetlight, or a hazard in under a minute. Watch it get confirmed by neighbors and fixed by your city — every step out in the open.</value></data>
+  <data name="LandingReportCta" xml:space="preserve"><value>Report an Issue</value></data>
+  <data name="LandingSeeHappening" xml:space="preserve"><value>See What's Happening</value></data>
+  <data name="LandingStatResolved" xml:space="preserve"><value>issues resolved</value></data>
+  <data name="LandingStatTowns" xml:space="preserve"><value>towns covered</value></data>
+  <data name="LandingStatFixed" xml:space="preserve"><value>get fixed</value></data>
+  <data name="LandingStepsTitle" xml:space="preserve"><value>Three Steps to a Better Street</value></data>
+  <data name="LandingStepsLede" xml:space="preserve"><value>No forms, no jargon, no waiting on hold. Just you, your phone, and a town that listens.</value></data>
+  <data name="LandingStep1Title" xml:space="preserve"><value>Snap &amp; Describe</value></data>
+  <data name="LandingStep1Copy" xml:space="preserve"><value>Take a photo and drop a pin. We'll suggest the category for you.</value></data>
+  <data name="LandingStep2Title" xml:space="preserve"><value>Neighbors Confirm</value></data>
+  <data name="LandingStep2Copy" xml:space="preserve"><value>Your community backs it up, so the most urgent issues rise to the top.</value></data>
+  <data name="LandingStep3Title" xml:space="preserve"><value>Track to Done</value></data>
+  <data name="LandingStep3Copy" xml:space="preserve"><value>Follow every status update until your city marks it resolved.</value></data>
+  <data name="LandingHappeningKicker" xml:space="preserve"><value>Happening Now</value></data>
+  <data name="LandingHappeningTitle" xml:space="preserve"><value>Issues Your Neighbors Reported</value></data>
+  <data name="LandingBrowseAll" xml:space="preserve"><value>Browse All</value></data>
+  <data name="LandingConfirmed" xml:space="preserve"><value>confirmed</value></data>
+  <data name="LandingStoriesKicker" xml:space="preserve"><value>Real Outcomes</value></data>
+  <data name="LandingStoriesTitle" xml:space="preserve"><value>Fixed, Together</value></data>
+  <data name="LandingStoriesLede" xml:space="preserve"><value>Thousands of small repairs add up to streets that feel cared for. Here are a few from this month.</value></data>
+  <data name="LandingResolvedLabel" xml:space="preserve"><value>Resolved</value></data>
+  <data name="LandingCtaTitle" xml:space="preserve"><value>Ready to Make Your Street Better?</value></data>
+  <data name="LandingCtaCopy" xml:space="preserve"><value>Join your neighbors keeping the town in good shape. It takes about a minute, and it's free.</value></data>
+  <data name="GalleryView" xml:space="preserve"><value>Gallery</value></data>
+  <data name="MapView" xml:space="preserve"><value>Map</value></data>
+  <data name="ViewMode" xml:space="preserve"><value>View mode</value></data>
+  <data name="TimelineReported" xml:space="preserve"><value>Reported</value></data>
+  <data name="TimelineUnderway" xml:space="preserve"><value>Work underway</value></data>
+  <data name="TimelinePending" xml:space="preserve"><value>Pending</value></data>
+  <data name="PinnedLocation" xml:space="preserve"><value>Pinned location</value></data>
+  <data name="Neighbor" xml:space="preserve"><value>neighbor</value></data>
+  <data name="TownGreeting" xml:space="preserve"><value>Your town</value></data>
+  <data name="TownReportTitle" xml:space="preserve"><value>See something that needs fixing?</value></data>
+  <data name="TownReportCopy" xml:space="preserve"><value>Report it in about a minute. A photo and a pin is all it takes to get your town on it.</value></data>
+  <data name="TownStepSnap" xml:space="preserve"><value>Snap</value></data>
+  <data name="TownStepPin" xml:space="preserve"><value>Pin</value></data>
+  <data name="TownStepDone" xml:space="preserve"><value>Done</value></data>
+  <data name="TownYourReports" xml:space="preserve"><value>Your Reports</value></data>
+  <data name="TownWatching" xml:space="preserve"><value>You're keeping an eye on</value></data>
+  <data name="TownNearYou" xml:space="preserve"><value>Near You</value></data>
+  <data name="TownHappeningAround" xml:space="preserve"><value>Happening near you</value></data>
+  <data name="TownStepNew" xml:space="preserve"><value>Reported · awaiting confirmation</value></data>
+  <data name="TownStepConfirmed" xml:space="preserve"><value>Confirmed by neighbors</value></data>
+  <data name="TownStepInProgress" xml:space="preserve"><value>Crew on the way</value></data>
+  <data name="TownStepFixed" xml:space="preserve"><value>Resolved — thank you!</value></data>
+  <data name="TownStepClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Community" xml:space="preserve"><value>Community</value></data>
+  <data name="TopContributors" xml:space="preserve"><value>Top contributors</value></data>
+  <data name="LeaderboardPeriodLabel" xml:space="preserve"><value>Leaderboard period</value></data>
+  <data name="YourStanding" xml:space="preserve"><value>Your standing</value></data>
+  <data name="Unranked" xml:space="preserve"><value>Unranked</value></data>
+  <data name="MaxLevelReached" xml:space="preserve"><value>Top level reached</value></data>
+  <data name="AtPointsSuffix" xml:space="preserve"><value>at</value></data>
+  <data name="SignInToEarnReputation" xml:space="preserve"><value>to start earning reputation in your community.</value></data>
+  <data name="TrustLevels" xml:space="preserve"><value>Trust levels</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>You</value></data>
+  <data name="AiAssistedLabel" xml:space="preserve"><value>AI-assisted</value></data>
+  <data name="ReportFlowSubtitle" xml:space="preserve"><value>Snap a photo, drop a pin, and we'll suggest a category and priority.</value></data>
+  <data name="SmartClassificationLabel" xml:space="preserve"><value>Smart classification</value></data>
+  <data name="SelectCategoryOption" xml:space="preserve"><value>Select category</value></data>
+  <data name="SelectSeverityOption" xml:space="preserve"><value>Select severity</value></data>
+  <data name="SuggestedDepartmentPlaceholder" xml:space="preserve"><value>Suggested municipal department</value></data>
+  <data name="ReportAnonymouslyLabel" xml:space="preserve"><value>Report anonymously</value></data>
+  <data name="DepartmentLabel" xml:space="preserve"><value>Department</value></data>
 </root>

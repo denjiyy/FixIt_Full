@@ -5,97 +5,287 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:ReportIssueViewModel"
              BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
-             NavigationPage.HasNavigationBar="True"
+             Shell.NavBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Report_Title}">
 
-    <ScrollView>
-        <VerticalStackLayout x:Name="FormRoot"
+    <ContentPage.Resources>
+        <LinearGradientBrush x:Key="SubmitBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimaryStrong}}" Offset="0" />
+            <GradientStop Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" Offset="1" />
+        </LinearGradientBrush>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ============ Close bar ============ -->
+        <Border Grid.Row="0" StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
+            <Grid ColumnDefinitions="Auto,*" Padding="8,8,12,10" ColumnSpacing="6" VerticalOptions="Center">
+                <ImageButton Grid.Column="0" Source="feed_close.png" WidthRequest="26" HeightRequest="26"
+                             Padding="8" BackgroundColor="Transparent" Clicked="OnCloseClicked"
+                             SemanticProperties.Description="{local:Localize Key=Common_Back}">
+                    <ImageButton.Behaviors>
+                        <toolkit:IconTintColorBehavior TintColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+                    </ImageButton.Behaviors>
+                </ImageButton>
+                <Label Grid.Column="1" Text="{local:Localize Key=Report_Title}"
+                       FontSize="16" FontAttributes="Bold" VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+            </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="FormRoot"
                              Opacity="0" TranslationY="25"
-                             Padding="20,20,20,40"
+                             Padding="18,16,18,40"
                              Spacing="16">
 
-            <!-- Location / Map Picker -->
-            <Label Text="{local:Localize Key=Report_Location}"
-                   Style="{StaticResource Eyebrow}"
-                   SemanticProperties.HeadingLevel="Level2" />
+            <!-- Header -->
+            <VerticalStackLayout Spacing="3">
+                <Label Text="{local:Localize Key=Report_What}"
+                       FontSize="22" FontAttributes="Bold" CharacterSpacing="-0.3"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                       SemanticProperties.HeadingLevel="Level1" />
+                <Label Text="{local:Localize Key=Report_WhatSub}"
+                       FontSize="13.5" LineHeight="1.45"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+            </VerticalStackLayout>
 
-            <Grid HeightRequest="220">
-                <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
-                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
-                        StrokeThickness="1"
-                        StrokeShape="RoundRectangle 20">
-                    <WebView x:Name="MapWebView"
-                             Source="{Binding MapSource}"
-                             SemanticProperties.Description="{local:Localize Key=Report_Location}" />
-                </Border>
-                <ActivityIndicator IsRunning="{Binding IsLocating}"
-                                   IsVisible="{Binding IsLocating}"
-                                   Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
-            </Grid>
-            <Label Text="{Binding Address}"
-                   IsVisible="{Binding HasAddress}"
-                   Style="{StaticResource BodyMedium}"
-                   Margin="4,0,0,0" />
-            <Label Text="{Binding LocationError}"
+            <!-- Upload slot (no photos yet) -->
+            <Border IsVisible="{Binding HasPhotos, Converter={StaticResource InverseBoolConverter}}"
+                    HeightRequest="170"
+                    StrokeThickness="2"
+                    StrokeDashArray="6,5"
+                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                    StrokeShape="RoundRectangle 18">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding AddPhotoCommand}" />
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="6" VerticalOptions="Center" HorizontalOptions="Center">
+                    <Image Source="camera.png" WidthRequest="34" HeightRequest="34" HorizontalOptions="Center" Opacity="0.85" />
+                    <Label Text="{local:Localize Key=Report_AddPhotoTitle}"
+                           FontSize="14" FontAttributes="Bold" HorizontalTextAlignment="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+                    <Label Text="{local:Localize Key=Report_PhotoHint}"
+                           FontSize="12" HorizontalTextAlignment="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Photo strip (has photos) -->
+            <CollectionView IsVisible="{Binding HasPhotos}"
+                            ItemsSource="{Binding Photos}"
+                            ItemsLayout="HorizontalList"
+                            HeightRequest="100"
+                            SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PhotoAttachment">
+                        <Border WidthRequest="100" HeightRequest="100" Margin="0,0,8,0"
+                                StrokeThickness="0" StrokeShape="RoundRectangle 14">
+                            <Grid>
+                                <Image Source="{Binding Thumbnail}" Aspect="AspectFill" />
+                                <ImageButton Source="check.png"
+                                             BackgroundColor="#B3000000"
+                                             WidthRequest="28" HeightRequest="28" CornerRadius="14"
+                                             HorizontalOptions="End" VerticalOptions="Start"
+                                             Margin="6" Padding="7"
+                                             Command="{Binding Source={x:Reference ReportPageRoot}, Path=BindingContext.RemovePhotoCommand}"
+                                             CommandParameter="{Binding .}"
+                                             SemanticProperties.Description="{local:Localize Key=Report_RemovePhoto}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Footer>
+                    <Border WidthRequest="100" HeightRequest="100"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                            Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                            StrokeThickness="1" StrokeDashArray="4,4" StrokeShape="RoundRectangle 14"
+                            IsVisible="{Binding CanAddPhoto}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddPhotoCommand}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
+                            <Image Source="camera.png" WidthRequest="30" HeightRequest="30" Opacity="0.7" HorizontalOptions="Center" />
+                            <Label Text="{local:Localize Key=Report_AddPhoto}" FontSize="Caption" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </CollectionView.Footer>
+            </CollectionView>
+            <Label Text="{Binding PhotoError}"
                    TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
-                   FontSize="Caption"
-                   IsVisible="{Binding HasLocationError}"
-                   Margin="4,0,0,0" />
+                   FontSize="Caption" IsVisible="{Binding HasPhotoError}" Margin="4,-8,0,0" />
 
-            <!-- Details Section -->
-            <Label Text="{local:Localize Key=Report_Details}"
-                   Style="{StaticResource Eyebrow}"
-                   Margin="0,8,0,0"
+            <!-- Category -->
+            <Label Text="{local:Localize Key=Report_Category}" Style="{StaticResource Eyebrow}" Margin="0,4,0,0"
                    SemanticProperties.HeadingLevel="Level2" />
+            <FlexLayout BindableLayout.ItemsSource="{Binding Categories}" Wrap="Wrap" JustifyContent="Start">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:CategoryOption">
+                        <Border WidthRequest="74" HeightRequest="76" Margin="0,0,8,8"
+                                StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                StrokeShape="RoundRectangle 14">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimarySoft}, Dark={StaticResource DarkPrimarySoft}}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <VerticalStackLayout Spacing="7" VerticalOptions="Center" HorizontalOptions="Center">
+                                <Image Source="{Binding IconSource}" WidthRequest="22" HeightRequest="22" HorizontalOptions="Center" />
+                                <Label Text="{Binding Label}" FontSize="11.5" FontAttributes="Bold" HorizontalTextAlignment="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
 
+            <!-- Title -->
+            <Label Text="{local:Localize Key=Report_TitleLabel}" Style="{StaticResource Eyebrow}" Margin="0,4,0,0" />
             <Border Style="{StaticResource EntryCard}">
                 <Entry Placeholder="{local:Localize Key=Report_TitlePlaceholder}"
-                       Text="{Binding Title}"
-                       MaxLength="200"
+                       Text="{Binding Title}" MaxLength="200" VerticalOptions="Center"
                        SemanticProperties.Hint="{local:Localize Key=Report_TitlePlaceholder}" />
             </Border>
             <Label Text="{Binding TitleError}"
                    TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
-                   FontSize="Caption"
-                   IsVisible="{Binding HasTitleError}"
-                   Margin="4,0,0,0" />
+                   FontSize="Caption" IsVisible="{Binding HasTitleError}" Margin="4,-8,0,0" />
 
+            <!-- Description -->
+            <Label Text="{local:Localize Key=Report_DescLabel}" Style="{StaticResource Eyebrow}" Margin="0,4,0,0" />
             <Border Style="{StaticResource EditorCard}" MinimumHeightRequest="110">
                 <Editor Placeholder="{local:Localize Key=Report_DescPlaceholder}"
-                        AutoSize="TextChanges"
-                        MaxLength="2000"
-                        Text="{Binding Description}"
+                        AutoSize="TextChanges" MaxLength="2000" Text="{Binding Description}"
                         SemanticProperties.Hint="{local:Localize Key=Report_DescPlaceholder}" />
             </Border>
             <Label Text="{Binding DescriptionError}"
                    TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
-                   FontSize="Caption"
-                   IsVisible="{Binding HasDescriptionError}"
-                   Margin="4,0,0,0" />
+                   FontSize="Caption" IsVisible="{Binding HasDescriptionError}" Margin="4,-8,0,0" />
+
+            <!-- Priority -->
+            <Label Text="{local:Localize Key=Report_Priority}" Style="{StaticResource Eyebrow}" Margin="0,4,0,0" />
+            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                <Border Grid.Column="0" HeightRequest="44" StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                        StrokeShape="RoundRectangle 12">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPriorityCommand}" CommandParameter="low" />
+                    </Border.GestureRecognizers>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsPriorityLow}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{local:Localize Key=Priority_Low}" FontSize="12.5" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsPriorityLow}" Value="True">
+                                <Setter Property="TextColor" Value="{StaticResource White}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+
+                <Border Grid.Column="1" HeightRequest="44" StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                        StrokeShape="RoundRectangle 12">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPriorityCommand}" CommandParameter="medium" />
+                    </Border.GestureRecognizers>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsPriorityMedium}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{local:Localize Key=Priority_Medium}" FontSize="12.5" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsPriorityMedium}" Value="True">
+                                <Setter Property="TextColor" Value="{StaticResource White}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+
+                <Border Grid.Column="2" HeightRequest="44" StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                        StrokeShape="RoundRectangle 12">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPriorityCommand}" CommandParameter="high" />
+                    </Border.GestureRecognizers>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsPriorityHigh}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
+                            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{local:Localize Key=Priority_High}" FontSize="12.5" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsPriorityHigh}" Value="True">
+                                <Setter Property="TextColor" Value="{StaticResource White}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+
+                <Border Grid.Column="3" HeightRequest="44" StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                        StrokeShape="RoundRectangle 12">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectPriorityCommand}" CommandParameter="critical" />
+                    </Border.GestureRecognizers>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsPriorityCritical}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{StaticResource PriorityCritical}" />
+                            <Setter Property="Stroke" Value="{StaticResource PriorityCritical}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{local:Localize Key=Priority_Critical}" FontSize="12.5" FontAttributes="Bold"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsPriorityCritical}" Value="True">
+                                <Setter Property="TextColor" Value="{StaticResource White}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+            </Grid>
 
             <!-- Tags -->
-            <Label Text="{local:Localize Key=Report_Tags}"
-                   Style="{StaticResource Eyebrow}"
-                   Margin="0,8,0,0" />
+            <Label Text="{local:Localize Key=Report_Tags}" Style="{StaticResource Eyebrow}" Margin="0,4,0,0" />
             <Border Style="{StaticResource EntryCard}">
-                <Entry Placeholder="{local:Localize Key=Report_TagsHint}"
-                       Text="{Binding TagsText}" />
+                <Entry Placeholder="{local:Localize Key=Report_TagsHint}" Text="{Binding TagsText}" VerticalOptions="Center" />
             </Border>
 
-            <!-- AI Suggestions -->
-            <Border Style="{StaticResource IssueCardBorder}"
-                    IsVisible="{Binding HasAiSuggestion}"
-                    Margin="0,4,0,0">
+            <!-- AI suggestion -->
+            <Border Style="{StaticResource IssueCardBorder}" IsVisible="{Binding HasAiSuggestion}" Margin="0,4,0,0">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="{local:Localize Key=Report_AISuggestions}"
-                           Style="{StaticResource TitleMedium}" />
+                    <Label Text="{local:Localize Key=Report_AISuggestions}" Style="{StaticResource TitleMedium}" />
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
                         <Label Grid.Row="0" Grid.Column="0" Text="{local:Localize Key=Report_Category}" Style="{StaticResource LabelSmall}" VerticalOptions="Center" />
                         <Label Grid.Row="0" Grid.Column="1" Text="{Binding AiSuggestion.Category}" Style="{StaticResource BodyMedium}" />
@@ -106,108 +296,80 @@
                     </Grid>
                     <Label Text="{Binding AiSuggestion.ConfidenceScore, StringFormat='Confidence: {0}%'}"
                            Style="{StaticResource LabelSmall}"
-                           TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                           TextColor="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimary}}" />
                 </VerticalStackLayout>
             </Border>
-            <ActivityIndicator IsRunning="{Binding IsLoadingSuggestion}"
-                               IsVisible="{Binding IsLoadingSuggestion}"
+            <ActivityIndicator IsRunning="{Binding IsLoadingSuggestion}" IsVisible="{Binding IsLoadingSuggestion}"
                                Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
                                HeightRequest="24" />
 
-            <!-- Photos (optional) -->
-            <Label Text="{local:Localize Key=Report_AddPhoto}"
-                   Style="{StaticResource Eyebrow}"
-                   Margin="0,8,0,0" />
-
-            <CollectionView ItemsSource="{Binding Photos}"
-                            ItemsLayout="HorizontalList"
-                            HeightRequest="110"
-                            SelectionMode="None">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:PhotoAttachment">
-                        <Border WidthRequest="100"
-                                HeightRequest="100"
-                                Margin="0,0,8,0"
-                                StrokeThickness="0"
-                                StrokeShape="RoundRectangle 14">
-                            <Grid>
-                                <Image Source="{Binding Thumbnail}"
-                                       Aspect="AspectFill" />
-                                <ImageButton Source="check.png"
-                                             BackgroundColor="#B3000000"
-                                             WidthRequest="28"
-                                             HeightRequest="28"
-                                             CornerRadius="14"
-                                             HorizontalOptions="End"
-                                             VerticalOptions="Start"
-                                             Margin="6"
-                                             Padding="6"
-                                             Command="{Binding Source={x:Reference ReportPageRoot}, Path=BindingContext.RemovePhotoCommand}"
-                                             CommandParameter="{Binding .}"
-                                             SemanticProperties.Description="{local:Localize Key=Report_RemovePhoto}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-                <CollectionView.Footer>
-                    <Border WidthRequest="100"
-                            HeightRequest="100"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
-                            Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
-                            StrokeThickness="1"
-                            StrokeDashArray="4,4"
-                            StrokeShape="RoundRectangle 14"
-                            IsVisible="{Binding CanAddPhoto}">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding AddPhotoCommand}" />
-                        </Border.GestureRecognizers>
-                        <VerticalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
-                            <Image Source="camera.png" WidthRequest="32" HeightRequest="32" Opacity="0.7" HorizontalOptions="Center" />
-                            <Label Text="{local:Localize Key=Report_AddPhoto}"
-                                   FontSize="Caption"
-                                   HorizontalOptions="Center" />
-                        </VerticalStackLayout>
+            <!-- Location -->
+            <Label Text="{local:Localize Key=Report_Location}" Style="{StaticResource Eyebrow}" Margin="0,4,0,0"
+                   SemanticProperties.HeadingLevel="Level2" />
+            <Grid HeightRequest="200">
+                <Border StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                        StrokeShape="RoundRectangle 18">
+                    <WebView x:Name="MapWebView" Source="{Binding MapSource}"
+                             SemanticProperties.Description="{local:Localize Key=Report_Location}" />
+                </Border>
+                <ActivityIndicator IsRunning="{Binding IsLocating}" IsVisible="{Binding IsLocating}"
+                                   Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+            </Grid>
+            <Border IsVisible="{Binding HasAddress}"
+                    StrokeThickness="1"
+                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                    StrokeShape="RoundRectangle 14" Padding="14">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeThickness="0"
+                            StrokeShape="RoundRectangle 11"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimarySoft}, Dark={StaticResource DarkPrimarySoft}}">
+                        <Image Source="feed_geo.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Border>
-                </CollectionView.Footer>
-            </CollectionView>
-            <Label Text="{Binding PhotoError}"
+                    <Label Grid.Column="1" Text="{Binding Address}" FontSize="13.5" VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+                </Grid>
+            </Border>
+            <Label Text="{Binding LocationError}"
                    TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
-                   FontSize="Caption"
-                   IsVisible="{Binding HasPhotoError}"
-                   Margin="4,0,0,0" />
+                   FontSize="Caption" IsVisible="{Binding HasLocationError}" Margin="4,-8,0,0" />
 
             <!-- Submit -->
-            <Button Text="{local:Localize Key=Report_Submit}"
-                    Style="{StaticResource PrimaryButton}"
-                    Opacity="{Binding CanSubmit, Converter={StaticResource BoolToOpacityConverter}}"
-                    Command="{Binding SubmitCommand}"
-                    Margin="0,8,0,0"
-                    SemanticProperties.Description="{local:Localize Key=Report_Submit}" />
+            <Border StrokeThickness="0" StrokeShape="RoundRectangle 14"
+                    Background="{StaticResource SubmitBrush}"
+                    HeightRequest="54" Margin="0,8,0,0"
+                    Opacity="{Binding CanSubmit, Converter={StaticResource BoolToOpacityConverter}}">
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource PrimaryBrush}" Opacity="0.35" Offset="0,8" Radius="16" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SubmitCommand}" />
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image Source="feed_send.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                    <Label Text="{local:Localize Key=Report_Submit}" FontSize="15" FontAttributes="Bold"
+                           TextColor="{StaticResource White}" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
 
             <Label Text="{Binding SubmitError}"
                    TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
-                   FontSize="Caption"
-                   IsVisible="{Binding HasSubmitError}"
-                   HorizontalTextAlignment="Center" />
-
+                   FontSize="Caption" IsVisible="{Binding HasSubmitError}" HorizontalTextAlignment="Center" />
             <Label Text="{Binding SubmitWarning}"
                    TextColor="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}"
-                   FontSize="Caption"
-                   IsVisible="{Binding HasSubmitWarning}"
-                   HorizontalTextAlignment="Center" />
+                   FontSize="Caption" IsVisible="{Binding HasSubmitWarning}" HorizontalTextAlignment="Center" />
 
-            <Image x:Name="SuccessCheckLabel"
-                   Source="check.png"
-                   WidthRequest="48"
-                   HeightRequest="48"
-                   Scale="0" Opacity="0"
-                   HorizontalOptions="Center"
-                   IsVisible="{Binding SubmissionSucceeded}"
+            <Image x:Name="SuccessCheckLabel" Source="check.png"
+                   WidthRequest="48" HeightRequest="48" Scale="0" Opacity="0"
+                   HorizontalOptions="Center" IsVisible="{Binding SubmissionSucceeded}"
                    SemanticProperties.Description="{local:Localize Key=Report_Success}" />
 
-            <ActivityIndicator IsRunning="{Binding IsSubmitting}"
-                               IsVisible="{Binding IsSubmitting}"
+            <ActivityIndicator IsRunning="{Binding IsSubmitting}" IsVisible="{Binding IsSubmitting}"
                                Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
-        </VerticalStackLayout>
-    </ScrollView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

@@ -11,6 +11,7 @@
 @section PageCss {
     <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/issue-detail.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/issue-detail-extras.css" asp-append-version="true" />
 }
 
 @if (Model.Issue != null)
@@ -22,6 +23,24 @@
         : (Model.Issue.Reporter?.DisplayName ?? Localizer["CommunityMember"].Value);
     var imageList = Model.MediaList.Where(m => m.Type == FixIt.Models.Enums.MediaType.Image).ToList();
     var videoList = Model.MediaList.Where(m => m.Type == FixIt.Models.Enums.MediaType.Video).ToList();
+
+    // Lifecycle status timeline (New -> Confirmed -> In Progress -> Fixed).
+    var statusIdx = Model.Issue.Status switch
+    {
+        FixIt.Models.Enums.IssueStatus.New => 0,
+        FixIt.Models.Enums.IssueStatus.Confirmed => 1,
+        FixIt.Models.Enums.IssueStatus.InProgress => 2,
+        FixIt.Models.Enums.IssueStatus.Fixed => 3,
+        _ => 0
+    };
+    var isFixed = Model.Issue.Status == FixIt.Models.Enums.IssueStatus.Fixed;
+    var timelineSteps = new[]
+    {
+        new { Label = Localizer["TimelineReported"].Value, Icon = "bi-plus-lg", Color = "var(--primary-500)", Sub = $"{Model.Issue.CreatedAt:MMM d, yyyy} · {reporterName}" },
+        new { Label = Localizer["Confirmed"].Value, Icon = "bi-people-fill", Color = "var(--raw-hex-7c3aed)", Sub = $"{Model.Issue.Upvotes} {Localizer["LandingConfirmed"].Value}" },
+        new { Label = Localizer["InProgress"].Value, Icon = "bi-tools", Color = "var(--warning)", Sub = Localizer["TimelineUnderway"].Value },
+        new { Label = Localizer["Fixed"].Value, Icon = "bi-flag-fill", Color = "var(--success)", Sub = isFixed ? Model.Issue.LastActivityAt.ToString("MMM d, yyyy") : Localizer["TimelinePending"].Value }
+    };
 
     <div class="issue-page issue-detail-page"
          id="issueDetailRoot"
@@ -225,9 +244,9 @@
                                  data-latitude="@Model.Issue.Location.Coordinates.Values[1]"
                                  data-longitude="@Model.Issue.Location.Coordinates.Values[0]"
                                  class="detail-map"></div>
-                            <div class="detail-map__meta">
-                                <strong>@Localizer["Coordinates"]</strong>
-                                <span>@Model.Issue.Location.Coordinates.Values[1].ToString("F5"), @Model.Issue.Location.Coordinates.Values[0].ToString("F5")</span>
+                            <div class="detail-map__meta detail-map__meta--soft">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span>@(string.IsNullOrWhiteSpace(Model.Issue.Address) ? Localizer["PinnedLocation"].Value : Model.Issue.Address)</span>
                             </div>
                         </div>
                     </section>
@@ -504,6 +523,34 @@
                             <a asp-area="Identity" asp-page="/Account/Login">@Localizer["SignIn"]</a> @Localizer["SignInToCastYourVote"]
                         </p>
                     }
+                </section>
+
+                <section class="issue-surface detail-sidebar-card">
+                    <h2>@Localizer["Status"]</h2>
+                    <div class="detail-tl">
+                        @for (int ti = 0; ti < timelineSteps.Length; ti++)
+                        {
+                            var step = timelineSteps[ti];
+                            var done = ti < statusIdx;
+                            var cur = ti == statusIdx;
+                            var pending = ti > statusIdx;
+                            <div class="detail-tl__step @(cur ? "is-cur" : "") @(pending ? "is-pending" : "")">
+                                <div class="detail-tl__rail">
+                                    <span class="detail-tl__node" style="@(pending ? "" : $"background:{step.Color}")">
+                                        <i class="bi @(pending ? "bi-flag" : step.Icon)"></i>
+                                    </span>
+                                    @if (ti < timelineSteps.Length - 1)
+                                    {
+                                        <span class="detail-tl__line @(done ? "done" : "")"></span>
+                                    }
+                                </div>
+                                <div class="detail-tl__c">
+                                    <div class="detail-tl__t">@step.Label</div>
+                                    <div class="detail-tl__d">@(pending ? Localizer["TimelinePending"].Value : step.Sub)</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </section>
 
                 <section class="issue-surface detail-sidebar-card">

@@ -29,6 +29,10 @@ public class LoginModel : PageModel
     [TempData]
     public string? ErrorMessage { get; set; }
 
+    // Set when a sign-in is rejected because the email isn't confirmed, so the
+    // view can offer a "resend confirmation" link.
+    public bool EmailNotConfirmed { get; set; }
+
     public async Task OnGetAsync(string? returnUrl = null)
     {
         if (!string.IsNullOrEmpty(ErrorMessage))
@@ -78,11 +82,17 @@ public class LoginModel : PageModel
                 _logger.LogWarning("User account locked out.");
                 return RedirectToPage("./Lockout");
             }
-            else
+            if (result.IsNotAllowed)
             {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                _logger.LogInformation("Sign-in blocked: email not confirmed.");
+                EmailNotConfirmed = true;
+                ModelState.AddModelError(string.Empty,
+                    "Please confirm your email before signing in. Check your inbox, or request a new link below.");
                 return Page();
             }
+
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return Page();
         }
 
         // If we got this far, something failed, redisplay form

@@ -29,28 +29,12 @@ public partial class HomeViewModel : ObservableObject, IDisposable
         SubscribeAuth();
         IsLoggedIn = _auth.IsLoggedIn;
         Title = LocalizationService.Get("Home_Title");
-        WelcomeMessage = LocalizationService.Get("Home_Subtitle");
         LocalizationService.CultureChanged += OnCultureChanged;
         App.Resumed += OnAppResumed;
     }
 
     [ObservableProperty]
     private string _title = string.Empty;
-
-    [ObservableProperty]
-    private string _welcomeMessage = string.Empty;
-
-    [ObservableProperty]
-    private int _totalIssues;
-
-    [ObservableProperty]
-    private int _resolvedIssues;
-
-    [ObservableProperty]
-    private int _inProgressIssues;
-
-    [ObservableProperty]
-    private int _criticalIssues;
 
     [ObservableProperty]
     private bool _isLoggedIn;
@@ -61,13 +45,14 @@ public partial class HomeViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isEmpty;
 
-    public ObservableCollection<Issue> RecentIssues { get; } = [];
+    // Issue "posts" rendered as the main feed.
+    public ObservableCollection<Issue> FeedIssues { get; } = [];
 
     public async Task OnAppearingAsync()
     {
         SubscribeAuth();
         await _analytics.TrackScreen("Home");
-        await LoadDashboardAsync(false, _cts.Token);
+        await LoadFeedAsync(false, _cts.Token);
     }
 
     public void OnDisappearing()
@@ -77,9 +62,88 @@ public partial class HomeViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task LoadDashboardAsync(CancellationToken ct)
+    private async Task RefreshAsync(CancellationToken ct)
     {
-        await LoadDashboardAsync(false, ct);
+        await LoadFeedAsync(true, ct);
+    }
+
+    [RelayCommand]
+    private async Task UpvoteAsync(Issue? issue, CancellationToken ct)
+    {
+        if (issue is null)
+        {
+            return;
+        }
+
+        HapticService.Click();
+        var upvote = !issue.UserHasUpvoted;
+
+        // Optimistic update, then reconcile with the server.
+        ApplyVote(issue, upvote);
+        try
+        {
+            var result = await _api.VoteAsync(issue.Id, upvote, ct);
+            if (!result.Success)
+            {
+                ApplyVote(issue, !upvote);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            ApplyVote(issue, !upvote);
+            await _analytics.TrackError(ex);
+        }
+    }
+
+    [RelayCommand]
+    private void Save(Issue? issue)
+    {
+        if (issue is null)
+        {
+            return;
+        }
+
+        HapticService.Click();
+        issue.IsSaved = !issue.IsSaved;
+        RefreshItem(issue);
+    }
+
+    [RelayCommand]
+    private async Task ShareAsync(Issue? issue)
+    {
+        if (issue is null)
+        {
+            return;
+        }
+
+        HapticService.Click();
+        try
+        {
+            await Share.Default.RequestAsync(new ShareTextRequest
+            {
+                Title = issue.Title,
+                Text = $"{issue.Title} — {issue.PrimaryLocation}"
+            });
+        }
+        catch (Exception ex)
+        {
+            await _analytics.TrackError(ex);
+        }
+    }
+
+    [RelayCommand]
+    private async Task OpenProfileAsync(Issue? issue, CancellationToken ct)
+    {
+        if (issue is null || string.IsNullOrWhiteSpace(issue.AuthorUserId))
+        {
+            return;
+        }
+
+        HapticService.Click();
+        await Shell.Current.GoToAsync($"{AppConstants.RoutePublicProfile}?UserId={Uri.EscapeDataString(issue.AuthorUserId)}");
     }
 
     [RelayCommand]
@@ -96,27 +160,6 @@ public partial class HomeViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private async Task GoToIssuesAsync(CancellationToken ct)
-    {
-        HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteIssues);
-    }
-
-    [RelayCommand]
-    private async Task GoToHealthReportAsync(CancellationToken ct)
-    {
-        HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteHealthReport);
-    }
-
-    [RelayCommand]
-    private async Task GoToHazardMapAsync(CancellationToken ct)
-    {
-        HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
-    }
-
-    [RelayCommand]
     private async Task NavigateToIssueAsync(string? issueId, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(issueId))
@@ -129,20 +172,34 @@ public partial class HomeViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task GoToHazardMapAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+    }
+
+    [RelayCommand]
+    private async Task GoToHealthReportAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteHealthReport);
+    }
+
+    [RelayCommand]
     private async Task GoToLeaderboardAsync(CancellationToken ct)
     {
         HapticService.Click();
         await Shell.Current.GoToAsync(AppConstants.RouteLeaderboard);
     }
 
-    private async Task LoadDashboardAsync(bool forceRefresh, CancellationToken ct)
+    private async Task LoadFeedAsync(bool forceRefresh, CancellationToken ct)
     {
         if (IsLoading)
         {
             return;
         }
 
-        if (!forceRefresh && RecentIssues.Count > 0 && DateTime.UtcNow - _lastLoaded < TimeSpan.FromMinutes(MobileSettings.DataCacheMinutes))
+        if (!forceRefresh && FeedIssues.Count > 0 && DateTime.UtcNow - _lastLoaded < TimeSpan.FromMinutes(MobileSettings.DataCacheMinutes))
         {
             return;
         }
@@ -155,18 +212,13 @@ public partial class HomeViewModel : ObservableObject, IDisposable
                 var issues = await _api.GetIssuesAsync(page: 1, pageSize: 50, ct: ct);
                 ct.ThrowIfCancellationRequested();
 
-                TotalIssues = issues.Count;
-                ResolvedIssues = issues.Count(i => i.Status == AppConstants.StatusResolved);
-                InProgressIssues = issues.Count(i => i.Status == AppConstants.StatusInProgress);
-                CriticalIssues = issues.Count(i => i.Status == AppConstants.StatusCritical);
-
-                RecentIssues.Clear();
-                foreach (var issue in issues.Take(5))
+                FeedIssues.Clear();
+                foreach (var issue in issues)
                 {
-                    RecentIssues.Add(issue);
+                    FeedIssues.Add(issue);
                 }
 
-                IsEmpty = RecentIssues.Count == 0;
+                IsEmpty = FeedIssues.Count == 0;
                 _lastLoaded = DateTime.UtcNow;
             }
         }
@@ -184,6 +236,28 @@ public partial class HomeViewModel : ObservableObject, IDisposable
         }
     }
 
+    private void ApplyVote(Issue issue, bool upvote)
+    {
+        if (issue.UserHasUpvoted == upvote)
+        {
+            return;
+        }
+
+        issue.UserHasUpvoted = upvote;
+        issue.VoteCount = Math.Max(0, issue.VoteCount + (upvote ? 1 : -1));
+        RefreshItem(issue);
+    }
+
+    private void RefreshItem(Issue issue)
+    {
+        var index = FeedIssues.IndexOf(issue);
+        if (index >= 0)
+        {
+            // Re-set the slot so the CollectionView rebuilds the row (Issue is a plain DTO).
+            FeedIssues[index] = issue;
+        }
+    }
+
     private void OnLoginStateChanged(object? sender, bool isLoggedIn)
     {
         IsLoggedIn = isLoggedIn;
@@ -192,7 +266,6 @@ public partial class HomeViewModel : ObservableObject, IDisposable
     private void OnCultureChanged(object? sender, System.Globalization.CultureInfo e)
     {
         Title = LocalizationService.Get("Home_Title");
-        WelcomeMessage = LocalizationService.Get("Home_Subtitle");
     }
 
     private void OnAppResumed(object? sender, EventArgs e)

@@ -13,6 +13,15 @@
     --admin-muted: var(--gray-500);
     --admin-shadow-sm: var(--shadow-sm);
     --admin-shadow-lg: var(--shadow-lg);
+
+    /* Dark operations shell — the sidebar is the one dark surface, matching
+       the design system's admin shell (slate-900 rail, light ink). */
+    --admin-sidebar-bg: var(--gray-900);
+    --admin-sidebar-fg: var(--gray-300);
+    --admin-sidebar-fg-strong: var(--white);
+    --admin-sidebar-muted: var(--gray-400);
+    --admin-sidebar-hover-bg: var(--raw-rgba-255-255-255-0-06);
+    --admin-sidebar-border: var(--raw-rgba-255-255-255-0-08);
 }
 
 body.admin-shell {
@@ -37,9 +46,9 @@ body.admin-shell {
     flex-direction: column;
     gap: 1.5rem;
     padding: 1.5rem;
-    background: var(--white);
-    border-right: 1px solid var(--gray-200);
-    color: var(--gray-900);
+    background: var(--admin-sidebar-bg);
+    border-right: 1px solid var(--admin-sidebar-border);
+    color: var(--admin-sidebar-fg);
     z-index: 1030;
 }
 
@@ -75,18 +84,19 @@ body.admin-shell {
     display: block;
     font-size: 1.05rem;
     letter-spacing: -0.03em;
+    color: var(--admin-sidebar-fg-strong);
 }
 
 .admin-brand small {
     display: block;
     margin-top: 0.2rem;
-    color: var(--gray-500);
+    color: var(--admin-sidebar-muted);
     font-size: 0.7rem;
     letter-spacing: 0.04em;
 }
 
 .admin-sidebar__close {
-    color: var(--gray-600);
+    color: var(--admin-sidebar-muted);
 }
 
 .admin-nav {
@@ -104,7 +114,7 @@ body.admin-shell {
     border-radius: var(--radius-md);
     text-decoration: none;
     font-weight: 600;
-    color: var(--gray-700);
+    color: var(--admin-sidebar-fg);
     background: transparent;
     border: none;
     transition: background-color 180ms ease, color 180ms ease;
@@ -113,8 +123,8 @@ body.admin-shell {
 .admin-nav__link:hover,
 .admin-utility-link:hover,
 .admin-logout:hover {
-    color: var(--primary-700);
-    background: var(--primary-50);
+    color: var(--admin-sidebar-fg-strong);
+    background: var(--admin-sidebar-hover-bg);
 }
 
 .admin-nav__link.is-active {
@@ -133,12 +143,12 @@ body.admin-shell {
     align-items: stretch;
     gap: 0.25rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--gray-200);
+    border-top: 1px solid var(--admin-sidebar-border);
 }
 
 .admin-logout {
-    background: var(--danger-light);
-    color: var(--danger-dark);
+    background: transparent;
+    color: var(--danger);
 }
 
 .admin-logout:hover {

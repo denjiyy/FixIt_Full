@@ -16,6 +16,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using FixIt.Services.Constants;
 using FixIt.Services.Email;
+using FixIt.Areas.Identity;
 
 namespace FixIt.Controllers;
 
@@ -105,6 +106,14 @@ public class AuthController : ControllerBase
             }
             _logger.LogWarning("Failed password login for user: {UserId}", user.Id);
             return Unauthorized(ApiResponse<object>.CreateError("Invalid email or password"));
+        }
+
+        // CheckPasswordSignInAsync does not enforce email confirmation (unlike the
+        // web PasswordSignInAsync path), so gate it explicitly when required.
+        if (_userManager.Options.SignIn.RequireConfirmedEmail && !await _userManager.IsEmailConfirmedAsync(user))
+        {
+            _logger.LogInformation("Login blocked for unconfirmed email: {UserId}", user.Id);
+            return Unauthorized(ApiResponse<object>.CreateError("Please confirm your email before signing in."));
         }
 
         var userRoles = await _userManager.GetRolesAsync(user);
@@ -204,6 +213,17 @@ public class AuthController : ControllerBase
             var refreshToken = _tokenService.GenerateRefreshToken(user);
 
             _logger.LogInformation("New user {UserId} registered via password", user.Id);
+
+            // Issue a confirmation link (verifiable via the web ConfirmEmail page).
+            // Isolated so an email-delivery failure never rolls back the account.
+            try
+            {
+                await EmailConfirmationSender.SendAsync(_userManager, _emailService, Url, Request.Scheme, user);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogError(emailEx, "Failed to send confirmation email for {Email}", request.Email);
+            }
 
             var tokenResponse = new TokenResponse
             {
@@ -561,7 +581,10 @@ public class AuthController : ControllerBase
         var roles = await _userManager.GetRolesAsync(user);
         return Ok(ApiResponse<object>.CreateSuccess(new
         {
-            id = user.Id,
+            // ObjectId must be serialized as a string (matching login/register's
+            // user.Id.ToString()); returning the raw ObjectId serializes it as an
+            // object, which breaks the mobile client's string id parse on the profile.
+            id = user.Id.ToString(),
             email = user.Email,
             displayName = user.DisplayName,
             roles = roles,

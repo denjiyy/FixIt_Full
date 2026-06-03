@@ -7,14 +7,25 @@
     ViewData["Title"] = Localizer["CreateAnIssue"];
     ViewData["RequiresMap"] = true;
     ViewData["BodyClass"] = "page-issue-create";
+
+    // Design priority palette: Low = emerald, Medium = gold, High = amber, Critical = red.
+    string SeverityColor(IssuePriority p) => p switch
+    {
+        IssuePriority.Low => "var(--success)",
+        IssuePriority.Medium => "var(--warning)",
+        IssuePriority.High => "var(--accent)",
+        IssuePriority.Critical => "var(--danger)",
+        _ => "var(--neutral-400)"
+    };
 }
 
 @section PageCss {
     <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/issue-create.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/issue-report.css" asp-append-version="true" />
 }
 
-<div class="issue-page issue-create-page" id="issueCreateRoot"
+<div class="issue-page issue-report-page calm" id="issueCreateRoot"
      data-default-lat="42.6977"
      data-default-lng="23.3219"
      data-title-too-short="@Localizer["CreateTitleValidation"]"
@@ -38,257 +49,51 @@
      data-ai-generated-label="AI-generated"
      data-fallback-label="Rule-based suggestion"
      data-confidence-label="Confidence"
-     data-apply-suggestion-label="Suggestions applied">
-    <header class="issue-page-header">
-        <div class="issue-page-header__content">
-            <span class="issue-page-header__eyebrow">
-                <i class="bi bi-send-plus"></i>
-                @Localizer["ReportIssue"]
-            </span>
-            <h1 class="issue-page-header__title">@Localizer["CreateAnIssue"]</h1>
-            <p class="issue-page-header__copy">@Localizer["ReportAndTrackInfrastructure"]</p>
-        </div>
+     data-apply-suggestion-label="Suggestions applied"
+     data-duplicate-matches-label="@Localizer["DuplicateReminderMatchesLabel"]"
+     data-duplicate-reminder-live="@Localizer["DuplicateReminderLive"]">
 
-        <div class="issue-page-actions">
-            <a asp-page="/Issues/Index" class="app-link-btn">
-                <i class="bi bi-list-check"></i>
-                <span>@Localizer["BrowseIssues"]</span>
-            </a>
-        </div>
-    </header>
+    <div class="report">
+        <a href="/issues" class="backlink">
+            <i class="bi bi-arrow-left"></i>
+            <span>@Localizer["Cancel"]</span>
+        </a>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success rounded-4 mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
-        </div>
-    }
-    @if (TempData["Warning"] != null)
-    {
-        <div class="alert alert-warning rounded-4 mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
-        </div>
-    }
-    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Any()))
-    {
-        <div asp-validation-summary="All" class="alert alert-danger rounded-4 mb-4" role="alert">
-            <i class="bi bi-exclamation-circle-fill me-2"></i>
-        </div>
-    }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success rounded-4 mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            </div>
+        }
+        @if (TempData["Warning"] != null)
+        {
+            <div class="alert alert-warning rounded-4 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Warning"]
+            </div>
+        }
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Any()))
+        {
+            <div asp-validation-summary="All" class="alert alert-danger rounded-4 mb-4" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+            </div>
+        }
 
-    <div class="create-layout">
-        <form method="post" enctype="multipart/form-data" id="issueForm" class="create-main" novalidate>
-            <div id="createLiveRegion" class="visually-hidden" aria-live="polite"></div>
+        <div class="report__grid">
+            <form method="post" enctype="multipart/form-data" id="issueForm" class="report__form" novalidate>
+                <div id="createLiveRegion" class="visually-hidden" aria-live="polite"></div>
 
-            <section class="issue-surface create-stepper">
-                <div class="create-stepper__item is-active" data-step-item="details">
-                    <span class="create-stepper__bubble">1</span>
-                    <div>
-                        <strong>@Localizer["Details"]</strong>
-                        <span>@Localizer["BasicInformation"]</span>
-                    </div>
-                </div>
-                <div class="create-stepper__item" data-step-item="location">
-                    <span class="create-stepper__bubble">2</span>
-                    <div>
-                        <strong>@Localizer["Location"]</strong>
-                        <span>@Localizer["PinTheExactSpotOnTheMap"]</span>
-                    </div>
-                </div>
-                <div class="create-stepper__item" data-step-item="media">
-                    <span class="create-stepper__bubble">3</span>
-                    <div>
-                        <strong>@Localizer["Media"]</strong>
-                        <span>@Localizer["PhotosAndVideos"]</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="issue-surface create-card">
-                <div class="create-card__header">
-                    <div>
-                        <span class="create-card__eyebrow">01</span>
-                        <h2>@Localizer["BasicInformation"]</h2>
-                        <p>@Localizer["GiveThemeAClearTitleAndDescription"]</p>
-                    </div>
+                <div class="report__formhead">
+                    <span class="eyebrow"><i class="bi bi-stars"></i>@Localizer["AiAssistedLabel"]</span>
+                    <h1>@Localizer["CreateAnIssue"]</h1>
+                    <p>@Localizer["ReportFlowSubtitle"]</p>
                 </div>
 
-                <div class="create-card__body">
-                    <div class="create-field">
-                        <label for="issueTitle" class="create-label">@Localizer["IssueTitle"]</label>
-                        <input asp-for="Input.Title"
-                               class="create-input create-input--lg"
-                               id="issueTitle"
-                               maxlength="200"
-                               placeholder="@Localizer["ExamplePotholeOnMainStreet"]" />
-                        <div class="create-field__meta">
-                            <span class="create-field__hint">@Localizer["SpecificAndDescriptive"]</span>
-                            <span class="create-counter" id="titleCounter"></span>
-                        </div>
-                        <span asp-validation-for="Input.Title" class="create-validation" id="titleValidation"></span>
-                    </div>
-
-                    <div class="create-field">
-                        <label for="issueDescription" class="create-label">@Localizer["Description"]</label>
-                        <textarea asp-for="Input.Description"
-                                  class="create-textarea"
-                                  id="issueDescription"
-                                  rows="7"
-                                  maxlength="5000"
-                                  placeholder="@Localizer["DescribeTheIssueInDetail"]"></textarea>
-                        <div class="create-field__meta">
-                            <span class="create-field__hint">@Localizer["MinimumTenCharacters"]</span>
-                            <span class="create-counter" id="descriptionCounter"></span>
-                        </div>
-                        <span asp-validation-for="Input.Description" class="create-validation" id="descriptionValidation"></span>
-                    </div>
-
-                    <div class="create-field">
-                        <label asp-for="Input.TagNames" class="create-label">
-                            @Localizer["TagsLabel"]
-                            <span class="create-label__optional">@Localizer["Optional"]</span>
-                        </label>
-                        <input asp-for="Input.TagNames"
-                               class="create-input"
-                               id="tagInput"
-                               placeholder="@Localizer["TagsPlaceholder"]"
-                               aria-label="@Localizer["TagsLabel"]" />
-                        <span class="create-field__hint">@Localizer["TagsHint"]</span>
-                    </div>
-
-                    <div class="create-field">
-                        <div class="create-suggestions__header">
-                            <span class="create-label">@Localizer["SuggestedTagsLabel"]</span>
-                            <span class="create-field__hint">@Localizer["SuggestedTagsHint"]</span>
-                        </div>
-                        <div id="suggestedTags" class="create-suggestions"></div>
-                    </div>
-
-                    <section class="create-field create-field--ai">
-                        <div class="create-ai-panel" id="aiIssueSuggestionPanel" aria-live="polite">
-                            <div class="create-ai-panel__header">
-                                <span class="create-label">Smart Issue Classification</span>
-                                <span class="create-ai-badge" id="aiSuggestionSourceBadge">AI-generated</span>
-                            </div>
-                            <div class="create-ai-skeleton d-none" id="aiSuggestionSkeleton" aria-hidden="true">
-                                <span class="app-skeleton"></span>
-                                <span class="app-skeleton"></span>
-                            </div>
-                            <p class="create-field__hint mb-2" id="aiSuggestionStatus">AI suggestions will appear after you add enough details.</p>
-                            <div class="create-ai-confidence d-none" id="aiSuggestionConfidenceWrap">
-                                <div class="create-ai-confidence__head">
-                                    <span class="create-field__hint mb-0">Confidence</span>
-                                    <strong id="aiSuggestionConfidenceText">0%</strong>
-                                </div>
-                                <div class="create-ai-confidence__track" aria-hidden="true">
-                                    <span class="create-ai-confidence__fill" id="aiSuggestionConfidenceBar"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="create-ai-grid">
-                            <div class="create-field">
-                                <label asp-for="Input.Category" class="create-label">@Localizer["CategoryLabel"]</label>
-                                <select asp-for="Input.Category" class="create-select" id="issueCategory">
-                                    <option value="">Select category</option>
-                                    @foreach (var category in Enum.GetValues<IssueCategory>())
-                                    {
-                                        <option value="@category">@category</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="create-field">
-                                <label asp-for="Input.Priority" class="create-label">@Localizer["SeverityLabel"]</label>
-                                <select asp-for="Input.Priority" class="create-select" id="issuePriority">
-                                    <option value="">Select severity</option>
-                                    @foreach (var priority in Enum.GetValues<IssuePriority>())
-                                    {
-                                        <option value="@priority">@priority</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="create-field">
-                            <label asp-for="Input.Department" class="create-label">Department</label>
-                            <input asp-for="Input.Department"
-                                   class="create-input"
-                                   id="issueDepartment"
-                                   maxlength="120"
-                                   placeholder="Suggested municipal department" />
-                        </div>
-                    </section>
-                </div>
-            </section>
-
-            <section class="issue-surface create-card">
-                <div class="create-card__header">
-                    <div>
-                        <span class="create-card__eyebrow">02</span>
-                        <h2>@Localizer["Location"]</h2>
-                        <p>@Localizer["PinTheExactSpotOnTheMapDescription"]</p>
-                    </div>
-                </div>
-
-                <div class="create-card__body">
-                    <div class="create-field">
-                        <label for="issueAddress" class="create-label">
-                            @Localizer["AddressLabel"]
-                            <span class="create-label__optional">@Localizer["Optional"]</span>
-                        </label>
-                        <input asp-for="Input.Address"
-                               class="create-input"
-                               id="issueAddress"
-                               placeholder="@Localizer["AddressAutoFilled"]" />
-                        <span class="create-field__hint">@Localizer["ReverseGeocodedFromYourMapPin"]</span>
-                    </div>
-
-                    <div class="create-field">
-                        <label class="create-label" for="map">@Localizer["PinOnMap"]</label>
-                        <div class="create-map">
-                            <div id="map" class="create-map__canvas" aria-label="@Localizer["PinOnMap"]"></div>
-                            <div class="create-map__meta">
-                                <div>
-                                    <strong>@Localizer["Coordinates"]</strong>
-                                    <span id="coordsDisplay">@Localizer["ClickTheMapToPlacePin"]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <input asp-for="Input.Latitude" id="latitude" type="hidden" />
-                        <input asp-for="Input.Longitude" id="longitude" type="hidden" />
-                        <span asp-validation-for="Input.Latitude" class="create-validation"></span>
-                    </div>
-
-                    <div class="create-field">
-                        <label for="baseCity" class="create-label">@Localizer["CityOrCities"]</label>
-                        <select asp-for="Input.CityId" class="create-select" id="baseCity">
-                            <option value="">@Localizer["SelectACity"]</option>
-                            @foreach (var city in Model.Cities)
-                            {
-                                <option value="@city.Value">@city.Text</option>
-                            }
-                        </select>
-                        <span class="create-field__hint">@Localizer["UsuallyAutoSelectedFromYourMapPin"]</span>
-                        <span asp-validation-for="Input.CityId" class="create-validation" id="cityValidation"></span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="issue-surface create-card">
-                <div class="create-card__header create-card__header--split">
-                    <div>
-                        <span class="create-card__eyebrow">03</span>
-                        <h2>@Localizer["PhotosAndVideos"]</h2>
-                        <p>@Localizer["VisualEvidenceHelpsOfficials"]</p>
-                    </div>
-                    <span class="create-chip">@Localizer["Optional"]</span>
-                </div>
-
-                <div class="create-card__body">
+                @* ---------- Photos ---------- *@
+                <div class="fld">
+                    <span class="fld__label">@Localizer["PhotosAndVideos"] <span class="fld__optional">@Localizer["Optional"]</span></span>
                     <div class="create-upload" id="uploadZone" role="button" tabindex="0" aria-controls="mediaInput">
                         <div class="create-upload__icon">
-                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                            <i class="bi bi-camera-fill"></i>
                         </div>
                         <h3>@Localizer["DropFilesHereOrBrowseToUpload"]</h3>
                         <p>@Localizer["UploadFileInfo"]</p>
@@ -298,7 +103,6 @@
                             <span>WEBP</span>
                             <span>MP4</span>
                             <span>MOV</span>
-                            <span>WEBM</span>
                         </div>
                         <input asp-for="Input.Photos"
                                id="mediaInput"
@@ -307,92 +111,186 @@
                                multiple
                                accept="image/*,video/*" />
                     </div>
-
                     <div class="media-preview-grid" id="mediaPreviewGrid"></div>
                 </div>
-            </section>
 
-            <footer class="issue-surface create-submit">
-                <div class="create-submit__meta">
-                    <i class="bi bi-shield-check"></i>
-                    <span>@Localizer["VisibleToPublicAndCityOfficials"]</span>
+                @* ---------- Title ---------- *@
+                <div class="fld">
+                    <label class="fld__label" for="issueTitle">@Localizer["IssueTitle"]</label>
+                    <input asp-for="Input.Title"
+                           class="rinput"
+                           id="issueTitle"
+                           maxlength="200"
+                           placeholder="@Localizer["ExamplePotholeOnMainStreet"]" />
+                    <div class="fld__meta">
+                        <span asp-validation-for="Input.Title" class="create-validation" id="titleValidation"></span>
+                        <span class="create-counter" id="titleCounter"></span>
+                    </div>
                 </div>
-                <div class="create-submit__actions">
-                    <a href="/issues" class="app-link-btn">
-                        <i class="bi bi-x-circle"></i>
-                        <span>@Localizer["Cancel"]</span>
-                    </a>
+
+                @* ---------- Description (with AI hint) ---------- *@
+                <div class="fld">
+                    <label class="fld__label" for="issueDescription">@Localizer["Description"]</label>
+                    <div class="rinput--area-wrap">
+                        <textarea asp-for="Input.Description"
+                                  class="rinput rinput--area"
+                                  id="issueDescription"
+                                  rows="5"
+                                  maxlength="5000"
+                                  placeholder="@Localizer["DescribeTheIssueInDetail"]"></textarea>
+                    </div>
+                    <div class="fld__meta">
+                        <span asp-validation-for="Input.Description" class="create-validation" id="descriptionValidation"></span>
+                        <span class="create-counter" id="descriptionCounter"></span>
+                    </div>
+                </div>
+
+                @* ---------- AI suggestion panel ---------- *@
+                <div class="create-ai-panel" id="aiIssueSuggestionPanel" aria-live="polite">
+                    <div class="create-ai-panel__header">
+                        <span class="fld__label"><i class="bi bi-magic"></i> @Localizer["SmartClassificationLabel"]</span>
+                        <span class="create-ai-badge" id="aiSuggestionSourceBadge">AI-generated</span>
+                    </div>
+                    <div class="create-ai-skeleton d-none" id="aiSuggestionSkeleton" aria-hidden="true">
+                        <span class="app-skeleton"></span>
+                        <span class="app-skeleton"></span>
+                    </div>
+                    <p class="create-field__hint mb-2" id="aiSuggestionStatus">AI suggestions will appear after you add enough details.</p>
+                    <div class="create-ai-confidence d-none" id="aiSuggestionConfidenceWrap">
+                        <div class="create-ai-confidence__head">
+                            <span class="create-field__hint mb-0">Confidence</span>
+                            <strong id="aiSuggestionConfidenceText">0%</strong>
+                        </div>
+                        <div class="create-ai-confidence__track" aria-hidden="true">
+                            <span class="create-ai-confidence__fill" id="aiSuggestionConfidenceBar"></span>
+                        </div>
+                    </div>
+                </div>
+
+                @* ---------- Possible-duplicate reminder (advisory, never blocks submit) ---------- *@
+                <div class="alert alert-warning d-none mt-3" id="duplicateWarningPanel" role="status" aria-live="polite">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-exclamation-triangle-fill me-2 mt-1" aria-hidden="true"></i>
+                        <div class="flex-grow-1">
+                            <strong>@Localizer["DuplicateReminderHeading"]</strong>
+                            <p class="mb-2 small">@Localizer["DuplicateReminderIntro"]</p>
+                            <ul class="mb-0 ps-3" id="duplicateWarningList"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                @* ---------- Category pick-grid (synced to bound select) ---------- *@
+                <div class="fld">
+                    <span class="fld__label">@Localizer["CategoryLabel"]</span>
+                    <div class="pickgrid" id="categoryPick" role="group" aria-label="@Localizer["CategoryLabel"]">
+                        @foreach (var category in Enum.GetValues<IssueCategory>())
+                        {
+                            <button type="button" class="pick" data-value="@category">@category</button>
+                        }
+                    </div>
+                    <select asp-for="Input.Category" class="report-bound-select" id="issueCategory" tabindex="-1" aria-hidden="true">
+                        <option value="">@Localizer["SelectCategoryOption"]</option>
+                        @foreach (var category in Enum.GetValues<IssueCategory>())
+                        {
+                            <option value="@category">@category</option>
+                        }
+                    </select>
+                </div>
+
+                @* ---------- Severity segmented control (synced to bound select) ---------- *@
+                <div class="fld">
+                    <span class="fld__label">@Localizer["SeverityLabel"]</span>
+                    <div class="seg" id="severitySeg" role="group" aria-label="@Localizer["SeverityLabel"]">
+                        @foreach (var priority in Enum.GetValues<IssuePriority>())
+                        {
+                            <button type="button" data-value="@priority">
+                                <span class="seg__dot" style="background:@SeverityColor(priority)"></span>@priority
+                            </button>
+                        }
+                    </div>
+                    <select asp-for="Input.Priority" class="report-bound-select" id="issuePriority" tabindex="-1" aria-hidden="true">
+                        <option value="">@Localizer["SelectSeverityOption"]</option>
+                        @foreach (var priority in Enum.GetValues<IssuePriority>())
+                        {
+                            <option value="@priority">@priority</option>
+                        }
+                    </select>
+                </div>
+
+                @* ---------- Department (AI-suggested) ---------- *@
+                <div class="fld">
+                    <label class="fld__label" for="issueDepartment">@Localizer["DepartmentLabel"] <span class="fld__optional">@Localizer["Optional"]</span></label>
+                    <input asp-for="Input.Department"
+                           class="rinput"
+                           id="issueDepartment"
+                           maxlength="120"
+                           placeholder="@Localizer["SuggestedDepartmentPlaceholder"]" />
+                </div>
+
+                @* ---------- Tags ---------- *@
+                <div class="fld">
+                    <label class="fld__label" for="tagInput">@Localizer["TagsLabel"] <span class="fld__optional">@Localizer["Optional"]</span></label>
+                    <input asp-for="Input.TagNames"
+                           class="rinput"
+                           id="tagInput"
+                           placeholder="@Localizer["TagsPlaceholder"]"
+                           aria-label="@Localizer["TagsLabel"]" />
+                    <div id="suggestedTags" class="report-suggestions"></div>
+                </div>
+
+                @* ---------- Address + City ---------- *@
+                <div class="fld">
+                    <label class="fld__label" for="issueAddress">@Localizer["AddressLabel"] <span class="fld__optional">@Localizer["Optional"]</span></label>
+                    <input asp-for="Input.Address"
+                           class="rinput"
+                           id="issueAddress"
+                           placeholder="@Localizer["AddressAutoFilled"]" />
+                </div>
+
+                <div class="fld">
+                    <label class="fld__label" for="baseCity">@Localizer["CityOrCities"]</label>
+                    <select asp-for="Input.CityId" class="rinput rselect" id="baseCity">
+                        <option value="">@Localizer["SelectACity"]</option>
+                        @foreach (var city in Model.Cities)
+                        {
+                            <option value="@city.Value">@city.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Input.CityId" class="create-validation" id="cityValidation"></span>
+                </div>
+
+                <input asp-for="Input.Latitude" id="latitude" type="hidden" />
+                <input asp-for="Input.Longitude" id="longitude" type="hidden" />
+
+                @* ---------- Submit row ---------- *@
+                <div class="report__submit">
+                    <label class="anon">
+                        <input asp-for="Input.IsAnonymous" type="checkbox" />
+                        <span>@Localizer["ReportAnonymouslyLabel"]</span>
+                    </label>
                     <button type="submit" class="nav-report-btn" id="baseSubmitBtn">
-                        <i class="bi bi-send-fill"></i>
+                        <i class="bi bi-send-plus"></i>
                         <span>@Localizer["SubmitReport"]</span>
                     </button>
                 </div>
-            </footer>
-        </form>
+            </form>
 
-        <aside class="create-sidebar">
-            <section class="issue-surface create-sidebar-card">
-                <h2>@Localizer["ProgressOverview"]</h2>
-                <ul class="create-progress-list">
-                    <li data-progress-item="details">
-                        <span class="create-progress-list__dot"></span>
-                        <div>
-                            <strong>@Localizer["Details"]</strong>
-                            <span>@Localizer["GiveThemeAClearTitleAndDescription"]</span>
-                        </div>
-                    </li>
-                    <li data-progress-item="location">
-                        <span class="create-progress-list__dot"></span>
-                        <div>
-                            <strong>@Localizer["Location"]</strong>
-                            <span>@Localizer["PinTheExactSpotOnTheMapDescription"]</span>
-                        </div>
-                    </li>
-                    <li data-progress-item="media">
-                        <span class="create-progress-list__dot"></span>
-                        <div>
-                            <strong>@Localizer["Media"]</strong>
-                            <span>@Localizer["UploadFileInfo"]</span>
-                        </div>
-                    </li>
-                </ul>
-            </section>
-
-            <section class="issue-surface create-sidebar-card">
-                <h2>@Localizer["ReportSnapshot"]</h2>
-                <dl class="create-summary">
+            <aside class="report__map">
+                <div class="report__maptop glass">
+                    <i class="bi bi-geo-alt-fill"></i>
                     <div>
-                        <dt>@Localizer["Title"]</dt>
-                        <dd id="summaryTitleValue">@(string.IsNullOrWhiteSpace(Model.Input.Title) ? Localizer["NotStarted"] : Model.Input.Title)</dd>
+                        <strong>@Localizer["PinnedLocation"]</strong>
+                        <small id="coordsDisplay">@Localizer["ClickTheMapToPlacePin"]</small>
                     </div>
-                    <div>
-                        <dt>@Localizer["CityOrCities"]</dt>
-                        <dd id="summaryCityValue">@(string.IsNullOrWhiteSpace(Model.Input.CityId) ? Localizer["NotStarted"] : Model.Cities.FirstOrDefault(c => c.Value == Model.Input.CityId)?.Text ?? Localizer["NotStarted"])</dd>
-                    </div>
-                    <div>
-                        <dt>@Localizer["Location"]</dt>
-                        <dd id="summaryLocationValue">@Localizer["LocationPending"]</dd>
-                    </div>
-                    <div>
-                        <dt>@Localizer["Media"]</dt>
-                        <dd id="summaryMediaValue">@Localizer["NoMediaSelected"]</dd>
-                    </div>
-                </dl>
-            </section>
-
-            <section class="issue-surface create-sidebar-card">
-                <h2>@Localizer["BeforeYouSubmit"]</h2>
-                <ul class="create-checklist">
-                    <li>@Localizer["BeAsSpecificAsPossible"]</li>
-                    <li>@Localizer["ReverseGeocodedFromYourMapPin"]</li>
-                    <li>@Localizer["VisualEvidenceHelpsOfficials"]</li>
-                </ul>
-            </section>
-        </aside>
+                </div>
+                <div id="map" class="report__mapcanvas" aria-label="@Localizer["PinOnMap"]"></div>
+            </aside>
+        </div>
     </div>
 </div>
 
 @section PageScripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/modules/issue-create.js" asp-append-version="true" defer></script>
+    <script src="~/js/pages/report-controls.js" asp-append-version="true" defer></script>
 }

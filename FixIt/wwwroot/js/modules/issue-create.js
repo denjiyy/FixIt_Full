@@ -38,6 +38,8 @@
         const aiSuggestionConfidenceText = document.getElementById('aiSuggestionConfidenceText');
         const aiSuggestionConfidenceBar = document.getElementById('aiSuggestionConfidenceBar');
         const aiSuggestionSkeleton = document.getElementById('aiSuggestionSkeleton');
+        const duplicateWarningPanel = document.getElementById('duplicateWarningPanel');
+        const duplicateWarningList = document.getElementById('duplicateWarningList');
 
         if (!form || !titleInput || !descriptionInput || !tagInput || !addressInput || !citySelect ||
             !latitudeInput || !longitudeInput || !coordsDisplay || !uploadZone || !mediaInput ||
@@ -74,7 +76,9 @@
             aiGeneratedLabel: root.dataset.aiGeneratedLabel || 'AI-generated',
             fallbackLabel: root.dataset.fallbackLabel || 'Rule-based suggestion',
             confidenceLabel: root.dataset.confidenceLabel || 'Confidence',
-            applySuggestionLabel: root.dataset.applySuggestionLabel || 'Suggestions applied'
+            applySuggestionLabel: root.dataset.applySuggestionLabel || 'Suggestions applied',
+            duplicateMatchesLabel: root.dataset.duplicateMatchesLabel || 'matches',
+            duplicateReminderLive: root.dataset.duplicateReminderLive || 'Similar issues were found nearby.'
         };
 
         const notify = (message, tone = 'info') => {
@@ -88,6 +92,8 @@
         let tagSuggestionTimer = null;
         let aiSuggestionTimer = null;
         let aiRequestSequence = 0;
+        let duplicateCheckTimer = null;
+        let duplicateRequestSequence = 0;
         let lastGeocodeRequest = 0;
         let hasPinnedLocation = false;
         const geocodeCache = new Map();
@@ -292,6 +298,15 @@
                 departmentInput.value = department;
             }
 
+            // Let the report pick-grid / severity control re-sync to the AI values
+            // without marking the fields as user-overridden.
+            if (categorySelect) {
+                categorySelect.dispatchEvent(new CustomEvent('fixit:sync', { bubbles: true }));
+            }
+            if (prioritySelect) {
+                prioritySelect.dispatchEvent(new CustomEvent('fixit:sync', { bubbles: true }));
+            }
+
             setAiSourceBadge(aiGenerated);
             setAiConfidence(confidence);
             setAiStatus(messages.aiSuggestionReady, 'success');
@@ -379,6 +394,123 @@
             }
         }
 
+        function clearDuplicateWarning() {
+            if (!duplicateWarningPanel) return;
+            duplicateWarningPanel.classList.add('d-none');
+            if (duplicateWarningList) {
+                duplicateWarningList.innerHTML = '';
+            }
+        }
+
+        // Only worth checking once there's enough text AND a pinned location to
+        // anchor the 5 km radius — mirrors what the server needs.
+        function shouldCheckDuplicates() {
+            return titleInput.value.trim().length >= 3
+                && descriptionInput.value.trim().length >= 10
+                && hasCoordinates()
+                && Boolean(citySelect.value);
+        }
+
+        function queueDuplicateCheck() {
+            if (!duplicateWarningPanel) return;
+
+            if (duplicateCheckTimer) {
+                window.clearTimeout(duplicateCheckTimer);
+            }
+
+            if (!shouldCheckDuplicates()) {
+                clearDuplicateWarning();
+                return;
+            }
+
+            duplicateCheckTimer = window.setTimeout(requestDuplicateCheck, 600);
+        }
+
+        async function requestDuplicateCheck() {
+            const sequence = ++duplicateRequestSequence;
+            const payload = {
+                title: titleInput.value.trim(),
+                description: descriptionInput.value.trim(),
+                latitude: Number.parseFloat(latitudeInput.value || ''),
+                longitude: Number.parseFloat(longitudeInput.value || ''),
+                cityId: citySelect.value || null,
+                category: categorySelect?.value || null
+            };
+
+            try {
+                const response = await fetch('/api/analysis/duplicate-check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Drop stale responses if the user kept typing.
+                if (sequence !== duplicateRequestSequence) return;
+
+                if (!response.ok) {
+                    clearDuplicateWarning();
+                    return;
+                }
+
+                const results = await response.json();
+                renderDuplicateWarning(Array.isArray(results) ? results : []);
+            } catch {
+                // Advisory only — never surface errors into the report flow.
+                if (sequence === duplicateRequestSequence) {
+                    clearDuplicateWarning();
+                }
+            }
+        }
+
+        function renderDuplicateWarning(results) {
+            if (!duplicateWarningPanel || !duplicateWarningList) return;
+
+            if (!results.length) {
+                clearDuplicateWarning();
+                return;
+            }
+
+            duplicateWarningList.innerHTML = '';
+
+            results.slice(0, 5).forEach((item) => {
+                if (!item || !item.issueId) return;
+
+                const listItem = document.createElement('li');
+                listItem.className = 'mb-1';
+
+                const link = document.createElement('a');
+                link.href = `/issues/${item.issueId}`;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.className = 'fw-semibold';
+                link.textContent = item.title || 'Untitled issue';
+                listItem.appendChild(link);
+
+                const metaBits = [];
+                if (Number.isFinite(item.distanceKm)) {
+                    metaBits.push(`${item.distanceKm} km`);
+                }
+                if (Array.isArray(item.matchedKeywords) && item.matchedKeywords.length) {
+                    metaBits.push(`${messages.duplicateMatchesLabel}: ${item.matchedKeywords.slice(0, 4).join(', ')}`);
+                }
+                if (item.status) {
+                    metaBits.push(item.status);
+                }
+
+                if (metaBits.length) {
+                    const meta = document.createElement('span');
+                    meta.className = 'text-muted small d-block';
+                    meta.textContent = metaBits.join(' · ');
+                    listItem.appendChild(meta);
+                }
+
+                duplicateWarningList.appendChild(listItem);
+            });
+
+            duplicateWarningPanel.classList.remove('d-none');
+            updateLiveRegion(messages.duplicateReminderLive);
+        }
+
         function updateSummary() {
             const summaryTitle = document.getElementById('summaryTitleValue');
             const summaryCity = document.getElementById('summaryCityValue');
@@ -461,6 +593,7 @@
             marker = window.L.marker([lat, lng]).addTo(map);
             updateSummary();
             reverseGeocode(lat, lng);
+            queueDuplicateCheck();
         }
 
         function updateLocationField(value, isLoading) {
@@ -701,14 +834,17 @@
         titleInput.addEventListener('input', () => {
             requestTagSuggestions();
             queueDraftSuggestion();
+            queueDuplicateCheck();
         });
 
         descriptionInput.addEventListener('input', () => {
             requestTagSuggestions();
             queueDraftSuggestion();
+            queueDuplicateCheck();
         });
 
         citySelect.addEventListener('change', queueDraftSuggestion);
+        citySelect.addEventListener('change', queueDuplicateCheck);
 
         if (categorySelect) {
             categorySelect.addEventListener('change', () => {

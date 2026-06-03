@@ -15,12 +15,13 @@ public static class AuthExtensions
     {
         var isProduction = environment.IsProduction();
 
-        var authBuilder = services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        })
-        .AddCookie(options =>
+        // Identity (registered earlier via AddIdentityWithMongo) already owns the
+        // application/external cookies and the default schemes. We deliberately do
+        // NOT override the default scheme here or add a parallel "Cookies" handler:
+        // SignInManager writes IdentityConstants.ApplicationScheme, so that is the
+        // cookie every web request authenticates against. We just harden it and
+        // teach it to return JSON status codes for /api paths.
+        services.ConfigureApplicationCookie(options =>
         {
             options.LoginPath = "/Identity/Account/Login";
             options.LogoutPath = "/Identity/Account/Logout";
@@ -61,6 +62,10 @@ public static class AuthExtensions
                 }
             };
         });
+
+        // AddAuthentication() with no options-mutating callback returns a builder
+        // without disturbing Identity's default scheme selection.
+        var authBuilder = services.AddAuthentication();
 
         var authConfig = configuration.GetSection("Authentication");
         var googleSection = authConfig.GetSection("Google");

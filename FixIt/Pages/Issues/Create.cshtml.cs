@@ -77,6 +77,9 @@ public class CreateIssueModel : PageModel
         [StringLength(120, ErrorMessage = "Department must not exceed 120 characters")]
         public string? Department { get; set; }
 
+        /// <summary>Opt-in per-report anonymity (OR-ed with the user's privacy setting).</summary>
+        public bool IsAnonymous { get; set; }
+
         public List<IFormFile>? Photos { get; set; }
     }
 
@@ -131,9 +134,9 @@ public class CreateIssueModel : PageModel
                 DisplayName = userName ?? "Anonymous"
             };
 
-            // Check if user has enabled anonymous reporting in their privacy settings
+            // Anonymity: opt-in per report, or forced on by the user's privacy settings.
             var user = await _userManager.GetUserAsync(User);
-            bool isAnonymous = user?.AnonymousReportingEnabled ?? false;
+            bool isAnonymous = Input.IsAnonymous || (user?.AnonymousReportingEnabled ?? false);
 
             // Create the issue
             var tagNames = !string.IsNullOrWhiteSpace(Input.TagNames)

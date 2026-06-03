@@ -8,6 +8,7 @@ using FixIt.Models.Users;
 using FixIt.Models.Enums;
 using FixIt.Models.Common;
 using FixIt.Services.Constants;
+using FixIt.Services.Email;
 
 namespace FixIt.Areas.Identity.Pages.Account;
 
@@ -16,15 +17,18 @@ public class RegisterModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailService _emailService;
     private readonly ILogger<RegisterModel> _logger;
 
     public RegisterModel(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
+        IEmailService emailService,
         ILogger<RegisterModel> logger)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -61,6 +65,26 @@ public class RegisterModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogInformation("User created a new account with password.");
+
+                // Always issue a confirmation link so the account can be verified
+                // (and forgot-password, which requires a confirmed email, works).
+                try
+                {
+                    await EmailConfirmationSender.SendAsync(_userManager, _emailService, Url, Request.Scheme, user);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send confirmation email to {Email}.", Input.Email);
+                }
+
+                // When confirmation is enforced, don't sign the user in yet — send
+                // them to the "check your email" page. Otherwise preserve the
+                // existing auto-sign-in UX.
+                if (_userManager.Options.SignIn.RequireConfirmedEmail)
+                {
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email });
+                }
+
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return LocalRedirect(returnUrl);
             }

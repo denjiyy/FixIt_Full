@@ -2,95 +2,174 @@
 <ContentPage x:Class="FixIt.Mobile.Views.PublicProfilePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:models="clr-namespace:FixIt.Mobile.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:views="clr-namespace:FixIt.Mobile.Views"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:PublicProfileViewModel"
-             BackgroundColor="{StaticResource Background}"
-             NavigationPage.HasNavigationBar="True"
+             BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
+             Shell.NavBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
              ios:Page.UseSafeArea="True"
-             Title="{local:Localize Key=PublicProfile_Title}">
+             Title="{Binding DisplayName}">
 
-    <ScrollView>
-        <VerticalStackLayout x:Name="PublicProfileRoot"
-                             Padding="20,28,20,40"
-                             Spacing="16"
-                             Opacity="0"
-                             TranslationY="24">
-            <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
-                    <Border WidthRequest="88" HeightRequest="88"
-                            BackgroundColor="{StaticResource Primary}"
-                            StrokeThickness="0"
-                            StrokeShape="RoundRectangle 44">
-                        <Label Text="{Binding Initials}"
-                               TextColor="{StaticResource White}"
-                               FontSize="Title"
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center" />
-                    </Border>
-                    <Label Text="{Binding DisplayName}"
-                           Style="{StaticResource HeadlineMedium}"
-                           HorizontalTextAlignment="Center"
-                           SemanticProperties.HeadingLevel="Level1" />
-                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
-                        <Label Text="{local:Localize Key=Common_Trust}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Profile.TrustLevel}" Style="{StaticResource LabelSmall}" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Border>
+    <ContentPage.Resources>
+        <LinearGradientBrush x:Key="AvatarBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" Offset="0" />
+            <GradientStop Color="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimaryStrong}}" Offset="1" />
+        </LinearGradientBrush>
+    </ContentPage.Resources>
 
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-                <Border Style="{StaticResource StatCard}">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="{local:Localize Key=PublicProfile_Reputation}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Profile.ReputationPoints}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
-                    </VerticalStackLayout>
-                </Border>
-                <Border Grid.Column="1" Style="{StaticResource StatCard}">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="{local:Localize Key=PublicProfile_Reported}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Profile.IssuesReported}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource OnBackground}" />
-                    </VerticalStackLayout>
-                </Border>
-                <Border Grid.Column="2" Style="{StaticResource StatCard}">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="{local:Localize Key=PublicProfile_Resolved}" Style="{StaticResource LabelSmall}" />
-                        <Label Text="{Binding Profile.IssuesResolved}" FontSize="Title" FontAttributes="Bold" TextColor="{StaticResource Success}" />
-                    </VerticalStackLayout>
-                </Border>
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ============ Back bar ============ -->
+        <Border Grid.Row="0"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
+            <Grid ColumnDefinitions="Auto,*,Auto" Padding="8,8,12,10" ColumnSpacing="6" VerticalOptions="Center">
+                <ImageButton Grid.Column="0"
+                             Source="feed_back.png" WidthRequest="22" HeightRequest="22"
+                             Padding="9" BackgroundColor="Transparent"
+                             Clicked="OnBackClicked"
+                             SemanticProperties.Description="{local:Localize Key=Common_Back}" />
+                <Label Grid.Column="1"
+                       Text="{Binding DisplayName}"
+                       FontSize="16" FontAttributes="Bold"
+                       HorizontalTextAlignment="Center"
+                       LineBreakMode="TailTruncation" MaxLines="1"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                       VerticalOptions="Center" />
+                <BoxView Grid.Column="2" WidthRequest="40" Color="Transparent" />
             </Grid>
+        </Border>
 
-            <VerticalStackLayout Spacing="14">
-                <Label Text="{local:Localize Key=PublicProfile_NoIssues}"
-                       Style="{StaticResource TitleMedium}"
-                       SemanticProperties.HeadingLevel="Level2" />
-                <CollectionView ItemsSource="{Binding Issues}" SelectionMode="None">
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout Spacing="0">
-                            <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
-                                <views:SkeletonCardView />
-                                <views:SkeletonCardView />
-                            </VerticalStackLayout>
-                            <Label Text="{local:Localize Key=PublicProfile_NoIssues}"
-                                   IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                                   Style="{StaticResource BodyMedium}"
-                                   Padding="0,24"
-                                   HorizontalTextAlignment="Center" />
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="PublicProfileRoot"
+                                 Opacity="0" TranslationY="24"
+                                 Spacing="0" Padding="0,0,0,40">
+
+                <!-- ============ Hero ============ -->
+                <VerticalStackLayout Padding="20,22,20,8" Spacing="0" HorizontalOptions="Center">
+                    <Border WidthRequest="84" HeightRequest="84" StrokeThickness="0"
+                            Background="{StaticResource AvatarBrush}" StrokeShape="RoundRectangle 999"
+                            HorizontalOptions="Center">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource PrimaryBrush}" Opacity="0.3" Offset="0,6" Radius="16" />
+                        </Border.Shadow>
+                        <Label Text="{Binding Initials}" FontSize="30" FontAttributes="Bold"
+                               TextColor="{StaticResource White}" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <Label Text="{Binding DisplayName}" FontSize="20" FontAttributes="Bold" CharacterSpacing="-0.2"
+                           Margin="0,12,0,0" HorizontalTextAlignment="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                           SemanticProperties.HeadingLevel="Level1" />
+
+                    <Border Margin="0,10,0,0" StrokeThickness="0" StrokeShape="RoundRectangle 999" Padding="13,6"
+                            HorizontalOptions="Center"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimarySoft}, Dark={StaticResource DarkPrimarySoft}}">
+                        <HorizontalStackLayout Spacing="6">
+                            <Image Source="trophy.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimary}}" />
+                                </Image.Behaviors>
+                            </Image>
+                            <Label FontSize="12.5" FontAttributes="Bold" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimaryStrong}, Dark={StaticResource DarkPrimary}}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding Profile.ReputationPoints}" />
+                                        <Span Text=" pts · " />
+                                        <Span Text="{local:Localize Key=Common_Trust}" />
+                                        <Span Text=" " />
+                                        <Span Text="{Binding Profile.TrustLevel}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- ============ Stats card ============ -->
+                <Border Margin="16,18,16,0" StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                        StrokeShape="RoundRectangle 18">
+                    <Grid ColumnDefinitions="*,1,*,1,*" Padding="0,14">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="{Binding Profile.IssuesReported}" FontSize="20" FontAttributes="Bold" HorizontalTextAlignment="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+                            <Label Text="{local:Localize Key=Profile_Reports}" FontSize="11" FontAttributes="Bold" CharacterSpacing="0.4"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}" />
                         </VerticalStackLayout>
-                    </CollectionView.EmptyView>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Issue">
-                            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                                <Label Text="{Binding Title}" Style="{StaticResource TitleMedium}" />
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                        <BoxView Grid.Column="1" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}" />
+                        <VerticalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="{Binding Profile.IssuesResolved}" FontSize="20" FontAttributes="Bold" HorizontalTextAlignment="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+                            <Label Text="{local:Localize Key=Profile_Resolved}" FontSize="11" FontAttributes="Bold" CharacterSpacing="0.4"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}" />
+                        </VerticalStackLayout>
+                        <BoxView Grid.Column="3" WidthRequest="1" Color="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}" />
+                        <VerticalStackLayout Grid.Column="4" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="{Binding FixRate, StringFormat='{0}%'}" FontSize="20" FontAttributes="Bold" HorizontalTextAlignment="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+                            <Label Text="{local:Localize Key=Profile_FixRate}" FontSize="11" FontAttributes="Bold" CharacterSpacing="0.4"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- ============ Reports ============ -->
+                <Label Text="{local:Localize Key=Profile_Reports}" Margin="16,22,16,0"
+                       FontSize="15" FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                       SemanticProperties.HeadingLevel="Level2" />
+
+                <Grid Padding="14,12,14,0">
+                    <!-- skeletons while loading -->
+                    <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0" Padding="2,0">
+                        <views:SkeletonCardView />
+                        <views:SkeletonCardView />
+                    </VerticalStackLayout>
+
+                    <!-- reporter's reports (photo grid) -->
+                    <FlexLayout BindableLayout.ItemsSource="{Binding Issues}" Wrap="Wrap" JustifyContent="Start"
+                                IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                        <BindableLayout.EmptyView>
+                            <controls:EmptyStateView IconSource="checklist.png"
+                                                     Title="{local:Localize Key=PublicProfile_NoIssues}" />
+                        </BindableLayout.EmptyView>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:Issue">
+                                <Grid WidthRequest="104" HeightRequest="104" Margin="0,0,4,4">
+                                    <Border StrokeThickness="0" StrokeShape="RoundRectangle 12"
+                                            Background="{Binding Category, Converter={StaticResource CategoryToBrushConverter}}" />
+                                    <Image Source="{Binding Category, Converter={StaticResource CategoryToIconConverter}}"
+                                           WidthRequest="26" HeightRequest="26" Opacity="0.92" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="White" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Border IsVisible="{Binding HasPhoto}" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                                        <Image Source="{Binding PhotoUrl}" Aspect="AspectFill" />
+                                    </Border>
+                                    <Border WidthRequest="14" HeightRequest="14" Margin="6" StrokeThickness="2"
+                                            Stroke="{StaticResource White}" StrokeShape="RoundRectangle 999"
+                                            HorizontalOptions="End" VerticalOptions="Start"
+                                            IsVisible="{Binding Priority, Converter={StaticResource StringNotEmptyConverter}}"
+                                            BackgroundColor="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </Grid>
             </VerticalStackLayout>
-        </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+    </Grid>
 </ContentPage>

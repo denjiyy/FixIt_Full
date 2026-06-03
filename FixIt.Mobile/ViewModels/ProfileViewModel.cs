@@ -44,10 +44,62 @@ public partial class ProfileViewModel : ObservableObject, IDisposable
     private ObservableCollection<Issue> _myIssues = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FixRate))]
     private int _issuesReported;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FixRate))]
     private int _issuesResolved;
+
+    [ObservableProperty]
+    private string _selectedProfileTab = "reports";
+
+    // Fix rate = resolved / reported, shown in the profile stat row.
+    public int FixRate => IssuesReported > 0
+        ? (int)Math.Round((double)IssuesResolved / IssuesReported * 100)
+        : 0;
+
+    public bool IsReportsTab => SelectedProfileTab == "reports";
+    public bool IsSavedTab => SelectedProfileTab == "saved";
+    public bool IsBadgesTab => SelectedProfileTab == "badges";
+
+    partial void OnSelectedProfileTabChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsReportsTab));
+        OnPropertyChanged(nameof(IsSavedTab));
+        OnPropertyChanged(nameof(IsBadgesTab));
+    }
+
+    [RelayCommand]
+    private void SelectProfileTab(string? tab)
+    {
+        if (string.IsNullOrWhiteSpace(tab))
+        {
+            return;
+        }
+
+        HapticService.Click();
+        SelectedProfileTab = tab;
+    }
+
+    [RelayCommand]
+    private async Task OpenSettingsAsync(CancellationToken ct)
+    {
+        HapticService.Click();
+        await Shell.Current.GoToAsync(AppConstants.RouteSettings);
+    }
+
+    [RelayCommand]
+    private async Task OpenIssueAsync(string? issueId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(issueId))
+        {
+            return;
+        }
+
+        HapticService.Click();
+        await Shell.Current.GoToAsync($"{AppConstants.RouteIssueDetail}?IssueId={Uri.EscapeDataString(issueId)}");
+    }
 
     public string DisplayName => CurrentUser?.DisplayName ?? LocalizationService.Get("Profile_CommunityMember");
 

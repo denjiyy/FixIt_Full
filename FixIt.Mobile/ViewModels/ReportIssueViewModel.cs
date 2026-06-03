@@ -37,9 +37,92 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(CanAddPhoto));
         };
         CityId = AppConstants.DefaultCityId;
+
+        Categories = new ObservableCollection<CategoryOption>
+        {
+            new() { Key = "road",     Label = "Road",     IconSource = "cat_road.png" },
+            new() { Key = "light",    Label = "Lighting", IconSource = "cat_light.png" },
+            new() { Key = "graffiti", Label = "Graffiti", IconSource = "cat_graffiti.png" },
+            new() { Key = "waste",    Label = "Waste",    IconSource = "cat_waste.png" },
+            new() { Key = "water",    Label = "Water",    IconSource = "cat_water.png" },
+            new() { Key = "signage",  Label = "Signs",    IconSource = "cat_signage.png" },
+            new() { Key = "sidewalk", Label = "Sidewalk", IconSource = "cat_sidewalk.png" },
+            new() { Key = "park",     Label = "Parks",    IconSource = "cat_park.png" },
+        };
     }
 
     public ObservableCollection<PhotoAttachment> Photos { get; }
+
+    // Category picker + priority selector (design "report" screen). These mirror the
+    // server's own AI classification, so they are presentational/confirmational and
+    // pre-select from the AI suggestion when it arrives.
+    public ObservableCollection<CategoryOption> Categories { get; }
+
+    [ObservableProperty]
+    private string _selectedCategoryKey = string.Empty;
+
+    [ObservableProperty]
+    private string _selectedPriority = "medium";
+
+    public bool IsPriorityLow => SelectedPriority == "low";
+    public bool IsPriorityMedium => SelectedPriority == "medium";
+    public bool IsPriorityHigh => SelectedPriority == "high";
+    public bool IsPriorityCritical => SelectedPriority == "critical";
+
+    partial void OnSelectedPriorityChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsPriorityLow));
+        OnPropertyChanged(nameof(IsPriorityMedium));
+        OnPropertyChanged(nameof(IsPriorityHigh));
+        OnPropertyChanged(nameof(IsPriorityCritical));
+    }
+
+    [RelayCommand]
+    private void SelectCategory(CategoryOption? option)
+    {
+        if (option is null)
+        {
+            return;
+        }
+
+        HapticService.Click();
+        SelectedCategoryKey = option.Key;
+        foreach (var category in Categories)
+        {
+            category.IsSelected = category.Key == option.Key;
+        }
+    }
+
+    [RelayCommand]
+    private void SelectPriority(string? priority)
+    {
+        if (string.IsNullOrWhiteSpace(priority))
+        {
+            return;
+        }
+
+        HapticService.Click();
+        SelectedPriority = priority.Trim().ToLowerInvariant();
+    }
+
+    private static string CategoryKeyFor(string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            return string.Empty;
+        }
+
+        var c = category.ToLowerInvariant();
+        if (c.Contains("pothole") || c.Contains("road")) return "road";
+        if (c.Contains("light")) return "light";
+        if (c.Contains("graffiti") || c.Contains("vandal")) return "graffiti";
+        if (c.Contains("trash") || c.Contains("waste") || c.Contains("dump") || c.Contains("litter")) return "waste";
+        if (c.Contains("water") || c.Contains("leak") || c.Contains("flood") || c.Contains("drain")) return "water";
+        if (c.Contains("sign") || c.Contains("signal")) return "signage";
+        if (c.Contains("sidewalk") || c.Contains("pavement") || c.Contains("walk")) return "sidewalk";
+        if (c.Contains("park") || c.Contains("tree") || c.Contains("green") || c.Contains("garden")) return "park";
+        return string.Empty;
+    }
 
     public bool HasPhotos => Photos.Count > 0;
 
@@ -118,7 +201,29 @@ public partial class ReportIssueViewModel : ObservableObject, IDisposable
 
     public bool HasAiSuggestion => AiSuggestion != null;
 
-    partial void OnAiSuggestionChanged(DraftSuggestion? value) => OnPropertyChanged(nameof(HasAiSuggestion));
+    partial void OnAiSuggestionChanged(DraftSuggestion? value)
+    {
+        OnPropertyChanged(nameof(HasAiSuggestion));
+        if (value is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(SelectedCategoryKey) && !string.IsNullOrWhiteSpace(value.Category))
+        {
+            var key = CategoryKeyFor(value.Category);
+            var match = Categories.FirstOrDefault(c => c.Key == key);
+            if (match is not null)
+            {
+                SelectCategory(match);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(value.Priority))
+        {
+            SelectedPriority = value.Priority.Trim().ToLowerInvariant();
+        }
+    }
 
     public bool CanSubmit =>
         !string.IsNullOrWhiteSpace(Title)

@@ -425,7 +425,7 @@ public class ApiService : IApiService
 
             return new UserInfo
             {
-                Id = envelope.Data.Id ?? string.Empty,
+                Id = envelope.Data.Id is { ValueKind: JsonValueKind.String } idEl ? idEl.GetString() ?? string.Empty : string.Empty,
                 Email = envelope.Data.Email ?? string.Empty,
                 DisplayName = envelope.Data.DisplayName ?? string.Empty,
                 ReputationPoints = envelope.Data.ReputationScore ?? 0,
@@ -907,7 +907,8 @@ public class ApiService : IApiService
             Title = dto.Title ?? string.Empty,
             Description = dto.Description ?? string.Empty,
             Status = status,
-            Category = dto.Category ?? string.Empty,
+            Category = ResolveCategoryName(dto.Category),
+            Priority = MapPriority(dto.Priority),
             CityName = cityName,
             Address = dto.Address ?? string.Empty,
             PhotoUrl = dto.PhotoUrl ?? dto.ImageUrl ?? dto.MediaUrl,
@@ -985,6 +986,17 @@ public class ApiService : IApiService
             AnalyzedAt = dto.AnalyzedAt
         };
     }
+
+    // IssuePriority enum (server): Low=0, Medium=1, High=2, Critical=3.
+    // Title-Case so the pill text reads correctly; PriorityToColorConverter lowercases internally.
+    private static string MapPriority(int priority) => priority switch
+    {
+        0 => "Low",
+        1 => "Medium",
+        2 => "High",
+        3 => "Critical",
+        _ => "Medium"
+    };
 
     private static string MapStatus(int status, int priority)
     {
@@ -1481,7 +1493,7 @@ public class ApiService : IApiService
         public double? Longitude { get; set; }
         public int Status { get; set; }
         public int Priority { get; set; }
-        public string? Category { get; set; }
+        public JsonElement? Category { get; set; }
         public string? PhotoUrl { get; set; }
         public string? ImageUrl { get; set; }
         public string? MediaUrl { get; set; }
@@ -1505,7 +1517,9 @@ public class ApiService : IApiService
 
     private sealed class UserInfoDto
     {
-        public string? Id { get; set; }
+        // JsonElement (not string) so a server that serializes the id as an ObjectId
+        // object instead of a string doesn't throw and abort the whole user parse.
+        public JsonElement? Id { get; set; }
         public string? Email { get; set; }
         public string? DisplayName { get; set; }
         public int? ReputationScore { get; set; }

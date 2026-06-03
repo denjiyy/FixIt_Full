@@ -132,4 +132,46 @@ public class DuplicateDetectionTests
 
         Assert.Empty(DuplicateDetection.FindDuplicates(target, new[] { candidate }));
     }
+
+    [Fact]
+    public void FindSimilarWithinRadius_FlagsNearbyKeywordMatch_WithSharedTermsAndDistance()
+    {
+        var draft = MakeIssue("DRAFT", "Large pothole on Vitosha Blvd damaging cars",
+            "Deep pothole near the tram stop.", IssueCategory.Infrastructure, 42.6900, 23.3200);
+        var nearby = MakeIssue("A", "Huge pothole on Vitosha Boulevard, cars getting damaged",
+            "The pothole by the tram stop keeps growing.", IssueCategory.Infrastructure, 42.6901, 23.3201);
+
+        var matches = DuplicateDetection.FindSimilarWithinRadius(draft, new[] { nearby });
+
+        var match = Assert.Single(matches);
+        Assert.Equal("A", match.IssueId);
+        Assert.Contains("pothole", match.SharedKeywords);
+        Assert.NotNull(match.DistanceMeters);
+        Assert.InRange(match.DistanceMeters!.Value, 0, 5000);
+    }
+
+    [Fact]
+    public void FindSimilarWithinRadius_ExcludesMatchesBeyondRadius()
+    {
+        var draft = MakeIssue("DRAFT", "Large pothole on Vitosha Blvd damaging cars",
+            "Deep pothole near the tram stop.", IssueCategory.Infrastructure, 42.6900, 23.3200);
+        // ~6.7 km north: identical wording, but outside the 5 km radius.
+        var farMatch = MakeIssue("FAR", "Large pothole on Vitosha Blvd damaging cars",
+            "Deep pothole near the tram stop.", IssueCategory.Infrastructure, 42.7500, 23.3200);
+
+        Assert.Empty(DuplicateDetection.FindSimilarWithinRadius(draft, new[] { farMatch }, radiusMeters: 5000));
+        // Widening the radius brings the same issue back into range.
+        Assert.Single(DuplicateDetection.FindSimilarWithinRadius(draft, new[] { farMatch }, radiusMeters: 10000));
+    }
+
+    [Fact]
+    public void FindSimilarWithinRadius_ExcludesNearbyButUnrelatedKeywords()
+    {
+        var draft = MakeIssue("DRAFT", "Large pothole on Vitosha Blvd",
+            "Deep pothole damaging cars.", IssueCategory.Infrastructure, 42.6900, 23.3200);
+        var unrelatedButClose = MakeIssue("U", "Broken streetlight on Cherni Vrah",
+            "The crossing is unlit at night.", IssueCategory.PublicSafety, 42.6901, 23.3201);
+
+        Assert.Empty(DuplicateDetection.FindSimilarWithinRadius(draft, new[] { unrelatedButClose }));
+    }
 }

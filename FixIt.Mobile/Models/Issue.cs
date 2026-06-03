@@ -19,8 +19,17 @@ public class Issue
     public string AuthorInitials => BuildInitials(AuthorName);
     public bool UserHasUpvoted { get; set; }
     public bool UserHasDownvoted { get; set; }
+
+    // Client-side bookmark state for the feed (not persisted server-side yet).
+    public bool IsSaved { get; set; }
     public string StatusDescription => $"Status: {Status}";
     public bool HasCoordinates => Latitude is not null and not 0 && Longitude is not null and not 0;
+
+    // Derived "watching" count shown in the feed footer (matches the design's votes×1.6 heuristic).
+    public int WatchersCount => Math.Max(VoteCount, (int)Math.Round(VoteCount * 1.6));
+    public bool HasPhoto => !string.IsNullOrWhiteSpace(PhotoUrl);
+    public string PrimaryLocation => string.IsNullOrWhiteSpace(Address) ? CityName : Address;
+    public bool HasTags => Tags.Count > 0;
     public string Priority { get; set; } = string.Empty;
     public List<string> MediaUrls { get; set; } = [];
     public List<string> Tags { get; set; } = [];

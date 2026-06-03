@@ -499,6 +499,12 @@
   <data name="ProfilePasswordEmail" xml:space="preserve"><value>Профил • Парола • Имейл</value></data>
   <data name="LogIn" xml:space="preserve"><value>Вход</value></data>
   <data name="ForgotPassword" xml:space="preserve"><value>Забравена парола?</value></data>
+  <data name="ResendConfirmationEmail" xml:space="preserve"><value>Изпрати повторно имейл за потвърждение</value></data>
+  <data name="AdminSignIn" xml:space="preserve"><value>Вход за персонал</value></data>
+  <data name="DuplicateReminderHeading" xml:space="preserve"><value>Това може би вече е докладвано</value></data>
+  <data name="DuplicateReminderIntro" xml:space="preserve"><value>Намерихме подобни сигнали наблизо. Моля, отворете ги, за да проверите дали вашият е същият — ако е различен, можете да продължите с подаването.</value></data>
+  <data name="DuplicateReminderMatchesLabel" xml:space="preserve"><value>съвпадения</value></data>
+  <data name="DuplicateReminderLive" xml:space="preserve"><value>Наблизо са намерени подобни сигнали.</value></data>
   <data name="DontHaveAnAccount" xml:space="preserve"><value>Нямате акаунт?</value></data>
   <data name="CreateOneNow" xml:space="preserve"><value>Създайте такъв сега</value></data>
   <data name="TakePhotoAddLocation" xml:space="preserve"><value>Направете снимка, добавете местоположение и подайте за секунди</value></data>
@@ -722,4 +728,72 @@
   <data name="RememberThisMachine" xml:space="preserve"><value>Запомни това устройство</value></data>
   <data name="RegisterConfirmation" xml:space="preserve"><value>Регистрацията е потвърдена</value></data>
   <data name="RegisterConfirmationDescription" xml:space="preserve"><value>Акаунтът ви беше създаден. Вече можете да влезете и да започнете да подавате сигнали за проблеми в общността си.</value></data>
+  <data name="LandingKicker" xml:space="preserve"><value>Вашият град, по-добър заедно</value></data>
+  <data name="LandingTitleLine1" xml:space="preserve"><value>Забелязахте нещо повредено?</value></data>
+  <data name="LandingTitleLine2" xml:space="preserve"><value>Кажете на града си.</value></data>
+  <data name="LandingLede" xml:space="preserve"><value>Подайте сигнал за дупка, счупена улична лампа или опасност за по-малко от минута. Вижте как съседите го потвърждават и градът го отстранява — всяка стъпка е публична.</value></data>
+  <data name="LandingReportCta" xml:space="preserve"><value>Подай сигнал</value></data>
+  <data name="LandingSeeHappening" xml:space="preserve"><value>Вижте какво се случва</value></data>
+  <data name="LandingStatResolved" xml:space="preserve"><value>решени сигнала</value></data>
+  <data name="LandingStatTowns" xml:space="preserve"><value>обхванати града</value></data>
+  <data name="LandingStatFixed" xml:space="preserve"><value>се решават</value></data>
+  <data name="LandingStepsTitle" xml:space="preserve"><value>Три стъпки към по-добра улица</value></data>
+  <data name="LandingStepsLede" xml:space="preserve"><value>Без формуляри, без жаргон, без чакане по телефона. Само вие, телефонът ви и град, който слуша.</value></data>
+  <data name="LandingStep1Title" xml:space="preserve"><value>Снимай и опиши</value></data>
+  <data name="LandingStep1Copy" xml:space="preserve"><value>Направете снимка и поставете точка на картата. Ние ще предложим категорията.</value></data>
+  <data name="LandingStep2Title" xml:space="preserve"><value>Съседите потвърждават</value></data>
+  <data name="LandingStep2Copy" xml:space="preserve"><value>Общността го подкрепя, така че най-спешните сигнали излизат напред.</value></data>
+  <data name="LandingStep3Title" xml:space="preserve"><value>Проследи до край</value></data>
+  <data name="LandingStep3Copy" xml:space="preserve"><value>Следете всяка промяна на статуса, докато градът отбележи сигнала като решен.</value></data>
+  <data name="LandingHappeningKicker" xml:space="preserve"><value>Случва се сега</value></data>
+  <data name="LandingHappeningTitle" xml:space="preserve"><value>Сигнали от вашите съседи</value></data>
+  <data name="LandingBrowseAll" xml:space="preserve"><value>Виж всички</value></data>
+  <data name="LandingConfirmed" xml:space="preserve"><value>потвърждения</value></data>
+  <data name="LandingStoriesKicker" xml:space="preserve"><value>Реални резултати</value></data>
+  <data name="LandingStoriesTitle" xml:space="preserve"><value>Решено, заедно</value></data>
+  <data name="LandingStoriesLede" xml:space="preserve"><value>Хиляди малки поправки изграждат улици, за които има грижа. Ето няколко от този месец.</value></data>
+  <data name="LandingResolvedLabel" xml:space="preserve"><value>Решен</value></data>
+  <data name="LandingCtaTitle" xml:space="preserve"><value>Готови ли сте да подобрите улицата си?</value></data>
+  <data name="LandingCtaCopy" xml:space="preserve"><value>Присъединете се към съседите си, които поддържат града в добра форма. Отнема около минута и е безплатно.</value></data>
+  <data name="GalleryView" xml:space="preserve"><value>Галерия</value></data>
+  <data name="MapView" xml:space="preserve"><value>Карта</value></data>
+  <data name="ViewMode" xml:space="preserve"><value>Изглед</value></data>
+  <data name="TimelineReported" xml:space="preserve"><value>Подаден</value></data>
+  <data name="TimelineUnderway" xml:space="preserve"><value>В процес на работа</value></data>
+  <data name="TimelinePending" xml:space="preserve"><value>Предстои</value></data>
+  <data name="PinnedLocation" xml:space="preserve"><value>Отбелязано местоположение</value></data>
+  <data name="Neighbor" xml:space="preserve"><value>съсед</value></data>
+  <data name="TownGreeting" xml:space="preserve"><value>Вашият град</value></data>
+  <data name="TownReportTitle" xml:space="preserve"><value>Забелязахте нещо за поправяне?</value></data>
+  <data name="TownReportCopy" xml:space="preserve"><value>Подайте сигнал за около минута. Снимка и точка на картата са всичко, което е нужно, за да се заеме градът.</value></data>
+  <data name="TownStepSnap" xml:space="preserve"><value>Снимай</value></data>
+  <data name="TownStepPin" xml:space="preserve"><value>Отбележи</value></data>
+  <data name="TownStepDone" xml:space="preserve"><value>Готово</value></data>
+  <data name="TownYourReports" xml:space="preserve"><value>Вашите сигнали</value></data>
+  <data name="TownWatching" xml:space="preserve"><value>Следите</value></data>
+  <data name="TownNearYou" xml:space="preserve"><value>Близо до вас</value></data>
+  <data name="TownHappeningAround" xml:space="preserve"><value>Случва се близо до вас</value></data>
+  <data name="TownStepNew" xml:space="preserve"><value>Подаден · очаква потвърждение</value></data>
+  <data name="TownStepConfirmed" xml:space="preserve"><value>Потвърден от съседите</value></data>
+  <data name="TownStepInProgress" xml:space="preserve"><value>Екип е на път</value></data>
+  <data name="TownStepFixed" xml:space="preserve"><value>Решено — благодарим!</value></data>
+  <data name="TownStepClosed" xml:space="preserve"><value>Затворен</value></data>
+  <data name="Community" xml:space="preserve"><value>Общност</value></data>
+  <data name="TopContributors" xml:space="preserve"><value>Топ участници</value></data>
+  <data name="LeaderboardPeriodLabel" xml:space="preserve"><value>Период на класацията</value></data>
+  <data name="YourStanding" xml:space="preserve"><value>Вашето класиране</value></data>
+  <data name="Unranked" xml:space="preserve"><value>Без класиране</value></data>
+  <data name="MaxLevelReached" xml:space="preserve"><value>Достигнато най-високо ниво</value></data>
+  <data name="AtPointsSuffix" xml:space="preserve"><value>при</value></data>
+  <data name="SignInToEarnReputation" xml:space="preserve"><value>за да започнете да печелите репутация във вашата общност.</value></data>
+  <data name="TrustLevels" xml:space="preserve"><value>Нива на доверие</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Вие</value></data>
+  <data name="AiAssistedLabel" xml:space="preserve"><value>С помощта на ИИ</value></data>
+  <data name="ReportFlowSubtitle" xml:space="preserve"><value>Снимайте, поставете точка на картата и ще предложим категория и приоритет.</value></data>
+  <data name="SmartClassificationLabel" xml:space="preserve"><value>Интелигентно класифициране</value></data>
+  <data name="SelectCategoryOption" xml:space="preserve"><value>Изберете категория</value></data>
+  <data name="SelectSeverityOption" xml:space="preserve"><value>Изберете тежест</value></data>
+  <data name="SuggestedDepartmentPlaceholder" xml:space="preserve"><value>Предложен общински отдел</value></data>
+  <data name="ReportAnonymouslyLabel" xml:space="preserve"><value>Подаване анонимно</value></data>
+  <data name="DepartmentLabel" xml:space="preserve"><value>Отдел</value></data>
 </root>

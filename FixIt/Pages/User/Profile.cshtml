@@ -121,7 +121,7 @@
                                     @foreach (var achievement in Model.UserReputation.Achievements)
                                     {
                                         <div class="achievement-badge" title="@GetAchievementDescription(achievement.Type.ToString())">
-                                            <span class="badge-icon">@GetAchievementIcon(achievement.Type.ToString())</span>
+                                            <span class="badge-icon"><i class="bi @GetAchievementIcon(achievement.Type.ToString())"></i></span>
                                             <div class="badge-name">@GetAchievementName(achievement.Type.ToString())</div>
                                             <div class="badge-date">@achievement.EarnedAt.ToString("MMM yyyy")</div>
                                         </div>
@@ -216,20 +216,21 @@
         return localized.ResourceNotFound ? Localizer["Achievement"] : localized;
     }
 
+    // Bootstrap Icons (the product's icon system) — never emoji.
     private string GetAchievementIcon(string type) => type switch
     {
-        "FirstReporter" => "🎯",
-        "HelpfulCommenteer" => "💬",
-        "CommunityHelper" => "🤝",
-        "IssueSolver" => "✅",
-        "CivicContributor" => "🏛️",
-        "CommunityChampion" => "🏆",
-        "CivicLeader" => "👑",
-        "VerifiedCitizen" => "✔️",
-        "ConsistentParticipant" => "📅",
-        "ImpactMaker" => "⭐",
-        "TopContributor" => "🥇",
-        _ => "🎖️"
+        "FirstReporter" => "bi-megaphone-fill",
+        "HelpfulCommenteer" => "bi-chat-heart-fill",
+        "CommunityHelper" => "bi-people-fill",
+        "IssueSolver" => "bi-check2-circle",
+        "CivicContributor" => "bi-building-fill",
+        "CommunityChampion" => "bi-trophy-fill",
+        "CivicLeader" => "bi-award-fill",
+        "VerifiedCitizen" => "bi-patch-check-fill",
+        "ConsistentParticipant" => "bi-calendar2-check-fill",
+        "ImpactMaker" => "bi-star-fill",
+        "TopContributor" => "bi-1-circle-fill",
+        _ => "bi-rosette"
     };
 
     private string GetAchievementDescription(string type)

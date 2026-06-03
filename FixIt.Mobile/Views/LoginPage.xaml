@@ -2,16 +2,19 @@
 <ContentPage x:Class="FixIt.Mobile.Views.LoginPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:FixIt.Mobile.Controls"
              xmlns:local="clr-namespace:FixIt.Mobile.Localization"
              xmlns:viewModels="clr-namespace:FixIt.Mobile.ViewModels"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              x:DataType="viewModels:LoginViewModel"
              BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}"
              NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=Login_SignIn}">
 
-    <ScrollView>
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
         <Grid Padding="0,0,0,40" MinimumHeightRequest="700">
             <ContentView VerticalOptions="Center">
                 <VerticalStackLayout Padding="28,0" Spacing="0">
@@ -129,5 +132,8 @@
                 </VerticalStackLayout>
             </ContentView>
         </Grid>
-    </ScrollView>
+        </ScrollView>
+
+        <controls:AppTabBar Grid.Row="1" Active="you" />
+    </Grid>
 </ContentPage>

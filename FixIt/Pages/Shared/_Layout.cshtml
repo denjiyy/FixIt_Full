@@ -318,6 +318,13 @@
         <div class="container app-footer__bottom">
             <span>&copy; @DateTime.UtcNow.Year FixIt</span>
             <div class="app-footer__actions">
+                @if (!isAuthenticated)
+                {
+                    <a class="footer-staff-link" asp-area="Admin" asp-page="/Login">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                        <span>@Localizer["AdminSignIn"]</span>
+                    </a>
+                }
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle footer-language-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-translate" aria-hidden="true"></i>
