@@ -10,7 +10,7 @@ A full-stack civic engagement platform where citizens report local infrastructur
 ![Tests](https://img.shields.io/badge/tests-255%20passing-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-Live at **[fixit-production-202d.up.railway.app](https://fixit-production-202d.up.railway.app)**.
+Live at **[fixitfull-production.up.railway.app](https://fixitfull-production.up.railway.app)**.
 
 ---
 
@@ -725,7 +725,7 @@ railway run dotnet run --project FixIt -- --bootstrap-admin --email admin@you.co
 scripts/ops/preflight.sh .env.production
 
 # Smoke test a running instance
-scripts/ops/smoke.sh https://fixit-production-202d.up.railway.app
+scripts/ops/smoke.sh https://fixitfull-production.up.railway.app
 
 # Full release gate (build + test + smoke + load + backup)
 scripts/ops/release-gate.sh .env.production

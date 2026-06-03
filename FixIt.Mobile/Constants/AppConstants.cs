@@ -2,7 +2,7 @@ namespace FixIt.Mobile.Constants;
 
 public static class AppConstants
 {
-    public const string BaseUrl = "https://fixit-production-202d.up.railway.app/";
+    public const string BaseUrl = "https://fixitfull-production.up.railway.app/";
     public const string ApiIssues = "api/issues";
     public const string ApiAuth = "api/auth";
     public const string ApiSafety = "api/safety";

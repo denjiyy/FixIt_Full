@@ -2,7 +2,7 @@
 
 End-to-end regression walk of the FixIt production deployment.
 
-- **Target:** https://fixit-production-202d.up.railway.app/
+- **Target:** https://fixitfull-production.up.railway.app/
 - **Walk date (UTC):** 2026-05-26
 - **Method:** HTTP/HTML inspection via the harness `WebFetch` tool. **The
   Section 1 specification calls for an Atlas-style browser agent (DOM
