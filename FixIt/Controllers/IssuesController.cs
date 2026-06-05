@@ -30,6 +30,7 @@ public class IssuesController : ControllerBase
     private readonly IRepository<ApplicationUser> _userRepo;
     private readonly ILogger<IssuesController> _logger;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IAuditService _auditService;
 
     public IssuesController(
         IIssueService issueService,
@@ -39,7 +40,8 @@ public class IssuesController : ControllerBase
         IMediaService mediaService,
         IRepository<ApplicationUser> userRepo,
         ILogger<IssuesController> logger,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IAuditService auditService)
     {
         _issueService = issueService;
         _commentService = commentService;
@@ -49,6 +51,7 @@ public class IssuesController : ControllerBase
         _userRepo = userRepo;
         _logger = logger;
         _userManager = userManager;
+        _auditService = auditService;
     }
 
     /// <summary>
@@ -377,12 +380,29 @@ public class IssuesController : ControllerBase
                 return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
             }
 
+            var oldIssue = await _issueService.GetIssueByIdAsync(id);
             await _issueService.UpdateIssueStatusAsync(id, request.NewStatus, userId, request.Comment);
 
             var issue = await _issueService.GetIssueByIdAsync(id);
             if (issue == null)
             {
                 return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
+            }
+
+            if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Moderator))
+            {
+                await _auditService.LogEventAsync(
+                    eventType: "IssueStatusChanged",
+                    action: "UpdateStatus",
+                    resource: "Issue",
+                    resourceId: id,
+                    changes: new Dictionary<string, object>
+                    {
+                        { "OldStatus", oldIssue?.Status ?? request.NewStatus },
+                        { "NewStatus", request.NewStatus }
+                    },
+                    status: "Success"
+                );
             }
 
             _logger.LogInformation("Issue {IssueId} status updated to {Status} by user {UserId}",
@@ -422,6 +442,7 @@ public class IssuesController : ControllerBase
     {
         try
         {
+            var oldIssue = await _issueService.GetIssueByIdAsync(id);
             await _issueService.UpdateIssuePriorityAsync(id, request.Priority);
 
             var issue = await _issueService.GetIssueByIdAsync(id);
@@ -431,6 +452,23 @@ public class IssuesController : ControllerBase
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Moderator))
+            {
+                await _auditService.LogEventAsync(
+                    eventType: "IssuePriorityChanged",
+                    action: "UpdatePriority",
+                    resource: "Issue",
+                    resourceId: id,
+                    changes: new Dictionary<string, object>
+                    {
+                        { "OldPriority", oldIssue?.Priority ?? request.Priority },
+                        { "NewPriority", request.Priority }
+                    },
+                    status: "Success"
+                );
+            }
+            
             _logger.LogInformation("Issue {IssueId} priority updated to {Priority} by user {UserId}",
                 id, request.Priority, userId);
 
@@ -447,6 +485,116 @@ public class IssuesController : ControllerBase
         {
             _logger.LogError(ex, "Error updating issue priority {IssueId}", id);
             return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToUpdateIssuePriority));
+        }
+    }
+
+    /// <summary>
+    /// Update issue details (title, description, priority, status, location, media)
+    /// </summary>
+    /// <param name="id">Issue ID</param>
+    /// <param name="request">Update request with optional fields</param>
+    [HttpPatch("{id}")]
+    [ApiAuthorize]
+    [ProducesResponseType(typeof(ApiResponse<IssueDetailResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ApiResponse<IssueDetailResponse>>> UpdateIssueDetails(
+        string id,
+        [FromBody] UpdateIssueDetailsRequest request)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(ApiResponse<object>.CreateError(HttpErrorMessages.UserIdentityNotFound));
+            }
+
+            var issue = await _issueService.GetIssueByIdAsync(id);
+            if (issue == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
+            }
+
+            // Check ownership or admin
+            if (issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
+            {
+                return Forbid();
+            }
+
+            // Both latitude and longitude must be provided together for location updates
+            if ((request.Latitude.HasValue || request.Longitude.HasValue) && 
+                (!request.Latitude.HasValue || !request.Longitude.HasValue))
+            {
+                return BadRequest(ApiResponse<object>.CreateError("Both latitude and longitude must be provided for location updates"));
+            }
+
+            var oldIssue = await _issueService.GetIssueByIdAsync(id);
+
+            // Call the service method to update issue details
+            await _issueService.UpdateIssueDetailsAsync(
+                id,
+                request.Title,
+                request.Description,
+                request.Address,
+                request.Priority,
+                request.Status,
+                request.Latitude,
+                request.Longitude,
+                request.MediaIdsToAdd,
+                request.MediaIdsToRemove,
+                userId,
+                request.Comment);
+
+            var updatedIssue = await _issueService.GetIssueByIdAsync(id);
+            if (updatedIssue == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError(HttpErrorMessages.IssueNotFound));
+            }
+
+            // Log audit event for admin/moderator actions
+            if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Moderator))
+            {
+                var changes = new Dictionary<string, object>();
+                if (request.Title != null) changes["Title"] = request.Title;
+                if (request.Description != null) changes["Description"] = request.Description;
+                if (request.Priority.HasValue) changes["Priority"] = request.Priority.Value;
+                if (request.Status.HasValue) changes["Status"] = request.Status.Value;
+                if (request.Latitude.HasValue) changes["Location"] = $"{request.Latitude},{request.Longitude}";
+
+                await _auditService.LogEventAsync(
+                    eventType: "IssueDetailsUpdated",
+                    action: "UpdateDetails",
+                    resource: "Issue",
+                    resourceId: id,
+                    changes: changes,
+                    status: "Success"
+                );
+            }
+
+            _logger.LogInformation("Issue {IssueId} details updated by user {UserId}", id, userId);
+
+            return Ok(ApiResponse<IssueDetailResponse>.CreateSuccess(
+                updatedIssue.ToDetailResponse(),
+                "Issue updated successfully"
+            ));
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error updating issue {IssueId}", id);
+            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Operation error updating issue {IssueId}", id);
+            return BadRequest(ApiResponse<object>.CreateError(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating issue {IssueId}", id);
+            return BadRequest(ApiResponse<object>.CreateError(HttpErrorMessages.FailedToUpdateIssue));
         }
     }
 
@@ -563,6 +711,23 @@ public class IssuesController : ControllerBase
             if (issue.Reporter.Id != userId && !User.IsInRole(RoleNames.Admin))
             {
                 return Forbid();
+            }
+
+            // Log audit if deleting as admin
+            if (User.IsInRole(RoleNames.Admin) && issue.Reporter.Id != userId)
+            {
+                await _auditService.LogEventAsync(
+                    eventType: "IssueDeleted",
+                    action: "Delete",
+                    resource: "Issue",
+                    resourceId: id,
+                    changes: new Dictionary<string, object>
+                    {
+                        { "Title", issue.Title },
+                        { "Status", issue.Status }
+                    },
+                    status: "Success"
+                );
             }
 
             await _issueService.DeleteIssueAsync(id);
@@ -859,10 +1024,27 @@ public class IssuesController : ControllerBase
                 return NotFound(ApiResponse<object>.CreateError("Comment not found"));
             }
 
-            // Only the comment author can delete their own comments
-            if (comment.AuthorId != userId)
+            // Only the comment author or admins can delete comments
+            if (comment.AuthorId != userId && !User.IsInRole(RoleNames.Admin))
             {
                 return Forbid();
+            }
+
+            // Log audit if deleting as admin
+            if (User.IsInRole(RoleNames.Admin) && comment.AuthorId != userId)
+            {
+                await _auditService.LogEventAsync(
+                    eventType: "CommentDeleted",
+                    action: "Delete",
+                    resource: "Comment",
+                    resourceId: commentId,
+                    changes: new Dictionary<string, object>
+                    {
+                        { "IssueId", issueId },
+                        { "CommentAuthor", comment.AuthorId }
+                    },
+                    status: "Success"
+                );
             }
 
             await _commentService.DeleteCommentAsync(issueId, commentId);

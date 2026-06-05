@@ -4,11 +4,13 @@
 @{
     ViewData["Title"] = Localizer["EditIssue"];
     ViewData["BodyClass"] = "page-issue-edit";
+    ViewData["RequiresMap"] = true;
 }
 
 @section PageCss {
     <link rel="stylesheet" href="~/css/pages/issues-shared.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/issue-manage.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/issue-edit-extended.css" asp-append-version="true" />
 }
 
 <div class="issue-page issue-page--compact issue-edit-page" id="issueEditRoot">
@@ -89,6 +91,109 @@
                                    placeholder="@Localizer["LocationOrStreetAddress"]" />
                         </div>
 
+                        <div class="issue-manage-field">
+                            <label for="Input_Priority" class="issue-manage-label">@Localizer["Priority"]</label>
+                            <select asp-for="Input.Priority"
+                                    asp-items="@Model.Priorities"
+                                    class="issue-manage-input"
+                                    id="Input_Priority">
+                            </select>
+                            <span asp-validation-for="Input.Priority" class="invalid-feedback"></span>
+                        </div>
+
+                        <div class="issue-manage-field">
+                            <label for="Input_Status" class="issue-manage-label">@Localizer["Status"]</label>
+                            <select asp-for="Input.Status"
+                                    asp-items="@Model.Statuses"
+                                    class="issue-manage-input"
+                                    id="Input_Status">
+                            </select>
+                            <span asp-validation-for="Input.Status" class="invalid-feedback"></span>
+                        </div>
+
+                        @* Location Picker *@
+                        <div class="issue-manage-field">
+                            <label class="issue-manage-label">@Localizer["LocationCoordinates"]</label>
+                            <div class="location-inputs">
+                                <div class="location-input-group">
+                                    <label for="Input_Latitude">@Localizer["Latitude"]</label>
+                                    <input asp-for="Input.Latitude"
+                                           type="number"
+                                           step="0.000001"
+                                           min="-90"
+                                           max="90"
+                                           class="issue-manage-input"
+                                           id="Input_Latitude"
+                                           placeholder="Latitude" />
+                                </div>
+                                <div class="location-input-group">
+                                    <label for="Input_Longitude">@Localizer["Longitude"]</label>
+                                    <input asp-for="Input.Longitude"
+                                           type="number"
+                                           step="0.000001"
+                                           min="-180"
+                                           max="180"
+                                           class="issue-manage-input"
+                                           id="Input_Longitude"
+                                           placeholder="Longitude" />
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">@Localizer["ClickTheMapBelowToUpdateLocation"]</small>
+                        </div>
+
+                        @* Media Management *@
+                        <div class="issue-manage-field">
+                            <label class="issue-manage-label">@Localizer["Media"]</label>
+                            
+                            @if (Model.ExistingMedia.Any())
+                            {
+                                <div class="media-gallery">
+                                    <h4 class="media-gallery-title">@Localizer["ExistingMedia"]</h4>
+                                    <div class="media-grid">
+                                        @foreach (var media in Model.ExistingMedia)
+                                        {
+                                            <div class="media-item" data-media-id="@media.Id">
+                                                @if (!string.IsNullOrEmpty(media.Item2))
+                                                {
+                                                    <img src="@media.Item2" alt="@media.Item3" class="media-thumbnail" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="media-placeholder">
+                                                        <i class="bi bi-image"></i>
+                                                    </div>
+                                                }
+                                                <button type="button" class="media-remove-btn" 
+                                                        data-media-id="@media.Id"
+                                                        title="@Localizer["RemoveMedia"]"
+                                                        aria-label="@Localizer["RemoveMedia"]">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="media-upload-section">
+                                <h4 class="media-upload-title">@Localizer["AddNewMedia"]</h4>
+                                <div class="upload-zone" id="editUploadZone" role="button" tabindex="0" aria-controls="NewMediaFiles">
+                                    <div class="upload-zone-icon">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                    </div>
+                                    <h5>@Localizer["DropFilesOrBrowse"]</h5>
+                                    <p>@Localizer["UploadFileInfo"]</p>
+                                </div>
+                                <input type="file" 
+                                       asp-for="NewMediaFiles"
+                                       id="NewMediaFiles"
+                                       multiple 
+                                       accept="image/jpeg,image/png,video/mp4,video/webm"
+                                       style="display: none;" />
+                                <div id="selectedFilesPreview" class="selected-files-preview"></div>
+                            </div>
+                        </div>
+
                         <div class="issue-manage-note">
                             <strong>@Localizer["EditGuidanceTitle"]</strong>
                             <p>@Localizer["EditGuidanceCopy"]</p>
@@ -113,16 +218,29 @@
             </section>
 
             <aside class="issue-manage-sidebar">
+                <section class="issue-surface issue-manage-sidebar-card map-container">
+                    <div class="map-header">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div>
+                            <strong>@Localizer["LocationCoordinates"]</strong>
+                            <small id="coordsDisplay">@if (Model.Input.Latitude.HasValue && Model.Input.Longitude.HasValue) { <text>@Model.Input.Latitude.Value.ToString("F6"), @Model.Input.Longitude.Value.ToString("F6")</text> } else { @Localizer["ClickTheMapToPlacePin"] }</small>
+                        </div>
+                    </div>
+                    <div id="map" class="issue-edit-map" aria-label="@Localizer["PinOnMap"]"
+                         data-default-lat="@(Model.Input.Latitude?.ToString("F6") ?? "42.6977")"
+                         data-default-lng="@(Model.Input.Longitude?.ToString("F6") ?? "23.3219")"></div>
+                </section>
+
                 <section class="issue-surface issue-manage-sidebar-card">
                     <h2>@Localizer["ReportSnapshot"]</h2>
                     <dl class="issue-manage-summary">
                         <div>
                             <dt>@Localizer["Status"]</dt>
-                            <dd><partial name="_BadgeStatus" model="Model.Issue.Status" /></dd>
+                            <dd><partial name="_BadgeStatus" model="Model.Input.Status" /></dd>
                         </div>
                         <div>
                             <dt>@Localizer["Priority"]</dt>
-                            <dd><partial name="_BadgePriority" model="Model.Issue.Priority" /></dd>
+                            <dd><partial name="_BadgePriority" model="Model.Input.Priority" /></dd>
                         </div>
                         <div>
                             <dt>@Localizer["CreatedBy"]</dt>
@@ -163,5 +281,7 @@
 </div>
 
 @section PageScripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="~/js/modules/issue-edit.js" asp-append-version="true" defer></script>
 }

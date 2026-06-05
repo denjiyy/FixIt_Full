@@ -108,3 +108,42 @@ public class CreateCommentRequest
     /// </summary>
     public IEnumerable<string>? MediaIds { get; set; }
 }
+
+/// <summary>
+/// Request model for updating issue details (title, description, priority, status, location, media)
+/// All fields are optional - only provided fields will be updated
+/// </summary>
+public class UpdateIssueDetailsRequest
+{
+    [StringLength(200, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 200 characters")]
+    public string? Title { get; set; }
+
+    [StringLength(5000, MinimumLength = 10, ErrorMessage = "Description must be between 10 and 5000 characters")]
+    public string? Description { get; set; }
+
+    [StringLength(500, ErrorMessage = "Address must not exceed 500 characters")]
+    public string? Address { get; set; }
+
+    [Range(-180, 180, ErrorMessage = "Longitude must be between -180 and 180")]
+    public double? Longitude { get; set; }
+
+    [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90")]
+    public double? Latitude { get; set; }
+
+    public IssuePriority? Priority { get; set; }
+
+    public IssueStatus? Status { get; set; }
+
+    [StringLength(500, ErrorMessage = "Comment must not exceed 500 characters")]
+    public string? Comment { get; set; }
+
+    /// <summary>
+    /// List of media IDs to add to the issue
+    /// </summary>
+    public IEnumerable<string>? MediaIdsToAdd { get; set; }
+
+    /// <summary>
+    /// List of media IDs to remove from the issue
+    /// </summary>
+    public IEnumerable<string>? MediaIdsToRemove { get; set; }
+}

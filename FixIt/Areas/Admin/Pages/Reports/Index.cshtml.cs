@@ -5,6 +5,8 @@ using FixIt.Models.Moderation;
 using FixIt.Models.Enums;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Services.Constants;
+using FixIt.Services.Contracts;
+using System.Security.Claims;
 
 namespace FixIt.Areas.Admin.Pages.Reports;
 
@@ -13,6 +15,7 @@ public class IndexModel : PageModel
 {
     private readonly IRepository<ContentReport> _reportRepository;
     private readonly ILogger<IndexModel> _logger;
+    private readonly IAuditService _auditService;
 
     public List<ContentReport> Reports { get; set; } = new();
     public int PageNumber { get; set; } = 1;
@@ -26,10 +29,11 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? StatusFilter { get; set; }
 
-    public IndexModel(IRepository<ContentReport> reportRepository, ILogger<IndexModel> logger)
+    public IndexModel(IRepository<ContentReport> reportRepository, ILogger<IndexModel> logger, IAuditService auditService)
     {
         _reportRepository = reportRepository;
         _logger = logger;
+        _auditService = auditService;
     }
 
     public async Task OnGetAsync(int pageNumber = 1)
@@ -79,6 +83,20 @@ public class IndexModel : PageModel
             await _reportRepository.ReplaceAsync(reportId, report);
 
             _logger.LogInformation($"Report {report.Id} approved by admin");
+            
+            var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+            await _auditService.LogEventAsync(
+                eventType: "ReportApproved",
+                action: "Approve",
+                resource: "ContentReport",
+                resourceId: reportId,
+                changes: new Dictionary<string, object>
+                {
+                    { "Status", ReportStatus.Upheld }
+                },
+                status: "Success"
+            );
+            
             TempData["SuccessMessage"] = "Report approved.";
 
             return RedirectToPage(new { pageNumber = PageNumber });
@@ -105,6 +123,20 @@ public class IndexModel : PageModel
             await _reportRepository.ReplaceAsync(reportId, report);
 
             _logger.LogInformation($"Report {report.Id} rejected by admin");
+            
+            var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+            await _auditService.LogEventAsync(
+                eventType: "ReportRejected",
+                action: "Reject",
+                resource: "ContentReport",
+                resourceId: reportId,
+                changes: new Dictionary<string, object>
+                {
+                    { "Status", ReportStatus.Dismissed }
+                },
+                status: "Success"
+            );
+            
             TempData["SuccessMessage"] = "Report rejected.";
 
             return RedirectToPage(new { pageNumber = PageNumber });
@@ -136,6 +168,21 @@ public class IndexModel : PageModel
             await _reportRepository.DeleteAsync(reportId);
 
             _logger.LogWarning($"Report {report.Id} deleted by admin");
+            
+            var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+            await _auditService.LogEventAsync(
+                eventType: "ReportDeleted",
+                action: "Delete",
+                resource: "ContentReport",
+                resourceId: reportId,
+                changes: new Dictionary<string, object>
+                {
+                    { "Reason", report.Reason },
+                    { "Status", report.Status }
+                },
+                status: "Success"
+            );
+            
             TempData["SuccessMessage"] = "Report deleted.";
 
             return RedirectToPage(new { pageNumber = PageNumber });

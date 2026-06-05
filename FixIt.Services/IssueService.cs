@@ -5,6 +5,7 @@ using FixIt.Models.Common;
 using FixIt.Models.Enums;
 using FixIt.Models.Engagement;
 using FixIt.Models.Users;
+using FixIt.Models.Locations;
 using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
@@ -13,6 +14,8 @@ using MongoDB.Bson;
 using MongoDB.Driver.GeoJsonObjectModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace FixIt.Services;
 
@@ -23,10 +26,12 @@ public class IssueService : IIssueService
     private readonly IRepository<Vote> _voteRepo;
     private readonly IRepository<ViewEvent> _viewEventRepo;
     private readonly IRepository<Comment> _commentRepo;
+    private readonly IRepository<City> _cityRepo;
     private readonly IReputationService _reputationService;
     private readonly IIssueAnalysisQueue _issueAnalysisQueue;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<IssueService> _logger;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public IssueService(
         IRepository<Issue> issueRepo, 
@@ -34,20 +39,24 @@ public class IssueService : IIssueService
         IRepository<Vote> voteRepo,
         IRepository<ViewEvent> viewEventRepo,
         IRepository<Comment> commentRepo,
+        IRepository<City> cityRepo,
         IReputationService reputationService,
         IIssueAnalysisQueue issueAnalysisQueue,
         UserManager<ApplicationUser> userManager,
-        ILogger<IssueService> logger)
+        ILogger<IssueService> logger,
+        IHttpClientFactory httpClientFactory)
     {
         _issueRepo = issueRepo;
         _tagRepo = tagRepo;
         _voteRepo = voteRepo;
         _viewEventRepo = viewEventRepo;
         _commentRepo = commentRepo;
+        _cityRepo = cityRepo;
         _reputationService = reputationService;
         _issueAnalysisQueue = issueAnalysisQueue;
         _userManager = userManager;
         _logger = logger;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task<Issue> CreateIssueAsync(
@@ -738,6 +747,369 @@ public class IssueService : IIssueService
             Items = issues,
             Total = totalCount
         };
+    }
+
+    public async Task UpdateIssueDetailsAsync(
+        string issueId,
+        string? title = null,
+        string? description = null,
+        string? address = null,
+        IssuePriority? priority = null,
+        IssueStatus? status = null,
+        double? latitude = null,
+        double? longitude = null,
+        IEnumerable<string>? mediaIdsToAdd = null,
+        IEnumerable<string>? mediaIdsToRemove = null,
+        string changedByUserId = null!,
+        string? comment = null)
+    {
+        var issue = await _issueRepo.GetByIdAsync(issueId);
+        if (issue == null)
+            throw new InvalidOperationException("Issue not found");
+
+        if (issue.IsDeleted)
+            throw new InvalidOperationException("Cannot modify a deleted issue");
+
+        // Validate constraints
+        if (issue.IsLocked)
+            throw new InvalidOperationException("Cannot modify a locked issue");
+
+        ArgumentNullException.ThrowIfNull(changedByUserId);
+
+        // Track field changes
+        var fieldChanges = new List<IssueFieldHistory>();
+
+        // Update title
+        if (!string.IsNullOrWhiteSpace(title) && title != issue.Title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new ArgumentException("Title cannot be empty", nameof(title));
+            if (title.Length > 200)
+                throw new ArgumentException("Title must not exceed 200 characters", nameof(title));
+
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Title",
+                OldValue = issue.Title,
+                NewValue = title.Trim(),
+                ChangedByUserId = changedByUserId,
+                Comment = comment,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            issue.Title = title.Trim();
+        }
+
+        // Update description
+        if (!string.IsNullOrWhiteSpace(description) && description != issue.Description)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException("Description cannot be empty", nameof(description));
+            if (description.Length > 5000)
+                throw new ArgumentException("Description must not exceed 5000 characters", nameof(description));
+            if (description.Length < 10)
+                throw new ArgumentException("Description must be at least 10 characters", nameof(description));
+
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Description",
+                OldValue = issue.Description,
+                NewValue = description.Trim(),
+                ChangedByUserId = changedByUserId,
+                Comment = comment,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            issue.Description = description.Trim();
+        }
+
+        // Update address
+        if (!string.IsNullOrWhiteSpace(address) && address != issue.Address)
+        {
+            var trimmedAddress = address.Trim();
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Address",
+                OldValue = issue.Address,
+                NewValue = trimmedAddress,
+                ChangedByUserId = changedByUserId,
+                Comment = comment,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            issue.Address = trimmedAddress;
+        }
+
+        // Update location with reverse geocoding
+        if (latitude.HasValue && longitude.HasValue)
+        {
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
+                throw new ArgumentException("Invalid coordinates");
+
+            var oldLocation = issue.Location?.Coordinates?.Longitude + "," + issue.Location?.Coordinates?.Latitude;
+            var newLocation = $"{longitude},{latitude}";
+
+            if (oldLocation != newLocation)
+            {
+                fieldChanges.Add(new IssueFieldHistory
+                {
+                    FieldName = "Location",
+                    OldValue = oldLocation,
+                    NewValue = newLocation,
+                    ChangedByUserId = changedByUserId,
+                    Comment = comment,
+                    ChangedAt = DateTime.UtcNow
+                });
+
+                issue.Location = GeoJson.Point(GeoJson.Geographic(longitude.Value, latitude.Value));
+
+                // Update city via reverse geocoding
+                try
+                {
+                    var (newCity, newAddress) = await ReverseGeocodeLocationAsync(latitude.Value, longitude.Value);
+                    if (!string.IsNullOrEmpty(newAddress) && string.IsNullOrWhiteSpace(address))
+                    {
+                        issue.Address = newAddress;
+                    }
+
+                    if (!string.IsNullOrEmpty(newCity))
+                    {
+                        var cities = await _cityRepo.FindAsync(c => c.Name == newCity);
+                        if (cities.Any())
+                        {
+                            var newCityId = cities.First().Id;
+                            if (newCityId != issue.CityId)
+                            {
+                                issue.CityId = newCityId;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to reverse geocode new location");
+                    // Continue with location update even if geocoding fails
+                }
+            }
+        }
+
+        // Update priority
+        if (priority.HasValue && priority != issue.Priority)
+        {
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Priority",
+                OldValue = issue.Priority.ToString(),
+                NewValue = priority.Value.ToString(),
+                ChangedByUserId = changedByUserId,
+                Comment = comment,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            issue.Priority = priority.Value;
+        }
+
+        // Update status
+        if (status.HasValue && status != issue.Status)
+        {
+            var oldStatus = issue.Status;
+            issue.Status = status.Value;
+
+            // Add to status history (for backward compatibility with existing UI)
+            issue.StatusHistory.Add(new IssueStatusHistory
+            {
+                From = oldStatus,
+                To = status.Value,
+                ChangedByUserId = changedByUserId,
+                Comment = comment,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            // Also add to field history
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Status",
+                OldValue = oldStatus.ToString(),
+                NewValue = status.Value.ToString(),
+                ChangedByUserId = changedByUserId,
+                Comment = comment,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            // Award reputation points based on status changes
+            if (!string.IsNullOrEmpty(issue.Reporter?.Id))
+            {
+                if (status.Value == IssueStatus.Confirmed && oldStatus != IssueStatus.Confirmed)
+                {
+                    await _reputationService.AddPointsAsync(
+                        issue.Reporter.Id,
+                        5,
+                        "issue_confirmed",
+                        issueId: issueId);
+                }
+
+                if (status.Value == IssueStatus.Fixed && oldStatus != IssueStatus.Fixed)
+                {
+                    await _reputationService.AddPointsAsync(
+                        issue.Reporter.Id,
+                        10,
+                        "issue_resolved",
+                        issueId: issueId);
+                }
+            }
+        }
+
+        // Handle media updates
+        if (mediaIdsToRemove != null && mediaIdsToRemove.Any())
+        {
+            foreach (var mediaId in mediaIdsToRemove)
+            {
+                if (issue.MediaIds.Contains(mediaId))
+                {
+                    issue.MediaIds.Remove(mediaId);
+                }
+            }
+
+            var removedMediaText = string.Join(", ", mediaIdsToRemove);
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Media",
+                OldValue = removedMediaText,
+                NewValue = null,
+                ChangedByUserId = changedByUserId,
+                Comment = "Removed media",
+                ChangedAt = DateTime.UtcNow
+            });
+        }
+
+        if (mediaIdsToAdd != null && mediaIdsToAdd.Any())
+        {
+            foreach (var mediaId in mediaIdsToAdd)
+            {
+                issue.MediaIds.Add(mediaId);
+            }
+
+            var addedMediaText = string.Join(", ", mediaIdsToAdd);
+            fieldChanges.Add(new IssueFieldHistory
+            {
+                FieldName = "Media",
+                OldValue = null,
+                NewValue = addedMediaText,
+                ChangedByUserId = changedByUserId,
+                Comment = "Added media",
+                ChangedAt = DateTime.UtcNow
+            });
+        }
+
+        // Add all field changes to history
+        issue.FieldHistory.AddRange(fieldChanges);
+
+        // Update metadata
+        issue.UpdatedAt = DateTime.UtcNow;
+        issue.LastActivityAt = DateTime.UtcNow;
+
+        // Persist changes
+        await _issueRepo.ReplaceAsync(issueId, issue);
+
+        _logger.LogInformation(
+            "Issue {IssueId} updated with {FieldCount} field changes by user {UserId}",
+            issueId,
+            fieldChanges.Count,
+            changedByUserId);
+    }
+
+    private async Task<(string address, string cityName)> ReverseGeocodeLocationAsync(double latitude, double longitude)
+    {
+        try
+        {
+            var url = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={latitude:F6}&lon={longitude:F6}&zoom=18&addressdetails=1";
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "FixIt-HazardReporting-App/1.0");
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var client = _httpClientFactory.CreateClient("Nominatim");
+            using var response = await client.SendAsync(request, cts.Token);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Nominatim API returned status {Status}", response.StatusCode);
+                throw new HttpRequestException($"Nominatim API error: {response.StatusCode}");
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cts.Token);
+            using var doc = JsonDocument.Parse(content);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("address", out var addressElement))
+            {
+                var address = BuildAddressStringFromJson(addressElement);
+                var city = ExtractCityFromAddressJson(addressElement);
+                return (address, city);
+            }
+
+            throw new InvalidOperationException("No address in response");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reverse geocoding location ({Lat},{Lng})", latitude, longitude);
+            throw;
+        }
+    }
+
+    private string BuildAddressStringFromJson(JsonElement addressObj)
+    {
+        var parts = new List<string>();
+
+        string GetAddressPart(string key) =>
+            addressObj.TryGetProperty(key, out var elem) && elem.ValueKind == JsonValueKind.String
+                ? elem.GetString() ?? string.Empty
+                : string.Empty;
+
+        var road = GetAddressPart("road");
+        if (string.IsNullOrEmpty(road)) road = GetAddressPart("street");
+        if (!string.IsNullOrEmpty(road))
+        {
+            var houseNum = GetAddressPart("house_number");
+            if (!string.IsNullOrEmpty(houseNum)) road += $" {houseNum}";
+            parts.Add(road);
+        }
+
+        var suburb = GetAddressPart("suburb");
+        if (!string.IsNullOrEmpty(suburb) && !parts.Any(p => p.Contains(suburb)))
+        {
+            parts.Add(suburb);
+        }
+
+        var postcode = GetAddressPart("postcode");
+        if (!string.IsNullOrEmpty(postcode)) parts.Add(postcode);
+
+        var city = GetAddressPart("city");
+        if (string.IsNullOrEmpty(city)) city = GetAddressPart("town");
+        if (string.IsNullOrEmpty(city)) city = GetAddressPart("village");
+        if (string.IsNullOrEmpty(city)) city = GetAddressPart("municipality");
+
+        if (!string.IsNullOrEmpty(city) && !parts.Any(p => p.Contains(city)))
+        {
+            parts.Add(city);
+        }
+
+        return string.Join(", ", parts);
+    }
+
+    private string ExtractCityFromAddressJson(JsonElement addressObj)
+    {
+        string GetAddressPart(string key) =>
+            addressObj.TryGetProperty(key, out var elem) && elem.ValueKind == JsonValueKind.String
+                ? elem.GetString() ?? string.Empty
+                : string.Empty;
+
+        var city = GetAddressPart("city");
+        if (string.IsNullOrEmpty(city)) city = GetAddressPart("town");
+        if (string.IsNullOrEmpty(city)) city = GetAddressPart("village");
+        if (string.IsNullOrEmpty(city)) city = GetAddressPart("municipality");
+
+        return city;
     }
 
     public async Task UpdateIssueAsync(Issue issue)

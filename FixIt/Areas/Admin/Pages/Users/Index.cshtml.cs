@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
 using FixIt.Services.Constants;
+using FixIt.Services.Contracts;
+using System.Security.Claims;
 
 namespace FixIt.Areas.Admin.Pages.Users;
 
@@ -15,6 +17,7 @@ public class IndexModel : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<MongoRole> _roleManager;
     private readonly ILogger<IndexModel> _logger;
+    private readonly IAuditService _auditService;
 
     public List<ApplicationUser> Users { get; set; } = new();
     public int PageNumber { get; set; } = 1;
@@ -25,11 +28,12 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? SearchTerm { get; set; }
 
-    public IndexModel(UserManager<ApplicationUser> userManager, RoleManager<MongoRole> roleManager, ILogger<IndexModel> logger)
+    public IndexModel(UserManager<ApplicationUser> userManager, RoleManager<MongoRole> roleManager, ILogger<IndexModel> logger, IAuditService auditService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _logger = logger;
+        _auditService = auditService;
     }
 
     public Task OnGetAsync(int pageNumber = 1)
@@ -83,6 +87,20 @@ public class IndexModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogWarning($"User {user.UserName} banned by admin");
+                var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+                await _auditService.LogEventAsync(
+                    eventType: "UserBanned",
+                    action: "Ban",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "IsBanned", true },
+                        { "BannedReason", user.BannedReason ?? "Banned by admin" },
+                        { "BannedAt", user.BannedAt ?? DateTime.UtcNow }
+                    },
+                    status: "Success"
+                );
                 TempData["SuccessMessage"] = $"{user.UserName} has been banned.";
             }
 
@@ -113,6 +131,18 @@ public class IndexModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogInformation($"User {user.UserName} unbanned by admin");
+                var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+                await _auditService.LogEventAsync(
+                    eventType: "UserUnbanned",
+                    action: "Unban",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "IsBanned", false }
+                    },
+                    status: "Success"
+                );
                 TempData["SuccessMessage"] = $"{user.UserName} has been unbanned.";
             }
 
@@ -143,6 +173,20 @@ public class IndexModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogWarning($"User {user.UserName} restricted by admin");
+                var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+                await _auditService.LogEventAsync(
+                    eventType: "UserRestricted",
+                    action: "Restrict",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "IsRestricted", true },
+                        { "RestrictedUntil", user.RestrictedUntil ?? DateTime.UtcNow.AddDays(30) },
+                        { "RestrictionReason", user.RestrictionReason ?? "Restricted by admin" }
+                    },
+                    status: "Success"
+                );
                 TempData["SuccessMessage"] = $"{user.UserName} has been restricted for 30 days.";
             }
 
@@ -173,6 +217,18 @@ public class IndexModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogInformation($"User {user.UserName} unrestricted by admin");
+                var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+                await _auditService.LogEventAsync(
+                    eventType: "UserUnrestricted",
+                    action: "Unrestrict",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "IsRestricted", false }
+                    },
+                    status: "Success"
+                );
                 TempData["SuccessMessage"] = $"{user.UserName} restrictions have been removed.";
             }
 
@@ -202,6 +258,19 @@ public class IndexModel : PageModel
 
             if (result.Ok)
             {
+                var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+                await _auditService.LogEventAsync(
+                    eventType: "UserRoleChanged",
+                    action: "ChangeRole",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "OldRole", user.Role },
+                        { "NewRole", role }
+                    },
+                    status: "Success"
+                );
                 TempData["SuccessMessage"] = $"{user.UserName} role has been changed to {role}.";
             }
             else
@@ -235,6 +304,19 @@ public class IndexModel : PageModel
             if (result.Succeeded)
             {
                 _logger.LogInformation($"User {user.UserName} deleted by admin");
+                var actorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+                await _auditService.LogEventAsync(
+                    eventType: "UserDeleted",
+                    action: "Delete",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "UserName", user.UserName ?? "Unknown" },
+                        { "Email", user.Email ?? "Unknown" }
+                    },
+                    status: "Success"
+                );
                 TempData["SuccessMessage"] = $"{user.UserName} has been deleted.";
             }
             else

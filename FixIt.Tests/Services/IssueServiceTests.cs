@@ -8,6 +8,7 @@ using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Common;
 using FixIt.Models.Enums;
+using FixIt.Models.Locations;
 using FixIt.Models.AI;
 using FixIt.Models.Users;
 using FixIt.Models.Engagement;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
 
 namespace FixIt.Tests.Services;
 
@@ -25,10 +27,12 @@ public class IssueServiceTests
     private readonly Mock<IRepository<Vote>> _voteRepoMock;
     private readonly Mock<IRepository<ViewEvent>> _viewEventRepoMock;
     private readonly Mock<IRepository<Comment>> _commentRepoMock;
+    private readonly Mock<IRepository<City>> _cityRepoMock;
     private readonly Mock<IReputationService> _reputationServiceMock;
     private readonly Mock<IIssueAnalysisQueue> _analysisQueueMock;
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
     private readonly Mock<ILogger<IssueService>> _loggerMock;
+    private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
     private readonly IssueService _issueService;
 
     public IssueServiceTests()
@@ -38,9 +42,11 @@ public class IssueServiceTests
         _voteRepoMock = new Mock<IRepository<Vote>>();
         _viewEventRepoMock = new Mock<IRepository<ViewEvent>>();
         _commentRepoMock = new Mock<IRepository<Comment>>();
+        _cityRepoMock = new Mock<IRepository<City>>();
         _reputationServiceMock = new Mock<IReputationService>();
         _analysisQueueMock = new Mock<IIssueAnalysisQueue>();
         _loggerMock = new Mock<ILogger<IssueService>>();
+        _httpClientFactoryMock = new Mock<IHttpClientFactory>();
         
         var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
         _userManagerMock = new Mock<UserManager<ApplicationUser>>(
@@ -60,10 +66,12 @@ public class IssueServiceTests
             _voteRepoMock.Object,
             _viewEventRepoMock.Object,
             _commentRepoMock.Object,
+            _cityRepoMock.Object,
             _reputationServiceMock.Object,
             _analysisQueueMock.Object,
             _userManagerMock.Object,
-            _loggerMock.Object
+            _loggerMock.Object,
+            _httpClientFactoryMock.Object
         );
     }
 

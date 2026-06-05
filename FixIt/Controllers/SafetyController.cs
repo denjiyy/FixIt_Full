@@ -10,6 +10,7 @@ using FixIt.ViewModels;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Users;
 using FixIt.Services.Constants;
+using FixIt.Services.Contracts;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,6 +31,7 @@ public class SafetyController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ICivicAiService _civicAiService;
     private readonly ILogger<SafetyController> _logger;
+    private readonly IAuditService _auditService;
 
     public SafetyController(
         IHazardService hazardService,
@@ -37,7 +39,8 @@ public class SafetyController : ControllerBase
         IRepository<ApplicationUser> userRepo,
         ICivicAiService civicAiService,
         UserManager<ApplicationUser> userManager,
-        ILogger<SafetyController> logger)
+        ILogger<SafetyController> logger,
+        IAuditService auditService)
     {
         _hazardService = hazardService;
         _hazardRepo = hazardRepo;
@@ -45,6 +48,7 @@ public class SafetyController : ControllerBase
         _civicAiService = civicAiService;
         _userManager = userManager;
         _logger = logger;
+        _auditService = auditService;
     }
 
     /// <summary>
@@ -359,6 +363,20 @@ public class SafetyController : ControllerBase
             var hazard = await _hazardService.GetHazardAsync(hazardId);
             if (hazard == null)
                 return NotFound(ApiResponse<object>.CreateError("Hazard not found"));
+
+            await _auditService.LogEventAsync(
+                eventType: "HazardResolved",
+                action: "Resolve",
+                resource: "Hazard",
+                resourceId: hazardId,
+                changes: new Dictionary<string, object>
+                {
+                    { "IsResolved", true },
+                    { "ResolvedAt", DateTime.UtcNow },
+                    { "ResolveNotes", request.Notes ?? "" }
+                },
+                status: "Success"
+            );
 
             _logger.LogInformation("Hazard {HazardId} resolved by user {UserId}", hazardId, userId);
 

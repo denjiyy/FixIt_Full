@@ -38,6 +38,8 @@ public class Issue
     
     public List<IssueStatusHistory> StatusHistory { get; set; } = new();
 
+    public List<IssueFieldHistory> FieldHistory { get; set; } = new();
+
     public IssuePriority Priority { get; set; } = IssuePriority.Medium;
 
     public IssueCategory? Category { get; set; }

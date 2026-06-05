@@ -6,6 +6,7 @@ using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Locations;
 using FixIt.Models.Enums;
+using FixIt.Models.Media;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using FixIt.Services.Constants;
@@ -18,15 +19,18 @@ public class EditIssueModel : PageModel
     private readonly IIssueService _issueService;
     private readonly IRepository<City> _cityRepo;
     private readonly ILogger<EditIssueModel> _logger;
+    private readonly IMediaService _mediaService;
 
     public EditIssueModel(
         IIssueService issueService,
         IRepository<City> cityRepo,
-        ILogger<EditIssueModel> logger)
+        ILogger<EditIssueModel> logger,
+        IMediaService mediaService)
     {
         _issueService = issueService;
         _cityRepo = cityRepo;
         _logger = logger;
+        _mediaService = mediaService;
     }
 
     public Issue? Issue { get; set; }
@@ -38,6 +42,14 @@ public class EditIssueModel : PageModel
     public EditIssueInputModel Input { get; set; } = new();
 
     public List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Cities { get; set; } = new();
+    public List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Priorities { get; set; } = new();
+    public List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem> Statuses { get; set; } = new();
+
+    // Media properties
+    public List<(string Id, string? ThumbnailUrl, string? FileName)> ExistingMedia { get; set; } = new();
+
+    [BindProperty]
+    public List<IFormFile>? NewMediaFiles { get; set; }
 
     public class EditIssueInputModel
     {
@@ -50,6 +62,20 @@ public class EditIssueModel : PageModel
         public string Description { get; set; } = null!;
 
         public string? Address { get; set; }
+
+        public IssuePriority Priority { get; set; } = IssuePriority.Medium;
+
+        public IssueStatus Status { get; set; } = IssueStatus.New;
+
+        [Range(-180, 180, ErrorMessage = "Longitude must be between -180 and 180")]
+        public double? Longitude { get; set; }
+
+        [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90")]
+        public double? Latitude { get; set; }
+
+        // Media management
+        public List<string> ExistingMediaIds { get; set; } = new();
+        public List<string> MediaIdsToRemove { get; set; } = new();
     }
 
     public async Task<IActionResult> OnGetAsync()
@@ -80,10 +106,18 @@ public class EditIssueModel : PageModel
             {
                 Title = Issue.Title,
                 Description = Issue.Description,
-                Address = Issue.Address
+                Address = Issue.Address,
+                Priority = Issue.Priority,
+                Status = Issue.Status,
+                Latitude = Issue.Location?.Coordinates?.Latitude,
+                Longitude = Issue.Location?.Coordinates?.Longitude,
+                ExistingMediaIds = Issue.MediaIds.ToList()
             };
 
             await LoadCities();
+            LoadPriorities();
+            LoadStatuses();
+            await LoadMediaFiles();
 
             return Page();
         }
@@ -99,6 +133,9 @@ public class EditIssueModel : PageModel
         if (!ModelState.IsValid)
         {
             await LoadCities();
+            LoadPriorities();
+            LoadStatuses();
+            await LoadMediaFiles();
             return Page();
         }
 
@@ -122,25 +159,68 @@ public class EditIssueModel : PageModel
                 return Forbid();
             }
 
-            // Update issue properties
-            issue.Title = Input.Title;
-            issue.Description = Input.Description;
-            issue.Address = Input.Address;
-            issue.UpdatedAt = DateTime.UtcNow;
-            issue.LastActivityAt = DateTime.UtcNow;
+            // Handle new media uploads
+            var newMediaIds = new List<string>();
+            if (NewMediaFiles != null && NewMediaFiles.Any())
+            {
+                try
+                {
+                    var uploadedMedia = await _mediaService.UploadFilesAsync(
+                        NewMediaFiles, 
+                        userId, 
+                        MediaReferenceType.Issue, 
+                        Id);
+                    newMediaIds = uploadedMedia.Select(m => m.Id).ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error uploading media files");
+                    ModelState.AddModelError("", "Failed to upload some media files");
+                    await LoadCities();
+                    LoadPriorities();
+                    LoadStatuses();
+                    await LoadMediaFiles();
+                    return Page();
+                }
+            }
 
-            await _issueService.UpdateIssueAsync(issue);
+            // Call the service method to update issue details
+            await _issueService.UpdateIssueDetailsAsync(
+                Id,
+                Input.Title,
+                Input.Description,
+                Input.Address,
+                Input.Priority,
+                Input.Status,
+                Input.Latitude,
+                Input.Longitude,
+                newMediaIds.Any() ? newMediaIds : null,
+                Input.MediaIdsToRemove.Any() ? Input.MediaIdsToRemove : null,
+                userId);
 
             _logger.LogInformation("Issue {IssueId} updated by user {UserId}", Id, userId);
 
             TempData["SuccessMessage"] = "Issue updated successfully";
             return RedirectToPage("./Detail", new { id = Id });
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error updating issue {IssueId}", Id);
+            ModelState.AddModelError("", ex.Message);
+            await LoadCities();
+            LoadPriorities();
+            LoadStatuses();
+            await LoadMediaFiles();
+            return Page();
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating issue {IssueId}", Id);
             ModelState.AddModelError("", "Failed to update issue");
             await LoadCities();
+            LoadPriorities();
+            LoadStatuses();
+            await LoadMediaFiles();
             return Page();
         }
     }
@@ -157,5 +237,54 @@ public class EditIssueModel : PageModel
             .ToList();
     }
 
+    private void LoadPriorities()
+    {
+        Priorities = System.Enum.GetValues(typeof(IssuePriority))
+            .Cast<IssuePriority>()
+            .Select(p => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Value = p.ToString(),
+                Text = p.ToString()
+            })
+            .ToList();
+    }
+
+    private void LoadStatuses()
+    {
+        Statuses = System.Enum.GetValues(typeof(IssueStatus))
+            .Cast<IssueStatus>()
+            .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Value = s.ToString(),
+                Text = s.ToString()
+            })
+            .ToList();
+    }
+
+    private async Task LoadMediaFiles()
+    {
+        if (Issue?.MediaIds == null || !Issue.MediaIds.Any())
+        {
+            ExistingMedia = new List<(string, string?, string?)>();
+            return;
+        }
+
+        try
+        {
+            // Fetch media for the issue using the service
+            var mediaList = await _mediaService.GetMediaForReferenceAsync(
+                MediaReferenceType.Issue, 
+                Id);
+
+            ExistingMedia = mediaList
+                .Select(m => (m.Id, m.ThumbnailPath, (string?)m.Id)) // Cast Id to string? for tuple compatibility
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading media files for issue {IssueId}", Id);
+            ExistingMedia = new List<(string, string?, string?)>();
+        }
+    }
 }
 

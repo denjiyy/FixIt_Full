@@ -18,6 +18,7 @@ public static class HttpErrorMessages
     public const string FailedToSearchIssues = "Failed to search issues";
     public const string FailedToUpdateIssueStatus = "Failed to update issue status";
     public const string FailedToUpdateIssuePriority = "Failed to update issue priority";
+    public const string FailedToUpdateIssue = "Failed to update issue";
     public const string FailedToDeleteIssue = "Failed to delete issue";
     public const string FailedToAddIssueTag = "Failed to add tag to issue";
     public const string FailedToRemoveIssueTag = "Failed to remove tag from issue";

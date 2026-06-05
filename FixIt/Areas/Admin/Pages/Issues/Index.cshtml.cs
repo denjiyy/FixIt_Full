@@ -14,6 +14,7 @@ public class IndexModel : PageModel
 {
     private readonly IIssueService _issueService;
     private readonly ILogger<IndexModel> _logger;
+    private readonly IAuditService _auditService;
 
     public List<Issue> Issues { get; set; } = new();
     public int PageNumber { get; set; } = 1;
@@ -27,10 +28,11 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? StatusFilter { get; set; }
 
-    public IndexModel(IIssueService issueService, ILogger<IndexModel> logger)
+    public IndexModel(IIssueService issueService, ILogger<IndexModel> logger, IAuditService auditService)
     {
         _issueService = issueService;
         _logger = logger;
+        _auditService = auditService;
     }
 
     public async Task OnGetAsync(int pageNumber = 1)
@@ -67,8 +69,57 @@ public class IndexModel : PageModel
         try
         {
             var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.Fixed, actorUserId);
-            _logger.LogInformation("Issue {IssueId} resolved by admin", issueId);
+            var issue = await _issueService.GetIssueByIdAsync(issueId);
+            
+            if (issue == null)
+            {
+                TempData["ErrorMessage"] = "Issue not found";
+                return RedirectToPage(new { pageNumber = PageNumber });
+            }
+
+            var oldStatus = issue.Status;
+
+            // Follow state machine transitions to reach Fixed status
+            if (issue.Status == IssueStatus.New)
+            {
+                await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.Confirmed, actorUserId, "Confirmed by admin");
+                await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.InProgress, actorUserId, "Marked in progress by admin");
+                await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.Fixed, actorUserId, "Resolved by admin");
+            }
+            else if (issue.Status == IssueStatus.Confirmed)
+            {
+                await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.InProgress, actorUserId, "Marked in progress by admin");
+                await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.Fixed, actorUserId, "Resolved by admin");
+            }
+            else if (issue.Status == IssueStatus.InProgress)
+            {
+                await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.Fixed, actorUserId, "Resolved by admin");
+            }
+            else if (issue.Status == IssueStatus.Fixed || issue.Status == IssueStatus.Archived)
+            {
+                TempData["WarningMessage"] = $"Issue is already {issue.Status}";
+                return RedirectToPage(new { pageNumber = PageNumber });
+            }
+            else if (issue.Status == IssueStatus.Rejected || issue.Status == IssueStatus.Duplicate)
+            {
+                TempData["ErrorMessage"] = $"Cannot resolve a {issue.Status} issue";
+                return RedirectToPage(new { pageNumber = PageNumber });
+            }
+
+            _logger.LogInformation("Issue {IssueId} resolved by admin (transitioned from {OldStatus})", issueId, oldStatus);
+            
+            await _auditService.LogEventAsync(
+                eventType: "IssueStatusChanged",
+                action: "ResolveIssue",
+                resource: "Issue",
+                resourceId: issueId,
+                changes: new Dictionary<string, object>
+                {
+                    { "OldStatus", oldStatus },
+                    { "NewStatus", IssueStatus.Fixed }
+                },
+                status: "Success"
+            );
             TempData["SuccessMessage"] = "Issue marked as resolved.";
 
             return RedirectToPage(new { pageNumber = PageNumber });
@@ -86,8 +137,22 @@ public class IndexModel : PageModel
         try
         {
             var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var oldIssue = await _issueService.GetIssueByIdAsync(issueId);
             await _issueService.UpdateIssueStatusAsync(issueId, IssueStatus.InProgress, actorUserId);
             _logger.LogInformation("Issue {IssueId} reopened by admin", issueId);
+            
+            await _auditService.LogEventAsync(
+                eventType: "IssueStatusChanged",
+                action: "UpdateStatus",
+                resource: "Issue",
+                resourceId: issueId,
+                changes: new Dictionary<string, object>
+                {
+                    { "OldStatus", oldIssue?.Status ?? IssueStatus.New },
+                    { "NewStatus", IssueStatus.InProgress }
+                },
+                status: "Success"
+            );
             TempData["SuccessMessage"] = "Issue reopened.";
 
             return RedirectToPage(new { pageNumber = PageNumber });
@@ -104,7 +169,6 @@ public class IndexModel : PageModel
     {
         try
         {
-            // Only admins can delete issues
             if (!User.IsInRole(RoleNames.Admin))
             {
                 _logger.LogWarning("Non-admin user {UserName} attempted to delete issue {IssueId}", User?.Identity?.Name, issueId);
@@ -112,8 +176,22 @@ public class IndexModel : PageModel
                 return RedirectToPage(new { pageNumber = PageNumber });
             }
 
+            var issue = await _issueService.GetIssueByIdAsync(issueId);
             await _issueService.DeleteIssueAsync(issueId);
             _logger.LogWarning("Issue {IssueId} deleted by admin", issueId);
+            
+            await _auditService.LogEventAsync(
+                eventType: "IssueDeleted",
+                action: "Delete",
+                resource: "Issue",
+                resourceId: issueId,
+                changes: new Dictionary<string, object>
+                {
+                    { "Title", issue?.Title ?? "Unknown" },
+                    { "Status", issue?.Status ?? IssueStatus.New }
+                },
+                status: "Success"
+            );
             TempData["SuccessMessage"] = "Issue deleted.";
 
             return RedirectToPage(new { pageNumber = PageNumber });

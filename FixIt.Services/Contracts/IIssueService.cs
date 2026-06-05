@@ -60,6 +60,20 @@ public interface IIssueService
 
     Task UpdateIssuePriorityAsync(string issueId, IssuePriority priority);
 
+    Task UpdateIssueDetailsAsync(
+        string issueId,
+        string? title = null,
+        string? description = null,
+        string? address = null,
+        IssuePriority? priority = null,
+        IssueStatus? status = null,
+        double? latitude = null,
+        double? longitude = null,
+        IEnumerable<string>? mediaIdsToAdd = null,
+        IEnumerable<string>? mediaIdsToRemove = null,
+        string changedByUserId = null!,
+        string? comment = null);
+
     Task AddVoteAsync(string issueId, string userId, VoteType voteType);
 
     Task RemoveVoteAsync(string issueId, string userId);

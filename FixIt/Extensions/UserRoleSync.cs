@@ -2,6 +2,7 @@ using AspNetCore.Identity.Mongo.Model;
 using FixIt.Models.Enums;
 using FixIt.Models.Users;
 using FixIt.Services.Constants;
+using FixIt.Services.Contracts;
 using Microsoft.AspNetCore.Identity;
 
 namespace FixIt.Extensions;
@@ -102,6 +103,35 @@ public static class UserRoleSync
         logger.LogInformation(
             "User role set: {UserId} ({Email}) → {Role}",
             user.Id, user.Email, desiredRole);
+
+        // Log the role change to the audit trail
+        var auditService = services.GetService<IAuditService>();
+        if (auditService != null)
+        {
+            try
+            {
+                var oldRoles = managedRoles.Intersect(existingRoles, StringComparer.Ordinal).ToList();
+                var oldRole = oldRoles.Count > 0 ? oldRoles[0] : "User";
+                
+                await auditService.LogEventAsync(
+                    eventType: "UserRoleChanged",
+                    action: "ChangeRole",
+                    resource: "User",
+                    resourceId: user.Id.ToString(),
+                    changes: new Dictionary<string, object>
+                    {
+                        { "OldRole", oldRole },
+                        { "NewRole", desiredRole.ToString() }
+                    },
+                    status: "Success"
+                );
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to log role change to audit service");
+                // Don't throw - audit failures shouldn't break the role change
+            }
+        }
 
         return SetRoleResult.Success($"Role updated to {desiredRole}.");
     }
