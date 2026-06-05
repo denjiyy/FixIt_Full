@@ -36,7 +36,7 @@
                 BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
             <Grid ColumnDefinitions="Auto,*,Auto" Padding="8,8,12,10" ColumnSpacing="6" VerticalOptions="Center">
                 <ImageButton Grid.Column="0"
-                             Source="feed_back.png" WidthRequest="22" HeightRequest="22"
+                             Source="feed_back.png" WidthRequest="42" HeightRequest="42"
                              Padding="9" BackgroundColor="Transparent"
                              Clicked="OnBackClicked"
                              SemanticProperties.Description="{local:Localize Key=Common_Back}" />
@@ -46,7 +46,7 @@
                        TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
                        VerticalOptions="Center" />
                 <ImageButton Grid.Column="2"
-                             Source="feed_save.png" WidthRequest="20" HeightRequest="20"
+                             Source="feed_save.png" WidthRequest="42" HeightRequest="42"
                              Padding="9" BackgroundColor="Transparent"
                              Command="{Binding SaveCommand}"
                              SemanticProperties.Description="{local:Localize Key=Feed_Share}">

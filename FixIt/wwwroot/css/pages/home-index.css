@@ -170,6 +170,41 @@
     color: var(--raw-rgba-15-23-42-0-3);
     font-size: 2.6rem;
 }
+/* geolocated city photo: image layer fades in over the gradient once loaded */
+.home-index-page .lhero__photo-img {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity .6s ease;
+}
+.home-index-page .lhero__photo[data-state="loaded"] .lhero__photo-img { opacity: 1; }
+.home-index-page .lhero__photo[data-state="loaded"] .lhero__photo-glyph { opacity: 0; }
+.home-index-page .lhero__photo-city {
+    position: absolute;
+    left: .9rem;
+    bottom: .9rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    max-width: calc(100% - 1.8rem);
+    padding: .4rem .7rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, .62);
+    color: #fff;
+    font-size: .9rem;
+    font-weight: 600;
+    line-height: 1;
+    backdrop-filter: blur(6px);
+}
+.home-index-page .lhero__photo-city-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .home-index-page .grad-a { background: linear-gradient(150deg, #cfe9fb, #a9d8f5 55%, #cfebd7); }
 .home-index-page .grad-b { background: linear-gradient(150deg, #d9e7f5, #bcd4ec); }
 .home-index-page .grad-c { background: linear-gradient(150deg, #e7efe9, #cfe6d6); }

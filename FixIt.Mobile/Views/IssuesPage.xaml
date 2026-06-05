@@ -32,7 +32,7 @@
                        VerticalOptions="Center"
                        SemanticProperties.HeadingLevel="Level1" />
                 <ImageButton Grid.Column="1"
-                             Source="map.png" WidthRequest="22" HeightRequest="22"
+                             Source="map.png" WidthRequest="42" HeightRequest="42"
                              Padding="9" BackgroundColor="Transparent"
                              Command="{Binding GoToHazardMapCommand}"
                              SemanticProperties.Description="{local:Localize Key=HazardMap_Title}" />

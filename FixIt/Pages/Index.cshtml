@@ -96,8 +96,12 @@
                 </div>
 
                 <div class="lhero__visual" aria-hidden="true">
-                    <div class="lhero__photo grad-a">
-                        <i class="bi bi-buildings"></i>
+                    <div class="lhero__photo grad-a" id="heroCityPhoto" data-state="idle">
+                        <div class="lhero__photo-img"></div>
+                        <i class="bi bi-buildings lhero__photo-glyph"></i>
+                        <span class="lhero__photo-city" hidden>
+                            <i class="bi bi-geo-alt-fill"></i><span class="lhero__photo-city-name"></span>
+                        </span>
                     </div>
 
                     @if (topStory is not null)
@@ -279,3 +283,7 @@
         </div>
     </section>
 </div>
+
+@section PageScripts {
+    <script src="~/js/pages/home-hero-city.js" asp-append-version="true"></script>
+}

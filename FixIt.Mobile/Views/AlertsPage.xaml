@@ -27,7 +27,7 @@
                        FontSize="21" FontAttributes="Bold" CharacterSpacing="-0.5"
                        TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
                        VerticalOptions="Center" SemanticProperties.HeadingLevel="Level1" />
-                <ImageButton Grid.Column="1" Source="map.png" WidthRequest="22" HeightRequest="22"
+                <ImageButton Grid.Column="1" Source="map.png" WidthRequest="42" HeightRequest="42"
                              Padding="9" BackgroundColor="Transparent"
                              Command="{Binding NavigateToMapCommand}"
                              SemanticProperties.Description="{local:Localize Key=HazardMap_Title}" />

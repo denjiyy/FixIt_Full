@@ -28,8 +28,8 @@
         <Border Grid.Row="0" StrokeThickness="0"
                 BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
             <Grid ColumnDefinitions="Auto,*" Padding="8,8,12,10" ColumnSpacing="6" VerticalOptions="Center">
-                <ImageButton Grid.Column="0" Source="feed_close.png" WidthRequest="26" HeightRequest="26"
-                             Padding="8" BackgroundColor="Transparent" Clicked="OnCloseClicked"
+                <ImageButton Grid.Column="0" Source="feed_close.png" WidthRequest="42" HeightRequest="42"
+                             Padding="9" BackgroundColor="Transparent" Clicked="OnCloseClicked"
                              SemanticProperties.Description="{local:Localize Key=Common_Back}">
                     <ImageButton.Behaviors>
                         <toolkit:IconTintColorBehavior TintColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
