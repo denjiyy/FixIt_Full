@@ -179,6 +179,11 @@
                         <a href="/issues/@it.Id" class="gcard">
                             <div class="gcard__photo @GradFor(i)">
                                 <span class="gcard__glyph"><i class="bi @GlyphFor(it.Status)"></i></span>
+                                @if (it.MediaIds.Count > 0)
+                                {
+                                    <img class="gcard__img" src="/api/media/@it.MediaIds.First()" alt="@it.Title"
+                                         loading="lazy" decoding="async" onerror="this.remove();" />
+                                }
                                 <span class="gcard__status"><partial name="_BadgeStatus" model="it.Status" /></span>
                             </div>
                             <div class="gcard__body">
@@ -227,6 +232,11 @@
                         <a href="/issues/@s.Id" class="gcard">
                             <div class="gcard__photo @GradFor(i + 1)">
                                 <span class="gcard__glyph"><i class="bi bi-check2-circle"></i></span>
+                                @if (s.MediaIds.Count > 0)
+                                {
+                                    <img class="gcard__img" src="/api/media/@s.MediaIds.First()" alt="@s.Title"
+                                         loading="lazy" decoding="async" onerror="this.remove();" />
+                                }
                                 <span class="gcard__status"><partial name="_BadgeStatus" model="IssueStatus.Fixed" /></span>
                             </div>
                             <div class="gcard__body">

@@ -116,7 +116,15 @@
     place-items: center;
 }
 .calm .gcard__glyph { font-size: 2.1rem; color: var(--raw-rgba-15-23-42-0-3); }
-.calm .gcard__status { position: absolute; top: var(--space-3); left: var(--space-3); }
+.calm .gcard__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+.calm .gcard__status { position: absolute; top: var(--space-3); left: var(--space-3); z-index: 2; }
 .calm .gcard__status .status-badge {
     background: var(--raw-rgba-255-255-255-0-92);
     backdrop-filter: blur(6px);

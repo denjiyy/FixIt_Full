@@ -743,6 +743,41 @@ body.admin-shell {
     border-left-color: var(--admin-warning);
 }
 
+/*
+ * The suggestion JS emits Bootstrap-4-style colour classes (badge-info,
+ * badge-success, …) that this Bootstrap-5 project doesn't define, leaving the
+ * confidence-level label as unstyled near-white text. Give it a solid pill with
+ * proper contrast so "High"/"Medium"/etc. read clearly on the light card.
+ */
+.suggestion-card .badge,
+.suggestion-card-compact .badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    line-height: 1.2;
+    color: var(--white);
+    background: var(--admin-primary);
+}
+.suggestion-card .badge-success,
+.suggestion-card-compact .badge-success {
+    background: var(--admin-success);
+}
+.suggestion-card .badge-info,
+.suggestion-card-compact .badge-info {
+    background: var(--admin-primary);
+}
+.suggestion-card .badge-warning,
+.suggestion-card-compact .badge-warning {
+    background: var(--admin-warning);
+    color: var(--admin-text);
+}
+.suggestion-card .badge-secondary,
+.suggestion-card-compact .badge-secondary {
+    background: var(--admin-muted);
+}
+
 .ai-summary-details {
     margin-bottom: 1rem;
     border: 1px solid var(--raw-rgba-148-163-184-0-28);

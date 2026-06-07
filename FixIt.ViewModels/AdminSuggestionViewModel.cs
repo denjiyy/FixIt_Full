@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using FixIt.Models.AI;
 
 namespace FixIt.ViewModels;
@@ -9,6 +10,9 @@ public class AdminSuggestionViewModel
 {
     public string Id { get; set; } = string.Empty;
 
+    // Serialize as the enum name (e.g. "IssuePriority") — the admin dashboard JS
+    // matches on these string values to pick icons and badge styling.
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public SuggestionType Type { get; set; }
 
     public string TargetEntityId { get; set; } = string.Empty;
@@ -21,6 +25,9 @@ public class AdminSuggestionViewModel
 
     public int ConfidenceScore { get; set; }
 
+    // Serialize as the enum name (e.g. "VeryHigh") so the dashboard badge label
+    // and colour resolve correctly instead of showing a raw integer.
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public ConfidenceLevel ConfidenceLevel { get; set; }
 
     public string RecommendedAction { get; set; } = string.Empty;

@@ -228,18 +228,24 @@ try
                 existingUsers = 0;
             }
 
-            if (existingUsers == 0 || shouldResetDb)
-            {
-                // Demo content (sample issues with a fake "Civic Reporter" author)
-                // is only seeded outside production. Indexes and reference data
-                // (cities, tags) run everywhere — the report-issue flow needs them.
-                var seedDemoData = !isProduction;
-                logger.LogInformation(
-                    "Database is empty or reset requested. Running seeders (seedDemoData={SeedDemoData})...",
-                    seedDemoData);
-                await SeederRunner.RunAllConfiguratorsAsync(mongoContext.Database, scope.ServiceProvider, seedDemoData);
-                logger.LogInformation("Seeder configurations completed.");
+            // Reference data (cities, tags) and all collection indexes are idempotent
+            // and required by the app in EVERY environment — the report-issue flow needs
+            // at least one city — so the configurators run on every startup. This logic
+            // previously sat inside the "fresh database" gate below, which is why
+            // production (already populated with real users) never had its cities seeded.
+            // Demo content (sample issues) is still layered on only outside production on
+            // a fresh database.
+            var databaseIsFresh = existingUsers == 0 || shouldResetDb;
+            var seedDemoData = !isProduction && databaseIsFresh;
+            logger.LogInformation(
+                "Running seeder configurations (seedDemoData={SeedDemoData}, existingUsers={UserCount}, reset={Reset}).",
+                seedDemoData, existingUsers, shouldResetDb);
+            await SeederRunner.RunAllConfiguratorsAsync(mongoContext.Database, scope.ServiceProvider, seedDemoData);
+            logger.LogInformation("Seeder configurations completed.");
 
+            // Development admin auto-seed stays dev-only, opt-in, and limited to a fresh DB.
+            if (databaseIsFresh)
+            {
                 var shouldSeedDevelopmentAdmin = app.Environment.IsDevelopment()
                     && builder.Configuration.GetValue<bool>("Database:EnableDevelopmentAdminSeed");
 
@@ -285,24 +291,19 @@ try
                 {
                     logger.LogInformation("Development admin seed disabled. Skipping admin user bootstrap.");
                 }
-
-                var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
-                logger.LogInformation("Regenerating leaderboards (all time, monthly, weekly)...");
-                await reputationService.RegenerateAllTimeLeaderboardAsync();
-                await reputationService.RegenerateMonthlyLeaderboardAsync();
-                await reputationService.RegenerateWeeklyLeaderboardAsync();
-                logger.LogInformation("Database seeding and leaderboard generation completed.");
             }
             else
             {
-                logger.LogInformation("Database already initialized with {UserCount} users. Skipping seeding.", existingUsers);
-
-                var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
-                logger.LogInformation("Regenerating leaderboards (all time, monthly, weekly)...");
-                await reputationService.RegenerateAllTimeLeaderboardAsync();
-                await reputationService.RegenerateMonthlyLeaderboardAsync();
-                await reputationService.RegenerateWeeklyLeaderboardAsync();
+                logger.LogInformation("Database already initialized with {UserCount} users. Skipped demo content and admin seed.", existingUsers);
             }
+
+            // Leaderboards regenerate on every startup so ranking views are never empty.
+            var reputationService = scope.ServiceProvider.GetRequiredService<IReputationService>();
+            logger.LogInformation("Regenerating leaderboards (all time, monthly, weekly)...");
+            await reputationService.RegenerateAllTimeLeaderboardAsync();
+            await reputationService.RegenerateMonthlyLeaderboardAsync();
+            await reputationService.RegenerateWeeklyLeaderboardAsync();
+            logger.LogInformation("Database initialization completed.");
         }
         catch (Exception ex)
         {

@@ -141,8 +141,10 @@ namespace FixIt.Controllers
                 pageSize: 10000  // Allow large export
             );
 
-            // Build CSV
-            var csv = "Timestamp,Event Type,Action,Resource,Actor ID,Actor Name,Status,IP Address,Reason\n";
+            // Build CSV. Columns mirror the persisted AuditLog so the export is a
+            // complete record: which resource (ResourceId), the actor's role, the
+            // field-level Changes, and any ErrorMessage for failed actions.
+            var csv = "Timestamp,Event Type,Action,Resource,Resource ID,Actor ID,Actor Name,Actor Role,Status,IP Address,Reason,Changes,Error Message\n";
             foreach (var log in logs)
             {
                 var timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
@@ -155,11 +157,15 @@ namespace FixIt.Controllers
                     EscapeCsv(log.EventType),
                     EscapeCsv(log.Action),
                     EscapeCsv(log.Resource),
+                    EscapeCsv(log.ResourceId),
                     EscapeCsv(log.ActorId),
                     EscapeCsv(actorName),
+                    EscapeCsv(log.ActorRole),
                     EscapeCsv(log.Status),
                     EscapeCsv(ipAddress),
-                    EscapeCsv(reason)
+                    EscapeCsv(reason),
+                    EscapeCsv(FormatChanges(log.Changes)),
+                    EscapeCsv(log.ErrorMessage)
                 }) + "\n";
             }
 
@@ -169,6 +175,20 @@ namespace FixIt.Controllers
                 "text/csv",
                 $"audit-logs-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv"
             );
+        }
+
+        /// <summary>
+        /// Flatten the change dictionary into a single "key=value; key=value" cell.
+        /// Sensitive values are already redacted upstream when the log is written.
+        /// </summary>
+        private static string FormatChanges(Dictionary<string, object>? changes)
+        {
+            if (changes == null || changes.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join("; ", changes.Select(kv => $"{kv.Key}={kv.Value}"));
         }
 
         private static string EscapeCsv(string? value)

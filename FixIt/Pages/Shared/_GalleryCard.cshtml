@@ -33,6 +33,13 @@
 <a href="/issues/@Model.Id" class="gcard">
     <div class="gcard__photo @grad">
         <span class="gcard__glyph"><i class="bi @glyph"></i></span>
+        @if (Model.MediaIds.Count > 0)
+        {
+            // Show the uploaded photo over the gradient. If the first media is a
+            // video (or fails to load), onerror removes the img and the glyph shows.
+            <img class="gcard__img" src="/api/media/@Model.MediaIds.First()" alt="@Model.Title"
+                 loading="lazy" decoding="async" onerror="this.remove();" />
+        }
         <span class="gcard__status"><partial name="_BadgeStatus" model="Model.Status" /></span>
     </div>
     <div class="gcard__body">

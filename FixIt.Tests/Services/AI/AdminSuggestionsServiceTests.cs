@@ -12,9 +12,11 @@ using Xunit;
 namespace FixIt.Tests.Services.AI;
 
 /// <summary>
-/// Verifies the admin duplicate-warning suggestion — which keys off
-/// <see cref="IssueAnalysis.PotentialDuplicates"/> — now fires, since that list
-/// is populated by the local duplicate-detection pass.
+/// Verifies the admin duplicate-warning suggestion. It is raised by
+/// <see cref="AdminSuggestionsService"/>'s own local string-similarity pass over
+/// recent issues returned by the issue repository — not from any external
+/// analysis. The warning fires when a similar issue exists and stays quiet when
+/// none do.
 /// </summary>
 public class AdminSuggestionsServiceTests
 {
@@ -31,7 +33,7 @@ public class AdminSuggestionsServiceTests
             NullLogger<AdminSuggestionsService>.Instance);
 
     private static (Mock<IRepository<AdminSuggestion>>, Mock<IRepository<Issue>>, Mock<IIssueAnalysisService>) Mocks(
-        string issueId, IssueAnalysis analysis)
+        string issueId, IssueAnalysis analysis, IEnumerable<Issue>? otherIssues = null)
     {
         var issue = new Issue
         {
@@ -43,16 +45,20 @@ public class AdminSuggestionsServiceTests
             CreatedAt = DateTime.UtcNow, // recent → resolution suggestion stays quiet
         };
 
-        // Provide at least one "other" issue so AdminSuggestionsService.AnalyzeForDuplicatesAsync()
-        // has data via _issueRepository.FindAsync(...)
-        var duplicateCandidate = new Issue
+        // By default expose one near-identical issue so the service's local
+        // duplicate-detection pass (_issueRepository.FindAsync) has a match to flag.
+        // Tests exercising the "no duplicates" path pass an empty collection instead.
+        otherIssues ??= new List<Issue>
         {
-            Id = "DUP1",
-            Title = "Pothole on Vitosha Boulevard",
-            Description = "Deep pothole damaging cars on the same boulevard.",
-            Status = IssueStatus.New,
-            Priority = IssuePriority.Medium,
-            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            new()
+            {
+                Id = "DUP1",
+                Title = "Pothole on Vitosha Boulevard",
+                Description = "Deep pothole damaging cars on the same boulevard.",
+                Status = IssueStatus.New,
+                Priority = IssuePriority.Medium,
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+            }
         };
 
         var suggestionRepo = new Mock<IRepository<AdminSuggestion>>();
@@ -63,7 +69,7 @@ public class AdminSuggestionsServiceTests
         issueRepo.Setup(r => r.GetByIdAsync(issueId)).ReturnsAsync(issue);
 
         issueRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
-            .ReturnsAsync(new List<Issue> { duplicateCandidate });
+            .ReturnsAsync(otherIssues.ToList());
 
         var analysisService = new Mock<IIssueAnalysisService>();
         analysisService.Setup(s => s.GetAnalysisAsync(issueId)).ReturnsAsync(analysis);
@@ -107,9 +113,8 @@ public class AdminSuggestionsServiceTests
     [Fact]
     public async Task SuggestIssueActionsAsync_NoDuplicates_DoesNotRaiseDuplicateWarning()
     {
-        // Change this to a unique ID
-        string issueId = Guid.NewGuid().ToString(); 
-        
+        string issueId = Guid.NewGuid().ToString();
+
         var analysis = new IssueAnalysis
         {
             IssueId = issueId,
@@ -118,7 +123,8 @@ public class AdminSuggestionsServiceTests
             PotentialDuplicates = new List<DuplicateMatch>(),
         };
 
-        var (suggestionRepo, issueRepo, analysisService) = Mocks(issueId, analysis);
+        // No other issues exist, so the local duplicate-detection pass finds nothing to flag.
+        var (suggestionRepo, issueRepo, analysisService) = Mocks(issueId, analysis, otherIssues: new List<Issue>());
         var service = CreateService(suggestionRepo, issueRepo, analysisService);
 
         var suggestions = await service.SuggestIssueActionsAsync(issueId);

@@ -1069,6 +1069,19 @@ hr {
     color: var(--white);
 }
 
+/*
+ * The eyebrow pill sits on the blue .settings-hero gradient, where the rule
+ * above turns its text white. Its default light pill background would then be
+ * white-on-white, so give it a frosted translucent treatment (matching the
+ * account hero eyebrow) to stay legible.
+ */
+.settings-hero .page-heading__eyebrow,
+.settings-hero .page-eyebrow {
+    background: var(--raw-rgba-255-255-255-0-14);
+    border: 1px solid var(--raw-rgba-255-255-255-0-16);
+    color: var(--raw-rgba-255-255-255-0-92);
+}
+
 .profile-main {
     display: flex;
     align-items: flex-start;
