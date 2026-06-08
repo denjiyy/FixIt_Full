@@ -1,5 +1,3 @@
-using FixIt.Models.Enums;
-
 namespace FixIt.Services.Analytics.Models;
 
 /// <summary>

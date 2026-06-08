@@ -3,9 +3,6 @@ using FixIt.Models;
 using FixIt.Services.Contracts;
 using FixIt.Services.Constants;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FixIt.Controllers
 {

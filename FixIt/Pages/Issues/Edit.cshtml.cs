@@ -6,7 +6,6 @@ using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
 using FixIt.Models.Locations;
 using FixIt.Models.Enums;
-using FixIt.Models.Media;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using FixIt.Services.Constants;

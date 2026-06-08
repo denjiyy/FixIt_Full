@@ -1,4 +1,3 @@
-using FixIt.Extensions;
 using FixIt.Models.Gamification;
 using FixIt.Services.Gamification;
 using FixIt.ViewModels;

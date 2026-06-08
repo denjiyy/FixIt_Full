@@ -1,5 +1,4 @@
 using FixIt.Extensions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,7 +6,6 @@ using FixIt.Services.Safety;
 using FixIt.Services.AI;
 using FixIt.Models.Safety;
 using FixIt.ViewModels;
-using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Users;
 using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
@@ -26,8 +24,6 @@ namespace FixIt.Controllers;
 public class SafetyController : ControllerBase
 {
     private readonly IHazardService _hazardService;
-    private readonly IRepository<Hazard> _hazardRepo;
-    private readonly IRepository<ApplicationUser> _userRepo;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ICivicAiService _civicAiService;
     private readonly ILogger<SafetyController> _logger;
@@ -35,16 +31,12 @@ public class SafetyController : ControllerBase
 
     public SafetyController(
         IHazardService hazardService,
-        IRepository<Hazard> hazardRepo,
-        IRepository<ApplicationUser> userRepo,
         ICivicAiService civicAiService,
         UserManager<ApplicationUser> userManager,
         ILogger<SafetyController> logger,
         IAuditService auditService)
     {
         _hazardService = hazardService;
-        _hazardRepo = hazardRepo;
-        _userRepo = userRepo;
         _civicAiService = civicAiService;
         _userManager = userManager;
         _logger = logger;

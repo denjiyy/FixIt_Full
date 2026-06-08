@@ -1,9 +1,6 @@
 using Xunit;
 using FixIt.Models.Issues;
 using FixIt.Models.Enums;
-using FixIt.Models.Common;
-using MongoDB.Driver.GeoJsonObjectModel;
-using System;
 
 namespace FixIt.Tests.Models;
 

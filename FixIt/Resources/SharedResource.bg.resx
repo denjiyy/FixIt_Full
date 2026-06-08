@@ -82,7 +82,7 @@
   <data name="ViewHeatmaps" xml:space="preserve"><value>Преглед на топлинни карти</value></data>
   <data name="HelpCenter" xml:space="preserve"><value>Център за помощ</value></data>
   <data name="ContactUs" xml:space="preserve"><value>Свържете се с нас</value></data>
-  <data name="PrivacyPolicy" xml:space="preserve"><value>Política за поверителност</value></data>
+  <data name="PrivacyPolicy" xml:space="preserve"><value>Политика за поверителност</value></data>
   <data name="IssuesReported" xml:space="preserve"><value>Докладани проблеми</value></data>
   <data name="IssuesResolved" xml:space="preserve"><value>Разрешени проблеми</value></data>
   <data name="Resolved" xml:space="preserve"><value>Разрешено</value></data>
@@ -342,7 +342,7 @@
   <data name="Enabled" xml:space="preserve"><value>Активирано</value></data>
   <data name="Disabled" xml:space="preserve"><value>Деактивирано</value></data>
   <data name="YouCanSignInWithEmailAndPassword" xml:space="preserve"><value>Можете да влезете с имейл и парола</value></data>
-  <data name="NoOAuthProvidersLinked" xml:space="preserve"><value>Спилнозни доставчици на OAuth</value></data>
+  <data name="NoOAuthProvidersLinked" xml:space="preserve"><value>Няма свързани доставчици на OAuth</value></data>
   <data name="ManageYourAuthenticationMethodsAndLinkedProviders" xml:space="preserve"><value>Управлявайте методите на удостоверяване и свързаните доставчици</value></data>
   <data name="TotalPoints" xml:space="preserve"><value>Общо точки</value></data>
   <data name="AchievementsLabel" xml:space="preserve"><value>Постижения</value></data>

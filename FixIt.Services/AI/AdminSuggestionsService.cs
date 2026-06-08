@@ -60,7 +60,6 @@ public class AdminSuggestionsService : IAdminSuggestionsService
     private readonly IRepository<ContentReport> _reportRepository;
     private readonly IRepository<Issue> _issueRepository;
     private readonly IRepository<ApplicationUser> _userRepository;
-    private readonly IIssueAnalysisService? _analysisService;
     private readonly ILogger<AdminSuggestionsService> _logger;
 
     public AdminSuggestionsService(
@@ -68,14 +67,12 @@ public class AdminSuggestionsService : IAdminSuggestionsService
         IRepository<ContentReport> reportRepository,
         IRepository<Issue> issueRepository,
         IRepository<ApplicationUser> userRepository,
-        IIssueAnalysisService? analysisService,
         ILogger<AdminSuggestionsService> logger)
     {
         _suggestionRepository = suggestionRepository;
         _reportRepository = reportRepository;
         _issueRepository = issueRepository;
         _userRepository = userRepository;
-        _analysisService = analysisService;
         _logger = logger;
     }
 

@@ -525,4 +525,4 @@ jobs:
 
 ---
 
-For deployment guides, see [DOCKER.md](../DOCKER.md) and [.github/CI-CD.md](../.github/CI-CD.md).
+For deployment guides, see [DOCKER.md](DOCKER.md) and [.github/CI-CD.md](.github/CI-CD.md).

@@ -1,7 +1,6 @@
 using FixIt.Data.Repository.Contracts;
 using FixIt.Services.Gamification;
 using FixIt.Models.Safety;
-using FixIt.Models.Locations;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
 using MongoDB.Driver.GeoJsonObjectModel;
@@ -53,18 +52,15 @@ public interface IHazardService
 public class HazardService : IHazardService
 {
     private readonly IRepository<Hazard> _hazardRepo;
-    private readonly IRepository<City> _cityRepo;
     private readonly IRepository<ApplicationUser> _userRepo;
     private readonly IReputationService _reputationService;
 
     public HazardService(
         IRepository<Hazard> hazardRepo,
-        IRepository<City> cityRepo,
         IRepository<ApplicationUser> userRepo,
         IReputationService reputationService)
     {
         _hazardRepo = hazardRepo;
-        _cityRepo = cityRepo;
         _userRepo = userRepo;
         _reputationService = reputationService;
     }

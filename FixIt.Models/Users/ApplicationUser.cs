@@ -1,7 +1,6 @@
 using AspNetCore.Identity.Mongo.Model;
 using MongoDB.Bson.Serialization.Attributes;
 using FixIt.Models.Enums;
-using System.Collections.Generic;
 
 namespace FixIt.Models.Users;
 

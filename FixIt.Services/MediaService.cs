@@ -330,11 +330,6 @@ public class MediaService : IMediaService
         return file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsVideo(IFormFile file)
-    {
-        return file.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase);
-    }
-
     private static MediaType DetermineMediaType(IFormFile file)
     {
         if (file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))

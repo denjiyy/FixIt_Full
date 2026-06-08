@@ -5,7 +5,6 @@ using FixIt.Services.Gamification;
 using FixIt.Data.Repository.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace FixIt.Pages.Leaderboards;
 

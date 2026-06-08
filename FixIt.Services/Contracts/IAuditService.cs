@@ -1,7 +1,4 @@
 using FixIt.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FixIt.Services.Contracts
 {

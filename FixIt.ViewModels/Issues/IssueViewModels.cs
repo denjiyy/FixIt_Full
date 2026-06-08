@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using FixIt.Models.Enums;
-
 namespace FixIt.ViewModels.Issues;
 
 // Re-export types from specialized files for backward compatibility

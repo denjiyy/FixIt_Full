@@ -1,7 +1,6 @@
 using Xunit;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
-using System;
 
 namespace FixIt.Tests.Models;
 

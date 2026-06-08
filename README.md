@@ -388,7 +388,7 @@ The mobile app authenticates against `/api/auth/login`, persists access + refres
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` | Outbound email | |
 | `DATA_PROTECTION_KEY_RING_PATH` | DataProtection key storage path | `/app/data-protection-keys` |
 
-See [`.env.railway`](./.env.railway) for the full annotated template.
+See [`SECRETS.md`](./SECRETS.md) for the full environment and secrets reference.
 
 ### appsettings.json excerpt
 
@@ -710,7 +710,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml \
 
 ### Railway (current production)
 
-The live deployment runs on Railway against MongoDB Atlas. Required env vars are documented in [`.env.railway`](./.env.railway).
+The live deployment runs on Railway against MongoDB Atlas. Required env vars are documented in [`SECRETS.md`](./SECRETS.md).
 
 After a fresh-DB deploy, bootstrap the admin once:
 

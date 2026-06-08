@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.RateLimiting;
 using FixIt.Models.Users;
 using FixIt.Models.Enums;
-using FixIt.Models.Common;
 using FixIt.Services.Constants;
 using FixIt.Services.Email;
 

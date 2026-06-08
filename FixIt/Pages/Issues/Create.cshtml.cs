@@ -8,7 +8,6 @@ using FixIt.Services.Contracts;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using FixIt.Models.Common;
-using FixIt.Models.Issues;
 using FixIt.Models.Users;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;

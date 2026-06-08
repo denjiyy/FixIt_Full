@@ -1,5 +1,3 @@
-using FixIt.Models.Common;
-using FixIt.Models.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.GeoJsonObjectModel;

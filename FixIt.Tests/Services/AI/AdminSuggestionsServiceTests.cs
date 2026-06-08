@@ -14,26 +14,23 @@ namespace FixIt.Tests.Services.AI;
 /// <summary>
 /// Verifies the admin duplicate-warning suggestion. It is raised by
 /// <see cref="AdminSuggestionsService"/>'s own local string-similarity pass over
-/// recent issues returned by the issue repository — not from any external
-/// analysis. The warning fires when a similar issue exists and stays quiet when
-/// none do.
+/// recent issues returned by the issue repository. The warning fires when a
+/// similar issue exists and stays quiet when none do.
 /// </summary>
 public class AdminSuggestionsServiceTests
 {
     private static AdminSuggestionsService CreateService(
         Mock<IRepository<AdminSuggestion>> suggestionRepo,
-        Mock<IRepository<Issue>> issueRepo,
-        Mock<IIssueAnalysisService> analysisService)
+        Mock<IRepository<Issue>> issueRepo)
         => new(
             suggestionRepo.Object,
             Mock.Of<IRepository<ContentReport>>(),
             issueRepo.Object,
             Mock.Of<IRepository<ApplicationUser>>(),
-            analysisService.Object,
             NullLogger<AdminSuggestionsService>.Instance);
 
-    private static (Mock<IRepository<AdminSuggestion>>, Mock<IRepository<Issue>>, Mock<IIssueAnalysisService>) Mocks(
-        string issueId, IssueAnalysis analysis, IEnumerable<Issue>? otherIssues = null)
+    private static (Mock<IRepository<AdminSuggestion>>, Mock<IRepository<Issue>>) Mocks(
+        string issueId, IEnumerable<Issue>? otherIssues = null)
     {
         var issue = new Issue
         {
@@ -71,29 +68,16 @@ public class AdminSuggestionsServiceTests
         issueRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Issue, bool>>>()))
             .ReturnsAsync(otherIssues.ToList());
 
-        var analysisService = new Mock<IIssueAnalysisService>();
-        analysisService.Setup(s => s.GetAnalysisAsync(issueId)).ReturnsAsync(analysis);
-
-        return (suggestionRepo, issueRepo, analysisService);
+        return (suggestionRepo, issueRepo);
     }
 
     [Fact]
     public async Task SuggestIssueActionsAsync_WithPotentialDuplicates_RaisesDuplicateWarning()
     {
         const string issueId = "ISSUE1";
-        var analysis = new IssueAnalysis
-        {
-            IssueId = issueId,
-            EstimatedSeverity = 5, // < 8 → priority-upgrade suggestion stays quiet
-            ConfidenceScore = 70,
-            PotentialDuplicates = new List<DuplicateMatch>
-            {
-                new() { IssueId = "DUP1", IssueTitle = "Similar pothole", SimilarityScore = 80, Reason = "Shared terms: pothole" },
-            },
-        };
 
-        var (suggestionRepo, issueRepo, analysisService) = Mocks(issueId, analysis);
-        var service = CreateService(suggestionRepo, issueRepo, analysisService);
+        var (suggestionRepo, issueRepo) = Mocks(issueId);
+        var service = CreateService(suggestionRepo, issueRepo);
 
         var suggestions = await service.SuggestIssueActionsAsync(issueId);
 
@@ -115,17 +99,9 @@ public class AdminSuggestionsServiceTests
     {
         string issueId = Guid.NewGuid().ToString();
 
-        var analysis = new IssueAnalysis
-        {
-            IssueId = issueId,
-            EstimatedSeverity = 5,
-            ConfidenceScore = 70,
-            PotentialDuplicates = new List<DuplicateMatch>(),
-        };
-
         // No other issues exist, so the local duplicate-detection pass finds nothing to flag.
-        var (suggestionRepo, issueRepo, analysisService) = Mocks(issueId, analysis, otherIssues: new List<Issue>());
-        var service = CreateService(suggestionRepo, issueRepo, analysisService);
+        var (suggestionRepo, issueRepo) = Mocks(issueId, otherIssues: new List<Issue>());
+        var service = CreateService(suggestionRepo, issueRepo);
 
         var suggestions = await service.SuggestIssueActionsAsync(issueId);
 

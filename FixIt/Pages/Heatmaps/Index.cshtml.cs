@@ -1,16 +1,13 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using FixIt.Services.Analytics;
 using FixIt.Services.Contracts;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Locations;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace FixIt.Pages.Heatmaps;
 
 public class HeatmapsModel : PageModel
 {
-    private readonly IHeatmapService _heatmapService;
     private readonly IIssueService _issueService;
     private readonly IRepository<City> _cityRepo;
 
@@ -24,11 +21,9 @@ public class HeatmapsModel : PageModel
     public int ResolvedIssues { get; set; }
     
     public HeatmapsModel(
-        IHeatmapService heatmapService,
         IIssueService issueService,
         IRepository<City> cityRepo)
     {
-        _heatmapService = heatmapService;
         _issueService = issueService;
         _cityRepo = cityRepo;
     }

@@ -3,7 +3,6 @@ using FixIt.Models.Gamification;
 using FixIt.Models.Engagement;
 using FixIt.Models.Issues;
 using FixIt.Models.Enums;
-using FixIt.Models.Users;
 
 namespace FixIt.Tests.Models;
 

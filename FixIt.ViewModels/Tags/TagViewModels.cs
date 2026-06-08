@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace FixIt.ViewModels.Tags;
 
 // Re-export types from specialized files for backward compatibility

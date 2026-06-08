@@ -3,10 +3,8 @@ using Moq;
 using FixIt.Services.Analytics;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
-using FixIt.Models.Locations;
 using FixIt.Models.Enums;
 using FixIt.Models.Common;
-using FixIt.Services.Analytics.Models;
 using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace FixIt.Tests.Services;
@@ -14,19 +12,16 @@ namespace FixIt.Tests.Services;
 public class HeatmapServiceTests
 {
     private readonly Mock<IRepository<Issue>> _issueRepoMock;
-    private readonly Mock<IRepository<City>> _cityRepoMock;
     private readonly Mock<IRepository<Tag>> _tagRepoMock;
     private readonly HeatmapService _heatmapService;
 
     public HeatmapServiceTests()
     {
         _issueRepoMock = new Mock<IRepository<Issue>>();
-        _cityRepoMock = new Mock<IRepository<City>>();
         _tagRepoMock = new Mock<IRepository<Tag>>();
 
         _heatmapService = new HeatmapService(
             _issueRepoMock.Object,
-            _cityRepoMock.Object,
             _tagRepoMock.Object
         );
     }

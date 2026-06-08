@@ -1,5 +1,3 @@
-using FixIt.Services.Analytics.Models;
-
 namespace FixIt.Services.Analytics.Models;
 
 /// <summary>

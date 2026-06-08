@@ -4,7 +4,6 @@ using FixIt.Services.Safety;
 using FixIt.Services.Gamification;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Safety;
-using FixIt.Models.Locations;
 using FixIt.Models.Enums;
 using FixIt.Models.Users;
 using MongoDB.Driver.GeoJsonObjectModel;
@@ -14,7 +13,6 @@ namespace FixIt.Tests.Services;
 public class HazardServiceTests
 {
     private readonly Mock<IRepository<Hazard>> _hazardRepoMock;
-    private readonly Mock<IRepository<City>> _cityRepoMock;
     private readonly Mock<IRepository<ApplicationUser>> _userRepoMock;
     private readonly Mock<IReputationService> _reputationServiceMock;
     private readonly HazardService _hazardService;
@@ -22,13 +20,11 @@ public class HazardServiceTests
     public HazardServiceTests()
     {
         _hazardRepoMock = new Mock<IRepository<Hazard>>();
-        _cityRepoMock = new Mock<IRepository<City>>();
         _userRepoMock = new Mock<IRepository<ApplicationUser>>();
         _reputationServiceMock = new Mock<IReputationService>();
 
         _hazardService = new HazardService(
             _hazardRepoMock.Object,
-            _cityRepoMock.Object,
             _userRepoMock.Object,
             _reputationServiceMock.Object
         );

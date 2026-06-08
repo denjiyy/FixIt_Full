@@ -1,4 +1,3 @@
-using FixIt.Data.Infrastructure;
 using FixIt.Data.Infrastructure.Migrations;
 using FixIt.Data.Repository;
 using FixIt.Data.Repository.Contracts;

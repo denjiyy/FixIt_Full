@@ -1,6 +1,5 @@
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Issues;
-using FixIt.Models.Locations;
 using FixIt.Models.Enums;
 using FixIt.Services.Analytics.Models;
 using MongoDB.Driver;
@@ -17,16 +16,13 @@ public interface IHeatmapService
 public class HeatmapService : IHeatmapService
 {
     private readonly IRepository<Issue> _issueRepo;
-    private readonly IRepository<City> _cityRepo;
     private readonly IRepository<FixIt.Models.Issues.Tag> _tagRepo;
 
     public HeatmapService(
         IRepository<Issue> issueRepo,
-        IRepository<City> cityRepo,
         IRepository<FixIt.Models.Issues.Tag> tagRepo)
     {
         _issueRepo = issueRepo;
-        _cityRepo = cityRepo;
         _tagRepo = tagRepo;
     }
 

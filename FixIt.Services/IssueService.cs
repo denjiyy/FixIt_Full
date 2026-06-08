@@ -4,18 +4,14 @@ using FixIt.Models.Issues;
 using FixIt.Models.Common;
 using FixIt.Models.Enums;
 using FixIt.Models.Engagement;
-using FixIt.Models.Users;
 using FixIt.Models.Locations;
 using FixIt.Services.Constants;
 using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
 using FixIt.Services.Background;
-using MongoDB.Bson;
 using MongoDB.Driver.GeoJsonObjectModel;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace FixIt.Services;
 
@@ -25,11 +21,9 @@ public class IssueService : IIssueService
     private readonly IRepository<Tag> _tagRepo;
     private readonly IRepository<Vote> _voteRepo;
     private readonly IRepository<ViewEvent> _viewEventRepo;
-    private readonly IRepository<Comment> _commentRepo;
     private readonly IRepository<City> _cityRepo;
     private readonly IReputationService _reputationService;
     private readonly IIssueAnalysisQueue _issueAnalysisQueue;
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<IssueService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
 
@@ -38,11 +32,9 @@ public class IssueService : IIssueService
         IRepository<Tag> tagRepo,
         IRepository<Vote> voteRepo,
         IRepository<ViewEvent> viewEventRepo,
-        IRepository<Comment> commentRepo,
         IRepository<City> cityRepo,
         IReputationService reputationService,
         IIssueAnalysisQueue issueAnalysisQueue,
-        UserManager<ApplicationUser> userManager,
         ILogger<IssueService> logger,
         IHttpClientFactory httpClientFactory)
     {
@@ -50,11 +42,9 @@ public class IssueService : IIssueService
         _tagRepo = tagRepo;
         _voteRepo = voteRepo;
         _viewEventRepo = viewEventRepo;
-        _commentRepo = commentRepo;
         _cityRepo = cityRepo;
         _reputationService = reputationService;
         _issueAnalysisQueue = issueAnalysisQueue;
-        _userManager = userManager;
         _logger = logger;
         _httpClientFactory = httpClientFactory;
     }

@@ -1,5 +1,4 @@
 using FixIt.Services.Analytics;
-using FixIt.Services.Analytics.Models;
 using FixIt.Services.Email;
 using FixIt.Data.Repository.Contracts;
 using FixIt.Models.Users;

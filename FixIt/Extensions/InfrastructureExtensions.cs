@@ -5,7 +5,6 @@ using FixIt.Services;
 using FixIt.Services.Constants;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.Threading.RateLimiting;
 

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.AspNetCore.Http;
 using MongoDB.Driver;
 
 namespace FixIt.Controllers;

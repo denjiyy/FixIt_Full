@@ -7,7 +7,6 @@ using FixIt.Models.Infrastructure;
 using FixIt.Models.Users;
 using FixIt.Services.Constants;
 using MongoDB.Driver;
-using FixIt.Services.Contracts;
 using FixIt.Services.Gamification;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.HttpOverrides;

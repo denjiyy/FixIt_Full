@@ -1,6 +1,5 @@
 using Xunit;
 using FixIt.Models.Engagement;
-using System;
 
 namespace FixIt.Tests.Models;
 

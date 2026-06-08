@@ -1,4 +1,3 @@
-using AspNetCore.Identity.Mongo.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +14,6 @@ namespace FixIt.Areas.Admin.Pages.Users;
 public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<MongoRole> _roleManager;
     private readonly ILogger<IndexModel> _logger;
     private readonly IAuditService _auditService;
 
@@ -28,10 +26,9 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? SearchTerm { get; set; }
 
-    public IndexModel(UserManager<ApplicationUser> userManager, RoleManager<MongoRole> roleManager, ILogger<IndexModel> logger, IAuditService auditService)
+    public IndexModel(UserManager<ApplicationUser> userManager, ILogger<IndexModel> logger, IAuditService auditService)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _logger = logger;
         _auditService = auditService;
     }

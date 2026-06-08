@@ -1,5 +1,4 @@
 using FixIt.Extensions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using FixIt.Services.Contracts;
@@ -24,7 +23,6 @@ public class IssuesController : ControllerBase
 {
     private readonly IIssueService _issueService;
     private readonly ICommentService _commentService;
-    private readonly ITagService _tagService;
     private readonly IIssueAnalysisService _analysisService;
     private readonly IMediaService _mediaService;
     private readonly IRepository<ApplicationUser> _userRepo;
@@ -35,7 +33,6 @@ public class IssuesController : ControllerBase
     public IssuesController(
         IIssueService issueService,
         ICommentService commentService,
-        ITagService tagService,
         IIssueAnalysisService analysisService,
         IMediaService mediaService,
         IRepository<ApplicationUser> userRepo,
@@ -45,7 +42,6 @@ public class IssuesController : ControllerBase
     {
         _issueService = issueService;
         _commentService = commentService;
-        _tagService = tagService;
         _analysisService = analysisService;
         _mediaService = mediaService;
         _userRepo = userRepo;

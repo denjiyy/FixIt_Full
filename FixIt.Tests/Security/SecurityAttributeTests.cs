@@ -4,7 +4,6 @@ using FixIt.Extensions;
 using FixIt.Pages.Issues;
 using FixIt.Services.Constants;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Xunit;
 
