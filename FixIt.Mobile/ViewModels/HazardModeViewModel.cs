@@ -8,102 +8,188 @@ using FixIt.Mobile.Services.Contracts;
 
 namespace FixIt.Mobile.ViewModels;
 
-public partial class HazardModeViewModel : ObservableObject
+public partial class HazardModeViewModel : ObservableObject, IDisposable
 {
-    private readonly IApiService _api;
     private readonly IAnalyticsService _analytics;
+    private readonly IApiService _api;
+    private readonly IAuthService _auth;
+    private readonly IPerformanceService _performance;
+    private CancellationTokenSource _cts = new();
+    private bool _disposed;
+    private bool _subscribed;
 
-    public HazardModeViewModel(IApiService api, IAnalyticsService analytics)
+    public HazardModeViewModel(IApiService api, IAuthService auth, IAnalyticsService analytics, IPerformanceService performance)
     {
         _api = api;
+        _auth = auth;
         _analytics = analytics;
+        _performance = performance;
+        IsLoggedIn = _auth.IsLoggedIn;
+        SubscribeAuth();
     }
-
-    [ObservableProperty] private HtmlWebViewSource? _mapSource;
-    [ObservableProperty] private bool _isLoading;
-    [ObservableProperty] private bool _isReporting;
-    [ObservableProperty] private bool _showReportForm;
-
-    [ObservableProperty] private string _hazardType = string.Empty;
-    [ObservableProperty] private string _hazardSeverity = string.Empty;
-    [ObservableProperty] private string _hazardTitle = string.Empty;
-    [ObservableProperty] private string _hazardDescription = string.Empty;
-    [ObservableProperty] private double _selectedLatitude;
-    [ObservableProperty] private double _selectedLongitude;
 
     public ObservableCollection<SafetyHazard> Hazards { get; } = [];
 
-    public string[] HazardTypes { get; } = ["Crime", "Accident", "Construction", "Pothole", "Flooding", "Other"];
-    public string[] SeverityLevels { get; } = ["Low", "Medium", "High", "Critical"];
+    [ObservableProperty]
+    private HtmlWebViewSource? _mapSource;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
+    [ObservableProperty]
+    private bool _isEmpty;
+
+    [ObservableProperty]
+    private bool _isLoggedIn;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     public async Task OnAppearingAsync()
     {
+        SubscribeAuth();
         await _analytics.TrackScreen("HazardMode");
-        await LoadHazardsAsync();
+        if (Hazards.Count == 0)
+        {
+            await LoadHazardsAsync(_cts.Token);
+        }
     }
 
-    private async Task LoadHazardsAsync()
+    public void OnDisappearing()
+    {
+        CancelAndRenew();
+        UnsubscribeAuth();
+    }
+
+    partial void OnErrorMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasError));
+    }
+
+    [RelayCommand]
+    private async Task LoadHazardsAsync(CancellationToken ct)
     {
         try
         {
             IsLoading = true;
-            var hazards = await _api.GetCriticalHazardsAsync();
-            Hazards.Clear();
-            foreach (var h in hazards) Hazards.Add(h);
-            MapSource = MapHtmlBuilder.BuildHazardMap(hazards);
-        }
-        catch (Exception ex) { await _analytics.TrackError(ex); }
-        finally { IsLoading = false; }
-    }
-
-    [RelayCommand]
-    private void ToggleReportForm()
-    {
-        ShowReportForm = !ShowReportForm;
-        if (ShowReportForm)
-        {
-            HazardType = string.Empty;
-            HazardSeverity = string.Empty;
-            HazardTitle = string.Empty;
-            HazardDescription = string.Empty;
-        }
-    }
-
-    [RelayCommand]
-    private async Task SubmitHazardAsync(CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(HazardType) || string.IsNullOrWhiteSpace(HazardSeverity)
-            || string.IsNullOrWhiteSpace(HazardTitle) || string.IsNullOrWhiteSpace(HazardDescription))
-            return;
-
-        try
-        {
-            IsReporting = true;
-            HapticService.Click();
-            var result = await _api.ReportHazardAsync(
-                HazardType, HazardSeverity, HazardTitle.Trim(), HazardDescription.Trim(),
-                SelectedLatitude, SelectedLongitude, ct);
-
-            if (result.Success)
+            ErrorMessage = string.Empty;
+            using (_performance.StartTrace("LoadHazardMode"))
             {
-                ShowReportForm = false;
-                await LoadHazardsAsync();
+                var hazards = await _api.GetCriticalHazardsAsync(ct);
+                Hazards.Clear();
+                foreach (var hazard in hazards)
+                {
+                    hazard.CanConfirm = IsLoggedIn;
+                    Hazards.Add(hazard);
+                }
+
+                MapSource = MapHtmlBuilder.BuildHazardMap(Hazards);
+                IsEmpty = Hazards.Count == 0;
             }
         }
-        catch (Exception ex) { await _analytics.TrackError(ex); }
-        finally { IsReporting = false; }
+        catch (OperationCanceledException ex)
+        {
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "hazard_mode_cancelled" });
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = LocalizationService.Get("Common_Error_Generic");
+            await _analytics.TrackError(ex);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     [RelayCommand]
-    private async Task ConfirmHazardAsync(SafetyHazard? hazard, CancellationToken ct)
+    private async Task ConfirmHazardAsync(string? hazardId, CancellationToken ct)
     {
-        if (hazard == null) return;
-        HapticService.Click();
-        var result = await _api.ConfirmHazardAsync(hazard.Id, ct);
-        if (result.Success)
+        if (string.IsNullOrWhiteSpace(hazardId) || !IsLoggedIn)
         {
-            hazard.Confirmations++;
-            hazard.CanConfirm = false;
+            return;
         }
+
+        HapticService.Click();
+        try
+        {
+            var result = await _api.ConfirmHazardAsync(hazardId, ct);
+            if (result.Success)
+            {
+                var hazard = Hazards.FirstOrDefault(h => h.Id == hazardId);
+                if (hazard != null)
+                {
+                    hazard.Confirmations += 1;
+                }
+
+                MapSource = MapHtmlBuilder.BuildHazardMap(Hazards);
+            }
+            else
+            {
+                ErrorMessage = result.Error ?? LocalizationService.Get("Common_Error_Generic");
+            }
+        }
+        catch (OperationCanceledException ex)
+        {
+            await _analytics.TrackError(ex, new Dictionary<string, string> { ["reason"] = "hazard_mode_confirm_cancelled" });
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = LocalizationService.Get("Common_Error_Generic");
+            await _analytics.TrackError(ex);
+        }
+    }
+
+    private void OnLoginStateChanged(object? sender, bool isLoggedIn)
+    {
+        IsLoggedIn = isLoggedIn;
+        foreach (var hazard in Hazards)
+        {
+            hazard.CanConfirm = isLoggedIn;
+        }
+    }
+
+    private void SubscribeAuth()
+    {
+        if (_subscribed)
+        {
+            return;
+        }
+
+        _auth.LoginStateChanged += OnLoginStateChanged;
+        _subscribed = true;
+    }
+
+    private void UnsubscribeAuth()
+    {
+        if (!_subscribed)
+        {
+            return;
+        }
+
+        _auth.LoginStateChanged -= OnLoginStateChanged;
+        _subscribed = false;
+    }
+
+    private void CancelAndRenew()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts = new CancellationTokenSource();
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        UnsubscribeAuth();
+        _cts.Cancel();
+        _cts.Dispose();
     }
 }

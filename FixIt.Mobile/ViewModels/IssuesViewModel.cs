@@ -203,7 +203,7 @@ public partial class IssuesViewModel : ObservableObject, IDisposable
     private async Task GoToHazardMapAsync(CancellationToken ct)
     {
         HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMode);
     }
 
     private async Task LoadIssuesInternalAsync(bool forceRefresh, CancellationToken ct)

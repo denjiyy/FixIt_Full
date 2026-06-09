@@ -56,7 +56,7 @@
                     <ImageButton Source="map.png" WidthRequest="42" HeightRequest="42"
                                  Padding="9" BackgroundColor="Transparent"
                                  Command="{Binding GoToHazardMapCommand}"
-                                 SemanticProperties.Description="{local:Localize Key=HazardMap_Title}">
+                                 SemanticProperties.Description="{local:Localize Key=HazardMode_Title}">
                         <ImageButton.Behaviors>
                             <toolkit:IconTintColorBehavior TintColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
                         </ImageButton.Behaviors>

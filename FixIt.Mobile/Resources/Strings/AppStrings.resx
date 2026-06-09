@@ -192,10 +192,9 @@
   <data name="Detail_IssuePhoto" xml:space="preserve"><value>Issue photo</value></data>
   <data name="Detail_Upvote" xml:space="preserve"><value>Upvote</value></data>
   <data name="Detail_Downvote" xml:space="preserve"><value>Downvote</value></data>
-  <data name="HazardMap_Title" xml:space="preserve"><value>Hazard Map</value></data>
-  <data name="HazardMap_Empty" xml:space="preserve"><value>No mapped hazards are available right now.</value></data>
-  <data name="HazardMap_Confirm" xml:space="preserve"><value>Confirm</value></data>
-  <data name="HazardMap_Confirmations" xml:space="preserve"><value>Confirmations</value></data>
+  <data name="HazardMode_Empty" xml:space="preserve"><value>No mapped hazards are available right now.</value></data>
+  <data name="HazardMode_Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="HazardMode_Confirmations" xml:space="preserve"><value>Confirmations</value></data>
   <data name="Leaderboard_Title" xml:space="preserve"><value>Leaderboard</value></data>
   <data name="Leaderboard_Weekly" xml:space="preserve"><value>Weekly</value></data>
   <data name="Leaderboard_Monthly" xml:space="preserve"><value>Monthly</value></data>
@@ -287,11 +286,7 @@
   <data name="ConnectedAccounts_Link" xml:space="preserve"><value>Link</value></data>
   <data name="ConnectedAccounts_Unlink" xml:space="preserve"><value>Unlink</value></data>
   <data name="ConnectedAccounts_Empty" xml:space="preserve"><value>No accounts linked yet</value></data>
-  <data name="HazardMode_Title" xml:space="preserve"><value>Hazard Mode</value></data>
-  <data name="HazardMode_Report" xml:space="preserve"><value>Report Hazard</value></data>
-  <data name="HazardMode_Type" xml:space="preserve"><value>Hazard Type</value></data>
-  <data name="HazardMode_Severity" xml:space="preserve"><value>Severity</value></data>
-  <data name="HazardMode_Details" xml:space="preserve"><value>Description</value></data>
+  <data name="HazardMode_Title" xml:space="preserve"><value>Hazard Map</value></data>
   <data name="Report_Tags" xml:space="preserve"><value>Tags</value></data>
   <data name="Report_TagsHint" xml:space="preserve"><value>Add tags separated by commas</value></data>
   <data name="Report_AISuggestions" xml:space="preserve"><value>AI Suggestions</value></data>

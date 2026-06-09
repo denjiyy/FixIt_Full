@@ -23,7 +23,6 @@ public static class AppConstants
     public const string RouteAccountTabAbsolute = $"//{RouteAccountTab}";
     public const string RouteIssueDetail = "issue-detail";
     public const string RouteMyIssues = "my-issues";
-    public const string RouteHazardMap = "hazard-map";
     public const string RouteLeaderboard = "leaderboard";
     public const string RouteHealthReport = "health-report";
     public const string RoutePublicProfile = "public-profile";

@@ -41,7 +41,6 @@ public partial class AppShell : Shell
 
         Routing.RegisterRoute(AppConstants.RouteIssueDetail, typeof(IssueDetailPage));
         Routing.RegisterRoute(AppConstants.RouteMyIssues, typeof(MyIssuesPage));
-        Routing.RegisterRoute(AppConstants.RouteHazardMap, typeof(HazardMapPage));
         Routing.RegisterRoute(AppConstants.RouteLeaderboard, typeof(LeaderboardPage));
         Routing.RegisterRoute(AppConstants.RouteHealthReport, typeof(HealthReportPage));
         Routing.RegisterRoute(AppConstants.RoutePublicProfile, typeof(PublicProfilePage));

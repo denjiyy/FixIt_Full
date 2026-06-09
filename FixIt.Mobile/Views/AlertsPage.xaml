@@ -30,7 +30,7 @@
                 <ImageButton Grid.Column="1" Source="map.png" WidthRequest="42" HeightRequest="42"
                              Padding="9" BackgroundColor="Transparent"
                              Command="{Binding NavigateToMapCommand}"
-                             SemanticProperties.Description="{local:Localize Key=HazardMap_Title}" />
+                             SemanticProperties.Description="{local:Localize Key=HazardMode_Title}" />
             </Grid>
         </Border>
 

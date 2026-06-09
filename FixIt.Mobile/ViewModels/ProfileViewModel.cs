@@ -198,7 +198,7 @@ public partial class ProfileViewModel : ObservableObject, IDisposable
     private async Task ViewHazardMapAsync(CancellationToken ct)
     {
         HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMode);
     }
 
     [RelayCommand]

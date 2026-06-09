@@ -13,7 +13,36 @@ public partial class HazardModePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        if (BindingContext is HazardModeViewModel vm)
-            await vm.OnAppearingAsync();
+
+        HazardModeRoot.Opacity = 0;
+        HazardModeRoot.TranslationY = 24;
+        var animationTask = Task.WhenAll(
+            HazardModeRoot.FadeTo(1, 350, Easing.CubicOut),
+            HazardModeRoot.TranslateTo(0, 0, 350, Easing.CubicOut));
+
+        if (BindingContext is HazardModeViewModel viewModel)
+        {
+            await viewModel.OnAppearingAsync();
+        }
+
+        await animationTask;
+    }
+
+    protected override void OnDisappearing()
+    {
+        if (BindingContext is HazardModeViewModel viewModel)
+        {
+            viewModel.OnDisappearing();
+        }
+
+        base.OnDisappearing();
+    }
+
+    private async void OnConfirmClicked(object? sender, EventArgs e)
+    {
+        if (BindingContext is HazardModeViewModel viewModel && sender is Button { CommandParameter: string hazardId })
+        {
+            await viewModel.ConfirmHazardCommand.ExecuteAsync(hazardId);
+        }
     }
 }

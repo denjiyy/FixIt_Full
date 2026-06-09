@@ -144,7 +144,7 @@ public partial class AlertsViewModel : ObservableObject, IDisposable
     private async Task NavigateToMapAsync(CancellationToken ct)
     {
         HapticService.Click();
-        await Shell.Current.GoToAsync(AppConstants.RouteHazardMap);
+        await Shell.Current.GoToAsync(AppConstants.RouteHazardMode);
     }
 
     private void OnLoginStateChanged(object? sender, bool isLoggedIn)

@@ -167,10 +167,9 @@
   <data name="Detail_IssuePhoto" xml:space="preserve"><value>Снимка към сигнала</value></data>
   <data name="Detail_Upvote" xml:space="preserve"><value>Подкрепи</value></data>
   <data name="Detail_Downvote" xml:space="preserve"><value>Не подкрепям</value></data>
-  <data name="HazardMap_Title" xml:space="preserve"><value>Карта на опасностите</value></data>
-  <data name="HazardMap_Empty" xml:space="preserve"><value>В момента няма опасности с местоположение.</value></data>
-  <data name="HazardMap_Confirm" xml:space="preserve"><value>Потвърди</value></data>
-  <data name="HazardMap_Confirmations" xml:space="preserve"><value>Потвърждения</value></data>
+  <data name="HazardMode_Empty" xml:space="preserve"><value>В момента няма опасности с местоположение.</value></data>
+  <data name="HazardMode_Confirm" xml:space="preserve"><value>Потвърди</value></data>
+  <data name="HazardMode_Confirmations" xml:space="preserve"><value>Потвърждения</value></data>
   <data name="Leaderboard_Title" xml:space="preserve"><value>Класация</value></data>
   <data name="Leaderboard_Weekly" xml:space="preserve"><value>Седмична</value></data>
   <data name="Leaderboard_Monthly" xml:space="preserve"><value>Месечна</value></data>
@@ -278,11 +277,7 @@
   <data name="ForgotPassword_Send" xml:space="preserve"><value>Изпрати връзка за нулиране</value></data>
   <data name="ForgotPassword_Success" xml:space="preserve"><value>Ако съществува акаунт с този имейл, изпратихме връзка за нулиране.</value></data>
   <data name="ForgotPassword_Title" xml:space="preserve"><value>Забравена парола</value></data>
-  <data name="HazardMode_Details" xml:space="preserve"><value>Описание</value></data>
-  <data name="HazardMode_Report" xml:space="preserve"><value>Подай сигнал за опасност</value></data>
-  <data name="HazardMode_Severity" xml:space="preserve"><value>Сериозност</value></data>
-  <data name="HazardMode_Title" xml:space="preserve"><value>Режим за опасности</value></data>
-  <data name="HazardMode_Type" xml:space="preserve"><value>Тип опасност</value></data>
+  <data name="HazardMode_Title" xml:space="preserve"><value>Карта на опасностите</value></data>
   <data name="Health_OpenIssues" xml:space="preserve"><value>Отворени сигнали</value></data>
   <data name="Health_ResolvedIssues" xml:space="preserve"><value>Решени сигнали</value></data>
   <data name="Heatmap_Title" xml:space="preserve"><value>Топлинна карта на сигналите</value></data>
