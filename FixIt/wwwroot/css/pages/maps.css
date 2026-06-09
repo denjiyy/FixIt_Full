@@ -371,6 +371,13 @@
     width: 100%;
 }
 
+/* Leaflet's `.leaflet-container a` rule outranks `.btn-primary`, so force white text here. */
+.map-popup__actions .btn-primary,
+.map-popup__actions .btn-primary:hover,
+.map-popup__actions .btn-primary:focus {
+    color: var(--white);
+}
+
 .map-sidebar-card .card-body {
     padding: 0;
 }
@@ -524,6 +531,44 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: var(--font-bold);
+}
+
+.hazard-insight-card {
+    margin: 0.75rem 1.25rem 0;
+    padding: 1rem;
+    border-radius: var(--radius-base);
+    background: var(--raw-rgba-248-250-252-0-92);
+    border: 1px solid var(--raw-rgba-219-229-240-0-88);
+}
+
+.hazard-insight-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.hazard-insight-card__badge {
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-full);
+    background: var(--primary-500);
+    color: var(--white);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.hazard-insight-card__badge.is-fallback {
+    background: var(--raw-rgba-219-229-240-0-88);
+    color: var(--text-primary);
+}
+
+.hazard-insight-card__content {
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .hazards-list {

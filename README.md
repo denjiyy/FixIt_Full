@@ -69,7 +69,7 @@ Web and mobile share the same REST API, the same domain models, and the same bus
 | Feature | Description |
 |---|---|
 | **Issue reporting** | Photos, geocoded location, descriptions, optional anonymity |
-| **Safety hazards** | Severity levels and community confirmation |
+| **Safety hazards** | Live geolocated hazard map — tap to report, severity levels, community confirmation, and AI trend insights |
 | **Voting** | Up/downvote to surface the most urgent concerns |
 | **Comments** | Threaded discussion with media attachments |
 | **Official responses** | Government entities post status updates |
@@ -640,7 +640,7 @@ The codebase carries two role representations: `ApplicationUser.Role` (enum on t
 
 ### Security headers
 
-Responses include `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`, and a configurable `Content-Security-Policy`. The CSP currently retains `'unsafe-inline'` for `script-src` because of a `<script type="application/json">` config block in `Safety/Map.cshtml`; tightening via per-request nonces is a tracked follow-up.
+Responses include `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`, and a configurable `Content-Security-Policy`. `Permissions-Policy` disables camera/microphone/payment and allows `geolocation=(self)` so the hazard map can centre on the visitor (note: browsers only expose geolocation on a secure origin — HTTPS or `localhost`). The CSP currently retains `'unsafe-inline'` for `script-src` because of a `<script type="application/json">` config block in `Safety/HazardMode.cshtml`; tightening via per-request nonces is a tracked follow-up.
 
 ### Audit logging
 

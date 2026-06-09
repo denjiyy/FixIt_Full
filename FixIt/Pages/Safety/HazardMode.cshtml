@@ -22,9 +22,6 @@
             </p>
         </div>
         <div class="hazard-mode-hero__actions">
-            <a href="/safety/map" class="btn btn-outline-primary">
-                <i class="bi bi-map me-2"></i>@Localizer["HazardMap"]
-            </a>
             <button type="button" class="btn btn-primary" id="myLocationBtn">
                 <i class="bi bi-geo-alt-fill me-2"></i>My location
             </button>
@@ -131,6 +128,16 @@
                     <span class="stat-label">@Localizer["High"]</span>
                 </div>
             </div>
+
+            <section id="hazardInsightCard" class="hazard-insight-card" aria-live="polite">
+                <div class="hazard-insight-card__header">
+                    <h3 class="h6 mb-0">Hazard trend insight</h3>
+                    <span class="hazard-insight-card__badge">AI-generated</span>
+                </div>
+                <div id="hazardInsightContent" class="hazard-insight-card__content">
+                    Select a hazard to generate a cluster insight.
+                </div>
+            </section>
 
             <div class="hazards-list" id="hazardsList">
                 <div class="hazard-list-placeholder">
@@ -378,7 +385,17 @@
                 noHazardsArea = "No hazards in your area",
                 hazardUpdatedShort = "Hazard updated",
                 hazardDeletedShort = "Hazard deleted",
-                hazardRestoredShort = "Hazard restored"
+                hazardRestoredShort = "Hazard restored",
+                insightLoadingLabel = "Generating AI trend insight...",
+                insightErrorLabel = "Could not generate AI insight. Showing fallback insight.",
+                insightFallbackLabel = "Rule-based insight",
+                insightAiLabel = "AI-generated",
+                locating = "Locating...",
+                locationDenied = "Location access is blocked. Allow location for this site in your browser, then tap My location again.",
+                locationUnavailable = "We could not determine your location. Showing the default coverage area.",
+                locationTimeout = "Locating timed out. Check your connection or device location settings and try again.",
+                locationInsecure = "Location needs a secure (HTTPS) connection. Open the site over HTTPS to use My location.",
+                locationUnsupported = "Your browser does not support location. Showing the default coverage area."
             }
         })
     </script>

@@ -22,6 +22,80 @@
         }
     }
 
+    function distanceMeters(lat1, lng1, lat2, lng2) {
+        const earthRadius = 6371000;
+        const toRad = (value) => value * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+        return 2 * earthRadius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function buildClusters(hazards, radiusMeters) {
+        const clusters = [];
+
+        hazards.forEach((hazard) => {
+            let cluster = clusters.find((candidate) =>
+                distanceMeters(candidate.centerLat, candidate.centerLng, hazard.latitude, hazard.longitude) <= radiusMeters);
+
+            if (!cluster) {
+                cluster = {
+                    id: `cluster-${clusters.length + 1}`,
+                    centerLat: hazard.latitude,
+                    centerLng: hazard.longitude,
+                    hazards: []
+                };
+                clusters.push(cluster);
+            }
+
+            cluster.hazards.push(hazard);
+            cluster.centerLat = cluster.hazards.reduce((sum, item) => sum + item.latitude, 0) / cluster.hazards.length;
+            cluster.centerLng = cluster.hazards.reduce((sum, item) => sum + item.longitude, 0) / cluster.hazards.length;
+        });
+
+        return clusters;
+    }
+
+    function buildClusterPayload(cluster) {
+        const grouped = new Map();
+
+        cluster.hazards.forEach((hazard) => {
+            grouped.set(hazard.type, (grouped.get(hazard.type) || 0) + 1);
+        });
+
+        const createdDates = cluster.hazards
+            .map((hazard) => new Date(hazard.createdAt))
+            .filter((value) => !Number.isNaN(value.valueOf()))
+            .sort((a, b) => a - b);
+
+        return {
+            latitude: cluster.centerLat,
+            longitude: cluster.centerLng,
+            totalReports: cluster.hazards.length,
+            totalConfirmations: cluster.hazards.reduce((sum, hazard) => sum + (hazard.confirmations || 0), 0),
+            fromUtc: createdDates.length ? createdDates[0].toISOString() : null,
+            toUtc: createdDates.length ? createdDates[createdDates.length - 1].toISOString() : null,
+            hazardTypes: Array.from(grouped.entries()).map(([type, count]) => ({ type, count }))
+        };
+    }
+
+    function buildFallbackInsight(cluster) {
+        const payload = buildClusterPayload(cluster);
+        const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+        const dominant = payload.hazardTypes.sort((left, right) => right.count - left.count)[0];
+        const dominantText = dominant
+            ? plural(dominant.count, `${dominant.type.toLowerCase()} report`)
+            : plural(payload.totalReports, 'mixed report');
+        const from = payload.fromUtc ? new Date(payload.fromUtc).toLocaleDateString() : 'recent period';
+        const to = payload.toUtc ? new Date(payload.toUtc).toLocaleDateString() : 'today';
+
+        return `This area has ${dominantText} between ${from} and ${to}, with ${plural(payload.totalConfirmations, 'confirmation')} from residents.`;
+    }
+
     onReady(() => {
         if (typeof window.L === 'undefined') {
             return;
@@ -41,6 +115,7 @@
         let reportLocationLng = null;
         let reportLocationAddress = '';
         let userLocation = { lat: 42.7339, lng: 25.4858 };
+        let clusters = [];
 
         const localized = {
             yourLocation: 'Your location',
@@ -76,7 +151,17 @@
             noHazardsArea: 'No hazards in your area',
             hazardUpdatedShort: 'Hazard updated',
             hazardDeletedShort: 'Hazard deleted',
-            hazardRestoredShort: 'Hazard restored'
+            hazardRestoredShort: 'Hazard restored',
+            insightLoadingLabel: 'Generating AI trend insight...',
+            insightErrorLabel: 'Could not generate AI insight. Showing fallback insight.',
+            insightFallbackLabel: 'Rule-based insight',
+            insightAiLabel: 'AI-generated',
+            locating: 'Locating...',
+            locationDenied: 'Location access is blocked. Allow location for this site in your browser, then tap My location again.',
+            locationUnavailable: 'We could not determine your location. Showing the default coverage area.',
+            locationTimeout: 'Locating timed out. Check your connection or device location settings and try again.',
+            locationInsecure: 'Location needs a secure (HTTPS) connection. Open the site over HTTPS to use My location.',
+            locationUnsupported: 'Your browser does not support location. Showing the default coverage area.'
         };
 
         if (config.localized && typeof config.localized === 'object') {
@@ -134,6 +219,11 @@
         elements.myLocationBtn = document.getElementById('myLocationBtn');
         elements.submitQuickReportBtn = document.getElementById('submitQuickReportBtn');
         elements.saveHazardUpdateBtn = document.getElementById('saveHazardUpdateBtn');
+        elements.insightCard = document.getElementById('hazardInsightCard');
+        elements.insightContent = document.getElementById('hazardInsightContent');
+        elements.insightBadge = elements.insightCard?.querySelector('.hazard-insight-card__badge') || null;
+        const insightPlaceholder = (elements.insightContent?.textContent || 'Select a hazard to generate a cluster insight.').trim();
+        const myLocationDefaultHtml = elements.myLocationBtn?.innerHTML || '';
 
         if (!elements.hazardsList) {
             return;
@@ -144,6 +234,7 @@
         bindEvents();
         initializeMap();
         loadNearbyHazards();
+        openDeepLinkedHazard();
 
         if (hazardRefreshInterval) {
             clearInterval(hazardRefreshInterval);
@@ -151,16 +242,7 @@
 
         hazardRefreshInterval = setInterval(loadNearbyHazards, HAZARD_REFRESH_INTERVAL_MS);
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                updateMapCenter();
-                loadNearbyHazards();
-            });
-        }
+        locateUser(false);
 
         function bindEvents() {
             elements.hazardFilter?.addEventListener('input', applyFilters);
@@ -232,18 +314,74 @@
         }
 
         function focusMyLocation() {
-            if (!navigator.geolocation) {
+            locateUser(true);
+        }
+
+        // Resolve the visitor's real position and re-center the map on it.
+        // `triggeredByUser` is true for an explicit "My location" tap (we surface
+        // toasts) and false for the silent attempt on page load (console only).
+        function locateUser(triggeredByUser) {
+            // The Geolocation API only resolves in a secure context (HTTPS or localhost).
+            // Over plain HTTP it errors immediately, which is the usual reason the map
+            // stays on the default coverage area.
+            if (!window.isSecureContext) {
+                if (triggeredByUser) {
+                    showHazardNotice(localized.locationInsecure, 'danger');
+                } else {
+                    console.warn('[hazard-mode] geolocation unavailable: insecure context (needs HTTPS).');
+                }
                 return;
             }
 
-            navigator.geolocation.getCurrentPosition((position) => {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                updateMapCenter();
-                loadNearbyHazards();
-            });
+            if (!navigator.geolocation) {
+                if (triggeredByUser) {
+                    showHazardNotice(localized.locationUnsupported, 'danger');
+                }
+                return;
+            }
+
+            setLocating(true);
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocating(false);
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    updateMapCenter();
+                    loadNearbyHazards();
+                },
+                (error) => {
+                    setLocating(false);
+                    let message = localized.locationUnavailable;
+                    if (error.code === error.PERMISSION_DENIED) {
+                        message = localized.locationDenied;
+                    } else if (error.code === error.TIMEOUT) {
+                        message = localized.locationTimeout;
+                    }
+
+                    // Keep the default coverage area; only nag on an explicit request.
+                    if (triggeredByUser) {
+                        showHazardNotice(message, 'danger');
+                    } else {
+                        console.warn(`[hazard-mode] geolocation failed: ${message}`);
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        function setLocating(isLocating) {
+            const btn = elements.myLocationBtn;
+            if (!btn) {
+                return;
+            }
+
+            btn.disabled = isLocating;
+            btn.innerHTML = isLocating
+                ? `<i class="bi bi-geo-alt me-2"></i>${escapeHtml(localized.locating)}`
+                : myLocationDefaultHtml;
         }
 
         function updateMapCenter() {
@@ -361,6 +499,7 @@
 
             Object.values(hazardMarkers).forEach((marker) => map.removeLayer(marker));
             hazardMarkers = {};
+            clusters = [];
 
             if (!hazards.length) {
                 elements.hazardsList.innerHTML = `
@@ -370,6 +509,9 @@
                         <p class="mb-0">No incidents currently match the live radius around the selected location.</p>
                     </div>
                 `;
+                if (!selectedHazardId) {
+                    resetInsight();
+                }
                 return;
             }
 
@@ -437,6 +579,14 @@
                 marker.on('mouseout', () => marker.setStyle({ radius: 10, weight: 2 }));
             });
 
+            clusters = buildClusters(hazards, 320);
+            if (!selectedHazardId) {
+                const topCluster = clusters.slice().sort((left, right) => right.hazards.length - left.hazards.length)[0];
+                if (topCluster) {
+                    setInsightContent(buildFallbackInsight(topCluster), false);
+                }
+            }
+
             applyFilters();
         }
 
@@ -473,6 +623,18 @@
                 marker.openPopup();
                 marker.setStyle({ radius: 13, weight: 3 });
                 window.setTimeout(() => marker.setStyle({ radius: 10, weight: 2 }), 220);
+            }
+
+            const cluster = findClusterByHazardId(selectedHazardId);
+            if (cluster) {
+                streamInsight(cluster);
+            }
+        }
+
+        function openDeepLinkedHazard() {
+            const hazardId = new URLSearchParams(window.location.search).get('hazardId');
+            if (hazardId) {
+                showHazardDetail(hazardId);
             }
         }
 
@@ -726,6 +888,122 @@
                 loadNearbyHazards();
             } catch {
                 showHazardNotice(localized.errorRestoringHazard, 'danger');
+            }
+        }
+
+        function findClusterByHazardId(hazardId) {
+            return clusters.find((cluster) => cluster.hazards.some((hazard) => String(hazard.id) === String(hazardId))) || null;
+        }
+
+        function setInsightLoading() {
+            if (!elements.insightContent || !elements.insightBadge) {
+                return;
+            }
+
+            elements.insightBadge.textContent = localized.insightAiLabel;
+            elements.insightBadge.classList.remove('is-fallback');
+            elements.insightContent.innerHTML = `
+                <div class="app-inline-state app-inline-state--loading" role="status">
+                    <span class="app-skeleton" style="width: 1rem; height: 1rem;"></span>
+                    <span>${escapeHtml(localized.insightLoadingLabel)}</span>
+                </div>
+            `;
+        }
+
+        function setInsightContent(content, aiGenerated) {
+            if (!elements.insightContent || !elements.insightBadge) {
+                return;
+            }
+
+            elements.insightBadge.textContent = aiGenerated ? localized.insightAiLabel : localized.insightFallbackLabel;
+            elements.insightBadge.classList.toggle('is-fallback', !aiGenerated);
+            elements.insightContent.textContent = content;
+        }
+
+        function resetInsight() {
+            if (!elements.insightContent || !elements.insightBadge) {
+                return;
+            }
+
+            elements.insightBadge.textContent = localized.insightAiLabel;
+            elements.insightBadge.classList.remove('is-fallback');
+            elements.insightContent.textContent = insightPlaceholder;
+        }
+
+        async function streamInsight(cluster) {
+            if (!elements.insightContent) {
+                return;
+            }
+
+            setInsightLoading();
+            let streamedText = '';
+
+            try {
+                const response = await fetch('/api/safety/insights/cluster/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(buildClusterPayload(cluster))
+                });
+
+                if (!response.ok || !response.body) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let pending = '';
+                let completeEvent = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    pending += decoder.decode(value, { stream: true });
+                    const lines = pending.split('\n');
+                    pending = lines.pop() || '';
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed) continue;
+
+                        let event;
+                        try {
+                            event = JSON.parse(trimmed);
+                        } catch {
+                            continue;
+                        }
+
+                        if (event.type === 'chunk' && typeof event.text === 'string') {
+                            streamedText += event.text;
+                            setInsightContent(streamedText, event.aiGenerated !== false);
+                        }
+
+                        if (event.type === 'complete') {
+                            completeEvent = event;
+                        }
+
+                        if (event.type === 'error') {
+                            throw new Error(event.message || 'Insight stream failed.');
+                        }
+                    }
+                }
+
+                if (completeEvent && typeof completeEvent.content === 'string' && completeEvent.content.trim().length > 0) {
+                    setInsightContent(completeEvent.content, completeEvent.aiGenerated !== false);
+                    return;
+                }
+
+                if (streamedText.trim().length > 0) {
+                    setInsightContent(streamedText, true);
+                    return;
+                }
+
+                throw new Error('Empty streamed insight');
+            } catch {
+                setInsightContent(buildFallbackInsight(cluster), false);
+                if (typeof window.FixItNotify === 'function') {
+                    window.FixItNotify(localized.insightErrorLabel, 'warning');
+                }
             }
         }
 

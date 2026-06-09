@@ -26,8 +26,7 @@ End-to-end regression walk of the FixIt production deployment.
 | b1 | Issues list | `/issues` | 200 | 9 issue cards rendered, status/priority/sort filter toolbar present, AI natural-language filter input present. Single-page result so pagination not visible. |
 | b2 | Cities | `/Cities` | 200 | 9 Bulgarian city cards (page 1/3), country chip filter rendered. |
 | b3 | Leaderboards | `/Leaderboards` | 200 | Weekly/Monthly/All-Time tabs present, each currently showing "No entries yet" (empty-state copy). |
-| b4 | Safety dropdown → Hazard Mode | `/safety/hazard-mode` | 200 | Hazard map container, sidebar copy "Live hazard reporting across Ruse", category chips, severity legend, "0 Total hazards" empty state. |
-| b5 | Safety dropdown → Hazard Map | `/safety/map` | 200 | Map container, AI insight ("Select a hazard to generate a cluster insight"), Hazard Mode cross-link. |
+| b4 | Safety dropdown → Hazard Mode | `/safety/hazard-mode` | 200 | Hazard map container, sidebar copy "Live hazard reporting across Ruse", category chips, severity legend, "0 Total hazards" empty state, AI trend-insight card ("Select a hazard to generate a cluster insight"). |
 | b6 | Analytics dropdown → Health Reports | `/HealthReports` | 200 | Community Health Score dashboard rendered (score 55.0), issue priority breakdown, trending infra-problems table. No explicit city-selector dropdown surfaced in the HTML response — see §3 follow-up. |
 | j | Cities (heatmap launching point) | `/Cities` | 200 | See b2. The "View Heatmaps" navbar item points at `/Cities` rather than a dedicated heatmap route. |
 | l | Issue detail | `/issues/6a02322515134d03cabaa644` | 200 | Title, body, location coordinates, AI analysis card with category + severity, comment section (empty), vote widget (9 ▲). |
