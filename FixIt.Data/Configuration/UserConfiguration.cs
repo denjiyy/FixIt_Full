@@ -11,17 +11,27 @@ public class UserConfiguration : ICollectionConfigurator
     {
         var users = db.GetCollection<ApplicationUser>(MongoCollectionNames.Users);
 
-        // Required for ASP.NET Identity
+        // This is the same collection AspNetCore.Identity.Mongo manages, so an
+        // equivalent index may already exist with different options/name. Treat a
+        // create conflict as benign rather than failing startup.
         var normalizedUsernameIndex = new CreateIndexModel<ApplicationUser>(
             Builders<ApplicationUser>.IndexKeys.Ascending(u => u.NormalizedUserName),
             new CreateIndexOptions { Unique = true, Name = "ux_users_normalizedusername" }
         );
-        await users.Indexes.CreateOneAsync(normalizedUsernameIndex);
 
         var normalizedEmailIndex = new CreateIndexModel<ApplicationUser>(
             Builders<ApplicationUser>.IndexKeys.Ascending(u => u.NormalizedEmail),
             new CreateIndexOptions { Name = "ix_users_normalizedemail" }
         );
-        await users.Indexes.CreateOneAsync(normalizedEmailIndex);
+
+        try
+        {
+            await users.Indexes.CreateOneAsync(normalizedUsernameIndex);
+            await users.Indexes.CreateOneAsync(normalizedEmailIndex);
+        }
+        catch (MongoCommandException ex) when (ex.CodeName is "IndexOptionsConflict" or "IndexKeySpecsConflict")
+        {
+            // An equivalent index already exists (created by Identity); fine.
+        }
     }
 }

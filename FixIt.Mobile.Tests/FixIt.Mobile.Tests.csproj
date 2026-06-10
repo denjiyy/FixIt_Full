@@ -31,6 +31,7 @@
     <Compile Include="../FixIt.Mobile/ViewModels/IssuesViewModel.cs" Link="Mobile/ViewModels/IssuesViewModel.cs" />
     <Compile Include="../FixIt.Mobile/ViewModels/LoginViewModel.cs" Link="Mobile/ViewModels/LoginViewModel.cs" />
     <Compile Include="../FixIt.Mobile/ViewModels/ReportIssueViewModel.cs" Link="Mobile/ViewModels/ReportIssueViewModel.cs" />
+    <Compile Include="../FixIt.Mobile/ViewModels/HazardModeViewModel.cs" Link="Mobile/ViewModels/HazardModeViewModel.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -53,7 +53,19 @@ public static class MapHtmlBuilder
         };
     }
 
-    public static HtmlWebViewSource BuildHazardMap(IEnumerable<SafetyHazard> hazards)
+    /// <summary>
+    /// Hazard map for HazardMode: renders existing hazards as severity-coloured
+    /// markers and lets the user tap/drag a single "report" pin to place a new
+    /// hazard. The report pin navigates to <c>fixit://location?lat=…&amp;lng=…</c>
+    /// so the host page can pick the coordinates up via WebView.Navigating —
+    /// the same bridge the issue-report map uses.
+    /// </summary>
+    public static HtmlWebViewSource BuildHazardMap(
+        IEnumerable<SafetyHazard> hazards,
+        double centerLatitude = 42.6977,
+        double centerLongitude = 23.3219,
+        int zoom = 13,
+        string reportPinLabel = "Drag to adjust")
     {
         var pins = hazards
             .Where(h => h.HasCoordinates)
@@ -69,21 +81,43 @@ public static class MapHtmlBuilder
             .ToList();
 
         var pinJson = JsonSerializer.Serialize(pins);
+        var labelJson = JsonSerializer.Serialize(reportPinLabel);
         return new HtmlWebViewSource
         {
-            Html = BuildHtml(42.6977, 23.3219, 12, $$"""
+            Html = BuildHtml(centerLatitude, centerLongitude, zoom, $$"""
                 const pins = {{pinJson}};
-                const bounds = [];
+                const severityColor = (value) => {
+                    switch (String(value || '').toLowerCase()) {
+                        case 'critical': return '#dc2626';
+                        case 'high': return '#ea580c';
+                        case 'medium': return '#d97706';
+                        case 'low': return '#16a34a';
+                        default: return '#2563eb';
+                    }
+                };
                 pins.forEach(pin => {
                     if (!pin.lat || !pin.lng) return;
-                    bounds.push([pin.lat, pin.lng]);
-                    L.marker([pin.lat, pin.lng])
-                        .addTo(map)
+                    L.circleMarker([pin.lat, pin.lng], {
+                        radius: 9, color: '#0f172a', weight: 2,
+                        fillColor: severityColor(pin.severity), fillOpacity: 0.85
+                    }).addTo(map)
                         .bindPopup(`<strong>${escapeHtml(pin.title)}</strong><br>${escapeHtml(pin.severity)} · ${pin.confirmations}<br>${escapeHtml(pin.address)}`);
                 });
-                if (bounds.length > 0) {
-                    map.fitBounds(bounds, { padding: [28, 28], maxZoom: 15 });
+
+                let reportMarker = null;
+                function emitReport(latlng) {
+                    window.location.href = 'fixit://location?lat=' + latlng.lat + '&lng=' + latlng.lng;
                 }
+                map.on('click', function (e) {
+                    if (!reportMarker) {
+                        reportMarker = L.marker(e.latlng, { draggable: true }).addTo(map);
+                        reportMarker.bindTooltip({{labelJson}}, { permanent: false, direction: 'top' });
+                        reportMarker.on('dragend', function () { emitReport(reportMarker.getLatLng()); });
+                    } else {
+                        reportMarker.setLatLng(e.latlng);
+                    }
+                    emitReport(e.latlng);
+                });
                 """)
         };
     }

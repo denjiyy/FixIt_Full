@@ -128,6 +128,24 @@ namespace FixIt.Mobile.ViewModels
         public string Html { get; set; } = string.Empty;
     }
 
+    public sealed class ShareTextRequest
+    {
+        public string? Title { get; set; }
+        public string? Text { get; set; }
+        public string? Subject { get; set; }
+        public string? Uri { get; set; }
+    }
+
+    public sealed class Share
+    {
+        public static Share Default { get; } = new();
+
+        public Task RequestAsync(ShareTextRequest request)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     public sealed class Location
     {
         public double Latitude { get; init; }
@@ -207,7 +225,12 @@ namespace FixIt.Mobile.Services
     public static class MapHtmlBuilder
     {
         public static HtmlWebViewSource BuildIssueMap(Issue issue) => new();
-        public static HtmlWebViewSource BuildHazardMap(IEnumerable<SafetyHazard> hazards) => new();
+        public static HtmlWebViewSource BuildHazardMap(
+            IEnumerable<SafetyHazard> hazards,
+            double centerLatitude = 42.6977,
+            double centerLongitude = 23.3219,
+            int zoom = 13,
+            string reportPinLabel = "Drag to adjust") => new();
         public static HtmlWebViewSource BuildPickerMap(double latitude, double longitude, int zoom = 15) => new();
     }
 }

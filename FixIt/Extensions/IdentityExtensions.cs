@@ -35,6 +35,14 @@ public static class IdentityExtensions
         },
         mongo =>
         {
+            // AspNetCore.Identity.Mongo derives the database from this connection
+            // string's path; with no path it silently uses its "default" database.
+            // The repositories (IRepository<ApplicationUser>, MongoDbContext) use
+            // MONGODB_DATABASE, so the connection string MUST include the same
+            // database name — otherwise Identity and the repositories diverge and
+            // every IRepository<ApplicationUser> lookup misses (e.g. admin hazard
+            // resolution would 403). Deployments: ensure MONGODB_URI ends with
+            // "/<db>" matching MONGODB_DATABASE.
             mongo.ConnectionString = mongoConnectionString;
         })
         // Registers the data-protection token providers backing

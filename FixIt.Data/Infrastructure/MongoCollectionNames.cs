@@ -2,7 +2,14 @@ namespace FixIt.Models.Infrastructure;
 
 public static class MongoCollectionNames
 {
-    public const string Users = "AspNetUsers";
+    // MUST match the collection AspNetCore.Identity.Mongo writes users to. That
+    // library defaults to "Users" (it is not configured with a custom
+    // UsersCollection), so IRepository<ApplicationUser> — and MongoDbContext /
+    // UserConfiguration — must read the same collection. A prior value of
+    // "AspNetUsers" pointed every IRepository<ApplicationUser> lookup at an empty
+    // collection, so e.g. HazardService.ResolveHazardAsync's admin re-check always
+    // failed (no user found → Forbidden).
+    public const string Users = "Users";
     public const string Cities = "cities";
     public const string Neighborhoods = "neighborhoods";
     public const string Tags = "tags";

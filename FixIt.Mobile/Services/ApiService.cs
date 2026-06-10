@@ -354,29 +354,22 @@ public class ApiService : IApiService
 
         try
         {
+            // VoteRequest.VoteType binds as the numeric VoteType enum (Up = 1,
+            // Down = -1) — the same payload the web client sends. The endpoint has
+            // no string-enum converter, so a string like "upvote" fails to bind.
             using var response = await _httpClient.PostAsJsonAsync($"{AppConstants.ApiIssues}/{Uri.EscapeDataString(issueId)}/vote", new
             {
-                voteType = upvote ? "upvote" : "downvote"
+                voteType = upvote ? 1 : -1
             }, _jsonOptions, ct);
 
-            var voteSucceeded = response.IsSuccessStatusCode;
-            if (!voteSucceeded)
+            if (!response.IsSuccessStatusCode)
             {
-                using var numericResponse = await _httpClient.PostAsJsonAsync($"{AppConstants.ApiIssues}/{Uri.EscapeDataString(issueId)}/vote", new
-                {
-                    voteType = upvote ? 1 : -1
-                }, _jsonOptions, ct);
-
-                voteSucceeded = numericResponse.IsSuccessStatusCode;
-                if (!voteSucceeded)
-                {
-                    var numericError = await ExtractApiErrorAsync(numericResponse, Localization.LocalizationService.Get("Common_Error_Generic"), ct);
-                    return new ApiResult(false, numericError);
-                }
+                var error = await ExtractApiErrorAsync(response, Localization.LocalizationService.Get("Common_Error_Generic"), ct);
+                return new ApiResult(false, error);
             }
 
-            // FIX B-10: mutate cached vote state only after one of the accepted API payloads succeeds.
-            if (voteSucceeded && _issueCache.TryGetValue(issueId, out var issue))
+            // FIX B-10: mutate cached vote state only after the API call succeeds.
+            if (_issueCache.TryGetValue(issueId, out var issue))
             {
                 issue.UserHasUpvoted = upvote;
                 issue.UserHasDownvoted = !upvote;
@@ -550,6 +543,49 @@ public class ApiService : IApiService
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"[API] Failed to load alerts. Status: {(int)response.StatusCode}");
+                return _cachedHazards;
+            }
+
+            var envelope = await DeserializeEnvelopeAsync<List<HazardDto>>(response, ct);
+            var hazards = (envelope?.Data ?? []).Select(MapHazard).ToList();
+            _cachedHazards = hazards;
+            return hazards;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[API] Network error: {ex.Message}");
+            return _cachedHazards;
+        }
+        catch (TaskCanceledException)
+        {
+            return [];
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"[API] Parse error: {ex.Message}");
+            return _cachedHazards;
+        }
+    }
+
+    public async Task<List<SafetyHazard>> GetNearbyHazardsAsync(double latitude, double longitude, double radiusKm = 10, string? cityId = null, CancellationToken ct = default)
+    {
+        if (!_connectivity.IsOnline)
+        {
+            return _cachedHazards;
+        }
+
+        var city = string.IsNullOrWhiteSpace(cityId) ? AppConstants.DefaultCityId : cityId;
+        var lat = latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var lng = longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var radius = radiusKm.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        try
+        {
+            using var response = await _httpClient.GetAsync(
+                $"{AppConstants.ApiSafety}/nearby-hazards?cityId={Uri.EscapeDataString(city)}&latitude={lat}&longitude={lng}&radiusKm={radius}", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[API] Failed to load nearby hazards. Status: {(int)response.StatusCode}");
                 return _cachedHazards;
             }
 
@@ -1407,13 +1443,18 @@ public class ApiService : IApiService
         catch { return []; }
     }
 
-    public async Task<ApiResult> ReportHazardAsync(string type, string severity, string title, string description, double latitude, double longitude, CancellationToken ct = default)
+    public async Task<ApiResult> ReportHazardAsync(string type, string severity, string title, string description, double latitude, double longitude, string? address = null, string? cityId = null, CancellationToken ct = default)
     {
+        if (!_connectivity.IsOnline)
+        {
+            return new ApiResult(false, Localization.LocalizationService.Get("Common_Offline"));
+        }
+
         try
         {
             using var response = await _httpClient.PostAsJsonAsync(
                 $"{AppConstants.ApiSafety}/hazards",
-                new { type, severity, title, description, latitude, longitude }, _jsonOptions, ct);
+                new { type, severity, title, description, latitude, longitude, address, cityId }, _jsonOptions, ct);
             return response.IsSuccessStatusCode
                 ? new ApiResult(true)
                 : new ApiResult(false, await ExtractErrorAsync(response, ct));

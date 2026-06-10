@@ -122,4 +122,76 @@ covers the §4 items above. Specifically watch for:
    in the tag store; AI-suggested tags that aren't in the DB render as
    inert chips.
 
+## 6. Addendum — hazard parity + automated test coverage (2026-06-10)
+
+This addendum records the automated-testing and mobile-parity work done after
+the production walk above.
+
+### 6.1 Mobile hazard parity (web ↔ mobile)
+The mobile `HazardModePage` was previously **read-only + confirm** (a static
+critical-hazards list). It now matches the web's "tap the map to report" flow:
+
+- `MapHtmlBuilder.BuildHazardMap` renders existing hazards as severity-coloured
+  markers **and** lets the user drop/drag a report pin that emits
+  `fixit://location?lat&lng` — the same WebView bridge the issue-report map uses.
+- `HazardModeViewModel` now loads **nearby** hazards centred on the device
+  location, and exposes an inline report form (type, severity, title,
+  description, reverse-geocoded address) that posts to the existing
+  mobile-friendly `POST /api/safety/hazards` endpoint (`ReportHazardAsync`,
+  which was implemented but previously never called).
+
+### 6.2 Test-suite coverage
+- **Integration tests: 9 → 27.** Added a Safety/hazard lifecycle suite (13) and
+  an issue lifecycle suite (5) exercising the real HTTP pipeline
+  (`WebApplicationFactory<Program>` + Mongo `Testcontainers`). The Safety suite
+  doubles as a web↔mobile contract guard for the endpoint the mobile reporter
+  now calls. See README → Testing for the covered scenarios.
+- **Mobile suite resurrected + grown: 30 → 46.** The mobile test project did not
+  compile — `HomeViewModelTests` still targeted a removed dashboard API
+  (`LoadDashboardCommand`/`TotalIssues`/`RecentIssues`), and `MauiStubs` lacked a
+  stub for the MAUI `Share` API used by `HomeViewModel`. Both were fixed (the
+  stale test rewritten against the current feed API; a `Share`/`ShareTextRequest`
+  stub added), so all 30 prior tests now actually run, plus 16 new
+  `HazardModeViewModelTests` for the report flow.
+
+### 6.3 Bugs surfaced by the new integration tests (now fixed)
+
+**Bug 1 — `IRepository<ApplicationUser>` read the wrong Mongo collection (and could read the wrong database).**
+`POST /api/safety/{id}/resolve` passed the endpoint's `AdminOnly` policy but then
+`HazardService.ResolveHazardAsync` re-checked admin via
+`_userRepo.GetByIdAsync(userId)`, which returned `null` → `UnauthorizedAccessException`
+→ `Forbid()`. Root cause (found by enumerating the test Mongo): the authenticated
+admin lived in `default.Users`, but the repository read `<configured-db>.AspNetUsers`
+— two mismatches:
+- **Collection:** `AspNetCore.Identity.Mongo` stores users in its default `Users`
+  collection (it's configured with only a connection string), but
+  `MongoCollectionNames.Users` was `"AspNetUsers"`. So *every*
+  `IRepository<ApplicationUser>` lookup (hazard resolve, the issue anonymous-posting
+  check, settings, admin-suggestions) hit an empty collection.
+- **Database:** the library derives its database from the connection string; with no
+  database in the string it falls back to `"default"`, while the repositories use
+  `MONGODB_DATABASE`.
+
+Fixes:
+- `MongoCollectionNames.Users` → `"Users"` (aligns the repository with the collection
+  Identity actually writes to; no data is in `"AspNetUsers"`, so nothing is migrated).
+- `UserConfiguration` index creation tolerates an existing-index conflict (the
+  collection is now shared with Identity).
+- `IdentityExtensions` documents that the connection string must carry the database
+  matching `MONGODB_DATABASE`; the integration fixture now embeds the test database in
+  the connection string (preserving the `admin` SCRAM auth source) so the test
+  environment mirrors a correct deployment.
+- The `ResolveHazard_AsAdmin_MarksResolved` integration test is restored and green.
+
+> Deployment note: ensure `MONGODB_URI` ends with `/<db>` matching `MONGODB_DATABASE`.
+> If a deployment has been running with a database-less URI, its Identity data is in an
+> implicit `default` database and a one-time move to `<MONGODB_DATABASE>` is needed.
+
+**Bug 2 — mobile vote payload mismatch (fixed).**
+`ApiService.VoteAsync` sent `voteType: "upvote"/"downvote"` (strings) first, which the
+server (numeric `VoteType { Down = -1, Up = 1 }`, no string-enum converter) rejected
+with 400 before a numeric-retry fallback — so every vote made a doomed extra request.
+`VoteAsync` now sends the numeric value directly, matching the web client and the
+server contract; the issue lifecycle integration test exercises the same numeric payload.
+
 End of report.

@@ -57,7 +57,23 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             return;
         }
 
-        var connectionString = _mongo.GetConnectionString();
+        // AspNetCore.Identity.Mongo derives its database from the connection
+        // string, while the repositories use MONGODB_DATABASE. A correctly
+        // configured deployment points both at the same database, so the
+        // connection string must carry the DB name — otherwise Identity falls back
+        // to its implicit "default" database and IRepository<ApplicationUser>
+        // (which reads MONGODB_DATABASE) can't see Identity's users. Embed the DB
+        // name so the test environment mirrors a correct deployment.
+        var rawUrl = MongoDB.Driver.MongoUrl.Create(_mongo.GetConnectionString());
+        var connectionString = new MongoDB.Driver.MongoUrlBuilder(_mongo.GetConnectionString())
+        {
+            DatabaseName = DatabaseName,
+            // Adding a database path would otherwise make the driver use that DB as
+            // the SCRAM auth source; the testcontainer's root user lives in "admin".
+            AuthenticationSource = string.IsNullOrEmpty(rawUrl.AuthenticationSource)
+                ? "admin"
+                : rawUrl.AuthenticationSource,
+        }.ToString();
 
         // Several Program.cs startup paths read configuration eagerly during
         // service registration (auth, Mongo bootstrap), before any

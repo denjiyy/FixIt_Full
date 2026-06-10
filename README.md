@@ -7,7 +7,7 @@ A full-stack civic engagement platform where citizens report local infrastructur
 ![MAUI](https://img.shields.io/badge/.NET%20MAUI-iOS%20%7C%20Android-512BD4?logo=dotnet)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)
 ![Railway](https://img.shields.io/badge/Deployed%20on-Railway-0B0D0E?logo=railway)
-![Tests](https://img.shields.io/badge/tests-255%20passing-success)
+![Tests](https://img.shields.io/badge/tests-394%20passing-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 Live at **[fixitfull-production.up.railway.app](https://fixitfull-production.up.railway.app)**.
@@ -47,8 +47,8 @@ Backend is **production-deployed on Railway** against MongoDB Atlas. Mobile (iOS
 - **Migration concurrency lock** — rolling deploys no longer race the same migration into a partial state.
 - **Cron-based scheduling** — leaderboard regeneration uses `Cronos` expressions; the previous `Timer + FromDays(30)` had ~5-day annual drift.
 - **CI as a real gate** — Codecov status checks block coverage regressions; vulnerable-package check on every PR.
-- **Integration tests** — `WebApplicationFactory<Program>` + Mongo `Testcontainers` for full HTTP-roundtrip auth coverage.
-- **255 tests passing** (245 unit, 5 integration, 5 service-extraction).
+- **Integration tests** — `WebApplicationFactory<Program>` + Mongo `Testcontainers` for full HTTP-roundtrip coverage of auth, the Safety/hazard lifecycle, and the issue lifecycle (report → vote → comment).
+- **394 tests passing** — 348 backend (27 integration via Testcontainers, the rest unit + service) and 46 mobile view-model/service tests.
 
 Known deferred items (Phase 4 candidates): Mongo multi-document transactions for the reputation pipeline, CSP nonces to remove `'unsafe-inline'`, and the rest of `IssueService` decomposition (vote methods → `VoteService`).
 
@@ -651,7 +651,7 @@ Responses include `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection
 ## Testing
 
 ```bash
-# Backend — unit tests (245)
+# Backend — unit + service tests (321)
 dotnet test FixIt.Tests/FixIt.Tests.csproj --filter "FullyQualifiedName!~Integration"
 
 # Backend — integration tests (require Docker)
@@ -670,6 +670,8 @@ Currently covered:
 - Admin bootstrap → `/api/auth/login` → JWT carries the `Admin` role claim.
 - Regular-user JWT does not carry the `Admin` role claim.
 - `[ApiAuthorize]` HTTP roundtrip: admin → 200, regular user → 403, no auth → 401.
+- Safety/hazard lifecycle: report (`POST /api/safety/hazards`) → fetch by id → nearby list → confirm (idempotent per user) → resolve authorization gate → soft-delete → admin restore → city statistics, plus validation (bad coordinates/type, missing city) and the unauthenticated 401 gate. This also guards the exact contract the mobile hazard reporter now depends on.
+- Issue lifecycle: create (`POST /api/issues`) → fetch by id → upvote (count increments) → comment → list comments, plus the 401 and short-title validation gates.
 
 ### Coverage gates
 

@@ -195,6 +195,22 @@
   <data name="HazardMode_Empty" xml:space="preserve"><value>No mapped hazards are available right now.</value></data>
   <data name="HazardMode_Confirm" xml:space="preserve"><value>Confirm</value></data>
   <data name="HazardMode_Confirmations" xml:space="preserve"><value>Confirmations</value></data>
+  <data name="HazardMode_Report_Heading" xml:space="preserve"><value>Report a hazard</value></data>
+  <data name="HazardMode_Report_Sub" xml:space="preserve"><value>Tap the map to drop a pin, then add a few details.</value></data>
+  <data name="HazardMode_Report_TapHint" xml:space="preserve"><value>Tap the map to place a hazard.</value></data>
+  <data name="HazardMode_Report_DragPin" xml:space="preserve"><value>Drag to adjust</value></data>
+  <data name="HazardMode_Report_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="HazardMode_Report_Severity" xml:space="preserve"><value>Severity</value></data>
+  <data name="HazardMode_Report_TitleLabel" xml:space="preserve"><value>Title</value></data>
+  <data name="HazardMode_Report_TitlePlaceholder" xml:space="preserve"><value>Short summary of the hazard</value></data>
+  <data name="HazardMode_Report_DescLabel" xml:space="preserve"><value>Description</value></data>
+  <data name="HazardMode_Report_DescPlaceholder" xml:space="preserve"><value>Describe the hazard in a little detail…</value></data>
+  <data name="HazardMode_Report_Submit" xml:space="preserve"><value>Submit hazard</value></data>
+  <data name="HazardMode_Report_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="HazardMode_Report_Success" xml:space="preserve"><value>Hazard reported. Thanks for keeping the community safe!</value></data>
+  <data name="HazardMode_Report_Error" xml:space="preserve"><value>Unable to report the hazard.</value></data>
+  <data name="HazardMode_Report_LoginRequired" xml:space="preserve"><value>Log in to report a hazard.</value></data>
+  <data name="HazardMode_Report_LocationRequired" xml:space="preserve"><value>Tap the map to set the hazard location.</value></data>
   <data name="Leaderboard_Title" xml:space="preserve"><value>Leaderboard</value></data>
   <data name="Leaderboard_Weekly" xml:space="preserve"><value>Weekly</value></data>
   <data name="Leaderboard_Monthly" xml:space="preserve"><value>Monthly</value></data>

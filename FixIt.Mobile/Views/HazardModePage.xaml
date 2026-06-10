@@ -14,84 +14,297 @@
              ios:Page.UseSafeArea="True"
              Title="{local:Localize Key=HazardMode_Title}">
 
-    <Grid x:Name="HazardModeRoot"
-          RowDefinitions="Auto,260,*"
-          RowSpacing="14"
-          Padding="20,20,20,0"
-          Opacity="0"
-          TranslationY="24">
-        <Label Grid.Row="0"
-               Text="{local:Localize Key=HazardMode_Title}"
-               Style="{StaticResource HeadlineLarge}"
-               SemanticProperties.HeadingLevel="Level1" />
+    <Grid>
+        <Grid x:Name="HazardModeRoot"
+              RowDefinitions="Auto,Auto,260,*"
+              RowSpacing="14"
+              Padding="20,20,20,0"
+              Opacity="0"
+              TranslationY="24">
+            <Label Grid.Row="0"
+                   Text="{local:Localize Key=HazardMode_Title}"
+                   Style="{StaticResource HeadlineLarge}"
+                   SemanticProperties.HeadingLevel="Level1" />
 
-        <Border Grid.Row="1"
-                Style="{StaticResource Card}"
-                Padding="0">
-            <Grid>
-                <WebView Source="{Binding MapSource}" />
-                <ActivityIndicator IsRunning="{Binding IsLoading}"
-                                   IsVisible="{Binding IsLoading}"
-                                   Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
-            </Grid>
-        </Border>
+            <Label Grid.Row="1"
+                   Text="{local:Localize Key=HazardMode_Report_TapHint}"
+                   Style="{StaticResource LabelSmall}"
+                   TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}" />
 
-        <CollectionView Grid.Row="2"
-                        ItemsSource="{Binding Hazards}"
-                        SelectionMode="None">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout Spacing="10" Padding="0,40">
-                    <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
-                        <views:SkeletonCardView />
-                        <views:SkeletonCardView />
+            <Border Grid.Row="2"
+                    Style="{StaticResource Card}"
+                    Padding="0">
+                <Grid>
+                    <WebView x:Name="HazardMapWebView"
+                             Source="{Binding MapSource}"
+                             SemanticProperties.Description="{local:Localize Key=HazardMode_Report_TapHint}" />
+                    <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                       IsVisible="{Binding IsLoading}"
+                                       Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <CollectionView Grid.Row="3"
+                            ItemsSource="{Binding Hazards}"
+                            SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout Spacing="10" Padding="0,40">
+                        <VerticalStackLayout IsVisible="{Binding IsLoading}" Spacing="0">
+                            <views:SkeletonCardView />
+                            <views:SkeletonCardView />
+                        </VerticalStackLayout>
+                        <controls:EmptyStateView IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                                                 IconSource="bell.png"
+                                                 Title="{local:Localize Key=HazardMode_Empty}" />
                     </VerticalStackLayout>
-                    <controls:EmptyStateView IsVisible="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                                             IconSource="bell.png"
-                                             Title="{local:Localize Key=HazardMode_Empty}" />
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:SafetyHazard">
-                    <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
-                        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <Label Text="{Binding Title}"
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SafetyHazard">
+                        <Border Style="{StaticResource IssueCardBorder}" Margin="0,0,0,12">
+                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label Text="{Binding Title}"
+                                           Style="{StaticResource TitleMedium}"
+                                           SemanticProperties.Description="{Binding Title}" />
+                                    <Border Grid.Column="1"
+                                            Style="{StaticResource StatusBadge}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}">
+                                        <Label Text="{Binding Severity}"
+                                               TextColor="{StaticResource White}"
+                                               FontAttributes="Bold"
+                                               FontSize="11"
+                                               CharacterSpacing="0.2"
+                                               VerticalTextAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                                <Label Grid.Row="1"
+                                       Text="{Binding Description}"
+                                       Style="{StaticResource BodyMedium}"
+                                       MaxLines="2"
+                                       LineBreakMode="TailTruncation" />
+                                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                        <Label Text="{Binding Confirmations}" Style="{StaticResource LabelSmall}" />
+                                        <Label Text="{local:Localize Key=HazardMode_Confirmations}" Style="{StaticResource LabelSmall}" />
+                                    </HorizontalStackLayout>
+                                    <Button Grid.Column="1"
+                                            Text="{local:Localize Key=HazardMode_Confirm}"
+                                            Style="{StaticResource CompactPrimaryButton}"
+                                            IsVisible="{Binding CanConfirm}"
+                                            CommandParameter="{Binding Id}"
+                                            Clicked="OnConfirmClicked" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+
+        <!-- ===== Report panel (bottom sheet, shown after a pin is dropped) ===== -->
+        <Grid IsVisible="{Binding IsReportPanelVisible}"
+              BackgroundColor="#99000000">
+            <Border VerticalOptions="End"
+                    Margin="10"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 22"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}">
+                <ScrollView MaximumHeightRequest="540">
+                    <VerticalStackLayout Padding="18" Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="{local:Localize Key=HazardMode_Report_Heading}"
                                        Style="{StaticResource TitleMedium}"
-                                       SemanticProperties.Description="{Binding Title}" />
-                                <Border Grid.Column="1"
-                                        Style="{StaticResource StatusBadge}"
-                                        BackgroundColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}">
-                                    <Label Text="{Binding Severity}"
-                                           TextColor="{StaticResource White}"
-                                           FontAttributes="Bold"
-                                           FontSize="11"
-                                           CharacterSpacing="0.2"
-                                           VerticalTextAlignment="Center" />
-                                </Border>
-                            </Grid>
-                            <Label Grid.Row="1"
-                                   Text="{Binding Description}"
-                                   Style="{StaticResource BodyMedium}"
-                                   MaxLines="2"
-                                   LineBreakMode="TailTruncation" />
-                            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
-                                    <Label Text="{Binding Confirmations}" Style="{StaticResource LabelSmall}" />
-                                    <Label Text="{local:Localize Key=HazardMode_Confirmations}" Style="{StaticResource LabelSmall}" />
-                                </HorizontalStackLayout>
-                                <Button Grid.Column="1"
-                                        Text="{local:Localize Key=HazardMode_Confirm}"
-                                        Style="{StaticResource CompactPrimaryButton}"
-                                        IsVisible="{Binding CanConfirm}"
-                                        CommandParameter="{Binding Id}"
-                                        Clicked="OnConfirmClicked" />
-                            </Grid>
+                                       SemanticProperties.HeadingLevel="Level2" />
+                                <Label Text="{local:Localize Key=HazardMode_Report_Sub}"
+                                       Style="{StaticResource LabelSmall}"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurfaceMuted}, Dark={StaticResource DarkOnSurfaceMuted}}" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1"
+                                    Text="✕"
+                                    FontSize="16"
+                                    WidthRequest="38" HeightRequest="38"
+                                    Padding="0"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}"
+                                    Command="{Binding CancelReportCommand}"
+                                    SemanticProperties.Description="{local:Localize Key=HazardMode_Report_Cancel}" />
                         </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+
+                        <!-- Type -->
+                        <Label Text="{local:Localize Key=HazardMode_Report_Type}" Style="{StaticResource Eyebrow}" />
+                        <FlexLayout BindableLayout.ItemsSource="{Binding HazardTypes}" Wrap="Wrap" JustifyContent="Start">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:HazardTypeOption">
+                                    <Border Margin="0,0,8,8"
+                                            Padding="12,8"
+                                            StrokeThickness="1"
+                                            Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                            StrokeShape="RoundRectangle 18">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnHazardTypeTapped" CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimarySoft}, Dark={StaticResource DarkPrimarySoft}}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding Label}" FontSize="12.5" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+
+                        <!-- Severity -->
+                        <Label Text="{local:Localize Key=HazardMode_Report_Severity}" Style="{StaticResource Eyebrow}" />
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                            <Border Grid.Column="0" HeightRequest="44" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                    StrokeShape="RoundRectangle 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectSeverityCommand}" CommandParameter="Low" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSeverityLow}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+                                        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightSuccess}, Dark={StaticResource DarkSuccess}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{local:Localize Key=Priority_Low}" FontSize="12.5" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSeverityLow}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource White}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <Border Grid.Column="1" HeightRequest="44" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                    StrokeShape="RoundRectangle 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectSeverityCommand}" CommandParameter="Medium" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSeverityMedium}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
+                                        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightWarning}, Dark={StaticResource DarkWarning}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{local:Localize Key=Priority_Medium}" FontSize="12.5" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSeverityMedium}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource White}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <Border Grid.Column="2" HeightRequest="44" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                    StrokeShape="RoundRectangle 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectSeverityCommand}" CommandParameter="High" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSeverityHigh}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
+                                        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{local:Localize Key=Priority_High}" FontSize="12.5" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSeverityHigh}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource White}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <Border Grid.Column="3" HeightRequest="44" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}"
+                                    StrokeShape="RoundRectangle 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectSeverityCommand}" CommandParameter="Critical" />
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSeverityCritical}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource PriorityCritical}" />
+                                        <Setter Property="Stroke" Value="{StaticResource PriorityCritical}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{local:Localize Key=Priority_Critical}" FontSize="12.5" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightOnSurface}, Dark={StaticResource DarkOnSurface}}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSeverityCritical}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource White}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </Grid>
+
+                        <!-- Title -->
+                        <Label Text="{local:Localize Key=HazardMode_Report_TitleLabel}" Style="{StaticResource Eyebrow}" />
+                        <Border Style="{StaticResource EntryCard}">
+                            <Entry Placeholder="{local:Localize Key=HazardMode_Report_TitlePlaceholder}"
+                                   Text="{Binding ReportTitle}" MaxLength="200" VerticalOptions="Center" />
+                        </Border>
+
+                        <!-- Description -->
+                        <Label Text="{local:Localize Key=HazardMode_Report_DescLabel}" Style="{StaticResource Eyebrow}" />
+                        <Border Style="{StaticResource EditorCard}" MinimumHeightRequest="96">
+                            <Editor Placeholder="{local:Localize Key=HazardMode_Report_DescPlaceholder}"
+                                    AutoSize="TextChanges" MaxLength="2000" Text="{Binding ReportDescription}" />
+                        </Border>
+
+                        <!-- Address (from reverse geocode) -->
+                        <Border IsVisible="{Binding HasReportAddress}"
+                                StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource LightSurfaceMuted}, Dark={StaticResource DarkSurface}}"
+                                StrokeShape="RoundRectangle 12" Padding="12">
+                            <Label Text="{Binding ReportAddress}" FontSize="13" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightOnBackground}, Dark={StaticResource DarkOnBackground}}" />
+                        </Border>
+
+                        <Label Text="{Binding ReportError}"
+                               TextColor="{AppThemeBinding Light={StaticResource LightDanger}, Dark={StaticResource DarkDanger}}"
+                               FontSize="Caption" IsVisible="{Binding HasReportError}" />
+
+                        <!-- Submit -->
+                        <Border StrokeThickness="0" StrokeShape="RoundRectangle 14"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                HeightRequest="52"
+                                Opacity="{Binding CanSubmitReport, Converter={StaticResource BoolToOpacityConverter}}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SubmitReportCommand}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{local:Localize Key=HazardMode_Report_Submit}" FontSize="15" FontAttributes="Bold"
+                                   TextColor="{StaticResource White}" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+
+                        <ActivityIndicator IsRunning="{Binding IsSubmittingReport}" IsVisible="{Binding IsSubmittingReport}"
+                                           Color="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
     </Grid>
 </ContentPage>

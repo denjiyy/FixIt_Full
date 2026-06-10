@@ -170,6 +170,22 @@
   <data name="HazardMode_Empty" xml:space="preserve"><value>В момента няма опасности с местоположение.</value></data>
   <data name="HazardMode_Confirm" xml:space="preserve"><value>Потвърди</value></data>
   <data name="HazardMode_Confirmations" xml:space="preserve"><value>Потвърждения</value></data>
+  <data name="HazardMode_Report_Heading" xml:space="preserve"><value>Подаване на опасност</value></data>
+  <data name="HazardMode_Report_Sub" xml:space="preserve"><value>Докоснете картата, за да поставите точка, и добавете детайли.</value></data>
+  <data name="HazardMode_Report_TapHint" xml:space="preserve"><value>Докоснете картата, за да поставите опасност.</value></data>
+  <data name="HazardMode_Report_DragPin" xml:space="preserve"><value>Плъзнете за корекция</value></data>
+  <data name="HazardMode_Report_Type" xml:space="preserve"><value>Вид</value></data>
+  <data name="HazardMode_Report_Severity" xml:space="preserve"><value>Сериозност</value></data>
+  <data name="HazardMode_Report_TitleLabel" xml:space="preserve"><value>Заглавие</value></data>
+  <data name="HazardMode_Report_TitlePlaceholder" xml:space="preserve"><value>Кратко описание на опасността</value></data>
+  <data name="HazardMode_Report_DescLabel" xml:space="preserve"><value>Описание</value></data>
+  <data name="HazardMode_Report_DescPlaceholder" xml:space="preserve"><value>Опишете опасността малко по-подробно…</value></data>
+  <data name="HazardMode_Report_Submit" xml:space="preserve"><value>Подай опасност</value></data>
+  <data name="HazardMode_Report_Cancel" xml:space="preserve"><value>Отказ</value></data>
+  <data name="HazardMode_Report_Success" xml:space="preserve"><value>Опасността е подадена. Благодарим, че пазите общността!</value></data>
+  <data name="HazardMode_Report_Error" xml:space="preserve"><value>Опасността не може да бъде подадена.</value></data>
+  <data name="HazardMode_Report_LoginRequired" xml:space="preserve"><value>Влезте, за да подадете опасност.</value></data>
+  <data name="HazardMode_Report_LocationRequired" xml:space="preserve"><value>Докоснете картата, за да зададете местоположение.</value></data>
   <data name="Leaderboard_Title" xml:space="preserve"><value>Класация</value></data>
   <data name="Leaderboard_Weekly" xml:space="preserve"><value>Седмична</value></data>
   <data name="Leaderboard_Monthly" xml:space="preserve"><value>Месечна</value></data>

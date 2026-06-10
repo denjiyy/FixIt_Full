@@ -16,6 +16,7 @@ public interface IApiService
     Task<ApiResult> LikeCommentAsync(string issueId, string commentId, CancellationToken ct = default);
     Task<ApiResult> DislikeCommentAsync(string issueId, string commentId, CancellationToken ct = default);
     Task<List<SafetyHazard>> GetCriticalHazardsAsync(CancellationToken ct = default);
+    Task<List<SafetyHazard>> GetNearbyHazardsAsync(double latitude, double longitude, double radiusKm = 10, string? cityId = null, CancellationToken ct = default);
     Task<ApiResult> ConfirmHazardAsync(string hazardId, CancellationToken ct = default);
     Task<LeaderboardResult> GetLeaderboardAsync(string period, CancellationToken ct = default);
     Task<CityHealthReport> GetHealthReportAsync(string cityId, CancellationToken ct = default);
@@ -53,7 +54,7 @@ public interface IApiService
     Task<List<CityInfo>> GetCitiesAsync(CancellationToken ct = default);
 
     // Hazard management
-    Task<ApiResult> ReportHazardAsync(string type, string severity, string title, string description, double latitude, double longitude, CancellationToken ct = default);
+    Task<ApiResult> ReportHazardAsync(string type, string severity, string title, string description, double latitude, double longitude, string? address = null, string? cityId = null, CancellationToken ct = default);
 
     // Email preferences
     Task<EmailPreferences?> GetEmailPreferencesAsync(CancellationToken ct = default);
